@@ -1,0 +1,711 @@
+<div class="min-h-screen py-2">
+    <div class="max-w-7xl mx-auto space-y-6">
+
+        <!-- CARD -->
+        <div class="bg-white rounded-2xl">
+            <!-- CARD HEADER -->
+            <div class="p-5 flex justify-between items-center">
+                <h2 class="text-base font-bold text-[#2C3E50]">Liste des demandes d'imagerie</h2>
+
+                <!-- FILTERS -->
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        <input type="text" placeholder="Rechercher"
+                            class="pl-10 pr-4 py-2.5 border rounded-md text-xs w-48" [(ngModel)]="searchTerm"
+                            (input)="onSearchChange()" />
+
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M13.1539 12.2073L10.6806 9.75393C11.6407 8.55687 12.1056 7.03747 11.9798 5.50813C11.854 3.9788 11.147 2.55579 10.0043 1.5317C8.86151 0.507604 7.3698 -0.0397263 5.83588 0.00224731C4.30196 0.0442209 2.84241 0.672308 1.75736 1.75736C0.672308 2.84241 0.0442209 4.30196 0.00224731 5.83588C-0.0397263 7.3698 0.507604 8.86151 1.5317 10.0043C2.55579 11.147 3.9788 11.854 5.50813 11.9798C7.03747 12.1056 8.55687 11.6407 9.75393 10.6806L12.2073 13.1339C12.2692 13.1964 12.343 13.246 12.4242 13.2799C12.5055 13.3137 12.5926 13.3311 12.6806 13.3311C12.7686 13.3311 12.8557 13.3137 12.937 13.2799C13.0182 13.246 13.092 13.1964 13.1539 13.1339C13.2741 13.0096 13.3413 12.8435 13.3413 12.6706C13.3413 12.4977 13.2741 12.3316 13.1539 12.2073ZM6.01393 10.6806C5.09095 10.6806 4.1887 10.4069 3.42127 9.89412C2.65384 9.38134 2.0557 8.65251 1.7025 7.79979C1.34929 6.94707 1.25687 6.00876 1.43694 5.10351C1.617 4.19827 2.06146 3.36675 2.7141 2.7141C3.36675 2.06146 4.19827 1.617 5.10351 1.43694C6.00876 1.25687 6.94707 1.34929 7.79979 1.7025C8.65251 2.0557 9.38134 2.65384 9.89412 3.42127C10.4069 4.1887 10.6806 5.09095 10.6806 6.01393C10.6806 7.25161 10.1889 8.43859 9.31376 9.31376C8.43859 10.1889 7.25161 10.6806 6.01393 10.6806Z"
+                                    fill="#777777" />
+                            </svg>
+                        </span>
+                    </div>
+
+                    <!-- FILTRES -->
+                    <div class="flex items-center gap-3">
+
+                        <!-- ===== FILTRE STATUT ===== -->
+                        <div class="relative">
+                            <button (click)="showStatusMenu = !showStatusMenu; showUrgencyMenu = false"
+                                class="flex items-center gap-2 px-4 py-2.5 bg-white border rounded-md text-xs font-medium text-[#343A40] hover:bg-gray-50 transition">
+                                <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
+                                    <path d="M4 6H20M7 12H17M10 18H14" stroke="#6C757D" stroke-width="2"
+                                        stroke-linecap="round" />
+                                </svg>
+                                {{ statusLabel }}
+                            </button>
+
+                            <div *ngIf="showStatusMenu"
+                                class="absolute mt-2 w-56 bg-white border rounded-xl shadow-lg z-50">
+                                <button *ngFor="let s of statuses"
+                                    class="w-full flex items-center gap-2 text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                                    (click)="filterByStatus(s)">
+                                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24">
+                                        <path d="M4 6H20M7 12H17M10 18H14" stroke="#6C757D" stroke-width="2"
+                                            stroke-linecap="round" />
+                                    </svg>
+                                    {{ s.label }}
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- ===== FILTRE URGENCE ===== -->
+                        <div class="relative">
+                            <button (click)="showUrgencyMenu = !showUrgencyMenu; showStatusMenu = false"
+                                class="flex items-center gap-2 px-4 py-2.5 bg-white border rounded-md text-xs font-medium text-[#343A40] hover:bg-gray-50 transition">
+                                <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
+                                    <path d="M4 6H20M7 12H17M10 18H14" stroke="#6C757D" stroke-width="2"
+                                        stroke-linecap="round" />
+                                </svg>
+                                {{ urgencyLabel }}
+                            </button>
+
+                            <div *ngIf="showUrgencyMenu"
+                                class="absolute mt-2 w-56 bg-white border rounded-xl shadow-lg z-50">
+                                <button *ngFor="let u of urgencies"
+                                    class="w-full flex items-center gap-2 text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                                    (click)="filterByUrgency(u)">
+                                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24">
+                                        <path d="M4 6H20M7 12H17M10 18H14" stroke="#6C757D" stroke-width="2"
+                                            stroke-linecap="round" />
+                                    </svg>
+                                    {{ u.label }}
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- LOADING STATE -->
+            <div *ngIf="loading" class="flex justify-center items-center py-12">
+                <div class="text-center">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#01b894] mx-auto"></div>
+                    <p class="mt-4 text-gray-600">Chargement des imageries...</p>
+                </div>
+            </div>
+
+            <!-- ERROR STATE -->
+            <div *ngIf="error && !loading" class="text-center py-12 px-4">
+                <svg class="w-16 h-16 mx-auto mb-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p class="text-red-600 font-semibold">{{ error }}</p>
+                <button (click)="loadImageries()"
+                    class="mt-4 px-4 py-2 bg-[#01b894] text-white rounded-lg hover:bg-[#019874] transition-colors">
+                    Réessayer
+                </button>
+            </div>
+
+            <!-- TABLE -->
+            <table *ngIf="!loading && !error" class="w-full table-fixed">
+                <thead class="bg-[#F4F7FE] rounded-xl">
+                    <tr>
+                        <th class="px-3 py-4 text-left text-xs font-semibold text-[#343A40] w-[15%]">
+                            Date demande
+                        </th>
+                        <th class="px-3 py-4 text-left text-xs font-semibold text-[#343A40] w-[15%]">
+                            Type
+                        </th>
+                        <th class="px-3 py-4 text-left text-xs font-semibold text-[#343A40] w-[15%]">
+                            Région
+                        </th>
+                        <th class="px-3 py-4 text-left text-xs font-semibold text-[#343A40] w-[25%]">
+                            Indication
+                        </th>
+                        <th class="px-3 py-4 text-left text-xs font-semibold text-[#343A40] w-[12%]">
+                            Urgence
+                        </th>
+                        <th class="px-3 py-4 text-left text-xs font-semibold text-[#343A40] w-[12%]">
+                            Statut
+                        </th>
+                        <th class="px-3 py-4 text-center text-xs font-semibold text-[#343A40] w-[6%]">
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr *ngFor="let imagerie of imageries" class="border-t hover:bg-gray-50">
+                        <!-- DATE DEMANDE -->
+                        <td class="px-3 py-3 text-sm text-[#343A40] whitespace-nowrap">
+                            {{ formatDate(imagerie.createdAt) }}
+                        </td>
+
+                        <!-- TYPE -->
+                        <td class="px-3 py-3">
+                            <p class="text-sm text-[#4B4848] truncate" [title]="imagerie.type">
+                                {{ imagerie.type }}
+                            </p>
+                        </td>
+
+                        <!-- RÉGION -->
+                        <td class="px-3 py-3">
+                            <p class="text-sm text-[#4B4848] truncate" [title]="imagerie.region">
+                                {{ imagerie.region }}
+                            </p>
+                        </td>
+
+                        <!-- INDICATION CLINIQUE -->
+                        <td class="px-3 py-3">
+                            <p class="text-sm text-gray-600 truncate" [title]="imagerie.clinicalIndication">
+                                {{ imagerie.clinicalIndication }}
+                            </p>
+                        </td>
+
+                        <!-- URGENCE -->
+                        <td class="px-3 py-3">
+                            <span class="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap"
+                                [ngClass]="getUrgencyClass(imagerie.urgencyLevel)">
+                                {{ getUrgencyLabel(imagerie.urgencyLevel) }}
+                            </span>
+                        </td>
+
+                        <!-- STATUT -->
+                        <td class="px-3 py-3">
+                            <span class="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap"
+                                [ngClass]="getStatusClass(imagerie.status)">
+                                {{ getStatusLabel(imagerie.status) }}
+                            </span>
+                        </td>
+
+                        <!-- ACTIONS -->
+                        <td class="px-3 py-3 text-center">
+                            <button (click)="viewDetails(imagerie)"
+                                class="text-gray-500 hover:text-[#01b894] transition-colors" title="Voir les détails">
+                                <svg width="20" height="14" viewBox="0 0 20 14" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M20 6.875C20 6.875 16.25 0 10 0C3.75 0 0 6.875 0 6.875C0 6.875 3.75 13.75 10 13.75C16.25 13.75 20 6.875 20 6.875ZM1.46625 6.875C2.06973 5.95573 2.76496 5.1001 3.54125 4.32125C5.15 2.71 7.35 1.25 10 1.25C12.65 1.25 14.8488 2.71 16.46 4.32125C17.2363 5.1001 17.9315 5.95573 18.535 6.875C18.4633 6.98333 18.3821 7.10333 18.2913 7.235C17.8725 7.835 17.2537 8.635 16.46 9.42875C14.8488 11.04 12.6488 12.5 10 12.5C7.35125 12.5 5.15125 11.04 3.54 9.42875C2.76371 8.6499 2.06973 7.79427 1.46625 6.875Z"
+                                        fill="currentColor" />
+                                    <path
+                                        d="M10 3.75C9.1712 3.75 8.37634 4.07924 7.79029 4.66529C7.20424 5.25134 6.875 6.0462 6.875 6.875C6.875 7.7038 7.20424 8.49866 7.79029 9.08471C8.37634 9.67076 9.1712 10 10 10C10.8288 10 11.6237 9.67076 12.2097 9.08471C12.7958 8.49866 13.125 7.7038 13.125 6.875C13.125 6.0462 12.7958 5.25134 12.2097 4.66529C11.6237 4.07924 10.8288 3.75 10 3.75ZM5.625 6.875C5.625 5.71468 6.08594 4.60188 6.90641 3.78141C7.72688 2.96094 8.83968 2.5 10 2.5C11.1603 2.5 12.2731 2.96094 13.0936 3.78141C13.9141 4.60188 14.375 5.71468 14.375 6.875C14.375 8.03532 13.9141 9.14812 13.0936 9.96859C12.2731 10.7891 11.1603 11.25 10 11.25C8.83968 11.25 7.72688 10.7891 6.90641 9.96859C6.08594 9.14812 5.625 8.03532 5.625 6.875Z"
+                                        fill="currentColor" />
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <!-- AUCUN RÉSULTAT -->
+                    <tr *ngIf="imageries.length === 0">
+                        <td colspan="8" class="text-center py-12">
+                            <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <p class="text-gray-500 font-medium">Aucune demande d'imagerie trouvée</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- PAGINATION -->
+            <div *ngIf="!loading && !error && totalElements > 0"
+                class="p-5 flex justify-end items-center gap-4 text-sm text-gray-500">
+                <!-- TAILLE DE PAGE -->
+                <span>éléments par page :</span>
+
+                <select class="border rounded-lg px-2 py-1" [value]="size"
+                    (change)="page = 0; size = +$any($event.target).value; applyPagination()">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                </select>
+
+                <!-- INFO -->
+                <span>
+                    {{ startItem }} - {{ endItem }} sur {{ totalElements }}
+                </span>
+
+                <!-- PAGE PRÉCÉDENTE -->
+                <button class="px-2" (click)="prevPage()" [disabled]="page === 0" [class.opacity-40]="page === 0">
+                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <g clip-path="url(#clip0_3471_6957)">
+                            <path
+                                d="M23.9922 25.3594L22.3516 27L15.3516 20L22.3516 13L23.9922 14.6406L18.6328 20L23.9922 25.3594Z"
+                                fill="black" fill-opacity="0.26" />
+                        </g>
+                        <defs>
+                            <clipPath id="clip0_3471_6957">
+                                <rect width="28" height="28" fill="white" transform="translate(6 6)" />
+                            </clipPath>
+                        </defs>
+                    </svg>
+                </button>
+
+                <!-- PAGE SUIVANTE -->
+                <button class="px-2" (click)="nextPage()" [disabled]="page === totalPages - 1"
+                    [class.opacity-40]="page === totalPages - 1">
+                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <g clip-path="url(#clip0_3471_6962)">
+                            <path
+                                d="M10.0078 19.3594L15.3672 14L10.0078 8.64062L11.6484 7L18.6484 14L11.6484 21L10.0078 19.3594Z"
+                                fill="black" fill-opacity="0.54" />
+                        </g>
+                        <defs>
+                            <clipPath id="clip0_3471_6962">
+                                <rect width="28" height="28" fill="white" />
+                            </clipPath>
+                        </defs>
+                    </svg>
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- MODALE DÉTAILS IMAGERIE -->
+<!-- ============================================ -->
+<div *ngIf="showDetailModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+    (click)="closeDetailModal()">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[100vh] overflow-hidden"
+        (click)="$event.stopPropagation()">
+
+        <!-- HEADER MODALE -->
+        <div class="flex items-center justify-between px-6 py-4 border-b bg-gray-50">
+            <div class="flex items-center gap-3">
+                <h2 class="text-lg font-semibold text-[#343A40]" *ngIf="selectedImagerie">
+                    Imagerie {{ selectedImagerie.type }} - {{ selectedImagerie.patientName }}
+                </h2>
+                <div *ngIf="!detailsLoading && selectedImagerie" class="flex items-center gap-2">
+                    <span *ngIf="selectedImagerie.urgencyLevel === 'URGENT'"
+                        class="px-3 py-1 text-xs rounded-full bg-red-100 text-red-700 font-medium">
+                        Urgent
+                    </span>
+                    <span *ngIf="selectedImagerie.urgencyLevel === 'PRIORITAIRE'"
+                        class="px-3 py-1 text-xs rounded-full bg-orange-100 text-orange-700 font-medium">
+                        Prioritaire
+                    </span>
+                    <span class="px-3 py-1 text-xs rounded-full font-medium"
+                        [ngClass]="getStatusClass(selectedImagerie.status)">
+                        {{ getStatusLabel(selectedImagerie.status) }}
+                    </span>
+                </div>
+            </div>
+
+            <button (click)="closeDetailModal()"
+                class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-200 transition-colors">
+                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- CONTENU -->
+        <div class="overflow-y-auto max-h-[calc(90vh-80px)]">
+
+            <!-- LOADING STATE -->
+            <div *ngIf="detailsLoading" class="flex flex-col items-center justify-center py-16">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#01b894] mb-4"></div>
+                <p class="text-gray-600">Chargement des détails...</p>
+            </div>
+
+            <!-- ERROR STATE -->
+            <div *ngIf="detailsError && !detailsLoading" class="flex flex-col items-center justify-center py-16 px-4">
+                <svg class="w-16 h-16 text-red-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p class="text-red-600 font-semibold">{{ detailsError }}</p>
+            </div>
+
+            <!-- MAIN CONTENT -->
+            <div *ngIf="!detailsLoading && !detailsError && selectedImagerie" class="p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
+
+                    <!-- COLONNE GAUCHE - INFORMATIONS -->
+                    <div class="bg-gray-50 rounded-xl p-5 space-y-5 h-fit">
+
+                        <!-- PATIENT -->
+                        <div class="flex items-center gap-3">
+                            <div [class]="getInitialsColor(getInitials(selectedImagerie.patientName))"
+                                class="w-11 h-11 rounded-full flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
+                                {{ getInitials(selectedImagerie.patientName) }}
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-[#343A40]">{{ selectedImagerie.patientName }}</p>
+                                <p class="text-xs text-gray-500">Patient</p>
+                            </div>
+                        </div>
+
+                        <hr class="border-gray-200">
+
+                        <!-- DÉTAILS PRESCRIPTION -->
+                        <div class="space-y-3">
+                            <h3 class="text-sm font-semibold text-[#343A40]">Détails prescription</h3>
+
+                            <div class="space-y-3 text-sm">
+                                <!-- Type d'examen -->
+                                <div>
+                                    <p class="text-gray-500 text-xs mb-1">Type d'examen</p>
+                                    <p class="font-medium text-[#343A40]">{{ selectedImagerie.type }}</p>
+                                </div>
+
+                                <!-- Zone à explorer -->
+                                <div>
+                                    <p class="text-gray-500 text-xs mb-1">Zone à explorer</p>
+                                    <p class="font-medium text-[#343A40]">{{ selectedImagerie.region }}</p>
+                                </div>
+
+                                <!-- Centre d'imagerie -->
+                                <div>
+                                    <p class="text-gray-500 text-xs mb-1">Centre d'imagerie</p>
+                                    <p class="font-medium text-[#343A40]">{{ selectedImagerie.imagingCenterName }}</p>
+                                </div>
+
+                                <!-- Indication Médicale -->
+                                <div *ngIf="selectedImagerie.clinicalIndication">
+                                    <p class="text-gray-500 text-xs mb-1">Indication Médicale</p>
+                                    <p class="text-[#343A40] leading-relaxed">{{ selectedImagerie.clinicalIndication }}
+                                    </p>
+                                </div>
+
+                                <!-- Date de réception -->
+                                <div>
+                                    <p class="text-gray-500 text-xs mb-1">Date de réception</p>
+                                    <p class="font-medium text-[#343A40]">{{ formatDateLong(selectedImagerie.createdAt)
+                                        }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="border-gray-200">
+
+                        <!-- MÉDECIN PRESCRIPTEUR -->
+                        <div>
+                            <div class="flex items-center gap-3">
+                                <div [class]="getInitialsColor(getInitials(selectedImagerie.doctorName || 'Médecin'))"
+                                    class="w-11 h-11 rounded-full flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
+                                    {{ getInitials(selectedImagerie.doctorName || 'Médecin') }}
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-[#343A40]">
+                                        {{ selectedImagerie.doctorName || 'Non renseigné' }}
+                                    </p>
+                                    <p class="text-xs text-gray-500">Médecin prescripteur</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="border-gray-200">
+
+                        <!-- RENDEZ-VOUS -->
+                        <div>
+                            <div *ngIf="hasRendezVous()"
+                                class="flex items-center gap-3 rounded-xl px-4 py-3 bg-blue-50">
+                                <div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M11 6.5C11 6.36739 11.0527 6.24021 11.1464 6.14645C11.2402 6.05268 11.3674 6 11.5 6H12.5C12.6326 6 12.7598 6.05268 12.8536 6.14645C12.9473 6.24021 13 6.36739 13 6.5V7.5C13 7.63261 12.9473 7.75979 12.8536 7.85355C12.7598 7.94732 12.6326 8 12.5 8H11.5C11.3674 8 11.2402 7.94732 11.1464 7.85355C11.0527 7.75979 11 7.63261 11 7.5V6.5Z"
+                                            fill="#2C7BE5" />
+                                        <path
+                                            d="M3.5 0C3.63261 0 3.75979 0.0526784 3.85355 0.146447C3.94732 0.240215 4 0.367392 4 0.5V1H12V0.5C12 0.367392 12.0527 0.240215 12.1464 0.146447C12.2402 0.0526784 12.3674 0 12.5 0C12.6326 0 12.7598 0.0526784 12.8536 0.146447C12.9473 0.240215 13 0.367392 13 0.5V1H14C14.5304 1 15.0391 1.21071 15.4142 1.58579C15.7893 1.96086 16 2.46957 16 3V14C16 14.5304 15.7893 15.0391 15.4142 15.4142C15.0391 15.7893 14.5304 16 14 16H2C1.46957 16 0.960859 15.7893 0.585786 15.4142C0.210714 15.0391 0 14.5304 0 14V3C0 2.46957 0.210714 1.96086 0.585786 1.58579C0.960859 1.21071 1.46957 1 2 1H3V0.5C3 0.367392 3.05268 0.240215 3.14645 0.146447C3.24021 0.0526784 3.36739 0 3.5 0ZM1 4V14C1 14.2652 1.10536 14.5196 1.29289 14.7071C1.48043 14.8946 1.73478 15 2 15H14C14.2652 15 14.5196 14.8946 14.7071 14.7071C14.8946 14.5196 15 14.2652 15 14V4H1Z"
+                                            fill="#2C7BE5" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-[#343A40]">
+                                        {{ formatAppointmentLong(selectedImagerie.appointmentDate) }}
+                                    </p>
+                                    <p class="text-xs text-gray-600">{{ selectedImagerie.appointmentTime }}</p>
+                                </div>
+                            </div>
+
+                            <div *ngIf="!hasRendezVous()"
+                                class="flex items-center gap-3 rounded-xl px-4 py-3 bg-gray-100">
+                                <div class="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Rendez-vous non programmé</p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- COLONNE DROITE - ONGLETS -->
+                    <div class="bg-white rounded-xl border p-4 space-y-4">
+
+                        <!-- TITRE -->
+                        <h3 class="text-base font-semibold text-[#343A40]">
+                            {{ ongletActif === 'compte-rendu' ? 'Compte rendu' : ongletActif === 'resultat' ? 'Résultat'
+                            : 'Images médicales' }}
+                        </h3>
+
+                        <!-- TABS -->
+                        <div class="flex gap-6 border-b border-gray-200">
+                            <!-- Onglet Images médicales désactivé temporairement
+                            <button (click)="ongletActif = 'images'" class="pb-3 text-sm font-medium transition-colors"
+                                [class.text-[#00B894]]="ongletActif === 'images'"
+                                [class.border-b-2]="ongletActif === 'images'"
+                                [class.border-[#00B894]]="ongletActif === 'images'"
+                                [class.text-gray-600]="ongletActif !== 'images'">
+                                Images médicales
+                            </button>
+                            -->
+
+                            <button (click)="ongletActif = 'resultat'"
+                                class="pb-3 text-sm font-medium transition-colors"
+                                [class.text-[#00B894]]="ongletActif === 'resultat'"
+                                [class.border-b-2]="ongletActif === 'resultat'"
+                                [class.border-[#00B894]]="ongletActif === 'resultat'"
+                                [class.text-gray-600]="ongletActif !== 'resultat'">
+                                Résultat
+                            </button>
+
+                            <button (click)="ongletActif = 'compte-rendu'"
+                                class="pb-3 text-sm font-medium transition-colors"
+                                [class.text-[#00B894]]="ongletActif === 'compte-rendu'"
+                                [class.border-b-2]="ongletActif === 'compte-rendu'"
+                                [class.border-[#00B894]]="ongletActif === 'compte-rendu'"
+                                [class.text-gray-600]="ongletActif !== 'compte-rendu'">
+                                Compte rendu
+                            </button>
+                        </div>
+
+                        <!-- ========== ONGLET: IMAGES MÉDICALES (désactivé) ========== -->
+                        <div *ngIf="false" class="space-y-4"></div>
+
+                        <!-- ========== ONGLET: RÉSULTAT (DICOM) ========== -->
+                        <div *ngIf="ongletActif === 'resultat'" class="space-y-4">
+
+                            <!-- Accession Number + QR Code -->
+                            <div *ngIf="accessionNumber"
+                                class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+                                <div
+                                    class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-xs text-gray-400">Accession Number</p>
+                                    <p class="text-sm font-semibold text-[#343A40]">{{ accessionNumber }}</p>
+                                </div>
+                                <button type="button" (click)="copyAccessionNumber()" title="Copier l'accession number"
+                                    class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-[#2C7BE5] hover:bg-blue-50 transition">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                    </svg>
+                                </button>
+                                <!-- QR Code mobile -->
+                                <div class="border-l border-gray-200 pl-3 ml-1">
+                                    <app-dicom-qr-code [viewerUrl]="dicomViewerUrl"></app-dicom-qr-code>
+                                </div>
+                            </div>
+
+                            <!-- Viewer DICOM -->
+                            <div *ngIf="accessionNumber"
+                                class="rounded-2xl overflow-hidden border border-gray-200 relative group"
+                                style="height: 480px;">
+                                <app-standalone-pacs-viewer [accessionNumber]="accessionNumber"
+                                    [refreshTrigger]="viewerRefreshTrigger" [hideHeader]="true">
+                                </app-standalone-pacs-viewer>
+                                <!-- Overlay plein écran -->
+                                <div class="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-black/10 transition-colors flex items-center justify-center"
+                                    (click)="openDicomFullscreen()">
+                                    <div
+                                        class="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 rounded-full p-3 shadow-lg">
+                                        <svg class="w-6 h-6 text-[#343A40]" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5">
+                                            </path>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Pas d'accession number -->
+                            <div *ngIf="!accessionNumber"
+                                class="flex flex-col items-center justify-center h-[220px] border border-dashed border-gray-200 rounded-2xl bg-white text-center px-6">
+                                <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                                    <svg class="w-7 h-7 text-gray-400" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <p class="text-sm font-semibold text-[#343A40]">Aucun résultat DICOM disponible</p>
+                                <p class="text-xs text-gray-400 mt-1 max-w-[260px]">
+                                    Les images DICOM apparaîtront ici une fois l'examen réalisé et les fichiers
+                                    importés.
+                                </p>
+                            </div>
+
+                        </div>
+
+                        <!-- ========== ONGLET: COMPTE RENDU ========== -->
+                        <div *ngIf="ongletActif === 'compte-rendu'" class="space-y-6">
+
+                            <!-- APERÇU (SI COMPLÉTÉ) -->
+                            <div *ngIf="isCompteRenduPublie()" class="space-y-6">
+
+                                <h3 class="text-lg font-semibold text-gray-900">
+                                    Aperçu du compte rendu
+                                </h3>
+
+                                <div class="bg-white border border-gray-200 rounded-xl p-6 space-y-6">
+
+                                    <!-- Infos patient / examen -->
+                                    <div class="space-y-2 pb-4 border-b border-gray-200">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-sm text-gray-600">Patient :</span>
+                                            <span class="text-sm font-semibold text-gray-900">
+                                                {{ selectedImagerie?.patientName || 'Non renseigné' }}
+                                            </span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-sm text-gray-600">Examen :</span>
+                                            <span class="text-sm font-semibold text-gray-900">
+                                                {{ selectedImagerie?.type || 'Non renseigné' }} •
+                                                {{ selectedImagerie?.region || 'Non renseignée' }}
+                                            </span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-sm text-gray-600">Centre d'imagerie :</span>
+                                            <span class="text-sm font-semibold text-gray-900">
+                                                {{ selectedImagerie?.imagingCenterName || 'Non renseigné' }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- TEXTE DU RAPPORT -->
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-700 mb-2">Compte rendu médical</p>
+                                        <div
+                                            class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-800 whitespace-pre-line min-h-[80px]">
+                                            {{ selectedImagerie?.report || 'Aucun compte rendu textuel disponible.' }}
+                                        </div>
+                                    </div>
+
+                                    <!-- FICHIER PDF -->
+                                    <div *ngIf="selectedImagerie?.reportFile" class="pt-2">
+                                        <p class="text-sm font-medium text-gray-700 mb-2">Document officiel</p>
+
+                                        <a [href]="imageBaseUrl + selectedImagerie.reportFile" target="_blank"
+                                            class="inline-flex items-center gap-2 px-4 py-2.5 bg-[#00B894] text-white rounded-lg text-sm font-medium hover:bg-[#009e7a] transition">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                            </svg>
+                                            Ouvrir le document PDF
+                                        </a>
+                                    </div>
+
+                                </div>
+
+                                <!-- Signature -->
+                                <div class="flex items-start gap-2 text-xs text-gray-500 italic">
+                                    <svg class="w-4 h-4 mt-0.5 flex-shrink-0 text-[#00B894]" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <span>
+                                        Document signé électroniquement par
+                                        {{ selectedImagerie?.imagingCenterName || 'le centre d\'imagerie' }} le
+                                        {{ getCurrentDate() }}
+                                    </span>
+                                </div>
+
+                            </div>
+
+                            <!-- ÉTAT: NON PUBLIÉ -->
+                            <div *ngIf="!isCompteRenduPublie()" class="flex flex-col items-center justify-center py-16">
+                                <div class="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
+                                    <svg class="w-7 h-7 text-gray-400" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                </div>
+                                <p class="text-sm font-medium text-gray-600">Compte rendu non encore publié</p>
+                                <p class="text-xs text-gray-400 mt-1">Il sera disponible une fois l'examen complété.</p>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ==========================================================
+     MODAL : VISUALISER IMAGE EN GRAND
+========================================================== -->
+<div *ngIf="showViewImageModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+    (click)="closeViewImage()">
+
+    <div class="bg-white rounded-2xl p-5 max-w-4xl w-full relative" (click)="$event.stopPropagation()">
+
+        <!-- CLOSE BUTTON -->
+        <button (click)="closeViewImage()"
+            class="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
+            ✕
+        </button>
+
+        <!-- IMAGE -->
+        <div class="flex justify-center">
+            <img *ngIf="selectedImage" [src]="selectedImage.url" [alt]="selectedImage.titre"
+                class="max-h-[80vh] mx-auto rounded-xl" />
+        </div>
+
+        <!-- TITRE -->
+        <div class="mt-4 text-center">
+            <p class="text-sm font-medium text-gray-700">{{ selectedImage?.titre }}</p>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="flex justify-end mt-5">
+            <button (click)="closeViewImage()"
+                class="px-5 py-2.5 text-sm font-medium rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors">
+                Fermer
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<!-- FULLSCREEN DICOM VIEWER -->
+<div *ngIf="dicomFullscreen" class="fixed inset-0 z-[200] bg-black flex flex-col">
+    <!-- Header -->
+    <div class="flex items-center justify-between px-4 py-2 bg-[#1a1a1a] border-b border-gray-700 flex-shrink-0">
+        <span class="text-white text-sm font-medium">🔍 Viewer DICOM — {{ accessionNumber }}</span>
+        <button (click)="closeDicomFullscreen()"
+            class="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            Fermer
+        </button>
+    </div>
+    <!-- Viewer -->
+    <div class="flex-1 overflow-hidden">
+        <app-standalone-pacs-viewer [accessionNumber]="accessionNumber" [refreshTrigger]="viewerRefreshTrigger"
+            [hideHeader]="true"></app-standalone-pacs-viewer>
+    </div>
+</div>

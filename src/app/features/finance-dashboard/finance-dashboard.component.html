@@ -1,0 +1,88 @@
+<!-- Container principal avec fond gris -->
+<div class="min-h-screen bg-[#f5f7fa] p-4 md:p-6 lg:p-8">
+    <!-- Header de la page -->
+    <div class="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Gestion financière</h1>
+            <p class="text-gray-600 text-sm md:text-base">Vue globale de toutes les pharmacies</p>
+        </div>
+
+        <!-- Boutons d'action -->
+        <div class="flex items-center gap-3">
+            <!-- Sélecteur de période -->
+            <div class="relative">
+                <select [(ngModel)]="selectedPeriod" (change)="onPeriodChange()"
+                    class="appearance-none px-4 py-2.5 pr-10 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer text-sm">
+                    <option value="Ce mois">Ce mois</option>
+                    <option value="Ce trimestre">Ce trimestre</option>
+                    <option value="Cette année">Cette année</option>
+                </select>
+                <svg class="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+
+            <!-- Bouton Exporter -->
+            <button (click)="exportData()"
+                class="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                </svg>
+                Exporter
+            </button>
+        </div>
+    </div>
+
+    <!-- Cartes statistiques -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+        <div *ngFor="let card of statsCards"
+            class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
+
+            <!-- Header de la carte -->
+            <div class="flex items-start justify-between mb-4">
+                <div>
+                    <p class="text-sm font-medium mb-1" >
+                        {{ card.title }}
+                    </p>
+
+                    <h2 class="text-2xl md:text-3xl  font-bold text-gray-900 " [style.color]="card.color ? card.color : '#6B7280'">
+                        {{ card.value }}
+                    </h2>
+                </div>
+            </div>
+
+            <!-- Footer de la carte -->
+            <p class="text-gray-500 text-xs">{{ card.subtitle }}</p>
+        </div>
+    </div>
+
+
+    <!-- Section avec deux colonnes -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Évolution Mensuelle du Chiffre d'Affaires -->
+        <div class="bg-white rounded-xl shadow-sm p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-6">Évolution Mensuelle du Chiffre d'Affaires</h2>
+            <div class="h-64">
+                <canvas #caChart></canvas>
+            </div>
+        </div>
+
+        <!-- Répartition des Paiements par Moyen -->
+        <div class="bg-white rounded-xl shadow-sm p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-6">Répartition des Paiements par Moyen</h2>
+            <div class="h-64 flex items-center justify-center">
+                <canvas #paiementChart></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top 10 Pharmacies par Revenus -->
+    <div class="bg-white rounded-xl shadow-sm p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-6">Top 10 Pharmacies par Revenus</h2>
+        <div class="h-96">
+            <canvas #topPharmaciesChart></canvas>
+        </div>
+    </div>
+</div>

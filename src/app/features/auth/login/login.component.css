@@ -1,0 +1,67 @@
+.my-gradient {
+    background: linear-gradient(180deg, rgba(13, 148, 136, 0.5) -8.05%, #115E59 100%);
+  }
+.content-login{
+width: 406px;
+height: 240px;
+opacity: 1;
+top: 296px;
+left: 157px;
+padding-right: 15px;
+padding-left: 15px;
+gap: 24px;
+
+}  
+/* Animation de défilement vertical pour les compteurs */
+.stat-counter {
+  display: inline-block;
+  position: relative;
+  animation: slideDown 0.5s ease-out;
+}
+
+@keyframes slideDown {
+  0% {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Animation supplémentaire pour chaque changement de valeur */
+.stat-counter::before {
+  content: '';
+  position: absolute;
+  top: -100%;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.3), transparent);
+  animation: slideEffect 3s ease-out;
+}
+
+@keyframes slideEffect {
+  0% {
+    top: -100%;
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+/* Transition fluide pour les changements de nombres */
+.stat-counter {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Style pour l'overflow des cartes */
+.bg-white.bg-opacity-20 {
+  position: relative;
+}

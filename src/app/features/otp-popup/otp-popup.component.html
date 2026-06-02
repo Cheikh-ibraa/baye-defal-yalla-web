@@ -1,0 +1,151 @@
+<!-- Overlay -->
+<div *ngIf="isVisible" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+
+        <!-- Header -->
+        <div class="p-6 pb-4">
+            <!-- Icon -->
+            <div class="flex justify-center mb-4">
+                <svg width="95" height="95" viewBox="0 0 95 95" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M70.2452 34.0264C70.9106 34.7294 71.27 35.6677 71.2443 36.6353C71.2186 37.6029 70.81 38.5208 70.1082 39.1875L43.3438 64.7644C42.6518 65.4153 41.736 65.7751 40.7861 65.7692C39.8501 65.7728 38.9494 65.4125 38.2741 64.7644L24.8918 51.976C24.5207 51.6521 24.2188 51.2566 24.0044 50.8131C23.79 50.3696 23.6675 49.8874 23.6442 49.3954C23.6209 48.9033 23.6973 48.4117 23.8689 47.9499C24.0405 47.4882 24.3037 47.0659 24.6426 46.7085C24.9816 46.3511 25.3893 46.0659 25.8413 45.87C26.2932 45.6742 26.7801 45.5718 27.2727 45.5689C27.7653 45.566 28.2534 45.6628 28.7076 45.8534C29.1618 46.044 29.5728 46.3244 29.9159 46.6779L40.7861 57.0457L65.0841 33.8894C65.7871 33.224 66.7254 32.8646 67.693 32.8903C68.6606 32.916 69.5785 33.3246 70.2452 34.0264ZM95 47.5C95 56.8946 92.2142 66.0782 86.9948 73.8896C81.7754 81.7009 74.357 87.7891 65.6775 91.3843C56.998 94.9794 47.4473 95.9201 38.2332 94.0873C29.0191 92.2545 20.5554 87.7305 13.9124 81.0876C7.26945 74.4446 2.74552 65.9809 0.91272 56.7668C-0.920077 47.5527 0.020581 38.002 3.61574 29.3225C7.2109 20.643 13.2991 13.2246 21.1104 8.00519C28.9218 2.78583 38.1054 0 47.5 0C60.0904 0.0241427 72.1582 5.03635 81.0609 13.9391C89.9637 22.8418 94.9759 34.9096 95 47.5ZM87.6923 47.5C87.6923 39.5507 85.3351 31.7799 80.9187 25.1703C76.5023 18.5608 70.2251 13.4092 62.8809 10.3671C55.5368 7.32509 47.4554 6.52915 39.6589 8.07997C31.8623 9.6308 24.7008 13.4587 19.0798 19.0797C13.4588 24.7007 9.63082 31.8623 8.08 39.6589C6.52917 47.4554 7.32511 55.5367 10.3672 62.8809C13.4092 70.2251 18.5608 76.5023 25.1704 80.9187C31.78 85.3351 39.5507 87.6923 47.5 87.6923C58.156 87.6802 68.372 83.4418 75.9069 75.9069C83.4418 68.372 87.6802 58.1559 87.6923 47.5Z"
+                        fill="#00B894" />
+                </svg>
+            </div>
+
+            <div class="flex items-center justify-between mb-2">
+                <div class="flex-1 text-center">
+                    <h3 class="text-xl font-bold text-gray-900">Vérification OTP</h3>
+                </div>
+                <button (click)="onCancel()" class="text-gray-400 hover:text-gray-600 transition ml-4">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <p class="text-sm text-gray-600 text-center">Un code de vérification a été envoyé au {{ email }}</p>
+        </div>
+
+        <!-- Content -->
+        <div class="px-6 pb-6">
+            <!-- OTP Input -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-3">Code à 6 chiffres</label>
+                <input type="text" formControlName="otpCode" (input)="onInputChange($event)" placeholder="000000"
+                    maxlength="6"
+                    class="w-full px-4 py-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none text-center text-2xl tracking-widest font-mono"
+                    [class.border-red-300]="hasError('otpCode')" [disabled]="isLoading">
+                <p *ngIf="hasError('otpCode')" class="mt-2 text-sm text-red-600">{{ getErrorMessage('otpCode') }}</p>
+            </div>
+
+            <!-- Error Message -->
+            <div *ngIf="errorMessage" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p class="text-sm text-red-700">{{ errorMessage }}</p>
+            </div>
+
+            <!-- Countdown -->
+            <!-- <div class="mb-6 text-center">
+        <p class="text-sm text-gray-600">
+          Renvoyer le code
+          <button
+            *ngIf="countdown > 0"
+            class="text-gray-400 cursor-not-allowed ml-1"
+            disabled>
+            dans {{ countdown }}s
+          </button>
+          <button
+            *ngIf="countdown === 0"
+            (click)="onResendOTP()"
+            class="text-[#01b894] hover:text-[#019d7e] font-medium ml-1">
+            Renvoyer
+          </button>
+        </p>
+      </div> -->
+
+            <!-- Buttons -->
+            <div class="flex gap-3">
+                <button (click)="onCancel()" [disabled]="isLoading"
+                    class="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                    Annuler
+                </button>
+                <button (click)="onSubmit()" [disabled]="otpForm.invalid || isLoading"
+                    class="flex-1 px-4 py-3 bg-[#01b894] text-white rounded-lg font-medium hover:bg-[#019d7e] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                    <span *ngIf="!isLoading">Vérifier</span>
+                    <span *ngIf="isLoading">Vérification...</span>
+                    <svg *ngIf="isLoading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Test Code Info -->
+            <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p class="text-xs text-blue-700 text-center">Code de test : <strong>123456</strong></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Popup -->
+<div *ngIf="showSuccessPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full">
+        <div class="p-6 text-center">
+            <!-- Success Icon -->
+            <div class="flex justify-center mb-4">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Title -->
+            <h3 class="text-xl font-bold text-gray-900 mb-2">Code vérifié avec succès !</h3>
+
+            <!-- Message -->
+            <p class="text-sm text-gray-600 mb-6">Votre code OTP a été validé. Vous pouvez maintenant accéder au dossier
+                patient.</p>
+
+            <!-- Button -->
+            <button (click)="onSuccessConfirm()"
+                class="w-full px-4 py-3 bg-[#01b894] text-white rounded-lg font-medium hover:bg-[#019d7e] transition">
+                OK
+            </button>
+        </div>
+    </div>
+</div> 
+
+<!-- Error Popup -->
+<div *ngIf="showErrorPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full">
+        <div class="p-6 text-center">
+            <!-- Error Icon -->
+            <div class="flex justify-center mb-4">
+                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                    <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Title -->
+            <h3 class="text-xl font-bold text-gray-900 mb-2">Code incorrect</h3>
+
+            <!-- Message -->
+            <p class="text-sm text-gray-600 mb-6">Le code OTP que vous avez saisi est incorrect. Veuillez vérifier et
+                réessayer.</p>
+
+            <!-- Button -->
+            <button (click)="onErrorConfirm()"
+                class="w-full px-4 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition">
+                Réessayer
+            </button>
+        </div>
+    </div>
+</div>

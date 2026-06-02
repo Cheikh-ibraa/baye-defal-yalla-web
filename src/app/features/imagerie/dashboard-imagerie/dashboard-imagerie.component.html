@@ -1,0 +1,532 @@
+<div class="min-h-screen  px-2 py-6">
+  <!-- largeur plus large comme Figma -->
+  <div class="max-w-6xl mx-auto space-y-6">
+
+    <!-- HEADER (fidèle Figma) -->
+<div class="flex justify-between items-center">
+ <div>
+  <h1 class="text-2xl font-semibold leading-tight text-[#343A40]">
+    Tableau de bord
+  </h1>
+
+  <p class="text-base text-[#343A40]/80 mt-2">
+    Planning et gestion du centre de radiologie.
+  </p>
+</div>
+
+
+  <div class="flex items-center gap-4">
+
+    <!-- Select Ce-mois -->
+    <div class="relative">
+      <!-- icône calendrier -->
+      <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+      <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M3.75 0C4.09518 0 4.375 0.279822 4.375 0.625V1.875H11.875V0.625C11.875 0.279822 12.1548 0 12.5 0C12.8452 0 13.125 0.279822 13.125 0.625V1.875H13.75C15.1307 1.875 16.25 2.99429 16.25 4.375V13.75C16.25 15.1307 15.1307 16.25 13.75 16.25H2.5C1.11929 16.25 0 15.1307 0 13.75V4.375C0 2.99429 1.11929 1.875 2.5 1.875H3.125V0.625C3.125 0.279822 3.40482 0 3.75 0ZM15 7.5C15 6.80964 14.4404 6.25 13.75 6.25H2.5C1.80964 6.25 1.25 6.80964 1.25 7.5V13.75C1.25 14.4404 1.80964 15 2.5 15H13.75C14.4404 15 15 14.4404 15 13.75V7.5Z" fill="#777777"/>
+</svg>
+
+      </span>
+
+      <select
+        class="pl-11 pr-10 py-3 w-[220px] border border-gray-200 rounded-lg text-[15px] bg-white appearance-none focus:outline-none">
+        <option>Ce-mois</option>
+      </select>
+
+      <!-- flèche -->
+      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+       <svg width="16" height="9" viewBox="0 0 16 9" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M15 1L8 8L1 1" stroke="#777777" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+
+      </span>
+    </div>
+
+    <!-- Bouton Exporter -->
+    <button>
+      <svg width="141" height="44" viewBox="0 0 141 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="141" height="44" rx="5" fill="#2C7BE5"/>
+<path d="M31.37 20.384C31.0888 20.6653 30.9308 21.0468 30.9308 21.4445C30.9308 21.8422 31.0888 22.2237 31.37 22.505L31.437 22.572C31.5763 22.7114 31.7417 22.822 31.9238 22.8974C32.1058 22.9728 32.3009 23.0117 32.498 23.0117C32.6951 23.0117 32.8902 22.9728 33.0722 22.8974C33.2543 22.822 33.4197 22.7114 33.559 22.572L36.674 19.457C36.818 19.313 36.927 19.147 37 18.969V27C37 27.5304 36.7893 28.0391 36.4142 28.4142C36.0391 28.7893 35.5304 29 35 29H27C26.4696 29 25.9609 28.7893 25.5858 28.4142C25.2107 28.0391 25 27.5304 25 27V19C25 18.4696 25.2107 17.9609 25.5858 17.5858C25.9609 17.2107 26.4696 17 27 17H34.851C34.7161 17.0706 34.5926 17.1613 34.485 17.269L31.37 20.384Z" fill="white"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M39.2183 14.7821C39.2648 14.8286 39.3018 14.8838 39.327 14.9445C39.3522 15.0052 39.3652 15.0704 39.3652 15.1361C39.3652 15.2019 39.3522 15.267 39.327 15.3278C39.3018 15.3885 39.2648 15.4437 39.2183 15.4901L32.8543 21.8541C32.7605 21.948 32.6333 22.0008 32.5006 22.0009C32.368 22.001 32.2407 21.9484 32.1468 21.8546C32.0529 21.7609 32.0001 21.6337 32 21.501C31.9999 21.3683 32.0525 21.241 32.1463 21.1471L38.5103 14.7821C38.604 14.6884 38.7312 14.6357 38.8638 14.6357C38.9964 14.6357 39.1235 14.6884 39.2173 14.7821" fill="white"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M34 14.5C34 14.3674 34.0527 14.2402 34.1464 14.1464C34.2402 14.0527 34.3674 14 34.5 14H39.5C39.6326 14 39.7598 14.0527 39.8536 14.1464C39.9473 14.2402 40 14.3674 40 14.5V19.5C40 19.6326 39.9473 19.7598 39.8536 19.8536C39.7598 19.9473 39.6326 20 39.5 20C39.3674 20 39.2402 19.9473 39.1464 19.8536C39.0527 19.7598 39 19.6326 39 19.5V15H34.5C34.3674 15 34.2402 14.9473 34.1464 14.8536C34.0527 14.7598 34 14.6326 34 14.5Z" fill="white"/>
+<path d="M55.2784 28V16.3636H62.5739V17.875H57.0341V21.4205H62.1932V22.9261H57.0341V26.4886H62.642V28H55.2784ZM66.1236 19.2727L68.0497 22.6705L69.9929 19.2727H71.8509L69.1293 23.6364L71.8736 28H70.0156L68.0497 24.7386L66.0895 28H64.2259L66.9418 23.6364L64.2599 19.2727H66.1236ZM73.5952 31.2727V19.2727H75.2543V20.6875H75.3963C75.4948 20.5057 75.6368 20.2955 75.8224 20.0568C76.008 19.8182 76.2656 19.6098 76.5952 19.4318C76.9247 19.25 77.3603 19.1591 77.902 19.1591C78.6065 19.1591 79.2353 19.3371 79.7884 19.6932C80.3414 20.0492 80.7751 20.5625 81.0895 21.233C81.4077 21.9034 81.5668 22.7102 81.5668 23.6534C81.5668 24.5966 81.4096 25.4053 81.0952 26.0795C80.7808 26.75 80.349 27.267 79.7997 27.6307C79.2505 27.9905 78.6236 28.1705 77.919 28.1705C77.3887 28.1705 76.955 28.0814 76.6179 27.9034C76.2846 27.7254 76.0232 27.517 75.8338 27.2784C75.6444 27.0398 75.4986 26.8277 75.3963 26.642H75.294V31.2727H73.5952ZM75.2599 23.6364C75.2599 24.25 75.349 24.7879 75.527 25.25C75.705 25.7121 75.9626 26.0739 76.2997 26.3352C76.6368 26.5928 77.0497 26.7216 77.5384 26.7216C78.0459 26.7216 78.4702 26.5871 78.8111 26.3182C79.152 26.0455 79.4096 25.6761 79.5838 25.2102C79.7618 24.7443 79.8509 24.2197 79.8509 23.6364C79.8509 23.0606 79.7637 22.5436 79.5895 22.0852C79.419 21.6269 79.1615 21.2652 78.8168 21C78.4759 20.7348 78.0497 20.6023 77.5384 20.6023C77.0459 20.6023 76.6293 20.7292 76.2884 20.983C75.9512 21.2367 75.6955 21.5909 75.5213 22.0455C75.3471 22.5 75.2599 23.0303 75.2599 23.6364ZM87.1463 28.1761C86.3281 28.1761 85.6141 27.9886 85.0043 27.6136C84.3944 27.2386 83.9209 26.714 83.5838 26.0398C83.2467 25.3655 83.0781 24.5777 83.0781 23.6761C83.0781 22.7708 83.2467 21.9792 83.5838 21.3011C83.9209 20.6231 84.3944 20.0966 85.0043 19.7216C85.6141 19.3466 86.3281 19.1591 87.1463 19.1591C87.9645 19.1591 88.6785 19.3466 89.2884 19.7216C89.8982 20.0966 90.3717 20.6231 90.7088 21.3011C91.0459 21.9792 91.2145 22.7708 91.2145 23.6761C91.2145 24.5777 91.0459 25.3655 90.7088 26.0398C90.3717 26.714 89.8982 27.2386 89.2884 27.6136C88.6785 27.9886 87.9645 28.1761 87.1463 28.1761ZM87.152 26.75C87.6823 26.75 88.1217 26.6098 88.4702 26.3295C88.8187 26.0492 89.0762 25.6761 89.2429 25.2102C89.4134 24.7443 89.4986 24.2311 89.4986 23.6705C89.4986 23.1136 89.4134 22.6023 89.2429 22.1364C89.0762 21.6667 88.8187 21.2898 88.4702 21.0057C88.1217 20.7216 87.6823 20.5795 87.152 20.5795C86.6179 20.5795 86.1747 20.7216 85.8224 21.0057C85.474 21.2898 85.2145 21.6667 85.044 22.1364C84.8774 22.6023 84.794 23.1136 84.794 23.6705C84.794 24.2311 84.8774 24.7443 85.044 25.2102C85.2145 25.6761 85.474 26.0492 85.8224 26.3295C86.1747 26.6098 86.6179 26.75 87.152 26.75ZM93.1108 28V19.2727H94.7528V20.6591H94.8438C95.0028 20.1894 95.2831 19.8201 95.6847 19.5511C96.09 19.2784 96.5483 19.142 97.0597 19.142C97.1657 19.142 97.2907 19.1458 97.4347 19.1534C97.5824 19.161 97.6979 19.1705 97.7812 19.1818V20.8068C97.7131 20.7879 97.5919 20.767 97.4176 20.7443C97.2434 20.7178 97.0691 20.7045 96.8949 20.7045C96.4934 20.7045 96.1354 20.7898 95.821 20.9602C95.5104 21.1269 95.2642 21.3598 95.0824 21.6591C94.9006 21.9545 94.8097 22.2917 94.8097 22.6705V28H93.1108ZM103.841 19.2727V20.6364H99.0739V19.2727H103.841ZM100.352 17.1818H102.051V25.4375C102.051 25.767 102.1 26.0152 102.199 26.1818C102.297 26.3447 102.424 26.4564 102.58 26.517C102.739 26.5739 102.911 26.6023 103.097 26.6023C103.233 26.6023 103.352 26.5928 103.455 26.5739C103.557 26.5549 103.636 26.5398 103.693 26.5284L104 27.9318C103.902 27.9697 103.761 28.0076 103.58 28.0455C103.398 28.0871 103.17 28.1098 102.898 28.1136C102.451 28.1212 102.034 28.0417 101.648 27.875C101.261 27.7083 100.949 27.4508 100.71 27.1023C100.472 26.7538 100.352 26.3163 100.352 25.7898V17.1818ZM109.388 28.1761C108.528 28.1761 107.787 27.9924 107.166 27.625C106.549 27.2538 106.071 26.733 105.734 26.0625C105.401 25.3883 105.234 24.5985 105.234 23.6932C105.234 22.7992 105.401 22.0114 105.734 21.3295C106.071 20.6477 106.541 20.1155 107.143 19.733C107.75 19.3504 108.458 19.1591 109.268 19.1591C109.761 19.1591 110.238 19.2405 110.7 19.4034C111.162 19.5663 111.577 19.822 111.945 20.1705C112.312 20.5189 112.602 20.9716 112.814 21.5284C113.026 22.0814 113.132 22.7538 113.132 23.5455V24.1477H106.195V22.875H111.467C111.467 22.428 111.376 22.0322 111.195 21.6875C111.013 21.339 110.757 21.0644 110.428 20.8636C110.102 20.6629 109.719 20.5625 109.28 20.5625C108.803 20.5625 108.386 20.6799 108.03 20.9148C107.678 21.1458 107.405 21.4489 107.212 21.8239C107.022 22.1951 106.928 22.5985 106.928 23.0341V24.0284C106.928 24.6117 107.03 25.108 107.234 25.517C107.443 25.9261 107.732 26.2386 108.104 26.4545C108.475 26.6667 108.909 26.7727 109.405 26.7727C109.727 26.7727 110.02 26.7273 110.286 26.6364C110.551 26.5417 110.78 26.4015 110.973 26.2159C111.166 26.0303 111.314 25.8011 111.416 25.5284L113.024 25.8182C112.895 26.2917 112.664 26.7064 112.331 27.0625C112.001 27.4148 111.587 27.6894 111.087 27.8864C110.59 28.0795 110.024 28.1761 109.388 28.1761ZM115.017 28V19.2727H116.659V20.6591H116.75C116.909 20.1894 117.189 19.8201 117.591 19.5511C117.996 19.2784 118.455 19.142 118.966 19.142C119.072 19.142 119.197 19.1458 119.341 19.1534C119.489 19.161 119.604 19.1705 119.688 19.1818V20.8068C119.619 20.7879 119.498 20.767 119.324 20.7443C119.15 20.7178 118.975 20.7045 118.801 20.7045C118.4 20.7045 118.042 20.7898 117.727 20.9602C117.417 21.1269 117.17 21.3598 116.989 21.6591C116.807 21.9545 116.716 22.2917 116.716 22.6705V28H115.017Z" fill="white"/>
+</svg>
+
+    </button>
+
+  </div>
+</div>
+
+   <!-- STATS (fidèle Figma) -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+  <!-- CARD -->
+  <div class="relative bg-white rounded-2xl p-6  min-h-[130px]">
+    <!-- Icon -->
+    <div class=" border absolute top-6 right-6 w-10 h-10 rounded-xl  flex items-center justify-center">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M5.5 11.5H5.646C7.852 11.5 10.027 12.014 12 13C13.973 13.986 16.148 14.5 18.354 14.5H19.5M6.5 0.5H15.5V0.75L14.793 1.722C13.8453 3.02452 13.3939 4.62265 13.52 6.22851C13.6461 7.83437 14.3416 9.34242 15.481 10.481L21.5 16.5C21.5 18.5 20.5 20 18.5 21.5H3.5C1.5 20 0.5 18.5 0.5 16.5L6.52 10.48C7.65903 9.34135 8.3541 7.83344 8.48005 6.22781C8.606 4.62217 8.15455 3.02433 7.207 1.722L6.5 0.75V0.5Z" stroke="#6B7280"/>
+</svg>
+
+    </div>
+
+    <!-- Content -->
+    <p class="text-sm text-[#64748B] font-medium">
+      Total Examens
+    </p>
+
+    <p class="text-3xl font-semibold text-[#111111] mt-3">
+  {{ dashboardData?.totalRequests ?? 0 }}
+</p>
+
+
+    <p class="text-xs text-gray-400 mt-4">
+      Total
+    </p>
+  </div>
+
+  <!-- CARD -->
+  <div class="relative bg-white rounded-2xl p-6  min-h-[130px]">
+    <div class="absolute top-6 right-6 w-10 h-10 rounded-xl border flex items-center justify-center">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 5.25C12 5.05109 11.921 4.86032 11.7803 4.71967C11.6397 4.57902 11.4489 4.5 11.25 4.5C11.0511 4.5 10.8603 4.57902 10.7197 4.71967C10.579 4.86032 10.5 5.05109 10.5 5.25V13.5C10.5 13.6322 10.535 13.762 10.6014 13.8764C10.6678 13.9907 10.7632 14.0854 10.878 14.151L16.128 17.151C16.3003 17.2441 16.5022 17.2661 16.6905 17.2124C16.8788 17.1586 17.0386 17.0333 17.1358 16.8633C17.2329 16.6933 17.2597 16.492 17.2104 16.3024C17.1612 16.1129 17.0397 15.9502 16.872 15.849L12 13.065V5.25Z" fill="#F39C12"/>
+<path d="M12 24C15.1826 24 18.2348 22.7357 20.4853 20.4853C22.7357 18.2348 24 15.1826 24 12C24 8.8174 22.7357 5.76516 20.4853 3.51472C18.2348 1.26428 15.1826 0 12 0C8.8174 0 5.76516 1.26428 3.51472 3.51472C1.26428 5.76516 0 8.8174 0 12C0 15.1826 1.26428 18.2348 3.51472 20.4853C5.76516 22.7357 8.8174 24 12 24ZM22.5 12C22.5 14.7848 21.3938 17.4555 19.4246 19.4246C17.4555 21.3938 14.7848 22.5 12 22.5C9.21523 22.5 6.54451 21.3938 4.57538 19.4246C2.60625 17.4555 1.5 14.7848 1.5 12C1.5 9.21523 2.60625 6.54451 4.57538 4.57538C6.54451 2.60625 9.21523 1.5 12 1.5C14.7848 1.5 17.4555 2.60625 19.4246 4.57538C21.3938 6.54451 22.5 9.21523 22.5 12Z" fill="#F39C12"/>
+</svg>
+
+    </div>
+
+    <p class="text-sm text-[#64748B] font-medium">
+      Examens en attente
+    </p>
+
+  <p class="text-3xl font-semibold text-[#111111] mt-3">
+  {{ dashboardData?.pendingRequests ?? 0 }}
+</p>
+
+
+    <p class="text-xs text-red-500 mt-4">
+  Dont {{ dashboardData?.urgentRequests ?? 0 }} urgences
+</p>
+
+  </div>
+
+  <!-- CARD -->
+  <div class="relative bg-white rounded-2xl p-6  min-h-[130px]">
+    <div class="absolute top-6 right-6 w-10 h-10 rounded-xl border flex items-center justify-center">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M15 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V7L15 2Z" stroke="#00B894" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M14 2V6C14 6.53043 14.2107 7.03914 14.5858 7.41421C14.9609 7.78929 15.4696 8 16 8H20" stroke="#00B894" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M10 9H8" stroke="#00B894" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M16 13H8" stroke="#00B894" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M16 17H8" stroke="#00B894" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+
+    </div>
+
+    <p class="text-sm text-[#64748B] font-medium">
+      Examens réalisés
+    </p>
+
+  <p class="text-3xl font-semibold text-[#111111] mt-3">
+  {{ dashboardData?.completedRequests ?? 0 }}
+</p>
+
+    <p class="text-xs text-gray-400 mt-4">
+      Total
+    </p>
+  </div>
+
+  <!-- CARD -->
+  <div class="relative bg-white rounded-2xl p-6  min-h-[130px]">
+    <div class="absolute top-6 right-6 w-10 h-10 rounded-xl border flex items-center justify-center">
+     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M15.9267 17.211H18.0647C18.2528 17.2139 18.4388 17.1713 18.6068 17.0868C18.7748 17.0022 18.9198 16.8782 19.0295 16.7254C19.1391 16.5726 19.2102 16.3955 19.2365 16.2093C19.2628 16.0231 19.2437 15.8332 19.1807 15.656C18.6356 14.4891 17.7725 13.4996 16.6905 12.8009C15.6086 12.1022 14.3515 11.7228 13.0637 11.706M13.0637 8.947C13.545 8.94713 14.0215 8.85246 14.4662 8.66838C14.9108 8.48431 15.3149 8.21444 15.6552 7.87419C15.9955 7.53395 16.2655 7.12998 16.4497 6.68538C16.6339 6.24078 16.7287 5.76425 16.7287 5.283C16.73 4.80091 16.6362 4.3233 16.4526 3.87755C16.269 3.43179 15.9992 3.02665 15.6587 2.68534C15.3183 2.34403 14.9138 2.07327 14.4685 1.88857C14.0232 1.70387 13.5458 1.60887 13.0637 1.609M7.33872 9.062C8.44046 9.05935 9.49616 8.61976 10.2742 7.83968C11.0522 7.0596 11.489 6.00274 11.4887 4.901C11.4887 3.80009 11.0514 2.74426 10.2729 1.9658C9.49446 1.18734 8.43863 0.75 7.33772 0.75C6.23681 0.75 5.18098 1.18734 4.40252 1.9658C3.62406 2.74426 3.18672 3.80009 3.18672 4.901C3.18672 6.00274 3.62377 7.05949 4.40197 7.83939C5.18018 8.61928 6.23598 9.05862 7.33772 9.061M12.0237 18.404C12.376 18.4035 12.7212 18.3055 13.0212 18.1209C13.3211 17.9363 13.5642 17.6723 13.7233 17.358C13.8824 17.0438 13.9515 16.6916 13.9228 16.3406C13.8941 15.9895 13.7688 15.6532 13.5607 15.369C12.8318 14.4015 11.8935 13.6114 10.816 13.0579C9.73849 12.5044 8.54972 12.2019 7.33872 12.173C6.12763 12.202 4.93881 12.5047 3.8613 13.0584C2.78378 13.612 1.84549 14.4023 1.11672 15.37C0.909375 15.6542 0.784619 15.9903 0.756227 16.341C0.727834 16.6916 0.79691 17.0434 0.955827 17.3573C1.11474 17.6712 1.35732 17.935 1.65677 18.1198C1.95621 18.3045 2.30088 18.4028 2.65272 18.404H12.0237Z" stroke="#2C7BE5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+
+    </div>
+
+    <p class="text-sm text-[#64748B] font-medium">
+      Jeunes patients
+    </p>
+
+   <p class="text-3xl font-semibold text-[#111111] mt-3">
+  {{ dashboardData?.youngPatients ?? 0 }}
+</p>
+
+
+    <p class="text-xs text-[#34C759] mt-4 flex items-center gap-2">
+      Total
+    </p>
+  </div>
+
+</div>
+
+
+<!-- GRAPHIQUES - LIGNE 1 -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+
+  <!-- ÉVOLUTION MENSUELLE -->
+  <div class="bg-white rounded-2xl p-6 border shadow-sm hover:shadow-md transition-shadow duration-300 h-[420px] flex flex-col">
+    <div class="flex-shrink-0 flex items-start justify-between">
+      <div>
+        <h3 class="text-lg font-semibold text-[#343A40]">
+          Évolution mensuelle des examens
+        </h3>
+        <p class="text-sm text-gray-400 mt-1">
+          Nombre d'examens reçus par mois
+        </p>
+      </div>
+
+      <!-- Badge statut -->
+      <div *ngIf="monthlyChartState === 'loading'"
+           class="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full">
+        <svg class="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span>Chargement...</span>
+      </div>
+    </div>
+
+    <!-- ZONE GRAPHIQUE -->
+    <div class="flex-1 mt-4 min-h-0 relative">
+      <!-- État: Loading -->
+      <div *ngIf="monthlyChartState === 'loading'"
+           class="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 rounded-xl">
+        <svg class="animate-spin h-10 w-10 text-blue-600 mb-3" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p class="text-sm text-gray-500 font-medium">Chargement des données...</p>
+      </div>
+
+      <!-- État: Error -->
+      <div *ngIf="monthlyChartState === 'error'"
+           class="absolute inset-0 flex flex-col items-center justify-center bg-red-50 rounded-xl p-6 text-center">
+        <svg class="h-12 w-12 text-red-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <p class="text-sm font-semibold text-red-700 mb-1">Impossible de charger les données</p>
+        <p class="text-xs text-red-600">Vérifiez votre connexion ou réessayez plus tard</p>
+        <button (click)="loadDashboard(currentUser!.id)"
+                class="mt-4 px-4 py-2 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 transition-colors">
+          Réessayer
+        </button>
+      </div>
+
+      <!-- Graphique -->
+      <canvas id="monthlyChart"
+              [class.opacity-0]="monthlyChartState === 'loading' || monthlyChartState === 'error'"
+              [class.opacity-100]="monthlyChartState === 'success'"></canvas>
+    </div>
+  </div>
+
+  <!-- RÉPARTITION PAR STATUT -->
+  <div class="bg-white rounded-2xl p-6 border shadow-sm hover:shadow-md transition-shadow duration-300 h-[420px] flex flex-col">
+    <div class="flex-shrink-0 flex items-start justify-between">
+      <div>
+        <h3 class="text-lg font-semibold text-[#343A40]">
+          Répartition par statut
+        </h3>
+        <p class="text-sm text-gray-400 mt-1">
+          État actuel des demandes
+        </p>
+      </div>
+
+      <div *ngIf="statusChartState === 'loading'"
+           class="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full">
+        <svg class="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span>Chargement...</span>
+      </div>
+    </div>
+
+    <div class="flex-1 mt-4 min-h-0 relative">
+      <div *ngIf="statusChartState === 'loading'"
+           class="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 rounded-xl">
+        <svg class="animate-spin h-10 w-10 text-blue-600 mb-3" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p class="text-sm text-gray-500 font-medium">Chargement des données...</p>
+      </div>
+
+      <div *ngIf="statusChartState === 'error'"
+           class="absolute inset-0 flex flex-col items-center justify-center bg-red-50 rounded-xl p-6 text-center">
+        <svg class="h-12 w-12 text-red-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <p class="text-sm font-semibold text-red-700 mb-1">Impossible de charger les données</p>
+        <p class="text-xs text-red-600">Vérifiez votre connexion ou réessayez plus tard</p>
+        <button (click)="loadDashboard(currentUser!.id)"
+                class="mt-4 px-4 py-2 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 transition-colors">
+          Réessayer
+        </button>
+      </div>
+
+      <canvas id="statusChart"
+              [class.opacity-0]="statusChartState === 'loading' || statusChartState === 'error'"
+              [class.opacity-100]="statusChartState === 'success'"></canvas>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- GRAPHIQUES - LIGNE 2 -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+
+  <!-- EXAMENS PAR TYPE -->
+  <div class="bg-white rounded-2xl p-6 border shadow-sm hover:shadow-md transition-shadow duration-300 h-[360px] flex flex-col">
+    <div class="flex-shrink-0 flex items-start justify-between">
+      <div>
+        <h3 class="text-lg font-semibold text-[#343A40]">
+          Examens par type
+        </h3>
+        <p class="text-sm text-gray-400 mt-1">
+          Répartition selon le type d'examen
+        </p>
+      </div>
+
+      <div *ngIf="typeChartState === 'loading'"
+           class="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full">
+        <svg class="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span>Chargement...</span>
+      </div>
+    </div>
+
+    <div class="flex-1 mt-4 min-h-0 relative">
+      <div *ngIf="typeChartState === 'loading'"
+           class="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 rounded-xl">
+        <svg class="animate-spin h-10 w-10 text-blue-600 mb-3" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p class="text-sm text-gray-500 font-medium">Chargement des données...</p>
+      </div>
+
+      <div *ngIf="typeChartState === 'error'"
+           class="absolute inset-0 flex flex-col items-center justify-center bg-orange-50 rounded-xl p-6 text-center">
+        <svg class="h-12 w-12 text-orange-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+        </svg>
+        <p class="text-sm font-semibold text-orange-700 mb-1">Aucune donnée disponible</p>
+        <p class="text-xs text-orange-600">Les statistiques par type apparaîtront ici</p>
+      </div>
+
+      <canvas id="typeChart"
+              [class.opacity-0]="typeChartState === 'loading' || typeChartState === 'error'"
+              [class.opacity-100]="typeChartState === 'success'"></canvas>
+    </div>
+  </div>
+
+  <!-- EXAMENS PAR RÉGION -->
+  <div class="bg-white rounded-2xl p-6 border shadow-sm hover:shadow-md transition-shadow duration-300 h-[360px] flex flex-col">
+    <div class="flex-shrink-0 flex items-start justify-between">
+      <div>
+        <h3 class="text-lg font-semibold text-[#343A40]">
+          Examens par région
+        </h3>
+        <p class="text-sm text-gray-400 mt-1">
+          Zones anatomiques concernées
+        </p>
+      </div>
+
+      <div *ngIf="regionChartState === 'loading'"
+           class="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full">
+        <svg class="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span>Chargement...</span>
+      </div>
+    </div>
+
+    <div class="flex-1 mt-4 min-h-0 relative">
+      <div *ngIf="regionChartState === 'loading'"
+           class="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 rounded-xl">
+        <svg class="animate-spin h-10 w-10 text-blue-600 mb-3" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p class="text-sm text-gray-500 font-medium">Chargement des données...</p>
+      </div>
+
+      <div *ngIf="regionChartState === 'error'"
+           class="absolute inset-0 flex flex-col items-center justify-center bg-orange-50 rounded-xl p-6 text-center">
+        <svg class="h-12 w-12 text-orange-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+        </svg>
+        <p class="text-sm font-semibold text-orange-700 mb-1">Aucune donnée disponible</p>
+        <p class="text-xs text-orange-600">Les statistiques par région apparaîtront ici</p>
+      </div>
+
+      <canvas id="regionChart"
+              [class.opacity-0]="regionChartState === 'loading' || regionChartState === 'error'"
+              [class.opacity-100]="regionChartState === 'success'"></canvas>
+    </div>
+  </div>
+
+</div>
+
+    <!-- MAIN CONTENT -->
+   <div class="grid grid-cols-1 lg:grid-cols-1 gap-6">
+
+
+  <!-- TABLE -->
+<div class="bg-white rounded-xl border">
+  <div class="p-5 flex justify-between items-center">
+    <h2 class="text-xl font-semibold text-[#343A40]">
+      Planning du jour
+    </h2>
+
+    <button
+      routerLink="/examens-imagerie"
+      class="text-[#2C7BE5] text-base font-medium flex items-center gap-3">
+      Voir tout
+      <svg width="15" height="13" viewBox="0 0 15 13" fill="none">
+        <path d="M0 6H12.25L7 0.75L7.66 0L14.16 6.5L7.66 13L7 12.25L12.25 7H0V6Z"
+          fill="#2C7BE5"/>
+      </svg>
+    </button>
+  </div>
+
+  <table class="w-full" *ngIf="examens.length > 0; else noData">
+  <thead style="background-color:#F4F7FE">
+    <tr>
+      <th class="px-5 py-4 text-left text-sm font-semibold text-[#343A40]">Patient</th>
+      <th class="px-5 py-4 text-left text-sm font-semibold text-[#343A40]">Examen</th>
+      <th class="px-5 py-4 text-left text-sm font-semibold text-[#343A40]">Prescripteur</th>
+      <th class="px-5 py-4 text-left text-sm font-semibold text-[#343A40]">Reçu le</th>
+      <th class="px-5 py-4 text-left text-sm font-semibold text-[#343A40]">Priorité</th>
+      <th class="px-5 py-4 text-left text-sm font-semibold text-[#343A40]">Statut</th>
+      <th class="px-5 py-4 text-left text-sm font-semibold text-[#343A40]">Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr *ngFor="let exam of examens" class="border-t h-[72px] hover:bg-gray-50">
+
+      <!-- PATIENT -->
+      <td class="px-5 flex items-center gap-3">
+
+        <!---->
+        <div
+          [class]="getInitialsColor(getInitials(exam.patientName))"
+          class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+          {{ getInitials(exam.patientName) }}
+        </div>
+
+        <div>
+          <p class="text-base font-semibold text-[#343A40]">
+            {{ exam.patientName }}
+          </p>
+          <p class="text-sm text-gray-400">
+            #{{ exam.id }}
+          </p>
+        </div>
+      </td>
+
+      <!-- EXAMEN -->
+      <td class="px-5 text-base text-[#343A40]">
+        {{ exam.type }}
+      </td>
+
+      <!-- PRESCRIPTEUR -->
+      <td class="px-5 text-base text-[#343A40]">
+        {{ exam.doctorName }}
+      </td>
+
+      <!-- REÇU LE -->
+      <td class="px-5 text-base text-[#343A40] whitespace-nowrap">
+        {{ exam.createdAt | date:'dd/MM/yyyy HH:mm' }}
+      </td>
+
+      <!-- PRIORITÉ -->
+      <td class="px-5">
+        <span
+          class="px-4 py-1.5 rounded-full text-sm font-medium"
+          [ngClass]="exam.urgencyLevel === 'URGENT'
+            ? 'text-[#FF6B6B] bg-[#FF6B6B]/10'
+            : 'text-[#00B894] bg-[#00B894]/10'">
+          {{ exam.urgencyLevel === 'URGENT' ? 'Urgent' : 'Normal' }}
+        </span>
+      </td>
+
+      <!-- STATUT -->
+      <td class="px-5">
+        <span
+          class="px-4 py-1.5 rounded-full text-sm font-medium"
+          [ngClass]="{
+            'bg-yellow-100 text-yellow-700': exam.status === 'PENDING',
+            'bg-blue-100 text-blue-700': exam.status === 'ACCEPTED',
+            'bg-green-100 text-green-700': exam.status === 'COMPLETED',
+            'bg-red-100 text-red-700': exam.status === 'CANCELLED'
+          }">
+          {{
+            exam.status === 'PENDING' ? 'En attente' :
+            exam.status === 'ACCEPTED' ? 'Accepté' :
+            exam.status === 'COMPLETED' ? 'Terminé' :
+            'Annulé'
+          }}
+        </span>
+      </td>
+
+      <!-- ACTIONS -->
+      <td class="px-5">
+        <div class="flex items-center gap-6">
+          <!-- VOIR -->
+          <button
+            [routerLink]="['/detail-examen-imagerie', exam.id]"
+            class="text-gray-500 hover:text-gray-700">
+            <svg width="20" height="14" viewBox="0 0 20 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M20 6.875C20 6.875 16.25 0 10 0C3.75 0 0 6.875 0 6.875C0 6.875 3.75 13.75 10 13.75C16.25 13.75 20 6.875 20 6.875ZM1.46625 6.875C2.06973 5.95573 2.76496 5.1001 3.54125 4.32125C5.15 2.71 7.35 1.25 10 1.25C12.65 1.25 14.8488 2.71 16.46 4.32125C17.2363 5.1001 17.9315 5.95573 18.535 6.875C18.4633 6.98333 18.3821 7.10333 18.2913 7.235C17.8725 7.835 17.2537 8.635 16.46 9.42875C14.8488 11.04 12.6488 12.5 10 12.5C7.35125 12.5 5.15125 11.04 3.54 9.42875C2.76371 8.6499 2.06973 7.79427 1.46625 6.875Z" fill="#4B4848"/>
+<path d="M10 3.75C9.1712 3.75 8.37634 4.07924 7.79029 4.66529C7.20424 5.25134 6.875 6.0462 6.875 6.875C6.875 7.7038 7.20424 8.49866 7.79029 9.08471C8.37634 9.67076 9.1712 10 10 10C10.8288 10 11.6237 9.67076 12.2097 9.08471C12.7958 8.49866 13.125 7.7038 13.125 6.875C13.125 6.0462 12.7958 5.25134 12.2097 4.66529C11.6237 4.07924 10.8288 3.75 10 3.75ZM5.625 6.875C5.625 5.71468 6.08594 4.60188 6.90641 3.78141C7.72688 2.96094 8.83968 2.5 10 2.5C11.1603 2.5 12.2731 2.96094 13.0936 3.78141C13.9141 4.60188 14.375 5.71468 14.375 6.875C14.375 8.03532 13.9141 9.14812 13.0936 9.96859C12.2731 10.7891 11.1603 11.25 10 11.25C8.83968 11.25 7.72688 10.7891 6.90641 9.96859C6.08594 9.14812 5.625 8.03532 5.625 6.875Z" fill="#4B4848"/>
+</svg>
+
+          </button>
+
+
+        </div>
+      </td>
+
+    </tr>
+  </tbody>
+</table>
+
+
+  <!-- EMPTY STATE -->
+  <ng-template #noData>
+    <div class="py-16 text-center text-gray-400">
+      <p class="text-lg font-medium">
+        Aucun examen accepté aujourd’hui
+      </p>
+      <p class="text-sm mt-2">
+        Les examens validés apparaîtront ici automatiquement.
+      </p>
+    </div>
+  </ng-template>
+</div>
+
+
+
+<!-- SIDEBAR
+
+-->
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+

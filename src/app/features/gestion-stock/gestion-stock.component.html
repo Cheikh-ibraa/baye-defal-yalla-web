@@ -1,0 +1,507 @@
+<!-- Gestion Stock Component -->
+<div class="min-h-screen">
+  <div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-2xl sm:text-3xl font-semibold text-[#343A40] mb-2">Gestion du stock</h1>
+      <p class="text-sm sm:text-base text-[#343A40]">Ajoutez, modifiez et gérez votre inventaire</p>
+    </div>
+
+    <!-- Inventory Section -->
+    <div class="bg-white rounded-lg shadow">
+      <!-- Section Header -->
+      <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+        <h2 class="text-xl font-semibold text-gray-900">Inventaire</h2>
+
+        <div class="flex items-center space-x-4">
+          <!-- Search Bar -->
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M13.1539 12.2073L10.6806 9.75393C11.6407 8.55687 12.1056 7.03747 11.9798 5.50813C11.854 3.9788 11.147 2.55579 10.0043 1.5317C8.86151 0.507604 7.3698 -0.0397263 5.83588 0.00224731C4.30196 0.0442209 2.84241 0.672308 1.75736 1.75736C0.672308 2.84241 0.0442209 4.30196 0.00224731 5.83588C-0.0397263 7.3698 0.507604 8.86151 1.5317 10.0043C2.55579 11.147 3.9788 11.854 5.50813 11.9798C7.03747 12.1056 8.55687 11.6407 9.75393 10.6806L12.2073 13.1339C12.2692 13.1964 12.343 13.246 12.4242 13.2799C12.5055 13.3137 12.5926 13.3311 12.6806 13.3311C12.7686 13.3311 12.8557 13.3137 12.937 13.2799C13.0182 13.246 13.092 13.1964 13.1539 13.1339C13.2741 13.0096 13.3413 12.8435 13.3413 12.6706C13.3413 12.4977 13.2741 12.3316 13.1539 12.2073ZM6.01393 10.6806C5.09095 10.6806 4.1887 10.4069 3.42127 9.89412C2.65384 9.38134 2.0557 8.65251 1.7025 7.79979C1.34929 6.94707 1.25687 6.00876 1.43694 5.10351C1.617 4.19827 2.06146 3.36675 2.7141 2.7141C3.36675 2.06146 4.19827 1.617 5.10351 1.43694C6.00876 1.25687 6.94707 1.34929 7.79979 1.7025C8.65251 2.0557 9.38134 2.65384 9.89412 3.42127C10.4069 4.1887 10.6806 5.09095 10.6806 6.01393C10.6806 7.25161 10.1889 8.43859 9.31376 9.31376C8.43859 10.1889 7.25161 10.6806 6.01393 10.6806Z"
+                  fill="#777777" />
+              </svg>
+
+            </div>
+            <input type="text" placeholder="Rechercher un produit"
+              class="pl-8 pr-4 py-2.5 border border-[#EEEEEE] text-xs text-[#777777] rounded-lg  focus:border-transparent w-54"
+              [(ngModel)]="searchTerm" (input)="filterProducts()" />
+          </div>
+
+          <!-- Filter Button -->
+          <button
+            class="flex items-center gap-2 px-4 py-2.5 border border-[#EEEEEE] rounded-lg hover:bg-gray-50 text-xs font-medium text-gray-700">
+            <svg width="14" height="10" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0.625 0.625H13.125M2.70833 4.79167H11.0417M5.20833 8.95833H8.54167" stroke="#777777"
+                stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            Filtrer
+          </button>
+
+          <!-- Add Product Button -->
+          <button
+            class="flex items-center px-4 py-2 gap-1 bg-[#00B894] text-xs text-white rounded-lg hover:bg-[#00A085] transition-colors"
+            (click)="openAddModal()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M7.00684 11.9998C7.00684 11.8009 7.08585 11.6102 7.22651 11.4695C7.36716 11.3289 7.55792 11.2498 7.75684 11.2498H11.2498V7.75684C11.2498 7.55792 11.3289 7.36716 11.4695 7.22651C11.6102 7.08585 11.8009 7.00684 11.9998 7.00684C12.1987 7.00684 12.3895 7.08585 12.5302 7.22651C12.6708 7.36716 12.7498 7.55792 12.7498 7.75684V11.2498H16.2428C16.4417 11.2498 16.6325 11.3289 16.7732 11.4695C16.9138 11.6102 16.9928 11.8009 16.9928 11.9998C16.9928 12.1987 16.9138 12.3895 16.7732 12.5302C16.6325 12.6708 16.4417 12.7498 16.2428 12.7498H12.7498V16.2428C12.7498 16.4417 12.6708 16.6325 12.5302 16.7732C12.3895 16.9138 12.1987 16.9928 11.9998 16.9928C11.8009 16.9928 11.6102 16.9138 11.4695 16.7732C11.3289 16.6325 11.2498 16.4417 11.2498 16.2428V12.7498H7.75684C7.55792 12.7498 7.36716 12.6708 7.22651 12.5302C7.08585 12.3895 7.00684 12.1987 7.00684 11.9998Z"
+                fill="white" />
+              <path fill-rule="evenodd" clip-rule="evenodd"
+                d="M7.31716 3.76856C10.4296 3.4235 13.5707 3.4235 16.6832 3.76856C18.5102 3.97256 19.9852 5.41156 20.1992 7.24856C20.5692 10.4056 20.5692 13.5946 20.1992 16.7516C19.9842 18.5886 18.5092 20.0266 16.6832 20.2316C13.5707 20.5766 10.4296 20.5766 7.31716 20.2316C5.49016 20.0266 4.01516 18.5886 3.80116 16.7516C3.43282 13.5946 3.43282 10.4055 3.80116 7.24856C4.01516 5.41156 5.49116 3.97256 7.31716 3.76856ZM16.5172 5.25856C13.515 4.92579 10.4853 4.92579 7.48316 5.25856C6.9274 5.32021 6.40866 5.56743 6.01074 5.96028C5.61281 6.35312 5.35895 6.86864 5.29016 7.42356C4.93449 10.4645 4.93449 13.5366 5.29016 16.5776C5.35916 17.1323 5.61312 17.6476 6.01102 18.0402C6.40892 18.4329 6.92755 18.6799 7.48316 18.7416C10.4602 19.0736 13.5402 19.0736 16.5172 18.7416C17.0726 18.6797 17.591 18.4326 17.9887 18.0399C18.3864 17.6473 18.6402 17.1321 18.7092 16.5776C19.0648 13.5366 19.0648 10.4645 18.7092 7.42356C18.64 6.86915 18.3861 6.35421 17.9884 5.96178C17.5907 5.56936 17.0724 5.32234 16.5172 5.26056"
+                fill="white" />
+            </svg>
+
+            Ajouter un produit
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading indicator -->
+      <div *ngIf="isLoading" class="flex justify-center items-center py-8">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span class="ml-2 text-gray-600">Chargement...</span>
+      </div>
+
+      <!-- Table -->
+      <div class="overflow-x-auto" *ngIf="!isLoading">
+        <table class="w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">Produit</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">Description</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">Stock</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">Seuil critique</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">Prix unitaire</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">Statut</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let stock of filteredStocks; trackBy: trackByStockId" class="hover:bg-gray-50">
+              <!-- Product Name -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-semibold text-[#2C7BE5] cursor-pointer hover:text-blue-800">
+                  {{stock.name}}
+                </div>
+              </td>
+
+              <!-- Description -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-[#4B4848]">{{stock.description}}</div>
+              </td>
+
+              <!-- Stock -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-[#4B4848]">{{stock.quantity}}</div>
+              </td>
+
+              <!-- Critical Threshold -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-[#4B4848]">{{stock.criticalThreshold}}</div>
+              </td>
+
+              <!-- Unit Price -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-[#4B4848]">{{stock.unitPrice }} Fcfa</div>
+              </td>
+
+              <!-- Status -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                  [ngClass]="getStatusColorClass(stock.stockLevel || '')">
+                  {{stock.stockLevel}}
+                </span>
+              </td>
+
+              <!-- Actions -->
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <div class="flex items-center space-x-3">
+                  <!-- Edit Button -->
+                  <button class="text-blue-600 hover:text-blue-900 transition-colors" (click)="openEditModal(stock)"
+                    title="Modifier">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                      </path>
+                    </svg>
+                  </button>
+
+                  <!-- Delete Button -->
+                  <button class="text-red-600 hover:text-red-900 transition-colors" (click)="openDeleteModal(stock.id!)"
+                    title="Supprimer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                      </path>
+                    </svg>
+                  </button>
+
+                  <!-- Three-dot menu -->
+                  <div class="relative">
+                    <button
+                      class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+                      (click)="toggleMenu(stock.id!, $event)" title="Plus d'actions">
+                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="5" r="1.5" />
+                        <circle cx="12" cy="12" r="1.5" />
+                        <circle cx="12" cy="19" r="1.5" />
+                      </svg>
+                    </button>
+
+                    <!-- Dropdown -->
+                    <div *ngIf="openMenuStockId === stock.id"
+                      class="absolute right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl w-48 py-1 overflow-hidden"
+                      (click)="$event.stopPropagation()">
+
+                      <!-- Ajouter du stock -->
+                      <button
+                        class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-[#00B89410] hover:text-[#00B894] transition-colors"
+                        (click)="openAddStockModal(stock)">
+                        <span class="w-7 h-7 flex items-center justify-center bg-green-100 rounded-lg flex-shrink-0">
+                          <svg class="w-4 h-4 text-[#00B894]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                          </svg>
+                        </span>
+                        Ajouter du stock
+                      </button>
+
+                      <div class="mx-4 border-t border-gray-100"></div>
+
+                      <!-- Retirer du stock -->
+                      <button
+                        class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors"
+                        (click)="openRemoveStockModal(stock)">
+                        <span class="w-7 h-7 flex items-center justify-center bg-red-100 rounded-lg flex-shrink-0">
+                          <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                          </svg>
+                        </span>
+                        Retirer du stock
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6"
+        *ngIf="!isLoading">
+        <div class="flex items-center">
+          <span class="text-sm text-gray-700 mr-2">éléments par page:</span>
+          <select class="border border-gray-300 rounded px-2 py-1 text-sm" [(ngModel)]="itemsPerPage"
+            (change)="onItemsPerPageChange()">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+          </select>
+        </div>
+
+        <div class="flex items-center space-x-4">
+          <span class="text-sm text-gray-700">
+            {{startIndex}} - {{endIndex}} sur {{totalItems}}
+          </span>
+
+          <div class="flex items-center space-x-2">
+            <!-- Previous Button -->
+            <button
+              class="p-2 rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              [disabled]="currentPage === 0" (click)="previousPage()">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+            </button>
+
+            <!-- Next Button -->
+            <button
+              class="p-2 rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              [disabled]="currentPage >= totalPages - 1" (click)="nextPage()">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Product Modal -->
+<div *ngIf="showAddModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+  <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+    <div class="mt-3">
+      <!-- Modal Header -->
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-medium text-gray-900">Ajouter un produit</h3>
+        <button (click)="closeAddModal()" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <form (ngSubmit)="addProduct()" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nom du produit</label>
+          <input type="text" [(ngModel)]="stockForm.name" name="name" required
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Entrez le nom du produit" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+          <textarea [(ngModel)]="stockForm.description" name="description" required rows="3"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Description du produit"></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Quantité</label>
+            <input type="number" [(ngModel)]="stockForm.quantity" name="quantity" required min="0"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Seuil critique</label>
+            <input type="number" [(ngModel)]="stockForm.criticalThreshold" name="criticalThreshold" required min="0"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Prix unitaire (FCFA)</label>
+          <input type="number" [(ngModel)]="stockForm.unitPrice" name="unitPrice" required min="0" step="0.01"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="flex justify-end space-x-3 pt-4">
+          <button type="button" (click)="closeAddModal()"
+            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500">
+            Annuler
+          </button>
+          <button type="submit" [disabled]="!isFormValid()"
+            class="px-4 py-2 text-sm font-medium text-white bg-[#00B894] border border-transparent rounded-md hover:bg-[#00A085] focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+            Ajouter
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Product Modal -->
+<div *ngIf="showEditModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+  <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+    <div class="mt-3">
+      <!-- Modal Header -->
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-medium text-gray-900">Modifier le produit</h3>
+        <button (click)="closeEditModal()" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <form (ngSubmit)="updateProduct()" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nom du produit</label>
+          <input type="text" [(ngModel)]="stockForm.name" name="name" required
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Entrez le nom du produit" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+          <textarea [(ngModel)]="stockForm.description" name="description" required rows="3"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Description du produit"></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Quantité</label>
+            <input type="number" [(ngModel)]="stockForm.quantity" name="quantity" required min="0"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Seuil critique</label>
+            <input type="number" [(ngModel)]="stockForm.criticalThreshold" name="criticalThreshold" required min="0"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Prix unitaire (FCFA)</label>
+          <input type="number" [(ngModel)]="stockForm.unitPrice" name="unitPrice" required min="0" step="0.01"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="flex justify-end space-x-3 pt-4">
+          <button type="button" (click)="closeEditModal()"
+            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500">
+            Annuler
+          </button>
+          <button type="submit" [disabled]="!isFormValid()"
+            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+            Modifier
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div *ngIf="showDeleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+  <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+    <div class="mt-3 text-center">
+      <!-- Icon -->
+      <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+        <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z">
+          </path>
+        </svg>
+      </div>
+
+      <!-- Content -->
+      <h3 class="text-lg font-medium text-gray-900 mb-2">Confirmer la suppression</h3>
+      <p class="text-sm text-gray-500 mb-6">
+        Êtes-vous sûr de vouloir supprimer ce produit ? Cette action est irréversible.
+      </p>
+
+      <!-- Buttons -->
+      <div class="flex justify-center space-x-4">
+        <button type="button" (click)="closeDeleteModal()"
+          class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus-ring-2 focus:ring-gray-500">
+          Annuler
+        </button>
+        <button type="button" (click)="confirmDelete()"
+          class="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+          Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Stock Modal -->
+<div *ngIf="showAddStockModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden">
+    <!-- Header -->
+    <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+      <div class="flex items-center gap-3">
+        <span class="w-9 h-9 flex items-center justify-center bg-green-100 rounded-xl">
+          <svg class="w-5 h-5 text-[#00B894]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+        </span>
+        <div>
+          <h3 class="text-base font-semibold text-gray-900">Ajouter du stock</h3>
+          <p class="text-xs text-gray-500 mt-0.5">{{ stockActionTarget?.name }}</p>
+        </div>
+      </div>
+      <button (click)="closeAddStockModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="px-6 py-5">
+      <div class="mb-2">
+        <span class="text-xs text-gray-500">Stock actuel</span>
+        <span class="ml-2 font-semibold text-gray-800">{{ stockActionTarget?.quantity }} unité(s)</span>
+      </div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Quantité à ajouter</label>
+      <input type="number" [(ngModel)]="stockActionQuantity" min="1"
+        class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00B894] focus:border-transparent transition text-sm"
+        placeholder="Ex: 50" />
+    </div>
+
+    <!-- Footer -->
+    <div class="flex gap-3 px-6 py-4 bg-gray-50 border-t border-gray-100">
+      <button (click)="closeAddStockModal()"
+        class="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">
+        Annuler
+      </button>
+      <button (click)="submitAddStock()" [disabled]="stockActionLoading || stockActionQuantity <= 0"
+        class="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-[#00B894] rounded-xl hover:bg-[#009978] disabled:opacity-60 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2">
+        <svg *ngIf="stockActionLoading" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+        {{ stockActionLoading ? 'Ajout...' : 'Ajouter' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Remove Stock Modal -->
+<div *ngIf="showRemoveStockModal" class="fixed inset-0 bg-black bg-opacity-40 z-50" (click)="closeRemoveStockModal()">
+</div>
+<div *ngIf="showRemoveStockModal"
+  class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm px-4"
+  (click)="$event.stopPropagation()">
+  <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+    <!-- Header -->
+    <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+      <div class="flex items-center gap-3">
+        <span class="w-9 h-9 flex items-center justify-center bg-red-100 rounded-xl">
+          <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+          </svg>
+        </span>
+        <div>
+          <h3 class="text-base font-semibold text-gray-900">Retirer du stock</h3>
+          <p class="text-xs text-gray-500 mt-0.5">{{ stockActionTarget?.name }}</p>
+        </div>
+      </div>
+      <button (click)="closeRemoveStockModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="px-6 py-5">
+      <div class="mb-2">
+        <span class="text-xs text-gray-500">Stock actuel</span>
+        <span class="ml-2 font-semibold text-gray-800">{{ stockActionTarget?.quantity }} unité(s)</span>
+      </div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Quantité à retirer</label>
+      <input type="number" [(ngModel)]="stockActionQuantity" min="1" [attr.max]="stockActionTarget?.quantity ?? null"
+        class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent transition text-sm"
+        placeholder="Ex: 10" />
+    </div>
+
+    <!-- Footer -->
+    <div class="flex gap-3 px-6 py-4 bg-gray-50 border-t border-gray-100">
+      <button (click)="closeRemoveStockModal()"
+        class="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">
+        Annuler
+      </button>
+      <button (click)="submitRemoveStock()" [disabled]="stockActionLoading || stockActionQuantity <= 0"
+        class="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-red-500 rounded-xl hover:bg-red-600 disabled:opacity-60 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2">
+        <svg *ngIf="stockActionLoading" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+        {{ stockActionLoading ? 'Retrait...' : 'Retirer' }}
+      </button>
+    </div>
+  </div>
+</div>

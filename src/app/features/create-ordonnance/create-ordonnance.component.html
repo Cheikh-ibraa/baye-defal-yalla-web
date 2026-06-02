@@ -1,0 +1,369 @@
+<div class="min-h-screen bg-[#f4f6f9] p-2">
+  <div class="max-w-7xl mx-auto">
+    <!-- En-tête -->
+    <div class="mb-6 flex flex-row items-center gap-4">
+      <button (click)="annuler()"
+        class="inline-flex items-center justify-center p-4 bg-white rounded-lg shadow-sm hover:bg-gray-50 transition-colors mb-2">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 12H4M4 12L10 6M4 12L10 18" stroke="#2B3674" stroke-width="1.5" stroke-linecap="round"
+            stroke-linejoin="round" />
+        </svg>
+      </button>
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Créer une ordonnance</h1>
+        <p class="text-sm text-gray-600 mt-1"> Renseignez les informations du patient et la prescription
+        </p>
+      </div>
+    </div>
+
+    <!-- Messages de succès/erreur -->
+    <div *ngIf="successMessage"
+      class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center gap-3">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      </svg>
+      <span>{{ successMessage }}</span>
+    </div>
+
+    <div *ngIf="errorMessage"
+      class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-3">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+      <span>{{ errorMessage }}</span>
+    </div>
+
+
+
+
+    <!-- Formulaire -->
+    <form [formGroup]="ordonnanceForm" class="space-y-6">
+
+      <!-- Section Patient -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h2 class="text-xl font-semibold text-[#2C3E50] mb-6">Informations du patient</h2>
+
+        <!-- Référence Patient (Affichage) -->
+        <div class="mb-6">
+          <label class="block text-base font-medium text-[#333333] mb-2">
+            N° Référence
+          </label>
+          <div class="relative">
+            <input type="text" [value]="patientData?.reference || ''" placeholder="Référence patient" readonly
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed" />
+
+          </div>
+          <p *ngIf="!patientData" class="mt-1 text-sm text-red-500">
+            Aucun patient sélectionné. Veuillez sélectionner un patient depuis la liste.
+          </p>
+        </div>
+
+        <!-- Nom du patient (lecture seule) -->
+        <div class="mb-6">
+          <label class="block text-base font-medium text-[#333333] mb-2">
+            Nom du patient
+          </label>
+          <input type="text"
+            [value]="patientData ? ((patientData.prenom || '') + ' ' + (patientData.nom || '')).trim() : ''"
+            placeholder="Nom complet du patient" readonly
+            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed" />
+        </div>
+
+        <!-- Champs cachés pour les données patient -->
+        <input type="hidden" formControlName="patientPrenom" />
+        <input type="hidden" formControlName="patientNom" />
+        <input type="hidden" formControlName="patientTelephone" />
+        <input type="hidden" formControlName="patientEmail" />
+
+        <!-- Adresse de livraison -->
+        <div class="mt-6">
+          <label class="block text-base font-medium text-[#333333] mb-2">
+            Adresse de livraison
+          </label>
+          <input type="text" formControlName="address" placeholder="Ex: 12 Rue Carnot, Dakar"
+            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none transition" />
+        </div>
+
+        <!-- Pharmacie -->
+        <div class="mt-6 pharmacy-autocomplete relative">
+          <label class="block text-base font-medium text-[#333333] mb-2">
+            Pharmacie <span class="text-red-500">*</span>
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <input type="text" [(ngModel)]="pharmacySearch" [ngModelOptions]="{standalone: true}"
+              (ngModelChange)="onPharmacySearchInput($event)" placeholder="Rechercher une pharmacie par nom..."
+              class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none transition" />
+            <div *ngIf="pharmacySearching" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+              <svg class="animate-spin h-4 w-4 text-[#01b894]" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Suggestions -->
+          <div *ngIf="showPharmacySuggestions && pharmacyResults.length > 0"
+            class="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+            <div *ngFor="let pharmacy of pharmacyResults" (click)="selectPharmacy(pharmacy)"
+              class="flex items-center gap-3 px-4 py-3 hover:bg-[#01b89410] cursor-pointer transition-colors border-b border-gray-100 last:border-0">
+              <div class="flex-shrink-0 w-8 h-8 bg-[#01b89420] rounded-full flex items-center justify-center">
+                <svg class="w-4 h-4 text-[#01b894]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-gray-800 truncate">{{ pharmacy.name }}</p>
+                <p class="text-xs text-gray-500 truncate">{{ pharmacy.address }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pharmacie sélectionnée -->
+          <div *ngIf="selectedPharmacy"
+            class="mt-2 flex items-center gap-2 px-3 py-2 bg-[#01b89410] border border-[#01b894] rounded-lg">
+            <svg class="w-4 h-4 text-[#01b894] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <span class="text-sm text-[#01b894] font-medium">{{ selectedPharmacy.name }}</span>
+          </div>
+          <p *ngIf="!selectedPharmacy && pharmacySearch.length > 0 && !pharmacySearching"
+            class="mt-1 text-xs text-gray-400">Saisissez au moins 2 caractères pour rechercher</p>
+        </div>
+
+        <!-- Diagnostic -->
+        <div class="mt-6">
+          <label class="block text-base font-medium text-[#333333] mb-2">
+            Diagnostic / Motif <span class="text-red-500">*</span>
+          </label>
+          <textarea formControlName="diagnostic" rows="2" placeholder="Motif de prescription, éléments cliniques..."
+            [class.border-red-500]="hasError('diagnostic')"
+            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none transition resize-none"></textarea>
+          <p *ngIf="hasError('diagnostic')" class="mt-1 text-sm text-red-500">
+            Le diagnostic est obligatoire
+          </p>
+        </div>
+
+        <!-- Besoin d'aide -->
+        <div class="mt-6">
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" formControlName="needsHelp"
+              class="w-5 h-5 text-[#01b894] border-gray-300 rounded focus:ring-2 focus:ring-[#01b894]" />
+            <span class="text-sm font-medium text-gray-700">
+              Le patient a besoin d'aide pour payer les médicaments
+            </span>
+          </label>
+        </div>
+
+        <!-- Section Médicaments -->
+
+        <div class="flex items-center justify-between mt-6 mb-4">
+          <h2 class="text-xl font-semibold text-[#2C3E50]">Médicaments</h2>
+          <div *ngIf="totalAmount > 0" class="text-lg font-semibold text-[#01b894]">
+            Total: {{ totalAmount }} FCFA
+          </div>
+        </div>
+
+        <!-- Onglets : Saisie manuelle / Upload image -->
+        <div class="flex gap-4 mb-6">
+          <button type="button" (click)="switchPrescriptionTab('manual')"
+            [class.bg-[#00B89414]]="activePrescriptionTab === 'manual'"
+            [class.border-[#00B894]]="activePrescriptionTab === 'manual'"
+            [class.text-[#00B894]]="activePrescriptionTab === 'manual'"
+            [class.bg-white]="activePrescriptionTab !== 'manual'"
+            [class.border-transparent]="activePrescriptionTab !== 'manual'"
+            [class.text-gray-600]="activePrescriptionTab !== 'manual'"
+            class="flex-1 px-6 py-3 border rounded-lg font-medium transition">
+            Saisie par médicament
+          </button>
+          <button type="button" (click)="switchPrescriptionTab('upload')"
+            [class.bg-[#00B89414]]="activePrescriptionTab === 'upload'"
+            [class.border-[#00B894]]="activePrescriptionTab === 'upload'"
+            [class.text-[#00B894]]="activePrescriptionTab === 'upload'"
+            [class.bg-white]="activePrescriptionTab !== 'upload'"
+            [class.border-transparent]="activePrescriptionTab !== 'upload'"
+            [class.text-gray-600]="activePrescriptionTab !== 'upload'"
+            class="flex-1 px-6 py-3 border rounded-lg font-medium transition">
+            Uploader une image
+          </button>
+        </div>
+
+        <!-- Onglet : Saisie manuelle -->
+        <div *ngIf="activePrescriptionTab === 'manual'">
+          <!-- En-têtes du tableau -->
+          <div class="hidden md:grid md:grid-cols-12 gap-4 mb-4 text-sm font-medium text-gray-600 px-2">
+            <div class="col-span-3">Médicament <span class="text-red-500">*</span></div>
+            <div class="col-span-2">Dosage <span class="text-red-500">*</span></div>
+            <div class="col-span-2">Quantité <span class="text-red-500">*</span></div>
+            <div class="col-span-2">Prix unitaire <span class="text-red-500">*</span></div>
+            <div class="col-span-2">Sous-total</div>
+            <div class="col-span-1"></div>
+          </div>
+
+          <!-- Liste des médicaments -->
+          <div formArrayName="medicaments" class="space-y-4">
+            <div *ngFor="let medicament of medicaments.controls; let i = index" [formGroupName]="i"
+              class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+
+              <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                <!-- Nom du médicament -->
+                <div class="md:col-span-3">
+                  <label class="block md:hidden text-sm font-medium text-gray-700 mb-2">
+                    Médicament <span class="text-red-500">*</span>
+                  </label>
+                  <input type="text" formControlName="name" placeholder="Ex: Paracétamol"
+                    [class.border-red-500]="hasErrorMed(i, 'name')"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none text-sm" />
+                </div>
+
+                <!-- Dosage -->
+                <div class="md:col-span-2">
+                  <label class="block md:hidden text-sm font-medium text-gray-700 mb-2">
+                    Dosage <span class="text-red-500">*</span>
+                  </label>
+                  <input type="text" formControlName="dosage" placeholder="Ex: 1000mg"
+                    [class.border-red-500]="hasErrorMed(i, 'dosage')"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none text-sm" />
+                </div>
+
+                <!-- Quantité -->
+                <div class="md:col-span-2">
+                  <label class="block md:hidden text-sm font-medium text-gray-700 mb-2">
+                    Quantité <span class="text-red-500">*</span>
+                  </label>
+                  <input type="number" formControlName="quantity" placeholder="1" min="1"
+                    [class.border-red-500]="hasErrorMed(i, 'quantity')"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none text-sm" />
+                </div>
+
+                <!-- Prix unitaire -->
+                <div class="md:col-span-2">
+                  <label class="block md:hidden text-sm font-medium text-gray-700 mb-2">
+                    Prix unitaire <span class="text-red-500">*</span>
+                  </label>
+                  <input type="number" formControlName="price" placeholder="2500" min="0" step="0.01"
+                    [class.border-red-500]="hasErrorMed(i, 'price')"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none text-sm" />
+                </div>
+
+                <!-- Sous-total -->
+                <div class="md:col-span-2">
+                  <label class="block md:hidden text-sm font-medium text-gray-700 mb-2">Sous-total</label>
+                  <div
+                    class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-gray-700 font-semibold cursor-not-allowed">
+                    {{ (medicament.get('quantity')?.value || 0) * (medicament.get('price')?.value || 0) }} FCFA
+                  </div>
+                </div>
+
+                <!-- Bouton supprimer -->
+                <div class="md:col-span-1 flex items-end md:items-center justify-end">
+                  <button type="button" (click)="supprimerMedicament(i)" [disabled]="medicaments.length === 1"
+                    class="p-2 text-red-500 hover:bg-red-50 rounded-md transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Supprimer">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bouton ajouter médicament -->
+          <div class="mt-4">
+            <button type="button" (click)="ajouterMedicament()"
+              class="flex items-center gap-2 px-4 py-2 text-[#01b894] hover:bg-[#01b894] hover:bg-opacity-10 rounded-lg transition font-medium">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              Ajouter un médicament
+            </button>
+          </div>
+        </div>
+
+        <!-- Onglet : Upload image -->
+        <div *ngIf="activePrescriptionTab === 'upload'" class="space-y-4">
+          <div
+            class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#01b894] transition">
+            <!-- Zone de drag & drop -->
+            <div *ngIf="!prescriptionImageFile">
+              <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              <p class="mt-4 text-sm text-gray-600">Glissez-déposez une image ici ou</p>
+              <label
+                class="mt-2 inline-flex items-center gap-2 px-4 py-2 bg-[#01b894] text-white rounded-lg cursor-pointer hover:bg-[#019d7f] transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Choisir un fichier
+                <input type="file" accept=".pdf,.jpg,.jpeg,.png" (change)="onPrescriptionImageSelected($event)"
+                  class="hidden" />
+              </label>
+              <p class="mt-2 text-[10px] text-gray-500">PNG, JPG, PDF jusqu'à 10MB</p>
+            </div>
+
+            <!-- Prévisualisation -->
+            <div *ngIf="prescriptionImageFile" class="space-y-4">
+              <!-- Preview image -->
+              <div *ngIf="prescriptionImagePreview" class="max-w-md mx-auto">
+                <img [src]="prescriptionImagePreview" alt="Aperçu" class="rounded-lg border border-gray-300" />
+              </div>
+
+              <!-- Nom du fichier -->
+              <div class="flex items-center justify-center gap-3">
+                <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <span class="text-sm font-medium text-gray-700">{{ prescriptionImageFile.name }}</span>
+              </div>
+
+              <!-- Bouton supprimer -->
+              <button type="button" (click)="removePrescriptionImage()"
+                class="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition font-medium">
+                Supprimer l'image
+              </button>
+            </div>
+          </div>
+
+          <p class="text-sm text-gray-600">
+            <strong>Note :</strong> L'upload d'une image remplacera la saisie manuelle des médicaments.
+          </p>
+        </div>
+
+        <!-- Boutons d'action -->
+        <div class="flex flex-col sm:flex-row gap-4 mt-4">
+          <button type="button" (click)="validerEtGenerer()" [disabled]="loading || !patientData"
+            class="px-8 py-3 bg-[#01b894] text-white font-semibold rounded-lg hover:bg-[#019d7f] transition shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            <svg *ngIf="loading" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+              </path>
+            </svg>
+            <span>{{ loading ? 'Création...' : 'Créer l\'ordonnance' }}</span>
+          </button>
+
+          <button type="button" (click)="enregistrerBrouillon()" [disabled]="loading"
+            class="px-8 py-3 bg-[#f8f9fa] text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
+            Enregistrer en brouillon
+          </button>
+        </div>
+      </div>
+
+
+
+    </form>
+  </div>
+</div>

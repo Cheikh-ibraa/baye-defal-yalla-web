@@ -1,0 +1,248 @@
+<!-- Container principal avec fond clair -->
+<div class="min-h-screen">
+    <!-- Message d'erreur -->
+    <div *ngIf="showError" class="fixed top-4 right-4 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg z-50 max-w-md animate-fade-in">
+        <div class="flex items-center gap-3">
+            <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>{{ errorMessage }}</span>
+        </div>
+    </div>
+
+    <!-- Loader -->
+    <div *ngIf="isLoading" class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 shadow-xl">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p class="mt-4 text-gray-700">Chargement des données...</p>
+        </div>
+    </div>
+
+    <!-- Header de la page -->
+    <div class="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-semibold text-[#343A40] mb-1">Tableau de bord financier</h1>
+            <p class="text-[#343A40] text-base">Gérer les informations financières de votre pharmacie</p>
+        </div>
+
+        <!-- Boutons d'action -->
+        <div class="flex items-center gap-3">
+            <!-- Sélecteur de période -->
+            <div class="relative">
+                <select [(ngModel)]="selectedPeriod" (change)="onPeriodChange()"
+                    class="appearance-none px-4 py-3 pr-10 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer text-sm">
+                    <option value="Ce mois">Ce mois</option>
+                    <option value="Ce trimestre">Ce trimestre</option>
+                    <option value="Cette année">Cette année</option>
+                </select>
+                <svg class="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+
+            <!-- Bouton Exporter -->
+            <button (click)="exportData()" [disabled]="isExporting"
+                class="flex items-center gap-2 px-4 py-3 bg-[#2C7BE5] text-white rounded-md hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors text-sm font-medium shadow-sm">
+                <ng-container *ngIf="isExporting; else exportIcon">
+                    <!-- Spinner pendant l'export -->
+                    <svg class="animate-spin w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                    Exportation...
+                </ng-container>
+                <ng-template #exportIcon>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M11.37 10.384C11.0888 10.6653 10.9308 11.0468 10.9308 11.4445C10.9308 11.8422 11.0888 12.2237 11.37 12.505L11.437 12.572C11.5763 12.7114 11.7417 12.822 11.9238 12.8974C12.1058 12.9728 12.3009 13.0117 12.498 13.0117C12.6951 13.0117 12.8902 12.9728 13.0722 12.8974C13.2543 12.822 13.4197 12.7114 13.559 12.572L16.674 9.457C16.818 9.313 16.927 9.147 17 8.969V17C17 17.5304 16.7893 18.0391 16.4142 18.4142C16.0391 18.7893 15.5304 19 15 19H7C6.46957 19 5.96086 18.7893 5.58579 18.4142C5.21071 18.0391 5 17.5304 5 17V9C5 8.46957 5.21071 7.96086 5.58579 7.58579C5.96086 7.21071 6.46957 7 7 7H14.851C14.7161 7.07057 14.5926 7.16127 14.485 7.269L11.37 10.384Z"
+                            fill="white" />
+                        <path fill-rule="evenodd" clip-rule="evenodd"
+                            d="M19.2183 4.78116C19.2648 4.8276 19.3018 4.88278 19.327 4.94353C19.3522 5.00427 19.3652 5.06939 19.3652 5.13516C19.3652 5.20093 19.3522 5.26605 19.327 5.32679C19.3018 5.38754 19.2648 5.44271 19.2183 5.48916L12.8543 11.8532C12.7605 11.947 12.6333 11.9998 12.5006 11.9999C12.368 12 12.2407 11.9474 12.1468 11.8537C12.0529 11.7599 12.0001 11.6327 12 11.5C11.9999 11.3673 12.0525 11.24 12.1463 11.1462L18.5103 4.78116C18.604 4.68742 18.7312 4.63477 18.8638 4.63477C18.9964 4.63477 19.1235 4.68742 19.2173 4.78116"
+                            fill="white" />
+                        <path fill-rule="evenodd" clip-rule="evenodd"
+                            d="M14 4.5C14 4.36739 14.0527 4.24021 14.1464 4.14645C14.2402 4.05268 14.3674 4 14.5 4H19.5C19.6326 4 19.7598 4.05268 19.8536 4.14645C19.9473 4.24021 20 4.36739 20 4.5V9.5C20 9.63261 19.9473 9.75979 19.8536 9.85355C19.7598 9.94732 19.6326 10 19.5 10C19.3674 10 19.2402 9.94732 19.1464 9.85355C19.0527 9.75979 19 9.63261 19 9.5V5H14.5C14.3674 5 14.2402 4.94732 14.1464 4.85355C14.0527 4.75979 14 4.63261 14 4.5Z"
+                            fill="white" />
+                    </svg>
+                    Exporter
+                </ng-template>
+            </button>
+        </div>
+    </div>
+
+    <!-- Cartes statistiques -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div *ngFor="let card of statsCards; let i = index"
+            class="bg-white rounded-xl shadow-sm p-5 hover:shadow-md transition-shadow border border-gray-100">
+
+            <!-- Header de la carte avec icône -->
+            <div class="flex items-center justify-between">
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-[#64748B] mb-2">{{ card.title }}</p>
+                    <h2 class="text-3xl font-semibold mb-2" [ngClass]="i === 0 ? 'text-[#00B894]' : 'text-[#343A40]'">{{ card.value }}</h2>
+                    <p class="text-xs text-[#64748B]">{{ card.subtitle }}</p>
+                </div>
+
+                <!-- Icône -->
+                <div class="w-12 h-12 bg-white shadow rounded-lg flex items-center justify-center">
+                    <!-- SVG pour Solde Disponible -->
+                    <svg *ngIf="i === 0" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M21 11.0026H20.824L19.001 5.66961L3.354 11.0026L3 10.9996M2.5 11.0036H3L14.146 2.09961L16.963 6.04961"
+                            stroke="#00B894" stroke-width="2" stroke-linecap="square" />
+                        <path
+                            d="M14.5 16C14.5 16.663 14.2366 17.2989 13.7678 17.7678C13.2989 18.2366 12.663 18.5 12 18.5C11.337 18.5 10.7011 18.2366 10.2322 17.7678C9.76339 17.2989 9.5 16.663 9.5 16C9.5 15.337 9.76339 14.7011 10.2322 14.2322C10.7011 13.7634 11.337 13.5 12 13.5C12.663 13.5 13.2989 13.7634 13.7678 14.2322C14.2366 14.7011 14.5 15.337 14.5 16Z"
+                            stroke="#00B894" stroke-width="2" stroke-linecap="square" />
+                        <path d="M21.5 11V21H2.5V11H21.5Z" stroke="#00B894" stroke-width="2" stroke-linecap="square" />
+                        <path
+                            d="M2.5 11H4.5C4.5 11.5304 4.28929 12.0391 3.91421 12.4142C3.53914 12.7893 3.03043 13 2.5 13V11ZM21.5 11H19.5C19.5 11.5304 19.7107 12.0391 20.0858 12.4142C20.4609 12.7893 20.9696 13 21.5 13V11ZM2.5 21H4.502C4.50226 20.737 4.45066 20.4766 4.35014 20.2336C4.24963 19.9905 4.10217 19.7697 3.91621 19.5838C3.73026 19.3978 3.50946 19.2504 3.26644 19.1499C3.02343 19.0493 2.76298 18.9977 2.5 18.998V21ZM21.5 21H19.5C19.5 20.4696 19.7107 19.9609 20.0858 19.5858C20.4609 19.2107 20.9696 19 21.5 19V21Z"
+                            stroke="#00B894" stroke-width="2" stroke-linecap="square" />
+                    </svg>
+
+                    <!-- SVG pour Total des Ventes -->
+                    <svg *ngIf="i === 1" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M21 11.0026H20.824L19.001 5.66961L3.354 11.0026L3 10.9996M2.5 11.0036H3L14.146 2.09961L16.963 6.04961"
+                            stroke="#2C7BE5" stroke-width="2" stroke-linecap="square" />
+                        <path
+                            d="M14.5 16C14.5 16.663 14.2366 17.2989 13.7678 17.7678C13.2989 18.2366 12.663 18.5 12 18.5C11.337 18.5 10.7011 18.2366 10.2322 17.7678C9.76339 17.2989 9.5 16.663 9.5 16C9.5 15.337 9.76339 14.7011 10.2322 14.2322C10.7011 13.7634 11.337 13.5 12 13.5C12.663 13.5 13.2989 13.7634 13.7678 14.2322C14.2366 14.7011 14.5 15.337 14.5 16Z"
+                            stroke="#2C7BE5" stroke-width="2" stroke-linecap="square" />
+                        <path d="M21.5 11V21H2.5V11H21.5Z" stroke="#2C7BE5" stroke-width="2" stroke-linecap="square" />
+                        <path
+                            d="M2.5 11H4.5C4.5 11.5304 4.28929 12.0391 3.91421 12.4142C3.53914 12.7893 3.03043 13 2.5 13V11ZM21.5 11H19.5C19.5 11.5304 19.7107 12.0391 20.0858 12.4142C20.4609 12.7893 20.9696 13 21.5 13V11ZM2.5 21H4.502C4.50226 20.737 4.45066 20.4766 4.35014 20.2336C4.24963 19.9905 4.10217 19.7697 3.91621 19.5838C3.73026 19.3978 3.50946 19.2504 3.26644 19.1499C3.02343 19.0493 2.76298 18.9977 2.5 18.998V21ZM21.5 21H19.5C19.5 20.4696 19.7107 19.9609 20.0858 19.5858C20.4609 19.2107 20.9696 19 21.5 19V21Z"
+                            stroke="#2C7BE5" stroke-width="2" stroke-linecap="square" />
+                    </svg>
+
+                    <!-- SVG pour Revenus du Mois -->
+                    <svg *ngIf="i === 2" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <g clip-path="url(#clip0_2968_4447)">
+                            <path
+                                d="M12.7725 1.5285C12.5154 1.50952 12.2578 1.50001 12 1.5V0C12.2948 0.000143741 12.5895 0.0111512 12.8835 0.033L12.7725 1.5285ZM15.7785 2.2035C15.2977 2.01794 14.8038 1.86804 14.301 1.755L14.6295 0.291C15.2055 0.42 15.7685 0.591 16.3185 0.804L15.7785 2.2035ZM17.8335 3.2685C17.619 3.12546 17.3994 2.99037 17.175 2.8635L17.9145 1.5585C18.4274 1.84899 18.9183 2.17688 19.383 2.5395L18.4605 3.723C18.2571 3.56435 18.048 3.41325 17.8335 3.27V3.2685ZM20.5845 5.9535C20.2878 5.532 19.9604 5.13292 19.605 4.7595L20.691 3.7245C21.097 4.1535 21.4705 4.6085 21.8115 5.0895L20.5845 5.9535ZM21.7005 7.9815C21.6021 7.74365 21.4951 7.50949 21.3795 7.2795L22.719 6.6045C22.9838 7.13118 23.2094 7.67666 23.394 8.2365L21.969 8.706C21.8884 8.46129 21.7989 8.21962 21.7005 7.9815ZM22.4955 11.742C22.4833 11.2265 22.4332 10.7126 22.3455 10.2045L23.823 9.9495C23.923 10.5295 23.981 11.1145 23.997 11.7045L22.4955 11.742ZM22.299 14.049C22.349 13.795 22.3895 13.54 22.4205 13.284L23.91 13.4685C23.8377 14.0537 23.7224 14.6328 23.565 15.201L22.119 14.8005C22.188 14.5535 22.248 14.303 22.299 14.049ZM20.871 17.6175C21.147 17.1815 21.39 16.7275 21.6 16.2555L22.971 16.863C22.731 17.403 22.4535 17.922 22.1385 18.42L20.871 17.6175ZM19.425 19.425C19.608 19.242 19.783 19.053 19.95 18.858L21.087 19.8375C20.8945 20.0608 20.6939 20.277 20.4855 20.4855L19.425 19.425Z"
+                                fill="#D6AB17" />
+                            <path
+                                d="M11.9988 1.5C10.2721 1.50012 8.57214 1.92607 7.04939 2.74011C5.52664 3.55415 4.22814 4.73115 3.26891 6.16687C2.30968 7.6026 1.71932 9.25272 1.55012 10.9711C1.38092 12.6895 1.6381 14.423 2.29889 16.0183C2.95968 17.6135 4.00368 19.0212 5.33842 20.1166C6.67315 21.212 8.25743 21.9613 9.95093 22.2982C11.6444 22.6351 13.3949 22.5492 15.0472 22.048C16.6996 21.5468 18.2028 20.6459 19.4238 19.425L20.4843 20.4855C19.0889 21.8817 17.3707 22.9121 15.4819 23.4855C13.5931 24.0589 11.592 24.1575 9.65592 23.7727C7.71986 23.3879 5.90861 22.5315 4.38265 21.2793C2.85669 20.0272 1.66313 18.418 0.907728 16.5943C0.152327 14.7707 -0.141594 12.7888 0.0520075 10.8244C0.245609 8.85999 0.920756 6.97365 2.01763 5.33253C3.1145 3.6914 4.59923 2.34617 6.34027 1.416C8.0813 0.485843 10.0249 -0.000523098 11.9988 4.22187e-07V1.5Z"
+                                fill="#D6AB17" />
+                            <path
+                                d="M11.25 4.5C11.4489 4.5 11.6397 4.57902 11.7803 4.71967C11.921 4.86032 12 5.05109 12 5.25V13.065L16.872 15.849C17.0397 15.9502 17.1612 16.1129 17.2104 16.3024C17.2597 16.492 17.2329 16.6933 17.1358 16.8633C17.0386 17.0333 16.8788 17.1586 16.6905 17.2124C16.5022 17.2661 16.3003 17.2441 16.128 17.151L10.878 14.151C10.7632 14.0854 10.6678 13.9907 10.6014 13.8764C10.535 13.762 10.5 13.6322 10.5 13.5V5.25C10.5 5.05109 10.579 4.86032 10.7197 4.71967C10.8603 4.57902 11.0511 4.5 11.25 4.5Z"
+                                fill="#D6AB17" />
+                        </g>
+                        <defs>
+                            <clipPath id="clip0_2968_4447">
+                                <rect width="24" height="24" fill="white" />
+                            </clipPath>
+                        </defs>
+                    </svg>
+
+                    <!-- SVG pour Ventes en Attente -->
+                    <svg *ngIf="i === 3" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M21.8006 9.9995C22.2573 12.2408 21.9318 14.5709 20.8785 16.6013C19.8251 18.6317 18.1075 20.2396 16.0121 21.1568C13.9167 22.0741 11.5702 22.2453 9.36391 21.6419C7.15758 21.0385 5.2248 19.6969 3.88789 17.8409C2.55097 15.9849 1.89073 13.7267 2.01728 11.4429C2.14382 9.15904 3.04949 6.98759 4.58326 5.29067C6.11703 3.59375 8.18619 2.47393 10.4457 2.11795C12.7052 1.76198 15.0184 2.19136 16.9996 3.3345"
+                            stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M9 11L12 14L22 4" stroke="#16A34A" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Graphique unique en pleine largeur -->
+    <div class="mb-6">
+        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-base font-bold text-gray-900">Évolution des Revenus (7 derniers jours)</h2>
+            </div>
+
+            <!-- Graphique qui prend toute la largeur -->
+            <div class="h-80 w-full">
+                <canvas #revenueChart></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activité Récente - Tableau complet en bas -->
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <h2 class="text-base font-bold text-gray-900 mb-4">Activité Récente</h2>
+
+        <!-- Tableau responsive -->
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-gray-200">
+                        <th class="text-left text-xs font-semibold text-gray-700 pb-3 px-2">Date</th>
+                        <th class="text-left text-xs font-semibold text-gray-700 pb-3 px-2">ID Transaction</th>
+                        <th class="text-left text-xs font-semibold text-gray-700 pb-3 px-2">Montant</th>
+                        <th class="text-left text-xs font-semibold text-gray-700 pb-3 px-2">Patient</th>
+                        <th class="text-left text-xs font-semibold text-gray-700 pb-3 px-2">Mode de Paiement</th>
+                        <th class="text-left text-xs font-semibold text-gray-700 pb-3 px-2">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngIf="recentTransactions.length === 0 && !isLoading">
+                        <td colspan="6" class="py-8 text-center text-gray-500 text-sm">
+                            Aucune transaction récente
+                        </td>
+                    </tr>
+                    <tr *ngFor="let transaction of recentTransactions"
+                        class="border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors">
+                        <td class="py-3.5 px-2 text-xs text-gray-700">{{ transaction.date }}</td>
+                        <td class="py-3.5 px-2 text-xs text-gray-700 font-mono">{{ transaction.id }}</td>
+                        <td class="py-3.5 px-2 text-xs font-semibold text-gray-900">{{ transaction.amount }}</td>
+                        <td class="py-3.5 px-2 text-xs text-gray-700">{{ transaction.patient }}</td>
+                        <td class="py-3.5 px-2 text-xs text-gray-700">{{ transaction.paymentMethod }}</td>
+                        <td class="py-3.5 px-2">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
+                                [style.background-color]="transaction.statusColor + '20'"
+                                [style.color]="transaction.statusColor">
+                                {{ transaction.status }}
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div *ngIf="totalPages > 1" class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="text-sm text-gray-700">
+                Affichage de <span class="font-semibold">{{ (currentPage * pageSize) + 1 }}</span> à 
+                <span class="font-semibold">{{ Math.min((currentPage + 1) * pageSize, totalElements) }}</span> 
+                sur <span class="font-semibold">{{ totalElements }}</span> transactions
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button (click)="previousPage()" 
+                    [disabled]="currentPage === 0"
+                    [class.opacity-50]="currentPage === 0"
+                    [class.cursor-not-allowed]="currentPage === 0"
+                    class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:hover:bg-white transition-colors">
+                    Précédent
+                </button>
+
+                <div class="flex items-center gap-1">
+                    <button *ngFor="let page of [].constructor(Math.min(totalPages, 5)); let i = index"
+                        (click)="goToPage(i)"
+                        [class.bg-blue-600]="i === currentPage"
+                        [class.text-white]="i === currentPage"
+                        [class.text-gray-700]="i !== currentPage"
+                        [class.hover:bg-gray-100]="i !== currentPage"
+                        class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium transition-colors">
+                        {{ i + 1 }}
+                    </button>
+                </div>
+
+                <button (click)="nextPage()" 
+                    [disabled]="currentPage === totalPages - 1"
+                    [class.opacity-50]="currentPage === totalPages - 1"
+                    [class.cursor-not-allowed]="currentPage === totalPages - 1"
+                    class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:hover:bg-white transition-colors">
+                    Suivant
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

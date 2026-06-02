@@ -1,0 +1,541 @@
+<div class="min-h-screen bg-[#F4F6F9]">
+  <!-- Header -->
+  <div class="mb-4 sm:mb-8">
+    <h1 class="text-2xl sm:text-3xl font-semibold text-[#343A40] mb-2">Gestion des commandes</h1>
+    <p class="text-sm sm:text-base text-[#343A40]">Consultez et gérez les commandes des patients</p>
+  </div>
+
+  <!-- Mobile View Toggle Button -->
+  <div class="lg:hidden mb-4" *ngIf="selectedPrescription">
+    <button (click)="toggleMobileView()"
+      class="w-full flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          [attr.d]="showMobileDetails ? 'M15 19l-7-7 7-7' : 'M9 5l7 7-7 7'" />
+      </svg>
+      <span>{{ showMobileDetails ? 'Retour à la liste' : 'Voir les détails' }}</span>
+    </button>
+  </div>
+
+  <!-- Single white card -->
+  <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+
+    <!-- Shared header -->
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+      <h2 class="text-lg font-bold text-[#2C3E50]">Liste des commandes reçues</h2>
+      <div class="flex items-center gap-3">
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M13.1539 12.2073L10.6806 9.75393C11.6407 8.55687 12.1056 7.03747 11.9798 5.50813C11.854 3.9788 11.147 2.55579 10.0043 1.5317C8.86151 0.507604 7.3698 -0.0397263 5.83588 0.00224731C4.30196 0.0442209 2.84241 0.672308 1.75736 1.75736C0.672308 2.84241 0.0442209 4.30196 0.00224731 5.83588C-0.0397263 7.3698 0.507604 8.86151 1.5317 10.0043C2.55579 11.147 3.9788 11.854 5.50813 11.9798C7.03747 12.1056 8.55687 11.6407 9.75393 10.6806L12.2073 13.1339C12.2692 13.1964 12.343 13.246 12.4242 13.2799C12.5055 13.3137 12.5926 13.3311 12.6806 13.3311C12.7686 13.3311 12.8557 13.3137 12.937 13.2799C13.0182 13.246 13.092 13.1964 13.1539 13.1339C13.2741 13.0096 13.3413 12.8435 13.3413 12.6706C13.3413 12.4977 13.2741 12.3316 13.1539 12.2073ZM6.01393 10.6806C5.09095 10.6806 4.1887 10.4069 3.42127 9.89412C2.65384 9.38134 2.0557 8.65251 1.7025 7.79979C1.34929 6.94707 1.25687 6.00876 1.43694 5.10351C1.617 4.19827 2.06146 3.36675 2.7141 2.7141C3.36675 2.06146 4.19827 1.617 5.10351 1.43694C6.00876 1.25687 6.94707 1.34929 7.79979 1.7025C8.65251 2.0557 9.38134 2.65384 9.89412 3.42127C10.4069 4.1887 10.6806 5.09095 10.6806 6.01393C10.6806 7.25161 10.1889 8.43859 9.31376 9.31376C8.43859 10.1889 7.25161 10.6806 6.01393 10.6806Z"
+                fill="#777777" />
+            </svg>
+          </div>
+          <input type="text" [(ngModel)]="searchTerm" (input)="onSearch()" placeholder="Rechercher une commande"
+            class="pl-10 pr-4 py-2.5 border border-[#EEEEEE] text-xs text-[#777777] rounded-lg outline-none w-46" />
+        </div>
+        <button (click)="toggleFilter()"
+          class="flex items-center gap-2 px-4 py-2 border border-[#EEEEEE] rounded-lg hover:bg-gray-50 text-sm font-medium text-gray-700">
+          <svg width="14" height="10" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0.625 0.625H13.125M2.70833 4.79167H11.0417M5.20833 8.95833H8.54167" stroke="#777777"
+              stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+
+          Filtrer
+        </button>
+      </div>
+    </div>
+
+    <!-- Content panels -->
+    <div class="flex flex-col lg:flex-row">
+
+      <!-- Left Section - Orders Table -->
+      <div [class.hidden]="showMobileDetails && selectedPrescription"
+        class="w-full lg:w-1/2 border-r border-gray-200 overflow-y-auto flex flex-col"
+        style="max-height: calc(100vh - 130px)">
+
+        <!-- Loading State -->
+        <div *ngIf="loading" class="flex items-center justify-center py-8">
+          <div class="text-center">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p class="text-sm sm:text-base text-gray-600">Chargement des commandes...</p>
+          </div>
+        </div>
+
+        <!-- Table - Desktop -->
+        <div *ngIf="!loading" class="hidden md:block overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-[#F5F7FA]">
+              <tr>
+                <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-[#6B7280] tracking-wider">
+                  Référence
+                </th>
+                <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-[#6B7280] tracking-wider">
+                  Patient
+                </th>
+                <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-[#6B7280] tracking-wider">
+                  Date
+                </th>
+                <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-[#6B7280] tracking-wider">
+                  Statut
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr *ngFor="let prescription of paginatedPrescriptions" (click)="selectPrescription(prescription)"
+                class="hover:bg-gray-50 cursor-pointer transition-colors duration-150"
+                [class.bg-blue-50]="selectedPrescription?.id === prescription.id">
+                <td class="px-4 lg:px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm font-semibold text-[#2C7BE5] hover:text-blue-800">
+                    {{ getPrescriptionReference(prescription.id) }}
+                  </span>
+                </td>
+                <td class="px-4 lg:px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm text-[#4B4848]">{{ getPatientFullName(prescription) }}</span>
+                </td>
+                <td class="px-4 lg:px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm text-[#4B4848]">{{ formatDate(prescription.createdAt) }}</span>
+                </td>
+                <td class="px-4 lg:px-6 py-4 whitespace-nowrap">
+                  <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                    [ngClass]="getStatusClass(prescription.status)">
+                    {{ getStatusText(prescription.status) }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Empty State -->
+          <div *ngIf="paginatedPrescriptions.length === 0" class="text-center py-8">
+            <div class="text-gray-400 mb-4">
+              <svg class="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-2">Aucune commande trouvée</h3>
+            <p class="text-sm text-gray-500">Aucune commande ne correspond à vos critères de recherche</p>
+          </div>
+        </div>
+
+        <!-- Cards - Mobile -->
+        <div *ngIf="!loading" class="md:hidden divide-y divide-gray-200">
+          <div *ngFor="let prescription of paginatedPrescriptions" (click)="selectPrescription(prescription)"
+            class="p-4 hover:bg-gray-50 cursor-pointer transition-colors duration-150"
+            [class.bg-blue-50]="selectedPrescription?.id === prescription.id">
+            <div class="flex justify-between items-start mb-2">
+              <span class="text-sm font-medium text-blue-600">
+                {{ getPrescriptionReference(prescription.id) }}
+              </span>
+              <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                [ngClass]="getStatusClass(prescription.status)">
+                {{ getStatusText(prescription.status) }}
+              </span>
+            </div>
+            <div class="text-sm text-gray-900 font-medium mb-1">{{ getPatientFullName(prescription) }}</div>
+            <div class="text-xs text-gray-500">{{ formatDate(prescription.createdAt) }}</div>
+          </div>
+
+          <!-- Empty State Mobile -->
+          <div *ngIf="paginatedPrescriptions.length === 0" class="text-center py-8 px-4">
+            <div class="text-gray-400 mb-4">
+              <svg class="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h3 class="text-base font-medium text-gray-900 mb-2">Aucune commande trouvée</h3>
+            <p class="text-sm text-gray-500">Aucune commande ne correspond à vos critères de recherche</p>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div *ngIf="!loading" class="px-3 sm:px-6 py-4 border-t border-gray-200">
+          <!-- Desktop Pagination -->
+          <div class="hidden sm:flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+              <span class="text-sm text-gray-700">éléments par page:</span>
+              <select [(ngModel)]="itemsPerPage" (change)="onItemsPerPageChange()"
+                class="border border-gray-300 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </div>
+
+            <div class="flex items-center space-x-4">
+              <span class="text-sm text-gray-700">
+                {{ getStartIndex() }} - {{ getEndIndex() }} sur {{ totalItems }}
+              </span>
+
+              <div class="flex space-x-1">
+                <button (click)="previousPage()" [disabled]="currentPage === 1"
+                  class="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
+                  <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+
+                <button (click)="nextPage()" [disabled]="currentPage >= getTotalPages()"
+                  class="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
+                  <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mobile Pagination -->
+          <div class="sm:hidden space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-gray-700">Par page:</span>
+              <select [(ngModel)]="itemsPerPage" (change)="onItemsPerPageChange()"
+                class="border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-gray-700">
+                {{ getStartIndex() }} - {{ getEndIndex() }} sur {{ totalItems }}
+              </span>
+
+              <div class="flex space-x-1">
+                <button (click)="previousPage()" [disabled]="currentPage === 1"
+                  class="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
+                  <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+
+                <button (click)="nextPage()" [disabled]="currentPage >= getTotalPages()"
+                  class="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
+                  <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Section - Order Details -->
+      <div class="w-full lg:w-1/2 overflow-y-auto lg:block" [class.hidden]="!showMobileDetails"
+        style="max-height: calc(100vh - 130px)">
+        <!-- Order Details when selected -->
+        <div *ngIf="selectedPrescription" class="px-3  py-1">
+          <div class="bg-white rounded-lg p-4 sm:p-6 max-w-4xl mx-auto">
+            <!-- En-tête avec titre et boutons -->
+            <div
+              class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
+              <h1 class="text-xl font-bold text-[#343A40] capitalize leading-none">
+                Commande {{ getPrescriptionReference(selectedPrescription.id) }}
+              </h1>
+              <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3"
+                *ngIf="selectedPrescription.status === 'PENDING'">
+                <button
+                  class="bg-[#00B894] text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-[#009978] transition-colors"
+                  (click)="accepterCommande()" [disabled]="loading">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                  </svg>
+                  <span class="text-xs">Accepter</span>
+                </button>
+                <button
+                  class="bg-[#FF6B6B] text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-[#ff5252] transition-colors"
+                  (click)="refuserCommande()" [disabled]="loading">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                  </svg>
+                  <span class="text-xs">Refuser</span>
+                </button>
+              </div>
+              <div class="flex" *ngIf="selectedPrescription.status === 'IN_PREPARATION'">
+                <button
+                  class="bg-[#00B894] text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-[#009978] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  (click)="marquerCommandePretePourLivraison()" [disabled]="loading">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                  </svg>
+                  <span class="text-xs">Prête pour livraison</span>
+                </button>
+              </div>
+              <div *ngIf="selectedPrescription.status !== 'PENDING' && selectedPrescription.status !== 'IN_PREPARATION'"
+                class="text-sm sm:text-base text-gray-500 italic">
+                Commande {{ getStatusText(selectedPrescription.status).toLowerCase() }}
+              </div>
+            </div>
+
+            <!-- Informations patient et médecin -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 rounded-lg bg-gray-50 p-3 w-full mb-8">
+              <!-- Informations patient -->
+              <div>
+                <h3 class="text-[#647480] text-sm font-medium mb-2">Patient</h3>
+                <p class="text-base font-semibold text-[#111827] mb-4">{{ getPatientFullName(selectedPrescription) }}
+                </p>
+
+                <h3 class="text-[#647480] text-sm font-medium mb-2">Date</h3>
+                <p class="text-base font-semibold text-[#111827]">{{ formatDate(selectedPrescription.createdAt) }}</p>
+              </div>
+
+              <!-- Informations médecin -->
+              <div>
+                <h3 class="text-[#647480] text-sm font-medium mb-2">Médecin</h3>
+                <p class="text-base font-semibold text-[#111827] mb-4">
+                  <span *ngIf="selectedPrescription.doctor">Dr. {{ getDoctorFullName(selectedPrescription) }}</span>
+                  <span *ngIf="!selectedPrescription.doctor" class="text-gray-500 italic">Non renseigné</span>
+                </p>
+
+                <h3 class="text-[#647480] text-sm font-medium mb-2">Statut</h3>
+                <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full"
+                  [ngClass]="getStatusClass(selectedPrescription.status)">
+                  {{ getStatusText(selectedPrescription.status) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Fichier de l'ordonnance -->
+            <div class="mb-8" *ngIf="selectedPrescription.prescriptionFile">
+              <h3 class="font-bold mb-4 text-lg font-medium capitalize text-[#343A40]">Ordonnance</h3>
+
+              <!-- Cas PDF -->
+              <div *ngIf="isPrescriptionPdf(selectedPrescription.prescriptionFile)">
+                <div class="flex flex-col items-center p-6 bg-[#F8F9FA] rounded-xl max-w-[220px]">
+                  <!-- Icône PDF -->
+                  <div class="mb-3">
+                    <svg class="w-14 h-14" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 4C10.9 4 10 4.9 10 6V42C10 43.1 10.9 44 12 44H36C37.1 44 38 43.1 38 42V14L28 4H12Z"
+                        fill="#E53935" />
+                      <path d="M28 4V14H38L28 4Z" fill="#FFCDD2" />
+                      <path d="M18 28H30V30H18V28ZM18 32H26V34H18V32ZM18 24H30V26H18V24Z" fill="white" />
+                      <text x="24" y="21" font-size="7" fill="white" font-weight="bold" font-family="Arial, sans-serif"
+                        text-anchor="middle">PDF</text>
+                    </svg>
+                  </div>
+                  <!-- Nom du fichier -->
+                  <p class="text-xs text-[#6B7280] text-center mb-4 max-w-full break-all line-clamp-3">
+                    {{ selectedPrescription.prescriptionFile }}
+                  </p>
+                  <!-- Bouton ouvrir -->
+                  <button (click)="openFile(selectedPrescription.prescriptionFile)"
+                    class="w-full px-4 py-2 bg-[#2C7BE5] text-white text-sm font-medium rounded-lg hover:bg-[#1a68d1] transition-colors">
+                    Ouvrir le fichier
+                  </button>
+                </div>
+              </div>
+
+              <!-- Cas Image -->
+              <div *ngIf="!isPrescriptionPdf(selectedPrescription.prescriptionFile)">
+                <img [src]="getFileUrl(selectedPrescription.prescriptionFile)"
+                  [alt]="'Ordonnance ' + getPrescriptionReference(selectedPrescription.id)"
+                  (click)="openFile(selectedPrescription.prescriptionFile)"
+                  class="max-w-full h-auto rounded-xl cursor-pointer hover:opacity-90 hover:shadow-md transition-all"
+                  style="max-height: 220px;" title="Cliquer pour ouvrir en plein écran">
+              </div>
+            </div>
+
+            <!-- Médicaments associés -->
+            <div>
+              <h3 class="mb-6 text-lg font-medium capitalize text-[#343A40]">Médicaments associés</h3>
+
+              <!-- Boutons de saisie -->
+              <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 mb-6">
+                <button
+                  [class]="saisieMode === 'medicament' ? 'bg-[#00B89414] border-[#00B894] text-gray-700' : 'bg-white border-gray-300 text-gray-700'"
+                  class="px-4 sm:px-6 py-3 border-2 rounded-lg font-medium transition-colors hover:bg-[#00B89414] text-sm sm:text-base"
+                  (click)="setSaisieMode('medicament')">
+                  Saisie par médicament
+                </button>
+                <button
+                  [class]="saisieMode === 'total' ? 'bg-[#00B89414] border-[#00B894] text-gray-700' : 'bg-white border-gray-300 text-gray-700'"
+                  class="px-4 sm:px-6 py-3 border-2 rounded-lg font-medium transition-colors hover:bg-[#00B89414] text-sm sm:text-base"
+                  (click)="setSaisieMode('total')">
+                  Saisie montant total
+                </button>
+              </div>
+
+              <!-- Tableau des médicaments - Desktop -->
+              <div *ngIf="saisieMode === 'medicament'" class="hidden md:block">
+                <!-- Table -->
+                <div class="rounded-lg border border-gray-200 overflow-hidden mb-4">
+                  <!-- En-tête -->
+                  <div class="grid grid-cols-12 gap-3 px-4 py-3 text-xs font-medium text-[#6B7280]">
+                    <div class="col-span-3">Médicament</div>
+                    <div class="col-span-4">Posologie</div>
+                    <div class="col-span-2 text-center">Quantité</div>
+                    <div class="col-span-2 text-center">P U</div>
+                    <div class="col-span-1"></div>
+                  </div>
+                  <!-- Lignes -->
+                  <div class="divide-y divide-gray-100">
+                    <div *ngFor="let medication of selectedPrescription.medications; let i = index"
+                      class="grid grid-cols-12 gap-3 items-center px-4 py-3">
+                      <!-- Médicament -->
+                      <div class="col-span-3">
+                        <input type="text" [value]="medication.name" readonly
+                          class="w-full px-3 py-2 border border-gray-200 rounded-md text-sm text-gray-700 bg-white"
+                          placeholder="Médicament">
+                      </div>
+                      <!-- Posologie -->
+                      <div class="col-span-4">
+                        <input type="text" [value]="medication.dosage" readonly
+                          class="w-full px-3 py-2 border border-gray-200 rounded-md text-sm text-gray-700 bg-white"
+                          placeholder="Posologie">
+                      </div>
+                      <!-- Quantité -->
+                      <div class="col-span-2">
+                        <input type="number" [value]="medication.quantity" readonly
+                          class="w-full px-2 py-2 border border-gray-200 rounded-md text-sm text-center text-gray-700 bg-white"
+                          placeholder="Qté" min="0">
+                      </div>
+                      <!-- Prix unitaire (éditable) -->
+                      <div class="col-span-2">
+                        <input type="number" [value]="medication.price" (input)="updateMedicament(i, 'price', $event)"
+                          class="w-full px-2 py-2 border border-gray-200 rounded-md text-sm text-center text-gray-700 bg-white focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400"
+                          placeholder="Prix" min="0">
+                      </div>
+                      <!-- Supprimer -->
+                      <div class="col-span-1 flex justify-center">
+                        <button (click)="supprimerMedicament(i)"
+                          class="text-[#FF6B6B] hover:text-red-700 transition-colors p-1"
+                          [disabled]="selectedPrescription.medications.length <= 1">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Ajouter un médicament -->
+                <button (click)="ajouterMedicament()"
+                  class="flex items-center space-x-2 text-[#2C7BE5] font-medium text-sm mb-6 transition-colors">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M7.00781 11.9998C7.00781 11.8009 7.08683 11.6102 7.22748 11.4695C7.36813 11.3289 7.5589 11.2498 7.75781 11.2498H11.2508V7.75684C11.2508 7.55792 11.3298 7.36716 11.4705 7.22651C11.6111 7.08585 11.8019 7.00684 12.0008 7.00684C12.1997 7.00684 12.3905 7.08585 12.5311 7.22651C12.6718 7.36716 12.7508 7.55792 12.7508 7.75684V11.2498H16.2438C16.4427 11.2498 16.6335 11.3289 16.7741 11.4695C16.9148 11.6102 16.9938 11.8009 16.9938 11.9998C16.9938 12.1987 16.9148 12.3895 16.7741 12.5302C16.6335 12.6708 16.4427 12.7498 16.2438 12.7498H12.7508V16.2428C12.7508 16.4417 12.6718 16.6325 12.5311 16.7732C12.3905 16.9138 12.1997 16.9928 12.0008 16.9928C11.8019 16.9928 11.6111 16.9138 11.4705 16.7732C11.3298 16.6325 11.2508 16.4417 11.2508 16.2428V12.7498H7.75781C7.5589 12.7498 7.36813 12.6708 7.22748 12.5302C7.08683 12.3895 7.00781 12.1987 7.00781 11.9998Z"
+                      fill="#2C7BE5" />
+                    <path fill-rule="evenodd" clip-rule="evenodd"
+                      d="M7.31765 3.76856C10.4301 3.4235 13.5712 3.4235 16.6836 3.76856C18.5106 3.97256 19.9856 5.41156 20.1996 7.24856C20.5696 10.4056 20.5696 13.5946 20.1996 16.7516C19.9846 18.5886 18.5096 20.0266 16.6836 20.2316C13.5712 20.5766 10.4301 20.5766 7.31765 20.2316C5.49065 20.0266 4.01565 18.5886 3.80165 16.7516C3.4333 13.5946 3.4333 10.4055 3.80165 7.24856C4.01565 5.41156 5.49165 3.97256 7.31765 3.76856ZM16.5176 5.25856C13.5155 4.92579 10.4858 4.92579 7.48365 5.25856C6.92789 5.32021 6.40915 5.56743 6.01123 5.96028C5.6133 6.35312 5.35944 6.86864 5.29065 7.42356C4.93498 10.4645 4.93498 13.5366 5.29065 16.5776C5.35965 17.1323 5.6136 17.6476 6.01151 18.0402C6.40941 18.4329 6.92804 18.6799 7.48365 18.7416C10.4606 19.0736 13.5406 19.0736 16.5176 18.7416C17.0731 18.6797 17.5915 18.4326 17.9892 18.0399C18.3869 17.6473 18.6407 17.1321 18.7096 16.5776C19.0653 13.5366 19.0653 10.4645 18.7096 7.42356C18.6405 6.86915 18.3866 6.35421 17.9889 5.96178C17.5912 5.56936 17.0729 5.32234 16.5176 5.26056"
+                      fill="#2C7BE5" />
+                  </svg>
+
+                  <span>Ajouter un médicament</span>
+                </button>
+              </div>
+
+              <!-- Cards des médicaments - Mobile -->
+              <div *ngIf="saisieMode === 'medicament'" class="md:hidden space-y-3">
+                <div *ngFor="let medication of selectedPrescription.medications; let i = index"
+                  class="bg-white border border-gray-200 rounded-lg p-4">
+                  <!-- Nom du médicament -->
+                  <div class="mb-3">
+                    <label class="block text-xs font-medium text-[#6B7280] mb-1">Médicament</label>
+                    <input type="text" [value]="medication.name" readonly
+                      class="w-full px-3 py-2 border border-gray-200 rounded-md text-gray-700 bg-white text-sm"
+                      placeholder="Nom du médicament">
+                  </div>
+                  <!-- Posologie -->
+                  <div class="mb-3">
+                    <label class="block text-xs font-medium text-[#6B7280] mb-1">Posologie</label>
+                    <input type="text" [value]="medication.dosage" readonly
+                      class="w-full px-3 py-2 border border-gray-200 rounded-md text-gray-700 bg-white text-sm"
+                      placeholder="Posologie">
+                  </div>
+                  <!-- Quantité et Prix -->
+                  <div class="grid grid-cols-2 gap-3 mb-3">
+                    <div>
+                      <label class="block text-xs font-medium text-[#6B7280] mb-1">Quantité</label>
+                      <input type="number" [value]="medication.quantity" readonly
+                        class="w-full px-3 py-2 border border-gray-200 rounded-md text-center text-gray-700 bg-white text-sm"
+                        placeholder="Qté" min="0">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-[#6B7280] mb-1">P U</label>
+                      <input type="number" [value]="medication.price" (input)="updateMedicament(i, 'price', $event)"
+                        class="w-full px-3 py-2 border border-gray-200 rounded-md text-center text-gray-700 bg-white text-sm focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400"
+                        placeholder="Prix" min="0">
+                    </div>
+                  </div>
+                  <!-- Bouton supprimer -->
+                  <button (click)="supprimerMedicament(i)"
+                    class="w-full flex items-center justify-center space-x-2 text-[#FF6B6B] hover:text-red-700 py-2 border border-[#FF6B6B] rounded-lg transition-colors"
+                    [disabled]="selectedPrescription.medications.length <= 1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    <span class="text-sm font-medium">Supprimer</span>
+                  </button>
+                </div>
+                <!-- Ajouter un médicament -->
+                <button (click)="ajouterMedicament()"
+                  class="flex items-center space-x-2 text-[#00B894] font-medium text-sm py-2 hover:text-[#009978] transition-colors">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Ajouter un médicament</span>
+                </button>
+              </div>
+
+              <!-- Saisie montant total -->
+              <div *ngIf="saisieMode === 'total'" class="space-y-6">
+                <div>
+                  <label class="block text-base sm:text-lg font-medium text-gray-800 mb-3">
+                    Montant global de l'ordonnance (FCFA)
+                    <span class="text-[#FF6B6B] ml-1">*</span>
+                  </label>
+                  <div class="max-w-full">
+                    <input type="number" [(ngModel)]="montantTotal"
+                      class="w-full px-4 py-3 sm:py-4 text-base sm:text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Ex. 3500" min="0">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Total -->
+              <div class="mt-6 flex justify-between items-center px-4 sm:px-6 py-4 bg-gray-50 rounded-lg">
+                <div class="text-lg sm:text-xl font-bold text-gray-800">
+                  Total:
+                </div>
+                <div class="text-lg sm:text-xl font-bold text-gray-800">
+                  {{ getTotal() | number:'1.0-0' }} FCFA
+                </div>
+              </div>
+
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State when no order selected -->
+        <div *ngIf="!selectedPrescription" class="flex-1 flex items-center justify-center p-6">
+          <div class="text-center px-4">
+            <div class="text-gray-400 mb-4">
+              <svg class="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-2">
+              Sélectionnez une commande pour voir les détails
+            </h3>
+            <p class="text-sm text-gray-500">
+              Cliquez sur une ligne du tableau pour afficher les informations détaillées
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

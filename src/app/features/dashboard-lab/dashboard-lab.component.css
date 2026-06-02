@@ -1,0 +1,56 @@
+/* Styles personnalisés si nécessaire */
+
+/* Animation smooth pour les hover */
+button {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Style pour le dropdown */
+select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+}
+
+/* Style pour les barres de progression */
+.bg-blue-600,
+.bg-emerald-500,
+.bg-orange-500 {
+  transition: width 0.3s ease-in-out;
+}
+
+/* Hover effect sur les lignes du tableau */
+tbody tr {
+  transition: background-color 0.15s ease-in-out;
+}
+
+/* Style pour les badges de statut */
+span[class*="rounded-full"] {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+/* Amélioration responsive */
+@media (max-width: 768px) {
+  .grid-cols-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .grid-cols-4 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  
+  table {
+    font-size: 0.875rem;
+  }
+  
+  td, th {
+    padding: 0.5rem !important;
+  }
+}

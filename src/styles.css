@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== OTP patient input boxes ===== */
+.otp-patient-box {
+  width: 56px !important;
+  height: 56px !important;
+  text-align: center !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  color: #2C3E50 !important;
+  background-color: #f3f4f6 !important;
+  border: 2px solid transparent !important;
+  border-radius: 12px !important;
+  outline: none !important;
+  transition: border-color 0.15s ease !important;
+  caret-color: #00B894;
+}
+.otp-patient-box:focus {
+  border-color: #00B894 !important;
+}
+
+/* ===== SweetAlert2 - Fix Tailwind Preflight stripping button styles ===== */
+.swal2-confirm {
+  background-color: var(--swal2-confirm, #01b894) !important;
+  color: #fff !important;
+  border: none !important;
+  padding: 10px 24px !important;
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+}
+
+.swal2-cancel {
+  background-color: var(--swal2-cancel, #6c757d) !important;
+  color: #fff !important;
+  border: none !important;
+  padding: 10px 24px !important;
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+}
+
+.swal2-deny {
+  background-color: var(--swal2-deny, #d33) !important;
+  color: #fff !important;
+  border: none !important;
+  padding: 10px 24px !important;
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+}

@@ -1,0 +1,411 @@
+<div class="min-h-screen bg-[#f4f6f9]">
+    <div class="max-w-7xl mx-auto">
+
+        <!-- En-tête -->
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h1 class="text-2xl font-semibold text-[#343A40] mb-2">Gestion du Planning</h1>
+                <p class="text-[#343A40]">Visualisez vos disponibilités hebdomadaires.</p>
+            </div>
+            <button (click)="openAddSlotModal()"
+                class="flex items-center gap-2 bg-[#00B894] text-sm text-white px-4 py-2 rounded-lg hover:bg-[#019d7e] transition">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M8 15C6.14348 15 4.36301 14.2625 3.05025 12.9497C1.7375 11.637 1 9.85652 1 8C1 6.14348 1.7375 4.36301 3.05025 3.05025C4.36301 1.7375 6.14348 1 8 1C9.85652 1 11.637 1.7375 12.9497 3.05025C14.2625 4.36301 15 6.14348 15 8C15 9.85652 14.2625 11.637 12.9497 12.9497C11.637 14.2625 9.85652 15 8 15ZM8 16C10.1217 16 12.1566 15.1571 13.6569 13.6569C15.1571 12.1566 16 10.1217 16 8C16 5.87827 15.1571 3.84344 13.6569 2.34315C12.1566 0.842855 10.1217 0 8 0C5.87827 0 3.84344 0.842855 2.34315 2.34315C0.842855 3.84344 0 5.87827 0 8C0 10.1217 0.842855 12.1566 2.34315 13.6569C3.84344 15.1571 5.87827 16 8 16Z"
+                        fill="white" />
+                    <path
+                        d="M8 4C8.13261 4 8.25979 4.05268 8.35355 4.14645C8.44732 4.24021 8.5 4.36739 8.5 4.5V7.5H11.5C11.6326 7.5 11.7598 7.55268 11.8536 7.64645C11.9473 7.74021 12 7.86739 12 8C12 8.13261 11.9473 8.25979 11.8536 8.35355C11.7598 8.44732 11.6326 8.5 11.5 8.5H8.5V11.5C8.5 11.6326 8.44732 11.7598 8.35355 11.8536C8.25979 11.9473 8.13261 12 8 12C7.86739 12 7.74021 11.9473 7.64645 11.8536C7.55268 11.7598 7.5 11.6326 7.5 11.5V8.5H4.5C4.36739 8.5 4.24021 8.44732 4.14645 8.35355C4.05268 8.25979 4 8.13261 4 8C4 7.86739 4.05268 7.74021 4.14645 7.64645C4.24021 7.55268 4.36739 7.5 4.5 7.5H7.5V4.5C7.5 4.36739 7.55268 4.24021 7.64645 4.14645C7.74021 4.05268 7.86739 4 8 4Z"
+                        fill="white" />
+                </svg>
+                Ajouter un créneau
+            </button>
+        </div>
+
+        <!-- Onglets -->
+        <div class="rounded-t-lg mb-3">
+            <div class="flex">
+                <button (click)="setActiveTab('agenda')" [class.border-[#01b894]]="activeTab === 'agenda'"
+                    [class.text-[#01b894]]="activeTab === 'agenda'" [class.text-gray-600]="activeTab !== 'agenda'"
+                    class="px-6 py-3 text-sm font-medium border-b-2 transition">
+                    Agenda
+                </button>
+                <button (click)="setActiveTab('rendez-vous')" [class.border-[#01b894]]="activeTab === 'rendez-vous'"
+                    [class.text-[#01b894]]="activeTab === 'rendez-vous'"
+                    [class.text-gray-600]="activeTab !== 'rendez-vous'"
+                    class="px-6 py-3 text-sm font-medium border-b-2 transition">
+                    Rendez-vous
+                </button>
+            </div>
+        </div>
+
+        <!-- Vue Agenda -->
+        <div *ngIf="activeTab === 'agenda'" class="bg-white rounded-lg shadow-sm">
+            <!-- Navigation semaine -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-800">Planning de la semaine</h2>
+                <div class="flex items-center gap-4">
+                    <button (click)="previousWeek()"
+                        class="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-150">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M12.5 15L7.5 10L12.5 5" stroke="#374151" stroke-width="1.5" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </button>
+                    <span class="text-gray-700 font-medium min-w-[250px] text-center">{{ getWeekLabel() }}</span>
+                    <button (click)="nextWeek()"
+                        class="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-150">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M7.5 15L12.5 10L7.5 5" stroke="#374151" stroke-width="1.5" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </button>
+                </div>
+                <!-- Bouton de recherche -->
+                <!--  
+                 <div class="relative">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input type="text" placeholder="Rechercher"
+                        class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-transparent outline-none text-sm">
+                </div>
+                -->
+            </div>
+
+            <!-- Message d'erreur -->
+            <div *ngIf="errorMessage" class="mx-6 mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p class="text-red-700 text-sm">{{ errorMessage }}</p>
+            </div>
+
+            <!-- Chargement -->
+            <div *ngIf="isLoadingDays" class="flex justify-center items-center py-20">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-400"></div>
+            </div>
+
+            <!-- Grille Calendrier Type Notion -->
+            <div *ngIf="!isLoadingDays && !errorMessage" class="relative">
+                <!-- Container avec scroll -->
+                <div class="overflow-y-auto overflow-x-auto h-[75vh] min-w-[900px]">
+                    <!-- Grille principale -->
+                    <div class="grid grid-cols-[80px_repeat(7,1fr)]">
+
+                        <!-- Header sticky - Colonne heures vide -->
+                        <div class="sticky top-0 z-20 bg-white border-b border-r border-gray-200"></div>
+
+                        <!-- Header sticky - Jours de la semaine -->
+                        <div *ngFor="let day of weekDays"
+                            class="sticky top-0 z-20 bg-white border-b border-l border-gray-200 flex flex-col items-center justify-center py-3"
+                            [class.bg-gray-50]="!day.isAvailable">
+                            <div class="text-xs tracking-widest font-medium uppercase"
+                                [class.text-gray-400]="day.isAvailable" [class.text-gray-300]="!day.isAvailable">
+                                {{ day.label.split(' ')[0] }}
+                            </div>
+                            <div class="text-lg font-semibold mt-1" [class.text-gray-800]="day.isAvailable"
+                                [class.text-gray-300]="!day.isAvailable">
+                                {{ day.label.split(' ')[1] }}
+                            </div>
+                            <div *ngIf="!day.isAvailable" class="text-[10px] text-gray-400 mt-1">
+                                Indisponible
+                            </div>
+                        </div>
+
+                        <!-- Lignes de créneaux (30 minutes) -->
+                        <ng-container *ngFor="let timeLabel of getTimeSlotLabels(); let isFirst = first">
+                            <!-- Colonne heure -->
+                            <div class="flex items-start justify-end pr-2 pt-2 h-14 text-xs text-gray-400"
+                                [class.border-t]="!isFirst">
+                                {{ timeLabel }}
+                            </div>
+
+                            <!-- Cellules pour chaque jour -->
+                            <div *ngFor="let day of weekDays"
+                                class="relative h-14 border-l transition-colors duration-150"
+                                [class.border-t]="!isFirst" [class.bg-gray-50]="!day.isAvailable"
+                                [class.hover:bg-gray-50]="day.isAvailable" [class.cursor-default]="day.isAvailable">
+
+                                <!-- Rendez-vous réservés -->
+                                <ng-container *ngIf="day.isAvailable">
+                                    <div *ngFor="let appointment of getAppointmentsForDayAndTime(day, timeLabel)"
+                                        [style.height]="getAppointmentHeight(appointment)"
+                                        [class]="getAppointmentBlockClass(appointment.status)"
+                                        class="absolute left-1 right-1 top-2 rounded-lg border-l-4 px-2.5 py-1.5 flex flex-col gap-0.5 hover:shadow-md transition-all duration-150 cursor-pointer overflow-hidden"
+                                        [ngClass]="getAppointmentBorderClass(appointment.status)">
+
+                                        <!-- Patient -->
+                                        <div class="text-[11px] font-semibold text-gray-800 truncate leading-tight">
+                                            {{ appointment.patientName }}
+                                        </div>
+
+                                        <!-- Raison -->
+                                        <div class="text-[10px] text-gray-600 truncate leading-tight">
+                                            {{ appointment.reason || 'Sans motif' }}
+                                        </div>
+
+                                        <!-- Heure -->
+                                        <div class="text-[10px] text-gray-500 font-medium mt-auto">
+                                            {{ appointment.startTime }} – {{ appointment.endTime }}
+                                        </div>
+                                    </div>
+                                </ng-container>
+
+                                <!-- Ligne heure actuelle (si aujourd'hui et bon créneau) -->
+                                <div *ngIf="isToday(day) && timeLabel === getCurrentTime().substring(0, 5)"
+                                    class="absolute left-0 right-0 top-0 h-[2px] bg-red-400 z-30">
+                                    <div class="absolute -left-1 -top-1 w-2 h-2 bg-red-400 rounded-full"></div>
+                                </div>
+                            </div>
+                        </ng-container>
+
+                    </div>
+                </div>
+
+                <!-- Chargement des créneaux -->
+                <div *ngIf="isLoadingSlots"
+                    class="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center z-40">
+                    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-gray-400"></div>
+                </div>
+            </div>
+
+            <!-- Message si aucun jour disponible -->
+            <div *ngIf="!isLoadingDays && !errorMessage && allDaysUnavailable()"
+                class="text-center py-20 text-gray-500">
+                <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <p class="text-lg font-medium mb-2">Aucune disponibilité cette semaine</p>
+                <p class="text-sm">Veuillez sélectionner une autre semaine.</p>
+            </div>
+        </div>
+
+        <!-- Vue Rendez-vous -->
+        <div *ngIf="activeTab === 'rendez-vous'" class="bg-white rounded-lg shadow-sm">
+
+            <!-- Barre de filtres -->
+            <div class="p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Liste des rendez-vous</h2>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <div class="flex-1 relative">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2" width="14" height="14" viewBox="0 0 14 14"
+                            fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M13.1539 12.2073L10.6806 9.75393C11.6407 8.55687 12.1056 7.03747 11.9798 5.50813C11.854 3.9788 11.147 2.55579 10.0043 1.5317C8.86151 0.507604 7.3698 -0.0397263 5.83588 0.00224731C4.30196 0.0442209 2.84241 0.672308 1.75736 1.75736C0.672308 2.84241 0.0442209 4.30196 0.00224731 5.83588C-0.0397263 7.3698 0.507604 8.86151 1.5317 10.0043C2.55579 11.147 3.9788 11.854 5.50813 11.9798C7.03747 12.1056 8.55687 11.6407 9.75393 10.6806L12.2073 13.1339C12.2692 13.1964 12.343 13.246 12.4242 13.2799C12.5055 13.3137 12.5926 13.3311 12.6806 13.3311C12.7686 13.3311 12.8557 13.3137 12.937 13.2799C13.0182 13.246 13.092 13.1964 13.1539 13.1339C13.2741 13.0096 13.3413 12.8435 13.3413 12.6706C13.3413 12.4977 13.2741 12.3316 13.1539 12.2073ZM6.01393 10.6806C5.09095 10.6806 4.1887 10.4069 3.42127 9.89412C2.65384 9.38134 2.0557 8.65251 1.7025 7.79979C1.34929 6.94707 1.25687 6.00876 1.43694 5.10351C1.617 4.19827 2.06146 3.36675 2.7141 2.7141C3.36675 2.06146 4.19827 1.617 5.10351 1.43694C6.00876 1.25687 6.94707 1.34929 7.79979 1.7025C8.65251 2.0557 9.38134 2.65384 9.89412 3.42127C10.4069 4.1887 10.6806 5.09095 10.6806 6.01393C10.6806 7.25161 10.1889 8.43859 9.31376 9.31376C8.43859 10.1889 7.25161 10.6806 6.01393 10.6806Z"
+                                fill="#777777" />
+                        </svg>
+                        <input type="text" [(ngModel)]="searchQuery" placeholder="Rechercher un patient"
+                            class="w-full pl-10 pr-4 py-2 text-xs text-[#777777] border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none">
+                    </div>
+                    <div class="relative">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" width="14" height="10"
+                            viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M0.625 0.625H13.125M2.70833 4.79167H11.0417M5.20833 8.95833H8.54167"
+                                stroke="#777777" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        <select [(ngModel)]="statusFilter"
+                            class="text-sm pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none appearance-none">
+                            <option>Tous les statuts</option>
+                            <option>En attente</option>
+                            <option>Terminé</option>
+                            <option>Annulé</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste des rendez-vous -->
+            <div class="">
+                <!-- Loader -->
+                <div *ngIf="isLoadingAppointments" class="flex items-center justify-center py-12">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#01b894]"></div>
+                </div>
+
+                <!-- Message d'erreur -->
+                <div *ngIf="appointmentsErrorMessage && !isLoadingAppointments" class="text-center py-12">
+                    <p class="text-red-600">{{ appointmentsErrorMessage }}</p>
+                </div>
+
+                <!-- Aucun résultat -->
+                <div *ngIf="!isLoadingAppointments && !appointmentsErrorMessage && appointments.length === 0"
+                    class="text-center py-12">
+                    <p class="text-gray-600">Aucun rendez-vous trouvé</p>
+                </div>
+
+                <!-- Table des rendez-vous -->
+                <div *ngIf="!isLoadingAppointments && appointments.length > 0" class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="bg-[#F4F6F9]">
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-[#2C3E50]">Patient</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-[#2C3E50]">Type</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-[#2C3E50]">Statut</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-[#2C3E50]">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let appointment of getFilteredAppointments()"
+                                class="border-b border-gray-100 hover:bg-gray-50 transition">
+                                <td class="py-4 px-4">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="text-sm text-[#0F172A] bg-[#F8FAFC] border border-[#F2F2F2] rounded-lg px-3 py-1.5 text-center">
+                                            <div class="font-semibold">{{ appointment.startTime }} - {{
+                                                appointment.endTime }}</div>
+                                            <div class="text-xs">{{ appointment.date }}</div>
+                                        </div>
+                                        <div>
+                                            <div class="font-medium text-[#0F172A]">{{ appointment.patientName }}</div>
+                                            <div class="text-xs text-gray-600">{{ appointment.reason }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-4">
+                                    <span
+                                        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-[#343A40]">
+                                        {{ appointment.type?.name || 'Non défini' }}
+                                    </span>
+                                </td>
+                                <td class="py-4 px-4">
+                                    <span [class]="getStatusClass(appointment.status)"
+                                        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold">
+                                        {{ getStatusLabel(appointment.status) }}
+                                    </span>
+                                </td>
+                                <td class="py-4 px-4">
+                                    <div class="flex items-center gap-2">
+                                        <button (click)="viewAppointment(appointment)"
+                                            class="p-2 hover:bg-gray-100 rounded-lg transition">
+                                            <svg width="20" height="14" viewBox="0 0 20 14" fill="none"
+                                                xmlns="http://www.w3.org/2000/svg">
+                                                <path
+                                                    d="M20 6.875C20 6.875 16.25 0 10 0C3.75 0 0 6.875 0 6.875C0 6.875 3.75 13.75 10 13.75C16.25 13.75 20 6.875 20 6.875ZM1.46625 6.875C2.06973 5.95573 2.76496 5.1001 3.54125 4.32125C5.15 2.71 7.35 1.25 10 1.25C12.65 1.25 14.8488 2.71 16.46 4.32125C17.2363 5.1001 17.9315 5.95573 18.535 6.875C18.4633 6.98333 18.3821 7.10333 18.2913 7.235C17.8725 7.835 17.2537 8.635 16.46 9.42875C14.8488 11.04 12.6488 12.5 10 12.5C7.35125 12.5 5.15125 11.04 3.54 9.42875C2.76371 8.6499 2.06973 7.79427 1.46625 6.875Z"
+                                                    fill="#4B4848" />
+                                                <path
+                                                    d="M10 3.75C9.1712 3.75 8.37634 4.07924 7.79029 4.66529C7.20424 5.25134 6.875 6.0462 6.875 6.875C6.875 7.7038 7.20424 8.49866 7.79029 9.08471C8.37634 9.67076 9.1712 10 10 10C10.8288 10 11.6237 9.67076 12.2097 9.08471C12.7958 8.49866 13.125 7.7038 13.125 6.875C13.125 6.0462 12.7958 5.25134 12.2097 4.66529C11.6237 4.07924 10.8288 3.75 10 3.75ZM5.625 6.875C5.625 5.71468 6.08594 4.60188 6.90641 3.78141C7.72688 2.96094 8.83968 2.5 10 2.5C11.1603 2.5 12.2731 2.96094 13.0936 3.78141C13.9141 4.60188 14.375 5.71468 14.375 6.875C14.375 8.03532 13.9141 9.14812 13.0936 9.96859C12.2731 10.7891 11.1603 11.25 10 11.25C8.83968 11.25 7.72688 10.7891 6.90641 9.96859C6.08594 9.14812 5.625 8.03532 5.625 6.875Z"
+                                                    fill="#4B4848" />
+                                            </svg>
+
+                                        </button>
+                                        <button (click)="confirmAppointment(appointment)"
+                                            class="p-2 hover:bg-gray-100 rounded-lg transition">
+                                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
+                                                xmlns="http://www.w3.org/2000/svg">
+                                                <path
+                                                    d="M17.3183 4.55666C17.3765 4.61472 17.4227 4.68369 17.4542 4.75962C17.4857 4.83555 17.5019 4.91696 17.5019 4.99916C17.5019 5.08137 17.4857 5.16277 17.4542 5.23871C17.4227 5.31464 17.3765 5.38361 17.3183 5.44166L8.56829 14.1917C8.51023 14.2499 8.44126 14.296 8.36533 14.3276C8.2894 14.3591 8.208 14.3753 8.12579 14.3753C8.04358 14.3753 7.96218 14.3591 7.88625 14.3276C7.81032 14.296 7.74135 14.2499 7.68329 14.1917L3.30829 9.81666C3.19093 9.69931 3.125 9.54013 3.125 9.37416C3.125 9.20819 3.19093 9.04902 3.30829 8.93166C3.42565 8.81431 3.58482 8.74837 3.75079 8.74837C3.91676 8.74837 4.07593 8.81431 4.19329 8.93166L8.12579 12.8654L16.4333 4.55666C16.4913 4.49846 16.5603 4.45228 16.6362 4.42077C16.7122 4.38927 16.7936 4.37305 16.8758 4.37305C16.958 4.37305 17.0394 4.38927 17.1153 4.42077C17.1913 4.45228 17.2602 4.49846 17.3183 4.55666Z"
+                                                    fill="#00B894" />
+                                            </svg>
+
+                                        </button>
+                                        <button (click)="deleteAppointment(appointment)"
+                                            class="p-2 hover:bg-red-50 rounded-lg transition">
+                                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
+                                                xmlns="http://www.w3.org/2000/svg">
+                                                <path
+                                                    d="M15.8333 5.00001L15.1105 15.1816C15.0482 16.0952 14.284 16.8141 13.3686 16.8141H6.63143C5.71595 16.8141 4.95179 16.0952 4.8895 15.1816L4.16667 5.00001M8.33333 9.16668V13.3333M11.6667 9.16668V13.3333M12.5 5.00001V2.91668C12.5 2.45644 12.1269 2.08334 11.6667 2.08334H8.33333C7.8731 2.08334 7.5 2.45644 7.5 2.91668V5.00001M3.33333 5.00001H16.6667"
+                                                    stroke="#EF4444" stroke-width="1.5" stroke-linecap="round"
+                                                    stroke-linejoin="round" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div *ngIf="!isLoadingAppointments && appointments.length > 0"
+                    class="flex items-center justify-between p-4 border-t border-gray-200">
+                    <div class="text-sm text-gray-600">
+                        Total : {{ totalElements }} rendez-vous
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="text-sm text-gray-600">Page {{ currentPage + 1 }} sur {{ totalPages }}</span>
+                        <div class="flex items-center gap-2">
+                            <button (click)="previousPage()" [disabled]="isFirstPage"
+                                class="p-2 hover:bg-gray-100 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                    <path d="M12.5 15L7.5 10L12.5 5" stroke="#6B7280" stroke-width="1.5"
+                                        stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </button>
+                            <button (click)="nextPage()" [disabled]="isLastPage"
+                                class="p-2 hover:bg-gray-100 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                    <path d="M7.5 15L12.5 10L7.5 5" stroke="#6B7280" stroke-width="1.5"
+                                        stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal Ajouter un créneau -->
+<div *ngIf="showAddSlotModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+        <div class="p-6">
+            <!-- En-tête -->
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-semibold text-gray-900">Ajouter un créneau</h3>
+                <button (click)="closeAddSlotModal()" class="text-gray-400 hover:text-gray-600 transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Formulaire -->
+            <div class="space-y-4">
+                <!-- Message d'erreur -->
+                <div *ngIf="formError"
+                    class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                    {{ formError }}
+                </div>
+
+                <!-- Date -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                    <input type="date" [(ngModel)]="newSlot.date"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none">
+                </div>
+
+                <!-- Horaires -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Heure de début</label>
+                        <input type="time" [(ngModel)]="newSlot.heureDebut"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Heure de fin</label>
+                        <input type="time" [(ngModel)]="newSlot.heureFin"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none">
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Boutons -->
+            <div class="flex gap-3 mt-6">
+                <button (click)="closeAddSlotModal()"
+                    class="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition">
+                    Annuler
+                </button>
+                <button (click)="saveSlot()"
+                    class="flex-1 px-4 py-3 bg-[#01b894] text-white rounded-lg font-medium hover:bg-[#019d7e] transition">
+                    Enregistrer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

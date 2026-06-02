@@ -1,0 +1,244 @@
+<!-- Container principal avec fond gris -->
+<div class="min-h-screen bg-[#f5f7fa] p-4 md:p-6 lg:p-8">
+    <!-- Header de la page -->
+    <div class="mb-8">
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Suivi des livreurs</h1>
+        <p class="text-gray-600 text-sm md:text-base">Gestion et performances des livreurs</p>
+    </div>
+
+    <!-- Cartes statistiques -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+        <div *ngFor="let card of statsCards"
+            class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
+            <!-- Header de la carte -->
+            <div class="flex items-start justify-between mb-4">
+                <p class="text-gray-600 text-sm font-medium">{{ card.title }}</p>
+
+                <!-- Icônes -->
+                <div class=" bg-white rounded-xl shadow-md p-2.5 rounded-lg flex items-center justify-center"
+                    [ngClass]="card.iconColor">
+                    <!-- Icône User/Livreur -->
+                    <svg *ngIf="card.icon === 'user'" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12Z"
+                            stroke="#00B894" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M20.5899 22C20.5899 18.13 16.7399 15 11.9999 15C7.25991 15 3.40991 18.13 3.40991 22"
+                            stroke="#00B894" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+
+                    <!-- Icône Package -->
+                    <svg *ngIf="card.icon === 'package'" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M12.89 1.45001L20.89 5.45001C21.27 5.64001 21.51 6.04001 21.51 6.47001V17.53C21.51 17.96 21.27 18.36 20.89 18.55L12.89 22.55C12.51 22.74 12.05 22.74 11.67 22.55L3.67001 18.55C3.29001 18.36 3.05001 17.96 3.05001 17.53V6.47001C3.05001 6.04001 3.29001 5.64001 3.67001 5.45001L11.67 1.45001C12.05 1.26001 12.51 1.26001 12.89 1.45001Z"
+                            stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M12 12V22" stroke="#2563EB" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path d="M12 12L21 7" stroke="#2563EB" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path d="M12 12L3 7" stroke="#2563EB" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+
+                    <!-- Icône Check -->
+                    <svg *ngIf="card.icon === 'check'" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M21.8026 10.0005C22.2593 12.2418 21.9338 14.5719 20.8804 16.6023C19.827 18.6326 18.1095 20.2405 16.0141 21.1578C13.9187 22.0751 11.5722 22.2463 9.36586 21.6428C7.15954 21.0394 5.22676 19.6979 3.88984 17.8419C2.55293 15.9859 1.89269 13.7277 2.01923 11.4439C2.14577 9.16001 3.05144 6.98857 4.58522 5.29165C6.11899 3.59473 8.18815 2.47491 10.4476 2.11893C12.7071 1.76295 15.0203 2.19234 17.0016 3.33548"
+                            stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M9 11L12 14L22 4" stroke="#16A34A" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+
+                    <!-- Icône Dollar -->
+
+                    <svg *ngIf="card.icon === 'dollar'" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M21 11.0026H20.824L19.001 5.66961L3.354 11.0026L3 10.9996M2.5 11.0036H3L14.146 2.09961L16.963 6.04961"
+                            stroke="#00B894" stroke-width="2" stroke-linecap="square" />
+                        <path
+                            d="M14.5 16C14.5 16.663 14.2366 17.2989 13.7678 17.7678C13.2989 18.2366 12.663 18.5 12 18.5C11.337 18.5 10.7011 18.2366 10.2322 17.7678C9.76339 17.2989 9.5 16.663 9.5 16C9.5 15.337 9.76339 14.7011 10.2322 14.2322C10.7011 13.7634 11.337 13.5 12 13.5C12.663 13.5 13.2989 13.7634 13.7678 14.2322C14.2366 14.7011 14.5 15.337 14.5 16Z"
+                            stroke="#00B894" stroke-width="2" stroke-linecap="square" />
+                        <path d="M21.5 11V21H2.5V11H21.5Z" stroke="#00B894" stroke-width="2" stroke-linecap="square" />
+                        <path
+                            d="M2.5 11H4.5C4.5 11.5304 4.28929 12.0391 3.91421 12.4142C3.53914 12.7893 3.03043 13 2.5 13V11ZM21.5 11H19.5C19.5 11.5304 19.7107 12.0391 20.0858 12.4142C20.4609 12.7893 20.9696 13 21.5 13V11ZM2.5 21H4.502C4.50226 20.737 4.45066 20.4766 4.35014 20.2336C4.24963 19.9905 4.10217 19.7697 3.91621 19.5838C3.73026 19.3978 3.50946 19.2504 3.26644 19.1499C3.02343 19.0493 2.76298 18.9977 2.5 18.998V21ZM21.5 21H19.5C19.5 20.4696 19.7107 19.9609 20.0858 19.5858C20.4609 19.2107 20.9696 19 21.5 19V21Z"
+                            stroke="#00B894" stroke-width="2" stroke-linecap="square" />
+                    </svg>
+
+                </div>
+            </div>
+
+            <!-- Valeur principale -->
+            <div class="mb-2">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900">{{ card.value }}</h2>
+            </div>
+
+            <!-- Footer de la carte -->
+            <div class="flex items-center justify-between">
+                <p class="text-gray-500 text-sm">{{ card.subtitle }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section avec deux colonnes -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Performance mensuelle -->
+        <div class="bg-white rounded-xl shadow-sm p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-6">Performance mensuelle</h2>
+            <div class="h-64">
+                <canvas #monthlyChart></canvas>
+            </div>
+        </div>
+
+        <!-- Top 5 livreurs performants -->
+        <div class="bg-white rounded-xl shadow-sm p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-6">Top 5 livreurs performants</h2>
+            <div class="h-64">
+                <canvas #topLivreurChart></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des livreurs -->
+    <div class="bg-white rounded-xl shadow-sm p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-6">Liste des livreurs</h2>
+
+        <!-- Barre de recherche et filtres -->
+        <div class="flex flex-col sm:flex-row gap-4 mb-6">
+            <!-- Recherche -->
+            <div class="flex-1 relative">
+                <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none"
+                    stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input type="text" [(ngModel)]="searchTerm" (input)="onSearchChange()"
+                    placeholder="Rechercher un livreur"
+                    class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            </div>
+
+            <!-- Bouton Tous les statuts -->
+            <button
+                class="px-4 py-2.5 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer flex items-center gap-2">
+                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+                <span class="text-sm font-medium text-gray-700">Tous les statuts</span>
+            </button>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Zone
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Livraisons</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Taux
+                            de réussite</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Temps moyen</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Commission</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Note
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <tr *ngFor="let livreur of paginatedLivreurs" class="hover:bg-gray-50 transition-colors">
+                        <!-- Nom avec avatar -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-semibold">
+                                    {{ livreur.initial }}
+                                </div>
+                                <div class="text-sm font-medium text-gray-900">{{ livreur.name }}</div>
+                            </div>
+                        </td>
+
+                        <!-- Zone -->
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ livreur.zone }}</td>
+
+                        <!-- Livraisons -->
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ livreur.livraisons }}</td>
+
+                        <!-- Taux de réussite avec barre de progression -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center gap-3">
+                                <span class="text-sm text-gray-900 min-w-[45px]">{{ livreur.tauxReussite }}%</span>
+                                <div class="flex-1 max-w-[100px]">
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div [ngClass]="getProgressBarColor(livreur.tauxReussite)"
+                                            [style.width]="getProgressBarWidth(livreur.tauxReussite)"
+                                            class="h-2 rounded-full transition-all"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Temps moyen -->
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ livreur.tempsMoyen }}</td>
+
+                        <!-- Commission -->
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{
+                            livreur.commission }}</td>
+
+                        <!-- Note avec étoiles -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center gap-1">
+                                <svg *ngFor="let star of getStarArray(livreur.rating)" class="w-4 h-4"
+                                    [class.text-yellow-400]="star === 1" [class.text-gray-300]="star === 0"
+                                    fill="currentColor" viewBox="0 0 20 20">
+                                    <path
+                                        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                </svg>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="flex flex-col sm:flex-row items-center justify-between mt-6 gap-4">
+            <div class="flex items-center gap-2">
+                <span class="text-sm text-gray-700">éléments par page:</span>
+                <select [(ngModel)]="itemsPerPage" (change)="onItemsPerPageChange()"
+                    class="border border-gray-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option [value]="5">5</option>
+                    <option [value]="10">10</option>
+                    <option [value]="20">20</option>
+                </select>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <span class="text-sm text-gray-700">
+                    {{ (currentPage - 1) * itemsPerPage + 1 }} - {{ Math.min(currentPage * itemsPerPage,
+                    filteredLivreurs.length) }} sur {{ filteredLivreurs.length }}
+                </span>
+                <div class="flex items-center gap-2">
+                    <button (click)="previousPage()" [disabled]="currentPage === 1"
+                        class="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <button (click)="nextPage()" [disabled]="currentPage === totalPages"
+                        class="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

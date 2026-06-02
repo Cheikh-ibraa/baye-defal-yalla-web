@@ -1,0 +1,534 @@
+<div class="min-h-screen bg-[#F4F6F9] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+  <div class="bg-white p-8 container-register">
+    
+    <!-- Logo -->
+    <div class="flex justify-center mb-8">
+      <div class="relative">
+        <img src="assets/images/logo.png" alt="Logo Pharmacie Delivery" srcset="">
+      </div>
+    </div>
+
+    <!-- Titre principal -->
+    <div class="text-center mb-4">
+      <h1 class="text-[#2C7BE5] font-work font-semibold text-[18px] leading-[100%] tracking-[0] text-center">
+        PHARMACIE DELIVERY
+      </h1>
+    </div>
+
+    <!-- Titre créer un compte -->
+    <div class="text-center mb-4">
+      <h2 class="text-[32px] text-[#343A40] font-work font-semibold leading-[100%] tracking-[0] text-center">
+        Créer un compte
+      </h2>
+    </div>
+
+    <!-- Sous-titre -->
+    <div class="text-center mb-12">
+      <p class="text-[#4B5563] font-open-sans font-normal text-base leading-[100%] tracking-[0] text-center">
+        Inscrivez-vous pour accéder à la plateforme de livraison de médicaments
+      </p>
+    </div>
+
+    <!-- Message d'erreur global -->
+    <div *ngIf="registrationError" class="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+          </svg>
+        </div>
+        <div class="ml-3">
+          <p class="text-sm text-red-700">{{ registrationError }}</p>
+        </div>
+        <div class="ml-auto pl-3">
+          <div class="-mx-1.5 -my-1.5">
+            <button type="button" class="inline-flex bg-red-50 rounded-md p-1.5 text-red-500 hover:bg-red-100" (click)="clearError()">
+              <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Message de succès -->
+    <div *ngIf="registrationSuccess" class="mb-6 bg-green-50 border border-green-200 rounded-md p-4">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+          </svg>
+        </div>
+        <div class="ml-3">
+          <p class="text-sm text-green-700">
+            Inscription terminée avec succès ! Vous allez être redirigé...
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Indicateur de géolocalisation -->
+    <div *ngIf="isLoadingLocation" class="mb-6 bg-blue-50 border border-blue-200 rounded-md p-4">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <svg class="animate-spin h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </div>
+        <div class="ml-3">
+          <p class="text-sm text-blue-700">Récupération de votre localisation...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Étapes avec icônes et traits -->
+    <div class="flex items-center justify-between mb-12 register-steps mx-auto">
+      <!-- Étape 1 - Rôle -->
+      <div class="">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center mb-2"
+             [class]="currentStep >= 1 ? 'bg-[#CCFBF1]' : 'bg-gray-100'">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" class="w-6 h-6" [class]="currentStep >= 1 ? 'text-[#00B894]' : 'text-gray-400'" fill="currentColor">
+            <path d="M470.5 463.6C451.4 416.9 405.5 384 352 384L288 384C234.5 384 188.6 416.9 169.5 463.6C133.9 426.3 112 375.7 
+            112 320C112 205.1 205.1 112 320 112C434.9 112 528 205.1 528 320C528 375.7 506.1 426.2 470.5 463.6zM430.4 496.3C398.4 516.4 
+            360.6 528 320 528C279.4 528 241.6 516.4 209.5 496.3C216.8 459.6 249.2 432 288 432L352 432C390.8 432 423.2 459.6 430.5 496.3zM320 
+            576C461.4 576 576 461.4 576 320C576 178.6 461.4 64 320 64C178.6 64 64 178.6 64 320C64 461.4 178.6 576 320 576zM320 304C297.9 304 280 286.1 280 264C280 241.9 297.9 224 320 224C342.1 224 360 241.9 360 264C360 286.1 342.1 304 320 304zM232 264C232 312.6 271.4 352 320 352C368.6 352 408 312.6 408 264C408 215.4 368.6 176 320 176C271.4 176 232 215.4 232 264z"/>
+          </svg>
+        </div>
+        <span class="text-xs font-medium" [class]="currentStep >= 1 ? 'text-[#00B894]' : 'text-[#6B7280]'">Rôle</span>
+      </div>
+
+      <!-- Trait 1 -->
+      <div class="flex-1 h-px mx-4 trait" [class]="currentStep >= 2 ? 'bg-[#00B894]' : 'bg-[#F4F6F9]'"></div>
+
+      <!-- Étape 2 - Informations -->
+      <div>
+        <div class="w-10 h-10 rounded-full flex items-center justify-center mb-2"
+             [class]="currentStep >= 2 ? 'bg-green-100' : 'bg-gray-100'">
+          <svg class="w-5 h-5" [class]="currentStep >= 2 ? 'text-[#00B894]' : 'text-gray-400'" 
+               fill="currentColor" viewBox="0 0 20 20">
+            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"></path>
+          </svg>
+        </div>
+        <span class="text-xs font-medium" [class]="currentStep >= 2 ? 'text-[#00B894]' : 'text-[#6B7280]'">Informations</span>
+      </div>
+    </div>
+
+    <!-- ÉTAPE 1 - SÉLECTION DU RÔLE -->
+    <div *ngIf="currentStep === 1">
+      <!-- Titre choix du rôle -->
+      <div class="text-center mb-8">
+        <h3 class="text-xl font-bold text-gray-900">
+          Choisissez votre rôle professionnel
+        </h3>
+      </div>
+  
+      <!-- Cards des rôles - Affichage dynamique -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        <div 
+          *ngFor="let role of availableRoles" 
+          class="rounded-lg p-4 cursor-pointer transition-all duration-300 hover:border-blue-500 hover:bg-blue-50 hover:shadow-lg card-register group relative overflow-hidden border-2" 
+          [class.border-blue-500]="selectedRole === role.key"
+          [class.bg-blue-50]="selectedRole === role.key"
+          [class.shadow-lg]="selectedRole === role.key"
+          [class.border-gray-200]="selectedRole !== role.key"
+          (click)="selectRole(role.key)">
+         
+          <div class="flex items-start space-x-4 mb-4">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-gray-100 rounded flex items-center justify-center group-hover:bg-blue-500 transition-colors duration-200"
+                   [class.bg-blue-500]="selectedRole === role.key">
+                <!-- Icône dynamique selon le rôle -->
+                <svg *ngIf="role.key === 'pharmacien'" class="w-6 h-6" [class.text-white]="selectedRole === role.key" [class.text-gray-600]="selectedRole !== role.key" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 2L3 6v4c0 4.5 3 8.5 7 9 4-0.5 7-4.5 7-9V6l-7-4z"/>
+                  <path d="M8 10h4v1H8zm0 2h4v1H8z"/>
+                </svg>
+                
+                <svg *ngIf="role.key === 'medecin'" class="w-6 h-6" [class.text-white]="selectedRole === role.key" [class.text-gray-600]="selectedRole !== role.key" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 11H9v-2h2v2zm0-4H9V5h2v4z"/>
+                </svg>
+                
+                <svg *ngIf="role.key === 'patient'" class="w-6 h-6" [class.text-white]="selectedRole === role.key" [class.text-gray-600]="selectedRole !== role.key" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                </svg>
+                
+                <svg *ngIf="role.key === 'representant'" class="w-6 h-6" [class.text-white]="selectedRole === role.key" [class.text-gray-600]="selectedRole !== role.key" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
+                </svg>
+                
+                <svg *ngIf="role.key === 'donneur'" class="w-6 h-6" [class.text-white]="selectedRole === role.key" [class.text-gray-600]="selectedRole !== role.key" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+                </svg>
+                
+                <svg *ngIf="role.key === 'livreur'" class="w-6 h-6" [class.text-white]="selectedRole === role.key" [class.text-gray-600]="selectedRole !== role.key" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
+                  <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1V8a1 1 0 00-.293-.707L15 4.586A1 1 0 0014.414 4H14v3z"/>
+                </svg>
+              </div>
+            </div>
+            <div class="flex-1">
+              <h4 class="text-lg font-semibold text-gray-900 mb-1">{{ role.label }}</h4>
+              <p class="text-sm text-gray-600">
+                {{ role.description }}
+              </p>
+            </div>
+          </div>
+      
+          <!-- Indicateur de sélection -->
+          <div *ngIf="selectedRole === role.key" class="absolute top-2 right-2">
+            <div class="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Bouton Sélectionner qui apparaît au survol (seulement si pas déjà sélectionné) -->
+          <div *ngIf="selectedRole !== role.key" class="absolute bottom-4 left-4 right-4 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 ease-out">
+            <button type="button" class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center space-x-2">
+              <span>Sélectionner</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Badge "Sélectionné" -->
+          <div *ngIf="selectedRole === role.key" class="absolute bottom-4 left-4 right-4">
+            <div class="w-full bg-blue-500 text-white py-2 px-4 rounded-md flex items-center justify-center space-x-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              <span>Sélectionné</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Affichage du rôle sélectionné -->
+      <div *ngIf="selectedRole" class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
+        <div class="flex items-center">
+          <svg class="h-5 w-5 text-blue-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+          </svg>
+          <p class="text-sm text-blue-700">
+            Rôle sélectionné : <strong>{{ getRoleLabel(selectedRole) }}</strong>
+          </p>
+        </div>
+      </div>
+
+      <!-- Bouton Continuer pour étape 1 -->
+      <div class="flex justify-end mb-8">
+        <button 
+          type="button"
+          class="bg-[#00B894] text-white px-6 py-2 rounded-md hover:bg-[#00A085] transition-colors duration-200 flex items-center space-x-2"
+          [disabled]="!canContinueStep1()"
+          (click)="nextStep()"
+          [class.opacity-50]="!canContinueStep1()"
+          [class.cursor-not-allowed]="!canContinueStep1()">
+          <span>Continuer</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ÉTAPE 2 - INFORMATIONS UTILISATEUR -->
+    <div *ngIf="currentStep === 2">
+      <!-- Titre informations -->
+      <div class="text-center mb-8">
+        <h3 class="text-xl font-bold text-gray-900">
+          Informations personnelles
+        </h3>
+        <p class="text-sm text-gray-600 mt-2">
+          Rôle sélectionné : <span class="font-semibold text-blue-600">{{ getRoleLabel(selectedRole) }}</span>
+        </p>
+      </div>
+
+      <!-- Formulaire d'informations -->
+      <div class="bg-gray-50 rounded-lg p-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- Prénom -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-700 flex items-center">
+              Prénom 
+              <span class="text-red-500 ml-1">*</span>
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                </svg>
+              </div>
+              <input 
+                type="text" 
+                class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="ex. Fatou"
+                [(ngModel)]="userInfo.prenom"
+                (input)="clearError()"
+                name="prenom"
+                required>
+            </div>
+          </div>
+
+          <!-- Nom -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-700 flex items-center">
+              Nom 
+              <span class="text-red-500 ml-1">*</span>
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                </svg>
+              </div>
+              <input 
+                type="text" 
+                class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="ex. Ndiaye"
+                [(ngModel)]="userInfo.nom"
+                (input)="clearError()"
+                name="nom"
+                required>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-700 flex items-center">
+              Email 
+              <span class="text-red-500 ml-1">*</span>
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
+                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
+                </svg>
+              </div>
+              <input 
+                type="email" 
+                class="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                [class.border-red-300]="userInfo.email && !isValidEmail()"
+                [class.border-green-300]="userInfo.email && isValidEmail()"
+                [class.border-gray-300]="!userInfo.email"
+                placeholder="ex. prenom.nom@gmail.com"
+                [(ngModel)]="userInfo.email"
+                (input)="clearError()"
+                name="email"
+                required>
+            </div>
+            <p *ngIf="userInfo.email && !isValidEmail()" class="text-xs text-red-600">
+              Format d'email invalide
+            </p>
+          </div>
+
+          <!-- Numéro de téléphone -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-700 flex items-center">
+              Numéro de téléphone 
+              <span class="text-red-500 ml-1">*</span>
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <span class="text-gray-500 text-sm">+221</span>
+              </div>
+              <input 
+                type="tel" 
+                class="w-full pl-12 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                [class.border-red-300]="userInfo.telephone && !isValidPhone()"
+                [class.border-green-300]="userInfo.telephone && isValidPhone()"
+                [class.border-gray-300]="!userInfo.telephone"
+                placeholder="77 000 00 00"
+                [(ngModel)]="userInfo.telephone"
+                (input)="formatPhone(); clearError()"
+                name="telephone"
+                maxlength="9"
+                required>
+            </div>
+            <p *ngIf="userInfo.telephone && !isValidPhone()" class="text-xs text-red-600">
+              Le numéro doit contenir 9 chiffres
+            </p>
+          </div>
+
+          <!-- Adresse -->
+          <div class="space-y-2 md:col-span-2">
+            <label class="text-sm font-medium text-gray-700 flex items-center">
+              Adresse 
+              <span class="text-red-500 ml-1">*</span>
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                </svg>
+              </div>
+              <input 
+                type="text" 
+                class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="ex. Rue 123, Principale Ville"
+                [(ngModel)]="userInfo.adress"
+                (input)="clearError()"
+                name="adress"
+                required>
+            </div>
+          </div>
+
+          <!-- Mot de passe -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-700 flex items-center">
+              Mot de passe 
+              <span class="text-red-500 ml-1">*</span>
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
+                </svg>
+              </div>
+              <input 
+                type="password" 
+                class="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                [class.border-red-300]="userInfo.password && !isPasswordStrong()"
+                [class.border-green-300]="userInfo.password && isPasswordStrong()"
+                [class.border-gray-300]="!userInfo.password"
+                placeholder="Minimum 6 caractères"
+                [(ngModel)]="userInfo.password"
+                (input)="clearError()"
+                name="password"
+                required>
+            </div>
+            <p *ngIf="userInfo.password && !isPasswordStrong()" class="text-xs text-red-600">
+              Le mot de passe doit contenir au moins 6 caractères
+            </p>
+          </div>
+
+          <!-- Confirmation du mot de passe -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-700 flex items-center">
+              Confirmer le mot de passe 
+              <span class="text-red-500 ml-1">*</span>
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
+                </svg>
+              </div>
+              <input 
+                type="password" 
+                class="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                [class.border-red-300]="confirmPassword && !passwordsMatch()"
+                [class.border-green-300]="confirmPassword && passwordsMatch()"
+                [class.border-gray-300]="!confirmPassword"
+                placeholder="Répétez le mot de passe"
+                [(ngModel)]="confirmPassword"
+                (input)="clearError()"
+                name="confirmPassword"
+                required>
+            </div>
+            <p *ngIf="confirmPassword && !passwordsMatch()" class="text-xs text-red-600">
+              Les mots de passe ne correspondent pas
+            </p>
+            <p *ngIf="confirmPassword && passwordsMatch()" class="text-xs text-green-600">
+              Les mots de passe correspondent
+            </p>
+          </div>
+
+        </div>
+
+        <!-- Résumé des informations saisies -->
+        <div class="mt-6 p-4 bg-white rounded-md border">
+          <h4 class="text-sm font-medium text-gray-700 mb-3">Résumé de votre inscription :</h4>
+          <div class="text-sm text-gray-600 space-y-1">
+            <div><strong>Rôle :</strong> {{ getRoleLabel(selectedRole) }}</div>
+            <div><strong>Nom complet :</strong> {{ userInfo.prenom }} {{ userInfo.nom }}</div>
+            <div><strong>Email :</strong> {{ userInfo.email }}</div>
+            <div><strong>Téléphone :</strong> +221 {{ userInfo.telephone }}</div>
+            <div><strong>Adresse :</strong> {{ userInfo.adress }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Boutons de navigation -->
+      <div class="flex justify-between mb-8">
+        <button 
+          type="button"
+          class="px-6 py-2 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center space-x-2 border border-[#D4EDDA]"
+          (click)="previousStep()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" class="w-4 h-4 text-[#00B894]" fill="currentColor">
+            <path d="M73.4 297.4C60.9 309.9 60.9 330.2 73.4 342.7L233.4 502.7C245.9 515.2 266.2 515.2 278.7 502.7C291.2 490.2 291.2 469.9 278.7 457.4L173.3 352L544 352C561.7 352 576 337.7 576 320C576 302.3 561.7 288 544 288L173.3 288L278.7 182.6C291.2 170.1 291.2 149.8 278.7 137.3C266.2 124.8 245.9 124.8 233.4 137.3L73.4 297.3z"/>
+          </svg>
+          <span class="text-[#00B894]">Retour</span>
+        </button>
+        
+        <button 
+          type="button"
+          class="bg-[#00B894] text-white px-8 py-3 rounded-md hover:bg-[#00A085] transition-colors duration-200 flex items-center space-x-2 font-medium"
+          [disabled]="!canCompleteRegistration() || isRegistering"
+          (click)="completeRegistration()"
+          [class.opacity-50]="!canCompleteRegistration() || isRegistering"
+          [class.cursor-not-allowed]="!canCompleteRegistration() || isRegistering">
+          
+          <span *ngIf="!isRegistering">Terminer l'inscription</span>
+          <span *ngIf="isRegistering">Inscription en cours...</span>
+          
+          <svg *ngIf="!isRegistering" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+          
+          <svg *ngIf="isRegistering" class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Indicateurs de validation -->
+      <div class="mb-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+          <div class="flex items-center space-x-1">
+            <svg class="w-4 h-4" [class.text-green-500]="userInfo.prenom.trim()" [class.text-gray-300]="!userInfo.prenom.trim()" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            <span [class.text-green-700]="userInfo.prenom.trim()" [class.text-gray-500]="!userInfo.prenom.trim()">Prénom</span>
+          </div>
+          
+          <div class="flex items-center space-x-1">
+            <svg class="w-4 h-4" [class.text-green-500]="userInfo.nom.trim()" [class.text-gray-300]="!userInfo.nom.trim()" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            <span [class.text-green-700]="userInfo.nom.trim()" [class.text-gray-500]="!userInfo.nom.trim()">Nom</span>
+          </div>
+          
+          <div class="flex items-center space-x-1">
+            <svg class="w-4 h-4" [class.text-green-500]="isValidEmail() && userInfo.email.trim()" [class.text-gray-300]="!isValidEmail() || !userInfo.email.trim()" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            <span [class.text-green-700]="isValidEmail() && userInfo.email.trim()" [class.text-gray-500]="!isValidEmail() || !userInfo.email.trim()">Email</span>
+          </div>
+          
+          <div class="flex items-center space-x-1">
+            <svg class="w-4 h-4" [class.text-green-500]="passwordsMatch() && isPasswordStrong()" [class.text-gray-300]="!passwordsMatch() || !isPasswordStrong()" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            <span [class.text-green-700]="passwordsMatch() && isPasswordStrong()" [class.text-gray-500]="!passwordsMatch() || !isPasswordStrong()">Mots de passe</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pied de page -->
+    <div class="text-center pt-6 mt-10">
+      <p class="text-sm text-gray-600">
+        Vous avez déjà un compte? 
+        <a href="/login" class="text-blue-500 hover:text-blue-600 font-medium transition-colors duration-200">Se connecter</a>
+      </p>
+    </div>
+
+  </div>
+</div>

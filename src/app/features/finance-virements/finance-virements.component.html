@@ -1,0 +1,186 @@
+<!-- Container principal avec fond gris -->
+<div class="min-h-screen bg-[#f5f7fa] p-4 md:p-6 lg:p-8">
+    <!-- Header de la page -->
+    <div class="mb-8">
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Gestion des Demandes de Virement</h1>
+        <p class="text-gray-600 text-sm md:text-base">Gérer les virements avec possibilité de valider ou rejeter les
+            demandes de virement.</p>
+    </div>
+
+    <!-- Section Liste des demandes de virement -->
+    <div class="bg-white rounded-xl shadow-sm p-6">
+        <!-- Header avec recherche et filtre -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+            <h2 class="text-xl font-bold text-gray-900">Liste des demandes de virement</h2>
+
+            <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                <!-- Barre de recherche -->
+                <div class="relative flex-1 sm:flex-initial">
+                    <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input type="text" [(ngModel)]="searchTerm" (input)="onSearchChange()"
+                        placeholder="Rechercher une pharmacie"
+                        class="w-full sm:w-64 pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+
+                <!-- Filtre statut -->
+                <div class="relative">
+                    <select [(ngModel)]="selectedStatut" (change)="onStatutChange()"
+                        class="appearance-none px-4 py-2.5 pr-10 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer">
+                        <option value="all">Tous les statuts</option>
+                        <option value="En attente">En attente</option>
+                        <option value="Validé">Validé</option>
+                        <option value="Rejeté">Rejeté</option>
+                    </select>
+                    <svg class="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Pharmacie</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Montant</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Statut</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <tr *ngFor="let demande of paginatedDemandes" class="hover:bg-gray-50 transition-colors">
+                        <!-- Pharmacie -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-semibold">
+                                    {{ demande.initial }}
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900">{{ demande.pharmacie }}</div>
+                                    <div class="text-xs text-gray-500">{{ demande.adresse }}</div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Date -->
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ demande.date }}</td>
+
+                        <!-- Montant -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="text-sm font-semibold" [ngClass]="{
+                                    'text-blue-600': demande.statut === 'En attente',
+                                    'text-red-600': demande.statut !== 'En attente'
+                                }">
+                                {{ demande.montant }}
+                            </span>
+                        </td>
+
+                        <!-- Statut -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium" [ngClass]="{
+                                    'bg-yellow-100 text-yellow-700': demande.statut === 'En attente',
+                                    'bg-green-100 text-green-700': demande.statut === 'Validé',
+                                    'bg-red-100 text-red-700': demande.statut === 'Rejeté'
+                                }">
+                                {{ demande.statut }}
+                            </span>
+                        </td>
+
+                        <!-- Actions -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center gap-2">
+                                <!-- Bouton Voir -->
+                                <button (click)="voirDemande(demande)"
+                                    class="p-1.5 rounded transition text-gray-600 hover:bg-gray-100"
+                                    title="Voir les détails">
+                                    <svg width="20" height="14" viewBox="0 0 20 14" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M20 6.875C20 6.875 16.25 0 10 0C3.75 0 0 6.875 0 6.875C0 6.875 3.75 13.75 10 13.75C16.25 13.75 20 6.875 20 6.875ZM1.46625 6.875C2.06973 5.95573 2.76496 5.1001 3.54125 4.32125C5.15 2.71 7.35 1.25 10 1.25C12.65 1.25 14.8488 2.71 16.46 4.32125C17.2363 5.1001 17.9315 5.95573 18.535 6.875C18.4633 6.98333 18.3821 7.10333 18.2913 7.235C17.8725 7.835 17.2537 8.635 16.46 9.42875C14.8488 11.04 12.6488 12.5 10 12.5C7.35125 12.5 5.15125 11.04 3.54 9.42875C2.76371 8.6499 2.06973 7.79427 1.46625 6.875Z"
+                                            fill="#4B4848" />
+                                        <path
+                                            d="M10 3.75C9.1712 3.75 8.37634 4.07924 7.79029 4.66529C7.20424 5.25134 6.875 6.0462 6.875 6.875C6.875 7.7038 7.20424 8.49866 7.79029 9.08471C8.37634 9.67076 9.1712 10 10 10C10.8288 10 11.6237 9.67076 12.2097 9.08471C12.7958 8.49866 13.125 7.7038 13.125 6.875C13.125 6.0462 12.7958 5.25134 12.2097 4.66529C11.6237 4.07924 10.8288 3.75 10 3.75ZM5.625 6.875C5.625 5.71468 6.08594 4.60188 6.90641 3.78141C7.72688 2.96094 8.83968 2.5 10 2.5C11.1603 2.5 12.2731 2.96094 13.0936 3.78141C13.9141 4.60188 14.375 5.71468 14.375 6.875C14.375 8.03532 13.9141 9.14812 13.0936 9.96859C12.2731 10.7891 11.1603 11.25 10 11.25C8.83968 11.25 7.72688 10.7891 6.90641 9.96859C6.08594 9.14812 5.625 8.03532 5.625 6.875Z"
+                                            fill="#4B4848" />
+                                    </svg>
+
+                                </button>
+
+                                <!-- Bouton Valider (visible seulement pour "En attente") -->
+                                <button *ngIf="demande.statut === 'En attente'" (click)="validerDemande(demande)"
+                                    class="p-1.5 rounded transition text-green-600 hover:bg-green-50"
+                                    title="Valider la demande">
+                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M17.3183 4.55764C17.3765 4.6157 17.4227 4.68467 17.4542 4.7606C17.4857 4.83653 17.5019 4.91793 17.5019 5.00014C17.5019 5.08235 17.4857 5.16375 17.4542 5.23968C17.4227 5.31561 17.3765 5.38458 17.3183 5.44264L8.56829 14.1926C8.51023 14.2508 8.44126 14.297 8.36533 14.3285C8.2894 14.36 8.208 14.3763 8.12579 14.3763C8.04358 14.3763 7.96218 14.36 7.88625 14.3285C7.81032 14.297 7.74135 14.2508 7.68329 14.1926L3.30829 9.81764C3.19093 9.70028 3.125 9.54111 3.125 9.37514C3.125 9.20917 3.19093 9.05 3.30829 8.93264C3.42565 8.81528 3.58482 8.74935 3.75079 8.74935C3.91676 8.74935 4.07593 8.81528 4.19329 8.93264L8.12579 12.8664L16.4333 4.55764C16.4913 4.49944 16.5603 4.45326 16.6362 4.42175C16.7122 4.39024 16.7936 4.37402 16.8758 4.37402C16.958 4.37402 17.0394 4.39024 17.1153 4.42175C17.1913 4.45326 17.2602 4.49944 17.3183 4.55764Z"
+                                            fill="#00B894" />
+                                    </svg>
+
+                                </button>
+
+                                <!-- Bouton Rejeter (visible seulement pour "En attente") -->
+                                <button *ngIf="demande.statut === 'En attente'" (click)="rejeterDemande(demande)"
+                                    class="p-1.5 rounded transition text-red-600 hover:bg-red-50"
+                                    title="Rejeter la demande">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M2.14663 2.85366C2.10014 2.80717 2.06327 2.75198 2.03811 2.69124C2.01295 2.6305 2 2.5654 2 2.49966C2 2.43391 2.01295 2.36881 2.03811 2.30807C2.06327 2.24733 2.10014 2.19214 2.14663 2.14565C2.19312 2.09917 2.24831 2.06229 2.30905 2.03713C2.36979 2.01197 2.43489 1.99902 2.50063 1.99902C2.56638 1.99902 2.63148 2.01197 2.69221 2.03713C2.75295 2.06229 2.80814 2.09917 2.85463 2.14565L8.00063 7.29265L13.1466 2.14565C13.1931 2.09917 13.2483 2.06229 13.309 2.03713C13.3698 2.01197 13.4349 1.99902 13.5006 1.99902C13.5664 1.99902 13.6315 2.01197 13.6922 2.03713C13.753 2.06229 13.8081 2.09917 13.8546 2.14565C13.9011 2.19214 13.938 2.24733 13.9632 2.30807C13.9883 2.36881 14.0013 2.43391 14.0013 2.49966C14.0013 2.5654 13.9883 2.6305 13.9632 2.69124C13.938 2.75198 13.9011 2.80717 13.8546 2.85366L8.70763 7.99965L13.8546 13.1457C13.9011 13.1921 13.938 13.2473 13.9632 13.3081C13.9883 13.3688 14.0013 13.4339 14.0013 13.4997C14.0013 13.5654 13.9883 13.6305 13.9632 13.6912C13.938 13.752 13.9011 13.8072 13.8546 13.8537C13.8081 13.9001 13.753 13.937 13.6922 13.9622C13.6315 13.9873 13.5664 14.0003 13.5006 14.0003C13.4349 14.0003 13.3698 13.9873 13.309 13.9622C13.2483 13.937 13.1931 13.9001 13.1466 13.8537L8.00063 8.70665L2.85463 13.8537C2.80814 13.9001 2.75295 13.937 2.69221 13.9622C2.63148 13.9873 2.56638 14.0003 2.50063 14.0003C2.43489 14.0003 2.36979 13.9873 2.30905 13.9622C2.24831 13.937 2.19312 13.9001 2.14663 13.8537C2.10014 13.8072 2.06327 13.752 2.03811 13.6912C2.01295 13.6305 2 13.5654 2 13.4997C2 13.4339 2.01295 13.3688 2.03811 13.3081C2.06327 13.2473 2.10014 13.1921 2.14663 13.1457L7.29363 7.99965L2.14663 2.85366Z"
+                                            fill="#FF6B6B" />
+                                    </svg>
+
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="flex flex-col sm:flex-row items-center justify-between mt-6 gap-4">
+            <div class="flex items-center gap-2">
+                <span class="text-sm text-gray-700">éléments par page:</span>
+                <select [(ngModel)]="itemsPerPage" (change)="onItemsPerPageChange()"
+                    class="border border-gray-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option [value]="5">5</option>
+                    <option [value]="10">10</option>
+                    <option [value]="20">20</option>
+                </select>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <span class="text-sm text-gray-700">
+                    {{ (currentPage - 1) * itemsPerPage + 1 }} - {{ Math.min(currentPage * itemsPerPage,
+                    filteredDemandes.length) }} sur {{ filteredDemandes.length }}
+                </span>
+                <button (click)="previousPage()" [disabled]="currentPage === 1"
+                    class="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <button (click)="nextPage()" [disabled]="currentPage === totalPages"
+                    class="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

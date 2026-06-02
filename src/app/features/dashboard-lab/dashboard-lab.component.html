@@ -1,0 +1,496 @@
+<div class="min-h-screen px-4 py-6">
+  <div class="max-w-[1400px] mx-auto space-y-6">
+
+    <!-- HEADER -->
+    <div class="flex justify-between items-center">
+      <div>
+        <h1 class="text-[34px] font-bold text-[#343A40]">
+          Tableau de bord
+        </h1>
+        <p class="text-[17px] font-medium text-[#343A40]/80 mt-2">
+          Planning et gestion du laboratoire.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <select class="px-4 py-3 w-[220px] border rounded-lg">
+          <option>Ce mois</option>
+        </select>
+
+        <button class="px-6 py-3 bg-blue-600 text-white rounded-lg">
+          Exporter
+        </button>
+      </div>
+    </div>
+
+   <!-- STATS (fidèle Figma) -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+  <!-- CARD -->
+  <div class="relative bg-white rounded-2xl p-6  min-h-[130px]">
+    <!-- Icon -->
+    <div class=" border absolute top-6 right-6 w-10 h-10 rounded-xl  flex items-center justify-center">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M5.5 11.5H5.646C7.852 11.5 10.027 12.014 12 13C13.973 13.986 16.148 14.5 18.354 14.5H19.5M6.5 0.5H15.5V0.75L14.793 1.722C13.8453 3.02452 13.3939 4.62265 13.52 6.22851C13.6461 7.83437 14.3416 9.34242 15.481 10.481L21.5 16.5C21.5 18.5 20.5 20 18.5 21.5H3.5C1.5 20 0.5 18.5 0.5 16.5L6.52 10.48C7.65903 9.34135 8.3541 7.83344 8.48005 6.22781C8.606 4.62217 8.15455 3.02433 7.207 1.722L6.5 0.75V0.5Z" stroke="#6B7280"/>
+</svg>
+
+    </div>
+
+    <!-- Content -->
+    <p class="text-sm text-gray-500 font-medium">
+      Total Examens
+    </p>
+
+    <p class="text-4xl font-bold text-gray-900 mt-3">
+  {{ dashboardData?.totalRequests ?? 0 }}
+</p>
+
+
+    <p class="text-sm text-gray-400 mt-4">
+      Total
+    </p>
+  </div>
+
+  <!-- CARD -->
+  <div class="relative bg-white rounded-2xl p-6  min-h-[130px]">
+    <div class="absolute top-6 right-6 w-10 h-10 rounded-xl border flex items-center justify-center">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 5.25C12 5.05109 11.921 4.86032 11.7803 4.71967C11.6397 4.57902 11.4489 4.5 11.25 4.5C11.0511 4.5 10.8603 4.57902 10.7197 4.71967C10.579 4.86032 10.5 5.05109 10.5 5.25V13.5C10.5 13.6322 10.535 13.762 10.6014 13.8764C10.6678 13.9907 10.7632 14.0854 10.878 14.151L16.128 17.151C16.3003 17.2441 16.5022 17.2661 16.6905 17.2124C16.8788 17.1586 17.0386 17.0333 17.1358 16.8633C17.2329 16.6933 17.2597 16.492 17.2104 16.3024C17.1612 16.1129 17.0397 15.9502 16.872 15.849L12 13.065V5.25Z" fill="#F39C12"/>
+<path d="M12 24C15.1826 24 18.2348 22.7357 20.4853 20.4853C22.7357 18.2348 24 15.1826 24 12C24 8.8174 22.7357 5.76516 20.4853 3.51472C18.2348 1.26428 15.1826 0 12 0C8.8174 0 5.76516 1.26428 3.51472 3.51472C1.26428 5.76516 0 8.8174 0 12C0 15.1826 1.26428 18.2348 3.51472 20.4853C5.76516 22.7357 8.8174 24 12 24ZM22.5 12C22.5 14.7848 21.3938 17.4555 19.4246 19.4246C17.4555 21.3938 14.7848 22.5 12 22.5C9.21523 22.5 6.54451 21.3938 4.57538 19.4246C2.60625 17.4555 1.5 14.7848 1.5 12C1.5 9.21523 2.60625 6.54451 4.57538 4.57538C6.54451 2.60625 9.21523 1.5 12 1.5C14.7848 1.5 17.4555 2.60625 19.4246 4.57538C21.3938 6.54451 22.5 9.21523 22.5 12Z" fill="#F39C12"/>
+</svg>
+
+    </div>
+
+    <p class="text-sm text-gray-500 font-medium">
+      Examens en attente
+    </p>
+
+  <p class="text-4xl font-bold text-gray-900 mt-3">
+  {{ dashboardData?.pendingRequests ?? 0 }}
+</p>
+
+
+    <p class="text-sm text-red-500 mt-4">
+  Dont {{ dashboardData?.urgentRequests ?? 0 }} urgences
+</p>
+
+  </div>
+
+  <!-- CARD -->
+  <div class="relative bg-white rounded-2xl p-6  min-h-[130px]">
+    <div class="absolute top-6 right-6 w-10 h-10 rounded-xl border flex items-center justify-center">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M15 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V7L15 2Z" stroke="#00B894" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M14 2V6C14 6.53043 14.2107 7.03914 14.5858 7.41421C14.9609 7.78929 15.4696 8 16 8H20" stroke="#00B894" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M10 9H8" stroke="#00B894" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M16 13H8" stroke="#00B894" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M16 17H8" stroke="#00B894" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+
+    </div>
+
+    <p class="text-sm text-gray-500 font-medium">
+      Examens réalisés
+    </p>
+
+  <p class="text-4xl font-bold text-gray-900 mt-3">
+  {{ dashboardData?.completedRequests ?? 0 }}
+</p>
+
+    <p class="text-sm text-gray-400 mt-4">
+      Total
+    </p>
+  </div>
+
+  <!-- CARD -->
+  <div class="relative bg-white rounded-2xl p-6  min-h-[130px]">
+    <div class="absolute top-6 right-6 w-10 h-10 rounded-xl border flex items-center justify-center">
+     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M15.9267 17.211H18.0647C18.2528 17.2139 18.4388 17.1713 18.6068 17.0868C18.7748 17.0022 18.9198 16.8782 19.0295 16.7254C19.1391 16.5726 19.2102 16.3955 19.2365 16.2093C19.2628 16.0231 19.2437 15.8332 19.1807 15.656C18.6356 14.4891 17.7725 13.4996 16.6905 12.8009C15.6086 12.1022 14.3515 11.7228 13.0637 11.706M13.0637 8.947C13.545 8.94713 14.0215 8.85246 14.4662 8.66838C14.9108 8.48431 15.3149 8.21444 15.6552 7.87419C15.9955 7.53395 16.2655 7.12998 16.4497 6.68538C16.6339 6.24078 16.7287 5.76425 16.7287 5.283C16.73 4.80091 16.6362 4.3233 16.4526 3.87755C16.269 3.43179 15.9992 3.02665 15.6587 2.68534C15.3183 2.34403 14.9138 2.07327 14.4685 1.88857C14.0232 1.70387 13.5458 1.60887 13.0637 1.609M7.33872 9.062C8.44046 9.05935 9.49616 8.61976 10.2742 7.83968C11.0522 7.0596 11.489 6.00274 11.4887 4.901C11.4887 3.80009 11.0514 2.74426 10.2729 1.9658C9.49446 1.18734 8.43863 0.75 7.33772 0.75C6.23681 0.75 5.18098 1.18734 4.40252 1.9658C3.62406 2.74426 3.18672 3.80009 3.18672 4.901C3.18672 6.00274 3.62377 7.05949 4.40197 7.83939C5.18018 8.61928 6.23598 9.05862 7.33772 9.061M12.0237 18.404C12.376 18.4035 12.7212 18.3055 13.0212 18.1209C13.3211 17.9363 13.5642 17.6723 13.7233 17.358C13.8824 17.0438 13.9515 16.6916 13.9228 16.3406C13.8941 15.9895 13.7688 15.6532 13.5607 15.369C12.8318 14.4015 11.8935 13.6114 10.816 13.0579C9.73849 12.5044 8.54972 12.2019 7.33872 12.173C6.12763 12.202 4.93881 12.5047 3.8613 13.0584C2.78378 13.612 1.84549 14.4023 1.11672 15.37C0.909375 15.6542 0.784619 15.9903 0.756227 16.341C0.727834 16.6916 0.79691 17.0434 0.955827 17.3573C1.11474 17.6712 1.35732 17.935 1.65677 18.1198C1.95621 18.3045 2.30088 18.4028 2.65272 18.404H12.0237Z" stroke="#2C7BE5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+
+    </div>
+
+    <p class="text-sm text-gray-500 font-medium">
+      Jeunes patients
+    </p>
+
+   <p class="text-4xl font-bold text-gray-900 mt-3">
+  {{ dashboardData?.youngPatients ?? 0 }}
+</p>
+
+
+    <p class="text-sm text-[#34C759] mt-4 flex items-center gap-2">
+
+
+      <span class="text-gray-400">Total</span>
+    </p>
+  </div>
+
+</div>
+
+    <!-- GRAPHIQUES - LIGNE 1 -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+
+  <!-- ÉVOLUTION MENSUELLE -->
+  <div class="bg-white rounded-2xl p-6 border shadow-sm hover:shadow-md transition-shadow duration-300 h-[420px] flex flex-col">
+    <div class="flex-shrink-0 flex items-start justify-between">
+      <div>
+        <h3 class="text-lg font-semibold text-[#343A40]">
+          Évolution mensuelle des examens
+        </h3>
+        <p class="text-sm text-gray-400 mt-1">
+          Nombre d'examens reçus par mois
+        </p>
+      </div>
+
+      <!-- Badge statut -->
+      <div *ngIf="monthlyChartState === 'loading'"
+           class="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full">
+        <svg class="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span>Chargement...</span>
+      </div>
+    </div>
+
+    <!-- ZONE GRAPHIQUE -->
+    <div class="flex-1 mt-4 min-h-0 relative">
+      <!-- État: Loading -->
+      <div *ngIf="monthlyChartState === 'loading'"
+           class="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 rounded-xl">
+        <svg class="animate-spin h-10 w-10 text-blue-600 mb-3" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p class="text-sm text-gray-500 font-medium">Chargement des données...</p>
+      </div>
+
+      <!-- État: Error -->
+      <div *ngIf="monthlyChartState === 'error'"
+           class="absolute inset-0 flex flex-col items-center justify-center bg-red-50 rounded-xl p-6 text-center">
+        <svg class="h-12 w-12 text-red-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <p class="text-sm font-semibold text-red-700 mb-1">Impossible de charger les données</p>
+        <p class="text-xs text-red-600">Vérifiez votre connexion ou réessayez plus tard</p>
+        <button (click)="loadDashboard(currentUser!.id)"
+                class="mt-4 px-4 py-2 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 transition-colors">
+          Réessayer
+        </button>
+      </div>
+
+      <!-- Graphique -->
+      <canvas id="monthlyChart"
+              [class.opacity-0]="monthlyChartState === 'loading' || monthlyChartState === 'error'"
+              [class.opacity-100]="monthlyChartState === 'success'"></canvas>
+    </div>
+  </div>
+
+  <!-- RÉPARTITION PAR STATUT -->
+  <div class="bg-white rounded-2xl p-6 border shadow-sm hover:shadow-md transition-shadow duration-300 h-[420px] flex flex-col">
+    <div class="flex-shrink-0 flex items-start justify-between">
+      <div>
+        <h3 class="text-lg font-semibold text-[#343A40]">
+          Répartition par statut
+        </h3>
+        <p class="text-sm text-gray-400 mt-1">
+          État actuel des demandes
+        </p>
+      </div>
+
+      <div *ngIf="statusChartState === 'loading'"
+           class="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full">
+        <svg class="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span>Chargement...</span>
+      </div>
+    </div>
+
+    <div class="flex-1 mt-4 min-h-0 relative">
+      <div *ngIf="statusChartState === 'loading'"
+           class="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 rounded-xl">
+        <svg class="animate-spin h-10 w-10 text-blue-600 mb-3" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p class="text-sm text-gray-500 font-medium">Chargement des données...</p>
+      </div>
+
+      <div *ngIf="statusChartState === 'error'"
+           class="absolute inset-0 flex flex-col items-center justify-center bg-red-50 rounded-xl p-6 text-center">
+        <svg class="h-12 w-12 text-red-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <p class="text-sm font-semibold text-red-700 mb-1">Impossible de charger les données</p>
+        <p class="text-xs text-red-600">Vérifiez votre connexion ou réessayez plus tard</p>
+        <button (click)="loadDashboard(currentUser!.id)"
+                class="mt-4 px-4 py-2 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 transition-colors">
+          Réessayer
+        </button>
+      </div>
+
+      <canvas id="statusChart"
+              [class.opacity-0]="statusChartState === 'loading' || statusChartState === 'error'"
+              [class.opacity-100]="statusChartState === 'success'"></canvas>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- GRAPHIQUES - LIGNE 2 -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+
+  <!-- EXAMENS PAR TYPE -->
+  <div class="bg-white rounded-2xl p-6 border shadow-sm hover:shadow-md transition-shadow duration-300 h-[360px] flex flex-col">
+    <div class="flex-shrink-0 flex items-start justify-between">
+      <div>
+        <h3 class="text-lg font-semibold text-[#343A40]">
+          Examens par type
+        </h3>
+        <p class="text-sm text-gray-400 mt-1">
+          Répartition selon le type d'examen
+        </p>
+      </div>
+
+      <div *ngIf="typeChartState === 'loading'"
+           class="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full">
+        <svg class="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span>Chargement...</span>
+      </div>
+    </div>
+
+    <div class="flex-1 mt-4 min-h-0 relative">
+      <div *ngIf="typeChartState === 'loading'"
+           class="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 rounded-xl">
+        <svg class="animate-spin h-10 w-10 text-blue-600 mb-3" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p class="text-sm text-gray-500 font-medium">Chargement des données...</p>
+      </div>
+
+      <div *ngIf="typeChartState === 'error'"
+           class="absolute inset-0 flex flex-col items-center justify-center bg-orange-50 rounded-xl p-6 text-center">
+        <svg class="h-12 w-12 text-orange-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+        </svg>
+        <p class="text-sm font-semibold text-orange-700 mb-1">Aucune donnée disponible</p>
+        <p class="text-xs text-orange-600">Les statistiques par type apparaîtront ici</p>
+      </div>
+
+      <canvas id="typeChart"
+              [class.opacity-0]="typeChartState === 'loading' || typeChartState === 'error'"
+              [class.opacity-100]="typeChartState === 'success'"></canvas>
+    </div>
+  </div>
+
+ <!-- ANALYSES PAR PRIORITÉ -->
+<div class="bg-white rounded-2xl p-6 border shadow-sm hover:shadow-md transition-shadow duration-300 h-[360px] flex flex-col">
+  <div class="flex-shrink-0 flex items-start justify-between">
+    <div>
+      <h3 class="text-lg font-semibold text-[#343A40]">
+        Analyses par priorité
+      </h3>
+      <p class="text-sm text-gray-400 mt-1">
+        Répartition selon le niveau d’urgence
+      </p>
+    </div>
+
+    <div *ngIf="urgencyChartState === 'loading'"
+         class="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full">
+      <svg class="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+        </path>
+      </svg>
+      <span>Chargement...</span>
+    </div>
+  </div>
+
+  <div class="flex-1 mt-4 min-h-0 relative">
+    <!-- Loading -->
+    <div *ngIf="urgencyChartState === 'loading'"
+         class="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 rounded-xl">
+      <svg class="animate-spin h-10 w-10 text-blue-600 mb-3" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+        </path>
+      </svg>
+      <p class="text-sm text-gray-500 font-medium">Chargement des données...</p>
+    </div>
+
+    <!-- Error / No data -->
+    <div *ngIf="urgencyChartState === 'error'"
+         class="absolute inset-0 flex flex-col items-center justify-center bg-orange-50 rounded-xl p-6 text-center">
+      <svg class="h-12 w-12 text-orange-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+        </path>
+      </svg>
+      <p class="text-sm font-semibold text-orange-700 mb-1">
+        Aucune donnée disponible
+      </p>
+      <p class="text-xs text-orange-600">
+        Les statistiques par priorité apparaîtront ici
+      </p>
+    </div>
+
+    <!-- Graph -->
+    <canvas id="urgencyChart"
+            [class.opacity-0]="urgencyChartState === 'loading' || urgencyChartState === 'error'"
+            [class.opacity-100]="urgencyChartState === 'success'"></canvas>
+  </div>
+</div>
+
+
+</div>
+
+
+
+    <!-- TABLE -->
+<div class="bg-white rounded-xl border">
+  <div class="p-5 flex justify-between items-center">
+    <h2 class="text-xl font-semibold text-[#343A40]">
+      Planning du jour
+    </h2>
+
+    <button
+      routerLink="/examens-laboratoire"
+      class="text-[#2C7BE5] text-base font-medium flex items-center gap-3">
+      Voir tout
+      <svg width="15" height="13" viewBox="0 0 15 13" fill="none">
+        <path d="M0 6H12.25L7 0.75L7.66 0L14.16 6.5L7.66 13L7 12.25L12.25 7H0V6Z"
+          fill="#2C7BE5"/>
+      </svg>
+    </button>
+  </div>
+
+  <table class="w-full" *ngIf="examens.length > 0; else noData">
+  <thead style="background-color:#F4F7FE">
+    <tr>
+      <th class="px-5 py-4 text-left text-sm font-semibold text-[#343A40]">Patient</th>
+      <th class="px-5 py-4 text-left text-sm font-semibold text-[#343A40]">Examen</th>
+      <th class="px-5 py-4 text-left text-sm font-semibold text-[#343A40]">Prescripteur</th>
+      <th class="px-5 py-4 text-left text-sm font-semibold text-[#343A40]">Reçu le</th>
+      <th class="px-5 py-4 text-left text-sm font-semibold text-[#343A40]">Priorité</th>
+      <th class="px-5 py-4 text-left text-sm font-semibold text-[#343A40]">Statut</th>
+      <th class="px-5 py-4 text-left text-sm font-semibold text-[#343A40]">Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr *ngFor="let exam of examens" class="border-t h-[72px] hover:bg-gray-50">
+
+      <!-- PATIENT -->
+      <td class="px-5 flex items-center gap-3">
+
+        <!---->
+        <div
+          [class]="getInitialsColor(getInitials(exam.patientName))"
+          class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+          {{ getInitials(exam.patientName) }}
+        </div>
+
+        <div>
+          <p class="text-base font-semibold text-[#343A40]">
+            {{ exam.patientName }}
+          </p>
+          <p class="text-sm text-gray-400">
+            #{{ exam.id }}
+          </p>
+        </div>
+      </td>
+
+      <!-- EXAMEN -->
+      <td class="px-5 text-base text-[#343A40]">
+        {{ exam.type }}
+      </td>
+
+      <!-- PRESCRIPTEUR -->
+      <td class="px-5 text-base text-[#343A40]">
+        {{ exam.doctorName }}
+      </td>
+
+      <!-- REÇU LE -->
+      <td class="px-5 text-base text-[#343A40] whitespace-nowrap">
+        {{ exam.createdAt | date:'dd/MM/yyyy HH:mm' }}
+      </td>
+
+      <!-- PRIORITÉ -->
+      <td class="px-5">
+        <span
+          class="px-4 py-1.5 rounded-full text-sm font-medium"
+          [ngClass]="exam.urgencyLevel === 'URGENT'
+            ? 'text-[#FF6B6B] bg-[#FF6B6B]/10'
+            : 'text-[#00B894] bg-[#00B894]/10'">
+          {{ exam.urgencyLevel === 'URGENT' ? 'Urgent' : 'Normal' }}
+        </span>
+      </td>
+
+      <!-- STATUT -->
+      <td class="px-5">
+        <span
+          class="px-4 py-1.5 rounded-full text-sm font-medium"
+          [ngClass]="{
+            'bg-yellow-100 text-yellow-700': exam.status === 'PENDING',
+            'bg-blue-100 text-blue-700': exam.status === 'ACCEPTED',
+            'bg-green-100 text-green-700': exam.status === 'COMPLETED',
+            'bg-red-100 text-red-700': exam.status === 'CANCELLED'
+          }">
+          {{
+            exam.status === 'PENDING' ? 'En attente' :
+            exam.status === 'ACCEPTED' ? 'Accepté' :
+            exam.status === 'COMPLETED' ? 'Terminé' :
+            'Annulé'
+          }}
+        </span>
+      </td>
+
+      <!-- ACTIONS -->
+      <td class="px-5">
+        <div class="flex items-center gap-6">
+          <!-- VOIR -->
+          <button
+            [routerLink]="['/detail-examen-imagerie', exam.id]"
+            class="text-gray-500 hover:text-gray-700">
+            <svg width="20" height="14" viewBox="0 0 20 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M20 6.875C20 6.875 16.25 0 10 0C3.75 0 0 6.875 0 6.875C0 6.875 3.75 13.75 10 13.75C16.25 13.75 20 6.875 20 6.875ZM1.46625 6.875C2.06973 5.95573 2.76496 5.1001 3.54125 4.32125C5.15 2.71 7.35 1.25 10 1.25C12.65 1.25 14.8488 2.71 16.46 4.32125C17.2363 5.1001 17.9315 5.95573 18.535 6.875C18.4633 6.98333 18.3821 7.10333 18.2913 7.235C17.8725 7.835 17.2537 8.635 16.46 9.42875C14.8488 11.04 12.6488 12.5 10 12.5C7.35125 12.5 5.15125 11.04 3.54 9.42875C2.76371 8.6499 2.06973 7.79427 1.46625 6.875Z" fill="#4B4848"/>
+<path d="M10 3.75C9.1712 3.75 8.37634 4.07924 7.79029 4.66529C7.20424 5.25134 6.875 6.0462 6.875 6.875C6.875 7.7038 7.20424 8.49866 7.79029 9.08471C8.37634 9.67076 9.1712 10 10 10C10.8288 10 11.6237 9.67076 12.2097 9.08471C12.7958 8.49866 13.125 7.7038 13.125 6.875C13.125 6.0462 12.7958 5.25134 12.2097 4.66529C11.6237 4.07924 10.8288 3.75 10 3.75ZM5.625 6.875C5.625 5.71468 6.08594 4.60188 6.90641 3.78141C7.72688 2.96094 8.83968 2.5 10 2.5C11.1603 2.5 12.2731 2.96094 13.0936 3.78141C13.9141 4.60188 14.375 5.71468 14.375 6.875C14.375 8.03532 13.9141 9.14812 13.0936 9.96859C12.2731 10.7891 11.1603 11.25 10 11.25C8.83968 11.25 7.72688 10.7891 6.90641 9.96859C6.08594 9.14812 5.625 8.03532 5.625 6.875Z" fill="#4B4848"/>
+</svg>
+
+          </button>
+
+
+        </div>
+      </td>
+
+    </tr>
+  </tbody>
+</table>
+
+
+  <!-- EMPTY STATE -->
+  <ng-template #noData>
+    <div class="py-16 text-center text-gray-400">
+      <p class="text-lg font-medium">
+        Aucun examen accepté aujourd’hui
+      </p>
+      <p class="text-sm mt-2">
+        Les examens validés apparaîtront ici automatiquement.
+      </p>
+    </div>
+  </ng-template>
+</div>
+
+  </div>
+</div>

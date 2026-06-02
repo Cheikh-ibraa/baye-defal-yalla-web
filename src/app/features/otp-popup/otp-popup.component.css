@@ -1,0 +1,72 @@
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Modal overlay */
+.fixed.inset-0 {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Modal content */
+.bg-white.rounded-xl {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Input focus states */
+input:focus {
+  box-shadow: 0 0 0 3px rgba(1, 184, 148, 0.1);
+}
+
+/* Error input */
+input.border-red-300:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+/* Button hover effects */
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Loading spinner */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Disabled states */
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .max-w-md {
+    margin: 1rem;
+    max-width: calc(100vw - 2rem);
+  }
+
+  .text-2xl {
+    font-size: 1.5rem;
+  }
+
+  .tracking-widest {
+    letter-spacing: 0.25em;
+  }
+}

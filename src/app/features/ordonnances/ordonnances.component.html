@@ -1,0 +1,390 @@
+<div class="min-h-screen bg-[#f4f6f9]">
+  <div class="max-w-7xl mx-auto">
+
+    <!-- En-tête -->
+    <div class="mb-6 md:mb-8">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 class="text-2xl font-semibold text-[#343A40]">Mes ordonnances</h1>
+          <p class="text-sm md:text-base text-[#343A40] mt-1">Consultez et gérez les ordonnances des patients</p>
+        </div>
+        <button (click)="creerNouvelleOrdonnance()"
+          class="flex items-center gap-2 px-5 py-3 bg-[#00B894] text-white rounded-lg hover:bg-[#00a085] transition font-medium text-sm whitespace-nowrap">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Nouvelle ordonnance
+        </button>
+      </div>
+    </div>
+
+    <!-- Message d'erreur -->
+    <div *ngIf="error" class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        <svg class="w-6 h-6 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <div class="flex-1">
+          <p class="text-red-800 font-medium">{{ errorMessage }}</p>
+        </div>
+        <button (click)="retry()" class="text-red-600 hover:text-red-700 font-medium text-sm">
+          Réessayer
+        </button>
+      </div>
+    </div>
+
+    <!-- Layout : 2 colonnes sur xl, 1 colonne en dessous -->
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+      <!-- === COLONNE GAUCHE : LISTE DES ORDONNANCES === -->
+      <div class="bg-white rounded-lg shadow-sm flex flex-col max-h-[55vh] lg:max-h-[50vh]">
+
+        <!-- En-tête de la liste -->
+        <div class="p-5 md:p-6 border-b border-gray-200 flex-shrink-0">
+          <div class="flex flex-col gap-4">
+            <h2 class="text-lg font-bold text-[#2C3E50]">Liste des ordonnances</h2>
+
+            <div class="flex flex-col sm:flex-row gap-3">
+              <!-- Barre de recherche -->
+              <div class="relative flex-1">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M13.1539 12.2073L10.6806 9.75393C11.6407 8.55687 12.1056 7.03747 11.9798 5.50813C11.854 3.9788 11.147 2.55579 10.0043 1.5317C8.86151 0.507604 7.3698 -0.0397263 5.83588 0.00224731C4.30196 0.0442209 2.84241 0.672308 1.75736 1.75736C0.672308 2.84241 0.0442209 4.30196 0.00224731 5.83588C-0.0397263 7.3698 0.507604 8.86151 1.5317 10.0043C2.55579 11.147 3.9788 11.854 5.50813 11.9798C7.03747 12.1056 8.55687 11.6407 9.75393 10.6806L12.2073 13.1339C12.2692 13.1964 12.343 13.246 12.4242 13.2799C12.5055 13.3137 12.5926 13.3311 12.6806 13.3311C12.7686 13.3311 12.8557 13.3137 12.937 13.2799C13.0182 13.246 13.092 13.1964 13.1539 13.1339C13.2741 13.0096 13.3413 12.8435 13.3413 12.6706C13.3413 12.4977 13.2741 12.3316 13.1539 12.2073ZM6.01393 10.6806C5.09095 10.6806 4.1887 10.4069 3.42127 9.89412C2.65384 9.38134 2.0557 8.65251 1.7025 7.79979C1.34929 6.94707 1.25687 6.00876 1.43694 5.10351C1.617 4.19827 2.06146 3.36675 2.7141 2.7141C3.36675 2.06146 4.19827 1.617 5.10351 1.43694C6.00876 1.25687 6.94707 1.34929 7.79979 1.7025C8.65251 2.0557 9.38134 2.65384 9.89412 3.42127C10.4069 4.1887 10.6806 5.09095 10.6806 6.01393C10.6806 7.25161 10.1889 8.43859 9.31376 9.31376C8.43859 10.1889 7.25161 10.6806 6.01393 10.6806Z"
+                      fill="#777777" />
+                  </svg>
+                </div>
+                <input type="text" [(ngModel)]="rechercheTexte" (input)="rechercher(rechercheTexte)"
+                  placeholder="Rechercher une ordonnance"
+                  class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B894] focus:border-transparent outline-none text-xs" />
+              </div>
+
+              <!-- Filtre statut -->
+              <div class="relative">
+                <button
+                  class="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium text-gray-700 whitespace-nowrap w-full sm:w-auto justify-between sm:justify-start"
+                  (click)="menuStatutOuvert = !menuStatutOuvert">
+                  <div class="flex items-center gap-2">
+                    <svg width="14" height="10" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M0.625 0.625H13.125M2.70833 4.79167H11.0417M5.20833 8.95833H8.54167" stroke="#777777"
+                        stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <span>{{ filtreStatut }}</span>
+                  </div>
+                  <svg class="h-4 w-4 text-gray-400 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                <!-- Dropdown -->
+                <div *ngIf="menuStatutOuvert"
+                  class="absolute right-0 mt-2 w-full sm:w-56 bg-white rounded-lg shadow-lg z-20 border border-gray-200">
+                  <div class="py-1">
+                    <button *ngFor="let statut of statutsDisponibles"
+                      (click)="changerFiltreStatut(statut); menuStatutOuvert = false"
+                      class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      [class.bg-gray-50]="filtreStatut === statut" [class.font-medium]="filtreStatut === statut">
+                      {{ statut }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="flex-1 flex items-center justify-center p-12 min-h-[300px]">
+          <div class="text-center">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-[#00B894]">
+            </div>
+            <p class="mt-4 text-gray-500">Chargement des ordonnances...</p>
+          </div>
+        </div>
+
+        <!-- Empty state -->
+        <div *ngIf="!loading && ordonnancesFiltrees.length === 0 && !error"
+          class="flex-1 flex items-center justify-center p-12 text-center min-h-[300px]">
+          <div>
+            <svg class="mx-auto h-16 w-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <p class="text-gray-500 mb-4">Aucune ordonnance trouvée</p>
+            <button (click)="creerNouvelleOrdonnance()"
+              class="px-6 py-2 bg-[#00B894] text-white rounded-lg hover:bg-[#00a085] transition text-sm">
+              Créer une ordonnance
+            </button>
+          </div>
+        </div>
+
+        <!-- Tableau -->
+        <div *ngIf="!loading && ordonnancesFiltrees.length > 0"
+          class="flex-1 overflow-hidden flex flex-col min-h-[400px]">
+          <div class="overflow-y-auto flex-1">
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[640px]">
+                <thead class="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
+                  <tr>
+                    <th class="px-3 sm:px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                      Référence</th>
+                    <th class="px-3 sm:px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                      Patient</th>
+                    <th
+                      class="px-3 sm:px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider hidden sm:table-cell">
+                      Date</th>
+                    <th class="px-3 sm:px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                      Statut</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <tr *ngFor="let ordonnance of ordonnancesFiltrees" (click)="selectionnerOrdonnance(ordonnance)"
+                    class="hover:bg-gray-50 cursor-pointer transition"
+                    [class.bg-blue-50]="ordonnanceSelectionnee?.id === ordonnance.id">
+                    <td class="px-3 sm:px-4 md:px-6 py-4 text-sm font-semibold text-blue-600">
+                      <div class="truncate max-w-[100px] sm:max-w-[150px] md:max-w-none">
+                        {{ ordonnance.reference || 'ORD-' + ordonnance.id }}
+                      </div>
+                    </td>
+                    <td class="px-3 sm:px-4 md:px-6 py-4 text-sm text-gray-900">
+                      <div class="truncate max-w-[120px] sm:max-w-[180px] md:max-w-none">
+                        {{ getPatientName(ordonnance) }}
+                      </div>
+                    </td>
+                    <td class="px-3 sm:px-4 md:px-6 py-4 whitespace-nowrap text-sm text-gray-700 hidden sm:table-cell">
+                      {{ formatDate(ordonnance.createdAt) }}
+                    </td>
+                    <td class="px-3 sm:px-4 md:px-6 py-4">
+                      <span
+                        class="px-2 sm:px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full whitespace-nowrap"
+                        [ngClass]="getStatutClass(ordonnance.status)">
+                        {{ getStatutLabel(ordonnance.status) }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Pagination -->
+          <div
+            class="px-3 sm:px-4 md:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3 bg-white text-sm flex-shrink-0">
+            <div class="flex items-center gap-2 w-full sm:w-auto justify-center sm:justify-start">
+              <span class="text-gray-700 text-xs sm:text-sm">Par page:</span>
+              <select [(ngModel)]="elementsParPage" (change)="changerElementsParPage(elementsParPage)"
+                class="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-[#00B894] outline-none">
+                <option [value]="5">5</option>
+                <option [value]="10">10</option>
+                <option [value]="20">20</option>
+                <option [value]="50">50</option>
+              </select>
+            </div>
+            <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+              <span class="text-gray-700 text-xs sm:text-sm text-center">{{ infosPagination }}</span>
+              <div class="flex gap-1">
+                <button (click)="pagePrecedente()" [disabled]="pageActuelle === 0"
+                  class="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button (click)="pageSuivante()" [disabled]="isLastPage"
+                  class="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- === COLONNE DROITE : DÉTAILS === -->
+      <div class="xl:col-span-1">
+        <div class="bg-white rounded-lg shadow-sm h-full flex flex-col">
+
+          <!-- Aucune sélection -->
+          <div *ngIf="!ordonnanceSelectionnee" class="flex-1 flex items-center justify-center p-8 text-center">
+            <div>
+              <svg class="mx-auto h-16 w-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <p class="text-gray-500 text-sm">Sélectionnez une ordonnance pour voir les détails</p>
+            </div>
+          </div>
+
+          <!-- Détails -->
+          <div *ngIf="ordonnanceSelectionnee" class="flex flex-col h-full">
+            <div class="p-5 md:p-6 border-b border-gray-200">
+              <h2 class="text-lg font-medium text-[#343A40] mb-4">
+                Ordonnance {{ ordonnanceSelectionnee.reference }}
+              </h2>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button (click)="sendToPatient()"
+                  class="flex items-center justify-center gap-2 px-3 py-2.5 bg-[#00B894] text-white rounded-lg hover:bg-[#00a085] transition text-xs font-medium">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M15.6683 0.685806C15.7047 0.594942 15.7136 0.495402 15.6939 0.399526C15.6742 0.303649 15.6269 0.215653 15.5576 0.146447C15.4884 0.0772403 15.4004 0.0298668 15.3046 0.0101994C15.2087 -0.0094681 15.1092 -0.000564594 15.0183 0.0358061L0.471288 5.85481C0.343177 5.90609 0.231698 5.99172 0.149119 6.10227C0.0665401 6.21283 0.0160632 6.34402 0.00324374 6.48142C-0.00957573 6.61882 0.0157593 6.75709 0.0764603 6.88101C0.137161 7.00494 0.230875 7.10971 0.347288 7.18381L5.34229 10.3618L6.87329 12.7678C6.9456 12.877 7.05785 12.9534 7.18592 12.9807C7.31399 13.008 7.44766 12.984 7.55819 12.9138C7.66873 12.8436 7.74732 12.7328 7.77707 12.6053C7.80682 12.4778 7.78535 12.3437 7.71729 12.2318L6.34129 10.0698L13.8353 2.57581L11.9403 7.31381C11.9143 7.37504 11.9007 7.44085 11.9004 7.50738C11.9001 7.57392 11.9132 7.63984 11.9387 7.70128C11.9642 7.76273 12.0017 7.81846 12.0491 7.86521C12.0964 7.91196 12.1526 7.9488 12.2144 7.97355C12.2761 7.99831 12.3422 8.01049 12.4087 8.00938C12.4753 8.00828 12.5409 7.9939 12.6018 7.9671C12.6627 7.9403 12.7176 7.90162 12.7634 7.85332C12.8092 7.80502 12.8448 7.74807 12.8683 7.68581L15.6683 0.685806ZM13.1283 1.86881L5.63429 9.36281L1.29529 6.60181L13.1283 1.86881Z"
+                      fill="white" />
+                    <path
+                      d="M15.7051 12.5C15.7051 13.4283 15.3363 14.3185 14.68 14.9749C14.0236 15.6313 13.1333 16 12.2051 16C11.2768 16 10.3866 15.6313 9.7302 14.9749C9.07383 14.3185 8.70508 13.4283 8.70508 12.5C8.70508 11.5717 9.07383 10.6815 9.7302 10.0251C10.3866 9.36875 11.2768 9 12.2051 9C13.1333 9 14.0236 9.36875 14.68 10.0251C15.3363 10.6815 15.7051 11.5717 15.7051 12.5ZM13.7121 10.821C13.6557 10.7872 13.5933 10.7649 13.5283 10.7553C13.4634 10.7457 13.3972 10.7489 13.3334 10.7649C13.2697 10.7809 13.2098 10.8092 13.1571 10.8484C13.1043 10.8875 13.0598 10.9367 13.0261 10.993L11.8561 12.943L11.3091 12.396C11.2152 12.3021 11.0879 12.2494 10.9551 12.2494C10.8223 12.2494 10.695 12.3021 10.6011 12.396C10.5072 12.4899 10.4544 12.6172 10.4544 12.75C10.4544 12.8828 10.5072 13.0101 10.6011 13.104L11.3751 13.877C11.4556 13.9577 11.5535 14.019 11.6614 14.0562C11.7692 14.0934 11.884 14.1055 11.9972 14.0916C12.1104 14.0777 12.219 14.0382 12.3146 13.9761C12.4102 13.9139 12.4904 13.8308 12.5491 13.733L13.8841 11.507C13.9178 11.4507 13.9402 11.3882 13.9498 11.3233C13.9594 11.2583 13.9562 11.1921 13.9402 11.1284C13.9242 11.0647 13.8959 11.0047 13.8567 10.952C13.8176 10.8993 13.7684 10.8547 13.7121 10.821Z"
+                      fill="white" />
+                  </svg>
+                  Envoyer au patient
+                </button>
+                <button (click)="exportPDF()"
+                  class="flex items-center justify-center gap-2 px-3 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-xs font-medium text-[#333333]">
+                  <svg width="15" height="18" viewBox="0 0 15 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M13.9583 10.625V7.83917C13.9583 7.1575 13.9583 6.8175 13.8317 6.51083C13.705 6.205 13.4642 5.96333 12.9817 5.48167L9.035 1.535C8.61917 1.11917 8.41167 0.911667 8.15333 0.788333C8.09987 0.762651 8.04507 0.73984 7.98917 0.72C7.72 0.625 7.42583 0.625 6.83833 0.625C4.13417 0.625 2.78167 0.625 1.86583 1.36333C1.68091 1.51245 1.51245 1.68091 1.36333 1.86583C0.625 2.78333 0.625 4.13417 0.625 6.83833V10.625C0.625 13.7675 0.625 15.3392 1.60167 16.315C2.57833 17.2908 4.14917 17.2917 7.29167 17.2917M8.125 1.04167V1.45833C8.125 3.815 8.125 4.99417 8.8575 5.72583C9.58917 6.45833 10.7683 6.45833 13.125 6.45833H13.5417"
+                      stroke="#777777" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" />
+                    <path
+                      d="M11.4577 17.291C11.9635 16.7993 13.9577 15.491 13.9577 14.791C13.9577 14.091 11.9635 12.7827 11.4577 12.291M13.1243 14.791H7.29102"
+                      stroke="#777777" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  Exporter PDF
+                </button>
+              </div>
+            </div>
+
+            <!-- Contenu scrollable -->
+            <div class="flex-1 overflow-y-auto p-5 md:p-6 space-y-6">
+
+              <!-- Loading détails -->
+              <div *ngIf="loadingDetails" class="text-center py-8">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-[#00B894]">
+                </div>
+                <p class="mt-2 text-sm text-gray-500">Chargement des détails...</p>
+              </div>
+
+              <!-- Détails complets -->
+              <ng-container *ngIf="!loadingDetails && ordonnanceDetails">
+
+                <!-- QR Code -->
+                <div class="flex flex-col items-center">
+                  <div class="w-48 h-48 bg-white flex items-center justify-center">
+                    <img *ngIf="ordonnanceDetails.qrCodeUrl" [src]="getQrCodeImageUrl(ordonnanceDetails.qrCodeUrl)"
+                      [alt]="'QR code ordonnance ' + ordonnanceDetails.reference" class="w-44 h-44 object-contain" />
+                  </div>
+                  <p class="mt-3 text-sm text-gray-500 text-center">
+                    Scannez avec votre téléphone pour ouvrir les détails de l'ordonnance.
+                  </p>
+                </div>
+
+
+                <!-- Patient -->
+                <div class="flex items-center justify-between gap-4">
+                  <h3 class="text-sm font-medium text-gray-500">Patient</h3>
+                  <p class="text-base font-bold text-gray-900 text-right">{{ getPatientName(ordonnanceDetails) }}</p>
+                </div>
+
+                <!-- Statut -->
+                <div class="flex items-center justify-between gap-4">
+                  <h3 class="text-sm font-medium text-gray-500 mb-2">Statut</h3>
+                  <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
+                    [ngClass]="getStatutClass(ordonnanceDetails.status)">
+                    {{ getStatutLabel(ordonnanceDetails.status) }}
+                  </span>
+                </div>
+
+                <!-- Date -->
+                <div class="flex items-center justify-between gap-4">
+                  <h3 class="text-sm font-medium text-gray-500 mb-2">Date de création</h3>
+                  <p class="text-sm text-gray-900">{{ formatDate(ordonnanceDetails.createdAt) }}</p>
+                </div>
+
+                <!-- Pharmacie -->
+                <div class="flex items-center justify-between gap-4">
+                  <h3 class="text-sm font-medium text-gray-500 mb-2">Pharmacie</h3>
+                  <p class="text-sm text-gray-900">{{ getPharmacyName(ordonnanceDetails) }}</p>
+                </div>
+
+                <!-- Adresse -->
+                <div class="flex items-center justify-between gap-4" *ngIf="ordonnanceDetails.address">
+                  <h3 class="text-sm font-medium text-gray-500 mb-2">Adresse de livraison</h3>
+                  <p class="text-sm text-gray-900">{{ ordonnanceDetails.address }}</p>
+                </div>
+
+                <!-- Médicaments -->
+                <div *ngIf="ordonnanceDetails.medications.length">
+                  <h3 class="text-lg font-bold text-gray-900 mb-4">Médicaments ({{ ordonnanceDetails.medications.length
+                    }})</h3>
+                  <div class="overflow-hidden rounded-xl border border-gray-200 bg-white">
+                    <div class="overflow-x-auto">
+                      <table class="w-full border-collapse">
+                        <thead>
+                          <tr class="bg-gray-50">
+                            <th
+                              class="px-4 py-4 text-left text-xs 2xl:text-sm font-semibold text-[#6B7280] border-b border-gray-200">
+                              Médicament
+                            </th>
+                            <th
+                              class="px-4 py-4 text-left text-xs 2xl:text-sm font-semibold text-[#6B7280] border-b border-gray-200">
+                              Posologie
+                            </th>
+                            <th
+                              class="px-4 py-4 text-right text-xs 2xl:text-sm font-semibold text-[#6B7280] border-b border-gray-200 w-24">
+                              Quantité
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let med of ordonnanceDetails.medications"
+                            class="border-b border-gray-200 last:border-b-0">
+                            <td class="px-4 py-4 text-sm font-medium text-[#4B5563]">
+                              {{ med.name }}
+                            </td>
+                            <td class="px-4 py-4 text-sm text-[#4B5563]">
+                              {{ med.dosage || '—' }}
+                            </td>
+                            <td class="px-4 py-4 text-sm text-[#4B5563] text-right">
+                              {{ med.quantity }}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <!-- Total 
+                  <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                    <div class="flex justify-between items-center">
+                      <span class="font-medium text-blue-900">Montant total:</span>
+                      <span class="text-xl font-bold text-blue-900">
+                        {{ getTotalAmount(ordonnanceDetails) | number:'1.2-2' }} FCFA
+                      </span>
+                    </div>
+                  </div>
+                  -->
+                </div>
+
+                <!-- Pas de médicaments -->
+                <div *ngIf="!ordonnanceDetails.medications.length">
+                  <h3 class="text-lg font-bold text-gray-900 mb-4">Médicaments</h3>
+                  <p class="text-sm text-gray-500 italic">Aucun médicament associé</p>
+                </div>
+              </ng-container>
+
+              <!-- Erreur détails -->
+              <div *ngIf="!loadingDetails && !ordonnanceDetails" class="text-center py-8">
+                <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+                <p class="text-gray-500">Erreur lors du chargement des détails</p>
+                <button (click)="loadOrdonnanceDetails(ordonnanceSelectionnee!.id)"
+                  class="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">
+                  Réessayer
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,1013 @@
+<!-- TOAST NOTIFICATIONS -->
+<div class="fixed top-4 right-4 z-[100] space-y-2">
+  <div *ngFor="let toast of toasts"
+    class="bg-red-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 min-w-[300px] max-w-[400px] animate-slide-in">
+    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    </svg>
+    <span class="text-sm flex-1">{{ toast.message }}</span>
+    <button (click)="removeToast(toast.id)" class="text-white hover:text-gray-200">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<div class="min-h-screen px-2 py-3">
+  <div class="max-w-[1400px] mx-auto space-y-3">
+
+    <!-- HEADER -->
+    <div class="flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <button (click)="goBack()" class="w-11 h-11 flex items-center justify-center
+                 rounded-xl bg-white border shadow-sm
+                 hover:bg-gray-50 transition">
+          <svg width="16" height="14" viewBox="0 0 14 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M13.1574 5.30315H0.585938
+                     M0.585938 5.30315L5.30022 0.588867
+                     M0.585938 5.30315L5.30022 10.0174" stroke="#2B3674" stroke-width="1.5" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+        </button>
+
+        <h1 class="text-[22px] font-semibold text-[#343A40]" *ngIf="examen.code && patient.name">
+          Examen {{ examen.code }} - {{ examen.type }} - {{ patient.name }}
+        </h1>
+      </div>
+
+      <button (click)="openValidationDemande()" [disabled]="!canValidate()"
+        class="px-5 py-2.5 rounded-xl text-sm font-medium bg-[#00B894] text-white" [class.opacity-50]="!canValidate()"
+        [class.cursor-not-allowed]="!canValidate()" [class.hover:opacity-90]="canValidate()">
+        Valider la demande
+      </button>
+    </div>
+
+    <!-- MAIN GRID -->
+    <div class="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-4">
+
+      <!-- LEFT SIDEBAR -->
+      <div class="bg-white rounded-2xl border p-3 space-y-4">
+
+        <!-- PATIENT -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-semibold text-sm">
+              {{ getInitials(patient.name) }}
+
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-[#343A40]">{{ patient.name }}</p>
+              <p class="text-xs text-gray-400">{{ patient.role }}</p>
+            </div>
+          </div>
+          <span class="text-gray-400">›</span>
+        </div>
+
+        <hr class="border-gray-100">
+
+        <!-- PRESCRIPTION -->
+        <div class="space-y-4">
+          <h3 class="text-sm font-semibold text-[#343A40]">Détails prescription</h3>
+
+          <div class="space-y-3 text-sm">
+            <div>
+              <p class="text-gray-400 text-xs">Type d'examen</p>
+              <p class="font-medium text-[#343A40]">{{ prescription.typeExamen }}</p>
+            </div>
+
+            <div>
+              <p class="text-gray-400 text-xs">Zone à explorer</p>
+              <p class="font-medium text-[#343A40]">{{ prescription.zone }}</p>
+            </div>
+
+            <div *ngIf="prescription.indications.length > 0">
+              <p class="text-gray-400 text-xs">Indication Médicale</p>
+              <p class="text-[#343A40] leading-relaxed">
+                <span *ngFor="let item of prescription.indications">
+                  {{ item }}<br>
+                </span>
+              </p>
+            </div>
+
+            <div *ngIf="prescription.contreIndications">
+              <p class="text-gray-400 text-xs">Contre-indications</p>
+              <p class="text-red-500 text-sm">
+                {{ prescription.contreIndications.texte }}<br>
+                (Pacemaker :
+                {{ prescription.contreIndications.pacemaker ? 'Oui' : 'Non' }},
+                Claustrophobie :
+                {{ prescription.contreIndications.claustrophobie ? 'Oui' : 'Non' }})
+              </p>
+            </div>
+
+            <div>
+              <p class="text-gray-400 text-xs">Date de réception</p>
+              <p class="font-medium text-[#343A40]">{{ prescription.dateReception }}</p>
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-gray-100">
+
+
+        <!-- PRESCRIPTEUR -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-semibold text-sm">
+              {{ getInitials(prescripteur.name) }}
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-[#343A40]">
+                {{ prescripteur.name }}
+              </p>
+              <p class="text-xs text-gray-400">
+                {{ prescripteur.specialite }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-gray-100">
+
+        <!-- RENDEZ-VOUS -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-[#343A40]">Détails du rendez-vous</h3>
+            <button (click)="openEditRdv()" class="text-blue-600 hover:text-blue-700 text-sm">✎</button>
+          </div>
+
+          <div class="flex items-center gap-3 rounded-xl px-4 py-3" style="background-color:#2C7BE526">
+            <div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center">📅</div>
+            <div>
+              <p class="text-sm font-medium text-[#343A40]">{{ rendezVous.date }}</p>
+              <p class="text-xs text-gray-500">{{ rendezVous.heure }}</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT CONTENT -->
+      <div class="bg-white rounded-2xl border p-3 space-y-4">
+
+        <!-- TITLE + STATUS -->
+        <div class="flex justify-between items-center">
+          <h2 class="text-lg font-semibold text-[#343A40]">
+            {{ ongletActif === 'compte-rendu' ? 'Compte rendu' : ongletActif === 'dicom' ? 'Résultat' : 'Images
+            médicales' }}
+          </h2>
+
+          <div class="flex items-center gap-2">
+            <span class="px-3 py-1 text-xs rounded-full font-medium" [ngClass]="{
+                'bg-yellow-100 text-yellow-700': examen.statut === 'PENDING',
+                'bg-blue-100 text-blue-700': examen.statut === 'ACCEPTED',
+                'bg-red-100 text-red-700': examen.statut === 'REJECTED',
+                'bg-green-100 text-[#00B894]': examen.statut === 'COMPLETED',
+                'bg-gray-100 text-gray-700': !['PENDING','ACCEPTED','REJECTED','COMPLETED'].includes(examen.statut)
+              }">
+              {{ getStatutLabel(examen.statut) }}
+            </span>
+          </div>
+        </div>
+
+        <!-- TABS -->
+        <div class="flex gap-6 border-b">
+          <!-- Onglet Images médicales désactivé temporairement
+          <button (click)="ongletActif = 'images'" class="pb-3 text-sm font-medium"
+            [class.text-[#00B894]]="ongletActif === 'images'" [class.border-b-2]="ongletActif === 'images'"
+            [class.border-[#00B894]]="ongletActif === 'images'">
+            Images médicales
+          </button>
+          -->
+
+          <button (click)="ongletActif = 'dicom'" class="pb-3 text-sm font-medium"
+            [class.text-[#00B894]]="ongletActif === 'dicom'" [class.border-b-2]="ongletActif === 'dicom'"
+            [class.border-[#00B894]]="ongletActif === 'dicom'">
+            Résultat
+          </button>
+
+          <button (click)="ongletActif = 'compte-rendu'" class="pb-3 text-sm font-medium"
+            [class.text-[#00B894]]="ongletActif === 'compte-rendu'" [class.border-b-2]="ongletActif === 'compte-rendu'"
+            [class.border-[#00B894]]="ongletActif === 'compte-rendu'">
+            Compte rendu
+          </button>
+
+        </div>
+
+        <!-- IMAGES médicales désactivées temporairement -->
+        <div *ngIf="false" class="space-y-5">
+
+          <!-- ÉTAT VIDE -->
+          <div *ngIf="imagesMedicales.length === 0" class="flex flex-col items-center justify-center h-[220px]
+                      border border-dashed border-gray-200
+                      rounded-2xl bg-white text-center
+                      px-6">
+
+            <!-- ICON -->
+            <div class="w-14 h-14 rounded-full bg-blue-50
+                        flex items-center justify-center mb-4">
+              <svg class="w-7 h-7 text-[#00B894]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                  d="M3 7h2l2-3h10l2 3h2v11a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                  d="M12 11a3 3 0 100 6 3 3 0 000-6z" />
+              </svg>
+            </div>
+
+            <!-- TEXT -->
+            <p class="text-sm font-semibold text-[#343A40]">
+              Aucune image médicale
+            </p>
+            <p class="text-xs text-gray-400 mt-1 max-w-[220px]">
+              Les images associées à cet examen apparaîtront ici une fois importées.
+            </p>
+          </div>
+
+          <!-- LISTE DES IMAGES -->
+          <div *ngIf="imagesMedicales.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div *ngFor="let img of imagesMedicales" (click)="openViewImage(img)"
+              class="relative rounded-2xl overflow-hidden h-[190px] bg-black cursor-pointer group">
+
+              <img [src]="img.url" alt="Image médicale" class="absolute inset-0 w-full h-full object-cover" />
+
+              <div class="absolute inset-0 bg-black/30"></div>
+
+              <span class="absolute bottom-3 left-3 text-white text-sm font-medium z-10">
+                {{ img.titre }}
+              </span>
+            </div>
+          </div>
+
+          <!-- BOUTON IMPORT -->
+          <button (click)="openImportImage()"
+            class="inline-flex items-center gap-2 px-4 py-2.5 border rounded-xl text-sm font-semibold text-[#2C7BE5] hover:bg-blue-50">
+            <svg width="16" height="14" viewBox="0 0 16 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M0.5 8.90137C0.632608 8.90137 0.759785 8.95405 0.853553 9.04781C0.947322 9.14158 1 9.26876 1 9.40137V11.9014C1 12.1666 1.10536 12.4209 1.29289 12.6085C1.48043 12.796 1.73478 12.9014 2 12.9014H14C14.2652 12.9014 14.5196 12.796 14.7071 12.6085C14.8946 12.4209 15 12.1666 15 11.9014V9.40137C15 9.26876 15.0527 9.14158 15.1464 9.04781C15.2402 8.95405 15.3674 8.90137 15.5 8.90137C15.6326 8.90137 15.7598 8.95405 15.8536 9.04781C15.9473 9.14158 16 9.26876 16 9.40137V11.9014C16 12.4318 15.7893 12.9405 15.4142 13.3156C15.0391 13.6907 14.5304 13.9014 14 13.9014H2C1.46957 13.9014 0.960859 13.6907 0.585786 13.3156C0.210714 12.9405 0 12.4318 0 11.9014V9.40137C0 9.26876 0.0526784 9.14158 0.146447 9.04781C0.240215 8.95405 0.367392 8.90137 0.5 8.90137Z"
+                fill="#2C7BE5" />
+              <path
+                d="M7.64663 0.146894C7.69308 0.100331 7.74825 0.0633877 7.809 0.0381812C7.86974 0.0129748 7.93486 0 8.00063 0C8.0664 0 8.13152 0.0129748 8.19227 0.0381812C8.25301 0.0633877 8.30819 0.100331 8.35463 0.146894L11.3546 3.14689C11.4485 3.24078 11.5013 3.36812 11.5013 3.50089C11.5013 3.63367 11.4485 3.76101 11.3546 3.85489C11.2607 3.94878 11.1334 4.00153 11.0006 4.00153C10.8679 4.00153 10.7405 3.94878 10.6466 3.85489L8.50063 1.70789V10.5009C8.50063 10.6335 8.44795 10.7607 8.35419 10.8544C8.26042 10.9482 8.13324 11.0009 8.00063 11.0009C7.86802 11.0009 7.74085 10.9482 7.64708 10.8544C7.55331 10.7607 7.50063 10.6335 7.50063 10.5009V1.70789L5.35463 3.85489C5.30814 3.90138 5.25295 3.93826 5.19222 3.96342C5.13148 3.98858 5.06638 4.00153 5.00063 4.00153C4.93489 4.00153 4.86979 3.98858 4.80905 3.96342C4.74831 3.93826 4.69312 3.90138 4.64663 3.85489C4.60014 3.80841 4.56327 3.75322 4.53811 3.69248C4.51295 3.63174 4.5 3.56664 4.5 3.50089C4.5 3.43515 4.51295 3.37005 4.53811 3.30931C4.56327 3.24857 4.60014 3.19338 4.64663 3.14689L7.64663 0.146894Z"
+                fill="#2C7BE5" />
+            </svg>
+            Importer une image
+          </button>
+        </div>
+
+        <!-- COMPTE RENDU -->
+        <div *ngIf="ongletActif === 'compte-rendu'" class="space-y-6">
+
+          <!-- APERÇU (SI COMPLÉTÉ) -->
+          <div *ngIf="isCompteRenduPublie()" class="space-y-6">
+
+            <h3 class="text-lg font-semibold text-gray-900">
+              Aperçu du compte rendu
+            </h3>
+
+            <div class="bg-white border border-gray-200 rounded-xl p-6 space-y-6">
+
+              <!-- Infos patient -->
+              <div class="space-y-2 pb-4 border-b border-gray-200">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm text-gray-600">Patient :</span>
+                  <span class="text-sm font-semibold text-gray-900">{{ patient.name }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-sm text-gray-600">Examen :</span>
+                  <span class="text-sm font-semibold text-gray-900">{{ prescription.typeExamen }}</span>
+                </div>
+              </div>
+
+              <!-- TEXTE DU RAPPORT -->
+              <div>
+                <p class="text-sm font-medium text-gray-700 mb-2">Compte rendu médical</p>
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-800 whitespace-pre-line">
+                  {{ examApi.report || 'Aucun compte rendu disponible.' }}
+                </div>
+              </div>
+
+              <!-- FICHIER PDF -->
+              <div *ngIf="examApi?.reportFile" class="pt-2">
+                <p class="text-sm font-medium text-gray-700 mb-2">Document officiel</p>
+
+                <a [href]="'https://wakana.online/repertoire_chantier/' + examApi.reportFile" target="_blank"
+                  class="inline-flex items-center gap-2 px-4 py-2 bg-[#00B894] text-white rounded-lg text-sm font-medium hover:bg-[#009e7a] transition">
+                  📄 Ouvrir le document PDF
+                </a>
+              </div>
+
+            </div>
+
+            <!-- Signature -->
+            <div class="flex items-start gap-2 text-xs text-gray-500 italic">
+              <svg class="w-4 h-4 mt-0.5 flex-shrink-0 text-[#00B894]" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <span>
+                Signé électroniquement par {{ prescripteur.name }} le {{ getCurrentDate() }}
+              </span>
+            </div>
+
+          </div>
+
+
+          <!-- FORMULAIRE -->
+          <div *ngIf="canEditCompteRendu()" class="space-y-6">
+
+
+
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-gray-700">Description / Observation</label>
+              <textarea [(ngModel)]="compteRenduForm.description" rows="6"
+                class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#00B894] focus:border-transparent resize-none"></textarea>
+            </div>
+
+            <!-- Upload -->
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-gray-700">Document Officiel</label>
+
+              <div *ngIf="!compteRenduFile"
+                class="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center bg-gray-50 hover:bg-gray-100">
+
+                <input type="file" #compteRenduFileInput hidden accept=".png,.jpg,.jpeg,.pdf"
+                  (change)="onCompteRenduFileSelected($event)" />
+
+                <div class="w-12 h-12 mx-auto mb-3 flex items-center justify-center bg-[#00B894]/10 rounded-full">
+                  <svg class="w-6 h-6 text-[#00B894]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                  </svg>
+                </div>
+
+                <button type="button" (click)="compteRenduFileInput.click()"
+                  class="px-5 py-2 bg-[#00B894] hover:bg-[#009e7a] text-white rounded-lg text-sm font-medium">
+                  Choisir un fichier
+                </button>
+
+                <p class="text-xs text-gray-500 mt-2">ou glisser-déposer</p>
+                <p class="text-xs text-gray-400 mt-1">PNG, JPG, PDF jusqu'à 10MB</p>
+              </div>
+
+              <!-- Fichier sélectionné -->
+              <div *ngIf="compteRenduFile"
+                class="border border-gray-200 rounded-xl p-4 flex items-center justify-between bg-gray-50">
+
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-lg bg-[#00B894]/10 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-[#00B894]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                      </path>
+                    </svg>
+                  </div>
+
+                  <div>
+                    <p class="text-sm font-medium text-gray-900">{{ compteRenduFile.name }}</p>
+                    <p class="text-xs text-gray-500">{{ (compteRenduFile.size / 1024 / 1024).toFixed(2) }} MB</p>
+                  </div>
+                </div>
+
+                <button type="button" (click)="removeCompteRenduFile()"
+                  class="text-red-500 hover:text-red-600 transition-colors">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                    </path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center justify-between pt-4 border-t">
+              <button type="button" (click)="genererAvecIA()"
+                class="flex items-center gap-2 px-4 py-2.5 border border-[#00B894] text-[#00B894] rounded-xl text-sm font-medium hover:bg-[#00B894]/10">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z">
+                  </path>
+                </svg>
+                Générer avec IA
+              </button>
+
+              <button type="button" (click)="openValiderCompteRendu()"
+                class="flex items-center gap-2 px-5 py-2.5 bg-[#00B894] hover:bg-[#009e7a] text-white rounded-xl text-sm font-medium">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                Valider et publier
+              </button>
+            </div>
+
+          </div>
+
+          <div *ngIf="isExamenCancelled()" class="text-center py-10 text-gray-500">
+            Cet examen a été annulé. Aucun compte rendu n'est disponible.
+          </div>
+
+        </div>
+
+        <!-- DICOM -->
+        <div *ngIf="ongletActif === 'dicom'" class="space-y-5">
+
+          <!-- ACCESSION NUMBER (lecture seule) -->
+          <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3"
+            *ngIf="accessionNumber">
+            <div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <p class="text-xs text-gray-400">Accession Number</p>
+              <p class="text-sm font-semibold text-[#343A40]">{{ accessionNumber }}</p>
+            </div>
+            <button type="button" (click)="copyAccessionNumber()" title="Copier l'accession number"
+              class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-[#2C7BE5] hover:bg-blue-50 transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z">
+                </path>
+              </svg>
+            </button>
+          </div>
+
+          <div *ngIf="!accessionNumber"
+            class="bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3 text-sm text-yellow-700">
+            ⚠️ Aucun Accession Number disponible pour cet examen. L'upload DICOM n'est pas possible.
+          </div>
+
+          <!-- BOUTON IMPORT DICOM -->
+          <button *ngIf="accessionNumber" (click)="openDicomUpload()"
+            class="inline-flex items-center gap-2 px-4 py-2.5 border rounded-xl text-sm font-semibold text-[#2C7BE5] hover:bg-blue-50 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+            </svg>
+            Importer un fichier DICOM (.dcm)
+          </button>
+
+          <!-- VIEWER DICOM (composant standalone existant) -->
+          <div class="mt-4 rounded-2xl overflow-hidden border border-gray-200 relative group" *ngIf="accessionNumber"
+            style="height: calc(100vh - 220px); max-width: 100%;">
+            <app-standalone-pacs-viewer [accessionNumber]="accessionNumber"
+              [refreshTrigger]="viewerRefreshTrigger"></app-standalone-pacs-viewer>
+            <!-- Overlay cliquable transparent par-dessus l'iframe -->
+            <div
+              class="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-black/10 transition-colors flex items-center justify-center"
+              (click)="openDicomFullscreen()">
+              <div class="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 rounded-full p-3 shadow-lg">
+                <svg class="w-6 h-6 text-[#343A40]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5">
+                  </path>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FULLSCREEN DICOM VIEWER -->
+<div *ngIf="dicomFullscreen" class="fixed inset-0 z-[80] bg-black flex flex-col">
+  <!-- Header plein écran -->
+  <div class="flex items-center justify-between px-4 py-2 bg-[#1a1a1a] border-b border-gray-700 flex-shrink-0">
+    <div class="flex items-center gap-3">
+      <span class="text-white text-sm font-medium">🔍 Viewer DICOM — {{ accessionNumber }}</span>
+    </div>
+    <button (click)="closeDicomFullscreen()"
+      class="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm transition">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+      Fermer
+    </button>
+  </div>
+  <!-- Viewer -->
+  <div class="flex-1 overflow-hidden">
+    <app-standalone-pacs-viewer [accessionNumber]="accessionNumber" [refreshTrigger]="viewerRefreshTrigger"
+      [hideHeader]="true"></app-standalone-pacs-viewer>
+  </div>
+</div>
+
+<!-- MODAL: Valider demande -->
+<div *ngIf="showValidationDemandeModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+  (click)="closeValidationDemande()">
+
+  <div class="bg-white rounded-xl w-full max-w-[400px] p-6 space-y-4 shadow-xl" (click)="$event.stopPropagation()">
+
+    <div class="w-16 h-16 mx-auto rounded-full bg-orange-100 flex items-center justify-center">
+      <span class="text-orange-400 text-4xl font-bold">!</span>
+    </div>
+
+    <h3 class="text-lg font-semibold text-center text-gray-900">Valider la demande</h3>
+
+    <p class="text-sm text-center text-gray-600 leading-relaxed">
+      Proposez une <strong>date</strong> et une <strong>heure</strong> pour l'examen.
+      Le patient recevra une notification automatique.
+    </p>
+
+    <div class="space-y-1">
+      <label class="text-xs font-medium text-gray-700">Date du rendez-vous</label>
+      <input type="date" [(ngModel)]="validationDemandeForm.date" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm
+               focus:ring-2 focus:ring-[#00B894] focus:border-transparent">
+    </div>
+
+    <div class="space-y-1">
+      <label class="text-xs font-medium text-gray-700">Heure</label>
+      <input type="time" [(ngModel)]="validationDemandeForm.heure" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm
+               focus:ring-2 focus:ring-[#00B894] focus:border-transparent">
+    </div>
+
+    <div class="space-y-1">
+      <label class="text-xs font-medium text-gray-700">Notes complémentaires (optionnel)</label>
+      <textarea [(ngModel)]="validationDemandeForm.note" rows="3"
+        placeholder="Instructions particulières pour le patient" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm
+               focus:ring-2 focus:ring-[#00B894] focus:border-transparent resize-none"></textarea>
+    </div>
+
+    <div class="flex gap-3 pt-2">
+      <button (click)="confirmerValidationDemande()" class="flex-1 px-4 py-2.5 bg-[#00B894] hover:bg-[#009e7a]
+               text-white rounded-lg font-medium text-sm">
+        Valider
+      </button>
+      <button (click)="closeValidationDemande()" class="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200
+               text-gray-700 rounded-lg font-medium text-sm">
+        Annuler
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL: Demande validée (success) -->
+<div *ngIf="showValidationDemandeSuccess" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+  (click)="closeValidationDemandeSuccess()">
+
+  <div class="bg-white rounded-xl w-full max-w-[400px] p-8 text-center space-y-4 shadow-xl">
+
+    <div class="w-20 h-20 mx-auto rounded-full bg-teal-100 flex items-center justify-center">
+      <svg class="w-12 h-12 text-[#00B894]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+      </svg>
+    </div>
+
+    <p class="text-lg font-semibold text-gray-900">Rendez-vous confirmé</p>
+
+    <p class="text-sm text-gray-600">
+      Le rendez-vous pour <strong>{{ patient.name }}</strong> a été <strong>planifié</strong> avec succès.
+    </p>
+
+  </div>
+</div>
+
+<!-- MODAL: Modifier rendez-vous -->
+<div *ngIf="showEditRdvModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+  (click)="closeEditRdv()">
+
+  <div class="bg-white rounded-xl w-full max-w-[400px] p-6 space-y-4 shadow-xl" (click)="$event.stopPropagation()">
+
+    <div class="flex justify-between items-center">
+      <h3 class="text-lg font-semibold text-gray-900">Modifier le rendez-vous</h3>
+      <button (click)="closeEditRdv()" class="text-gray-400 hover:text-gray-600">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+
+    <div class="space-y-1">
+      <label class="text-xs font-medium text-gray-700">Date du rendez-vous</label>
+      <input type="date" [(ngModel)]="rendezVousForm.date" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm
+               focus:ring-2 focus:ring-[#00B894] focus:border-transparent">
+    </div>
+
+    <div class="space-y-1">
+      <label class="text-xs font-medium text-gray-700">Heure</label>
+      <input type="time" [(ngModel)]="rendezVousForm.heure" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm
+               focus:ring-2 focus:ring-[#00B894] focus:border-transparent">
+    </div>
+
+    <div class="space-y-1">
+      <label class="text-xs font-medium text-gray-700">Notes complémentaires (optionnel)</label>
+      <textarea [(ngModel)]="rendezVousForm.note" rows="3" placeholder="Instructions particulières pour le patient"
+        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm
+               focus:ring-2 focus:ring-[#00B894] focus:border-transparent resize-none"></textarea>
+    </div>
+
+    <div class="flex gap-3 pt-2">
+      <button (click)="confirmerEditRdv()" class="flex-1 px-4 py-2.5 bg-[#00B894] hover:bg-[#009e7a]
+               text-white rounded-lg font-medium text-sm">
+        Mettre à jour
+      </button>
+      <button (click)="closeEditRdv()" class="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200
+               text-gray-700 rounded-lg font-medium text-sm">
+        Annuler
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL: RDV modifié (success) -->
+<div *ngIf="showEditRdvSuccess" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+  (click)="closeEditRdvSuccess()">
+
+  <div class="bg-white rounded-xl w-full max-w-[400px] p-8 text-center space-y-4 shadow-xl">
+
+    <div class="w-20 h-20 mx-auto rounded-full bg-teal-100 flex items-center justify-center">
+      <svg class="w-12 h-12 text-[#00B894]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+      </svg>
+    </div>
+
+    <p class="text-lg font-semibold text-gray-900">Rendez-vous modifié</p>
+
+    <p class="text-sm text-gray-600">
+      Le rendez-vous pour <strong>{{ patient.name }}</strong> a été <strong>modifié</strong> avec succès.
+    </p>
+
+  </div>
+</div>
+
+<!-- MODAL: Importer image -->
+<div *ngIf="showImportImageModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+  (click)="closeImportImage()">
+
+  <div class="bg-white rounded-2xl w-full max-w-3xl p-6 space-y-5" (click)="$event.stopPropagation()">
+
+    <!-- HEADER -->
+    <div class="flex justify-between items-center">
+      <h3 class="text-lg font-semibold">Images médicales</h3>
+      <button (click)="closeImportImage()" class="text-gray-400 hover:text-gray-600">✕</button>
+    </div>
+
+    <!-- SELECT -->
+    <div class="border border-dashed rounded-xl p-6 text-center space-y-2">
+      <input type="file" multiple accept="image/*" hidden #fileInput (change)="onFilesSelected($event)" />
+
+      <button type="button" (click)="fileInput.click()" class="px-4 py-2 bg-[#00B894] text-white rounded-lg">
+        Choisir des images
+      </button>
+
+      <p class="text-xs text-gray-500">
+        PNG, JPG — sélection multiple autorisée
+      </p>
+    </div>
+
+    <!-- PREVIEW -->
+    <div *ngIf="previewUrls.length > 0" class="max-h-[400px] overflow-y-auto border rounded-xl p-4">
+
+      <p class="text-sm font-medium mb-3 text-gray-700">
+        {{ selectedFiles.length }} image(s) sélectionnée(s)
+      </p>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div *ngFor="let img of previewUrls; let i = index" class="relative group">
+
+          <!-- Image preview -->
+          <img [src]="img" class="h-32 w-full object-cover rounded-lg border" />
+
+          <!-- Overlay au hover -->
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100
+                      transition-opacity rounded-lg flex items-center justify-center">
+
+            <!-- Bouton supprimer -->
+            <button type="button" (click)="removeSelectedFile(i)" class="bg-red-500 hover:bg-red-600 text-white
+                     px-3 py-1.5 rounded-lg text-xs font-medium
+                     flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                </path>
+              </svg>
+              Retirer
+            </button>
+          </div>
+
+          <!-- Nom du fichier -->
+          <p class="text-xs text-gray-600 mt-1 truncate">
+            {{ selectedFiles[i].name }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="flex gap-3 pt-3">
+      <button (click)="confirmerImportImage()" [disabled]="selectedFiles.length === 0" class="flex-1 bg-[#00B894] text-white py-2 rounded-lg
+               disabled:opacity-50">
+        Enregistrer
+      </button>
+
+      <button (click)="closeImportImage()" class="flex-1 bg-gray-100 py-2 rounded-lg">
+        Annuler
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL: Image importée (success) -->
+<div *ngIf="showImportImageSuccess" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+  (click)="closeImportImageSuccess()">
+
+  <div class="bg-white rounded-xl w-full max-w-[400px] p-8 text-center space-y-4 shadow-xl">
+
+    <div class="w-20 h-20 mx-auto rounded-full bg-teal-100 flex items-center justify-center">
+      <svg class="w-12 h-12 text-[#00B894]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+      </svg>
+    </div>
+
+    <p class="text-lg font-semibold text-gray-900">Images enregistrées</p>
+
+  </div>
+</div>
+
+<!-- MODAL: Voir image -->
+<div *ngIf="showViewImageModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center">
+
+  <div class="bg-white rounded-2xl p-5 max-w-4xl w-full relative">
+
+    <!-- CLOSE -->
+    <button (click)="closeViewImage()" class="absolute top-4 right-4 w-8 h-8 rounded-full
+             bg-gray-100 hover:bg-gray-200 flex items-center justify-center">
+      ✕
+    </button>
+
+    <!-- IMAGE -->
+    <div class="flex justify-center">
+      <img *ngIf="selectedImage" [src]="selectedImage.url" class="max-h-[80vh] mx-auto rounded-xl" />
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="flex justify-end gap-3 mt-5">
+
+      <button (click)="openDeleteImageFromView()" class="px-4 py-2 text-sm rounded-lg
+               bg-red-100 text-red-600 hover:bg-red-200">
+        Supprimer
+      </button>
+
+      <button (click)="closeViewImage()" class="px-4 py-2 text-sm rounded-lg
+               bg-gray-100 hover:bg-gray-200">
+        Fermer
+      </button>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Supprimer image -->
+<div *ngIf="showDeleteImageModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4"
+  (click)="closeDeleteImage()">
+
+  <div class="bg-white rounded-2xl w-full max-w-[420px] p-6 text-center space-y-5 shadow-2xl"
+    (click)="$event.stopPropagation()">
+
+    <div class="w-16 h-16 mx-auto rounded-full bg-red-100 flex items-center justify-center">
+      <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+        </path>
+      </svg>
+    </div>
+
+    <h3 class="text-lg font-semibold text-gray-900">
+      Supprimer l'image
+    </h3>
+
+    <p class="text-sm text-gray-600 leading-relaxed px-2">
+      Êtes-vous sûr de vouloir supprimer l'image <strong class="text-gray-900">{{ selectedImage?.titre }}</strong> ?<br>
+      <span class="text-red-600 font-medium">Cette action est irréversible.</span>
+    </p>
+
+    <div class="flex gap-3 pt-2">
+      <button (click)="closeDeleteImage()" class="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200
+               text-gray-700 rounded-lg font-medium text-sm">
+        Annuler
+      </button>
+      <button (click)="confirmerDeleteImage()" class="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600
+               text-white rounded-lg font-medium text-sm">
+        Supprimer
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL: Image supprimée (success) -->
+<div *ngIf="showDeleteImageSuccess" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4"
+  (click)="closeDeleteImageSuccess()">
+
+  <div class="bg-white rounded-2xl w-full max-w-[400px] p-8 text-center space-y-4 shadow-2xl">
+
+    <div class="w-20 h-20 mx-auto rounded-full bg-green-100 flex items-center justify-center">
+      <svg class="w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+      </svg>
+    </div>
+
+    <p class="text-lg font-semibold text-gray-900">
+      Image supprimée avec succès
+    </p>
+
+  </div>
+</div>
+
+<!-- MODAL: Valider compte rendu -->
+<div *ngIf="showValidateCompteRenduModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+  (click)="closeValidateCompteRendu()">
+
+  <div class="bg-white rounded-2xl w-full max-w-[420px] p-6 text-center space-y-5 shadow-2xl"
+    (click)="$event.stopPropagation()">
+
+    <div class="w-16 h-16 mx-auto rounded-full bg-orange-100 flex items-center justify-center">
+      <svg class="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+    </div>
+
+    <h3 class="text-lg font-semibold text-gray-900">
+      Valider et publier le compte rendu
+    </h3>
+
+    <p class="text-sm text-gray-600 leading-relaxed px-2">
+      En validant, le compte rendu sera <strong>signé électroniquement</strong>,
+      horodaté et transmis au patient et au médecin prescripteur.
+    </p>
+
+    <div class="flex gap-3 pt-2">
+      <button (click)="closeValidateCompteRendu()" class="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200
+               text-gray-700 rounded-lg font-medium text-sm">
+        Annuler
+      </button>
+      <button (click)="confirmerPublierCompteRendu()" class="flex-1 px-4 py-2.5 bg-[#00B894] hover:bg-[#009e7a]
+               text-white rounded-lg font-medium text-sm">
+        Valider et publier
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL: Compte rendu validé (success) -->
+<div *ngIf="showValidateCompteRenduSuccess" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+  (click)="closeCompteRenduSuccess()">
+
+  <div class="bg-white rounded-xl w-full max-w-[400px] p-8 text-center space-y-4 shadow-xl">
+
+    <div class="w-20 h-20 mx-auto rounded-full bg-teal-100 flex items-center justify-center">
+      <svg class="w-12 h-12 text-[#00B894]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+      </svg>
+    </div>
+
+    <p class="text-lg font-semibold text-gray-900">Examen validé avec succès</p>
+
+  </div>
+</div>
+
+<!-- ======================================= -->
+<!-- MODAL: Importer fichier DICOM           -->
+<!-- ======================================= -->
+<div *ngIf="showDicomUploadModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+  (click)="closeDicomUpload()">
+
+  <div class="bg-white rounded-2xl w-full max-w-lg p-6 space-y-5 shadow-xl" (click)="$event.stopPropagation()">
+
+    <!-- HEADER -->
+    <div class="flex justify-between items-center">
+      <h3 class="text-lg font-semibold text-gray-900">Importer un fichier DICOM</h3>
+      <button (click)="closeDicomUpload()" class="text-gray-400 hover:text-gray-600">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- ACCESSION NUMBER (lecture seule) -->
+    <div class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+      <p class="text-xs text-gray-400 mb-0.5">Accession Number</p>
+      <p class="text-sm font-semibold text-[#343A40]">{{ accessionNumber }}</p>
+    </div>
+
+    <!-- ZONE D'UPLOAD -->
+    <div *ngIf="!dicomFile" class="border-2 border-dashed rounded-xl p-8 text-center space-y-3 transition"
+      [ngClass]="dicomFileError ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:bg-gray-100'">
+
+      <input type="file" accept=".dcm" hidden #dicomFileInput (change)="onDicomFileSelected($event)" />
+
+      <div class="w-12 h-12 mx-auto mb-2 flex items-center justify-center bg-[#2C7BE5]/10 rounded-full">
+        <svg class="w-6 h-6 text-[#2C7BE5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+        </svg>
+      </div>
+
+      <button type="button" (click)="dicomFileInput.click()"
+        class="px-5 py-2 bg-[#2C7BE5] hover:bg-[#1a6ad4] text-white rounded-lg text-sm font-medium transition">
+        Choisir un fichier .dcm
+      </button>
+
+      <p class="text-xs text-gray-500">ou glisser-déposer</p>
+      <p class="text-xs text-gray-400">Uniquement fichiers DICOM (.dcm) — max 50 MB</p>
+    </div>
+
+    <!-- ERREUR FORMAT -->
+    <div *ngIf="dicomFileError"
+      class="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-600 flex items-center gap-2">
+      <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      {{ dicomFileError }}
+    </div>
+
+    <!-- FICHIER SÉLECTIONNÉ -->
+    <div *ngIf="dicomFile" class="border border-gray-200 rounded-xl p-4 flex items-center justify-between bg-gray-50">
+
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-[#2C7BE5]/10 flex items-center justify-center">
+          <svg class="w-5 h-5 text-[#2C7BE5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+            </path>
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-900">{{ dicomFileName }}</p>
+          <p class="text-xs text-gray-500">{{ (dicomFile.size / 1024 / 1024).toFixed(2) }} MB</p>
+        </div>
+      </div>
+
+      <button type="button" (click)="removeDicomFile()" class="text-red-500 hover:text-red-600 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+          </path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- ERREUR UPLOAD -->
+    <div *ngIf="dicomUploadError"
+      class="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-600 flex items-center gap-2">
+      <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      {{ dicomUploadError }}
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="flex gap-3 pt-2">
+      <button (click)="confirmerDicomUpload()" [disabled]="!dicomFile || dicomUploading"
+        class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm text-white transition"
+        [ngClass]="!dicomFile || dicomUploading ? 'bg-gray-300 cursor-not-allowed' : 'bg-[#2C7BE5] hover:bg-[#1a6ad4]'">
+
+        <!-- Spinner pendant upload -->
+        <div *ngIf="dicomUploading"
+          class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+
+        {{ dicomUploading ? 'Upload en cours...' : 'Importer' }}
+      </button>
+
+      <button (click)="closeDicomUpload()" [disabled]="dicomUploading"
+        class="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium text-sm transition"
+        [class.opacity-50]="dicomUploading">
+        Annuler
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL: DICOM Upload Success -->
+<div *ngIf="showDicomUploadSuccess" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+  (click)="closeDicomUploadSuccess()">
+
+  <div class="bg-white rounded-xl w-full max-w-[400px] p-8 text-center space-y-4 shadow-xl animate-bounce-in">
+
+    <div class="w-20 h-20 mx-auto rounded-full bg-teal-100 flex items-center justify-center">
+      <svg class="w-12 h-12 text-[#00B894]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+      </svg>
+    </div>
+
+    <p class="text-lg font-semibold text-gray-900">Fichier DICOM importé avec succès</p>
+    <p class="text-sm text-gray-500">Le viewer sera mis à jour automatiquement.</p>
+
+  </div>
+</div>

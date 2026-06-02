@@ -1,0 +1,261 @@
+<!-- Container principal avec fond gris -->
+<div class="min-h-screen bg-[#f5f7fa]">
+  <!-- Header du dashboard -->
+  <div class="mb-8">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <!-- Titre et description -->
+      <div>
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Tableau de bord</h1>
+        <p class="text-gray-600 text-sm md:text-base">Vue d'ensemble de votre activité</p>
+      </div>
+
+      <!-- Actions du header -->
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <!-- Sélecteur de période -->
+        <div class="relative">
+          <button
+            class="w-full sm:w-auto flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700 font-medium">
+            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span>{{ selectedPeriod }}</span>
+            <svg class="w-4 h-4 ml-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Bouton Exporter -->
+        <button (click)="exportData()"
+          class="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-[#2C7BE5] text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-md">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M11.37 10.384C11.0888 10.6653 10.9308 11.0468 10.9308 11.4445C10.9308 11.8422 11.0888 12.2237 11.37 12.505L11.437 12.572C11.5763 12.7114 11.7417 12.822 11.9238 12.8974C12.1058 12.9728 12.3009 13.0117 12.498 13.0117C12.6951 13.0117 12.8902 12.9728 13.0722 12.8974C13.2543 12.822 13.4197 12.7114 13.559 12.572L16.674 9.457C16.818 9.313 16.927 9.147 17 8.969V17C17 17.5304 16.7893 18.0391 16.4142 18.4142C16.0391 18.7893 15.5304 19 15 19H7C6.46957 19 5.96086 18.7893 5.58579 18.4142C5.21071 18.0391 5 17.5304 5 17V9C5 8.46957 5.21071 7.96086 5.58579 7.58579C5.96086 7.21071 6.46957 7 7 7H14.851C14.7161 7.07057 14.5926 7.16127 14.485 7.269L11.37 10.384Z"
+              fill="white" />
+            <path fill-rule="evenodd" clip-rule="evenodd"
+              d="M19.2183 4.78214C19.2648 4.82858 19.3018 4.88376 19.327 4.9445C19.3522 5.00525 19.3652 5.07037 19.3652 5.13614C19.3652 5.2019 19.3522 5.26702 19.327 5.32777C19.3018 5.38851 19.2648 5.44369 19.2183 5.49014L12.8543 11.8541C12.7605 11.948 12.6333 12.0008 12.5006 12.0009C12.368 12.001 12.2407 11.9484 12.1468 11.8546C12.0529 11.7609 12.0001 11.6337 12 11.501C11.9999 11.3683 12.0525 11.241 12.1463 11.1471L18.5103 4.78214C18.604 4.6884 18.7312 4.63574 18.8638 4.63574C18.9964 4.63574 19.1235 4.6884 19.2173 4.78214"
+              fill="white" />
+            <path fill-rule="evenodd" clip-rule="evenodd"
+              d="M14 4.5C14 4.36739 14.0527 4.24021 14.1464 4.14645C14.2402 4.05268 14.3674 4 14.5 4H19.5C19.6326 4 19.7598 4.05268 19.8536 4.14645C19.9473 4.24021 20 4.36739 20 4.5V9.5C20 9.63261 19.9473 9.75979 19.8536 9.85355C19.7598 9.94732 19.6326 10 19.5 10C19.3674 10 19.2402 9.94732 19.1464 9.85355C19.0527 9.75979 19 9.63261 19 9.5V5H14.5C14.3674 5 14.2402 4.94732 14.1464 4.85355C14.0527 4.75979 14 4.63261 14 4.5Z"
+              fill="white" />
+          </svg>
+          Exporter
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cartes statistiques -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div *ngFor="let card of statsCards" class="bg-white rounded-xl shadow-sm p-5 hover:shadow-md transition-shadow">
+      <!-- Header de la carte -->
+      <div class="flex items-start justify-between mb-2">
+        <p class="text-gray-600 text-sm font-medium">{{ card.title }}</p>
+
+        <!-- Icônes -->
+        <div class="p-2 rounded-lg shadow-sm flex items-center justify-center w-7 h-7 sm:w-10 sm:h-10">
+          <!-- Icône Document -->
+          <svg *ngIf="card.icon === 'document'" class="w-full h-full max-w-5 max-h-5" [ngClass]="card.iconColor"
+            viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M15 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V7L15 2Z"
+              stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M14 2V6C14 6.53043 14.2107 7.03914 14.5858 7.41421C14.9609 7.78929 15.4696 8 16 8H20"
+              stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M10 9H8" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M16 13H8" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M16 17H8" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+
+          <!-- Icône Calendrier -->
+          <svg *ngIf="card.icon === 'calendar'" class="w-full h-full max-w-5 max-h-5" [ngClass]="card.iconColor"
+            viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M8 14C7.71667 14 7.47933 13.904 7.288 13.712C7.09667 13.52 7.00067 13.2827 7 13C6.99933 12.7173 7.09533 12.48 7.288 12.288C7.48067 12.096 7.718 12 8 12C8.282 12 8.51967 12.096 8.713 12.288C8.90633 12.48 9.002 12.7173 9 13C8.998 13.2827 8.902 13.5203 8.712 13.713C8.522 13.9057 8.28467 14.0013 8 14ZM12 14C11.7167 14 11.4793 13.904 11.288 13.712C11.0967 13.52 11.0007 13.2827 11 13C10.9993 12.7173 11.0953 12.48 11.288 12.288C11.4807 12.096 11.718 12 12 12C12.282 12 12.5197 12.096 12.713 12.288C12.9063 12.48 13.002 12.7173 13 13C12.998 13.2827 12.902 13.5203 12.712 13.713C12.522 13.9057 12.2847 14.0013 12 14ZM16 14C15.7167 14 15.4793 13.904 15.288 13.712C15.0967 13.52 15.0007 13.2827 15 13C14.9993 12.7173 15.0953 12.48 15.288 12.288C15.4807 12.096 15.718 12 16 12C16.282 12 16.5197 12.096 16.713 12.288C16.9063 12.48 17.002 12.7173 17 13C16.998 13.2827 16.902 13.5203 16.712 13.713C16.522 13.9057 16.2847 14.0013 16 14ZM5 22C4.45 22 3.97933 21.8043 3.588 21.413C3.19667 21.0217 3.00067 20.5507 3 20V6C3 5.45 3.196 4.97933 3.588 4.588C3.98 4.19667 4.45067 4.00067 5 4H6V2H8V4H16V2H18V4H19C19.55 4 20.021 4.196 20.413 4.588C20.805 4.98 21.0007 5.45067 21 6V20C21 20.55 20.8043 21.021 20.413 21.413C20.0217 21.805 19.5507 22.0007 19 22H5ZM5 20H19V10H5V20Z"
+              fill="#285D90" />
+          </svg>
+
+          <!-- Icône Sablier -->
+          <svg *ngIf="card.icon === 'hourglass'" class="w-full h-full max-w-5 max-h-5" [ngClass]="card.iconColor"
+            width="20" height="21" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M18 1.5C18 2.32812 17.8828 3.13281 17.6484 3.91406C17.4141 4.69531 17.0586 5.43359 16.582 6.12891C16.3398 6.48047 16.0859 6.80078 15.8203 7.08984C15.5547 7.37891 15.2734 7.64062 14.9766 7.875C14.6797 8.10938 14.3594 8.33203 14.0156 8.54297C13.6719 8.75391 13.3125 8.94531 12.9375 9.11719C12.6484 9.25 12.4219 9.42969 12.2578 9.65625C12.0938 9.88281 12.0078 10.1641 12 10.5C12 10.8281 12.082 11.1055 12.2461 11.332C12.4102 11.5586 12.6406 11.7422 12.9375 11.8828C13.3203 12.0625 13.6797 12.2539 14.0156 12.457C14.3516 12.6602 14.668 12.8789 14.9648 13.1133C15.2617 13.3477 15.5469 13.6133 15.8203 13.9102C16.0938 14.207 16.3477 14.5273 16.582 14.8711C17.0508 15.5586 17.4023 16.293 17.6367 17.0742C17.8711 17.8555 17.9922 18.6641 18 19.5H19.5V21H0V19.5H1.5C1.5 18.6719 1.61719 17.8672 1.85156 17.0859C2.08594 16.3047 2.44141 15.5664 2.91797 14.8711C3.16797 14.5039 3.42578 14.1797 3.69141 13.8984C3.95703 13.6172 4.23438 13.3555 4.52344 13.1133C4.8125 12.8711 5.12891 12.6562 5.47266 12.4688C5.81641 12.2812 6.17969 12.0898 6.5625 11.8945C6.84375 11.7617 7.07031 11.5781 7.24219 11.3438C7.41406 11.1094 7.5 10.8281 7.5 10.5C7.5 10.1719 7.41797 9.89453 7.25391 9.66797C7.08984 9.44141 6.85938 9.25781 6.5625 9.11719C6.17969 8.9375 5.82031 8.74609 5.48438 8.54297C5.14844 8.33984 4.83203 8.12109 4.53516 7.88672C4.23828 7.65234 3.95312 7.38672 3.67969 7.08984C3.40625 6.79297 3.15234 6.47266 2.91797 6.12891C2.44922 5.44141 2.09766 4.70703 1.86328 3.92578C1.62891 3.14453 1.50781 2.33594 1.5 1.5H0V0H19.5V1.5H18ZM10.5 10.5C10.5 9.85938 10.668 9.30469 11.0039 8.83594C11.3398 8.36719 11.7891 7.99609 12.3516 7.72266C12.5781 7.61328 12.7969 7.50781 13.0078 7.40625C13.2188 7.30469 13.4258 7.17578 13.6289 7.01953C14.082 6.70703 14.4844 6.34766 14.8359 5.94141C15.1875 5.53516 15.4883 5.09375 15.7383 4.61719C15.9883 4.14062 16.1758 3.64062 16.3008 3.11719C16.4258 2.59375 16.4922 2.05469 16.5 1.5H3C3 2.04688 3.0625 2.58203 3.1875 3.10547C3.3125 3.62891 3.5 4.12891 3.75 4.60547C4 5.08203 4.30078 5.52344 4.65234 5.92969C5.00391 6.33594 5.41016 6.69922 5.87109 7.01953C6.07422 7.16797 6.28125 7.29297 6.49219 7.39453C6.70312 7.49609 6.92188 7.60547 7.14844 7.72266C7.71094 7.99609 8.16016 8.36719 8.49609 8.83594C8.83203 9.30469 9 9.85938 9 10.5C9 11.1406 8.83203 11.6953 8.49609 12.1641C8.16016 12.6328 7.71094 13.0039 7.14844 13.2773C6.92188 13.3867 6.70312 13.4922 6.49219 13.5938C6.28125 13.6953 6.07422 13.8242 5.87109 13.9805C5.41797 14.293 5.01562 14.6523 4.66406 15.0586C4.3125 15.4648 4.01172 15.9062 3.76172 16.3828C3.51172 16.8594 3.32422 17.3594 3.19922 17.8828C3.07422 18.4062 3.00781 18.9453 3 19.5H16.5C16.5 18.9531 16.4375 18.418 16.3125 17.8945C16.1875 17.3711 16 16.8711 15.75 16.3945C15.5 15.918 15.1992 15.4766 14.8477 15.0703C14.4961 14.6641 14.0898 14.3008 13.6289 13.9805C13.4258 13.832 13.2188 13.707 13.0078 13.6055C12.7969 13.5039 12.5781 13.3945 12.3516 13.2773C11.7891 13.0039 11.3398 12.6328 11.0039 12.1641C10.668 11.6953 10.5 11.1406 10.5 10.5Z"
+              fill="#D6AB17" />
+          </svg>
+
+
+          <!-- Icône Check -->
+          <svg *ngIf="card.icon === 'check'" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M21.8026 10.0005C22.2593 12.2418 21.9338 14.5719 20.8804 16.6023C19.827 18.6326 18.1095 20.2405 16.0141 21.1578C13.9187 22.0751 11.5722 22.2463 9.36586 21.6428C7.15954 21.0394 5.22676 19.6979 3.88984 17.8419C2.55293 15.9859 1.89269 13.7277 2.01923 11.4439C2.14577 9.16001 3.05144 6.98857 4.58522 5.29165C6.11899 3.59473 8.18815 2.47491 10.4476 2.11893C12.7071 1.76295 15.0203 2.19234 17.0016 3.33548"
+              stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M9 11L12 14L22 4" stroke="#16A34A" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+        </div>
+      </div>
+
+      <!-- Valeur principale avec loading -->
+      <div class="mb-2">
+        <div *ngIf="card.loading" class="h-12 bg-gray-200 rounded animate-pulse"></div>
+        <h2 *ngIf="!card.loading" class="text-2xl font-bold text-gray-900">{{ card.value }}</h2>
+      </div>
+
+      <!-- Footer de la carte -->
+      <div class="flex items-center justify-between">
+        <p class="text-gray-500 text-xs">{{ card.subtitle }}</p>
+
+        <!-- Trend si disponible -->
+        <div *ngIf="card.trend && !card.loading" class="flex items-center gap-1">
+          <svg *ngIf="card.trend === 'up'" class="w-4 h-4 text-green-500" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+          </svg>
+          <svg *ngIf="card.trend === 'down'" class="w-4 h-4 text-red-500" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
+          <span [ngClass]="card.trend === 'up' ? 'text-green-600' : 'text-red-600'" class="text-xs font-medium">{{
+            card.trendValue }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nouvelle section avec 2 colonnes -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+    <!-- Graphique d'évolution hebdomadaire -->
+    <div class="bg-white rounded-xl shadow-sm p-6">
+      <div class="mb-6">
+        <h2 class="text-base font-bold text-[#2C3E50] mb-1">Courbe évolution hebdomadaire</h2>
+        <p class="text-xs text-[#6B7280]">7 derniers jours • Nombre de consultations</p>
+      </div>
+
+      <!-- État de chargement -->
+      <div *ngIf="loadingWeeklyChart" class="h-64 bg-gray-200 rounded animate-pulse"></div>
+
+      <!-- Graphique -->
+      <div *ngIf="!loadingWeeklyChart" class="h-64">
+        <canvas #weeklyChart></canvas>
+      </div>
+    </div>
+
+    <!-- Prochains rendez-vous -->
+    <div class="bg-white rounded-xl shadow-sm p-6">
+      <h2 class="text-base font-bold text-[#2C3E50] mb-6">Prochains rendez-vous</h2>
+
+      <!-- État de chargement -->
+      <div *ngIf="loadingAppointments" class="space-y-4">
+        <div *ngFor="let i of [1,2,3]" class="h-20 bg-gray-200 rounded animate-pulse"></div>
+      </div>
+
+      <!-- Liste des rendez-vous -->
+      <div *ngIf="!loadingAppointments" class="space-y-4">
+        <div *ngFor="let rdv of prochainsRendezVous"
+          class="flex items-center justify-between p-4 rounded-lg hover:bg-gray-100 transition-colors">
+          <div class="flex items-start gap-4">
+            <div class="text-center bg-[#F4F6F9] rounded-lg px-4 py-1 ">
+              <div class="text-base font-bold">{{ rdv.day }}</div>
+              <div class="text-xs text-[#64748B]">{{ rdv.month }}</div>
+            </div>
+            <div>
+              <h3 class="font-medium text-gray-900">{{ rdv.patient }}</h3>
+              <p class="text-xs text-[#6B7280]">{{ rdv.type }}</p>
+            </div>
+          </div>
+          <button *ngIf="rdv.status === 'confirmed'"
+            class="px-4 py-1.5 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-full">
+            {{ rdv.statusLabel }}
+          </button>
+          <button *ngIf="rdv.status === 'pending'"
+            class="px-4 py-1.5 bg-amber-100 text-amber-700 text-xs font-semibold rounded-full">
+            {{ rdv.statusLabel }}
+          </button>
+          <button *ngIf="rdv.status === 'cancelled'"
+            class="px-4 py-1.5 bg-rose-100 text-rose-700 text-xs font-semibold rounded-full">
+            {{ rdv.statusLabel }}
+          </button>
+          <button *ngIf="rdv.status === 'view'"
+            class="px-4 py-1.5 bg-gray-100 text-gray-700 text-xs font-semibold rounded-full">
+            {{ rdv.statusLabel }}
+          </button>
+        </div>
+
+        <!-- Message si aucun rendez-vous -->
+        <div *ngIf="prochainsRendezVous.length === 0" class="text-center py-8">
+          <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <p class="text-gray-500">Aucun rendez-vous à venir</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section avec deux colonnes -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+    <!-- Dernières ordonnances -->
+    <div class="bg-white rounded-xl ">
+      <h2 class="text-base font-bold text-[#2C3E50] p-6">Dernières ordonnances</h2>
+
+      <!-- État de chargement -->
+      <div *ngIf="loadingOrdonnances" class="space-y-4">
+        <div *ngFor="let i of [1,2,3,4]" class="h-16 bg-gray-200 rounded animate-pulse"></div>
+      </div>
+
+      <!-- Message si aucune ordonnance -->
+      <div *ngIf="!loadingOrdonnances && dernieresOrdonnances.length === 0" class="text-center py-12">
+        <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <p class="text-gray-500 text-lg font-medium">Aucune ordonnance trouvée</p>
+      </div>
+
+      <!-- Tableau responsive -->
+      <div *ngIf="!loadingOrdonnances && dernieresOrdonnances.length > 0" class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-[#F5F7FA]">
+            <tr>
+              <th class="text-left py-3 px-4 text-xs font-semibold text-[#6B7280]">Référence</th>
+              <th class="text-left py-3 px-4 text-xs font-semibold text-[#6B7280]">Patient</th>
+              <th class="text-left py-3 px-4 text-xs font-semibold text-[#6B7280]">Date</th>
+              <th class="text-left py-3 px-4 text-xs font-semibold text-[#6B7280]">Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let ord of dernieresOrdonnances"
+              class="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer">
+              <td class="py-4 px-3">
+                <span class="text-sm text-[#2C7BE5] font-semibold hover:underline">{{ ord.reference }}</span>
+              </td>
+              <td class="py-4 px-3 text-sm text-[#4B4848]">{{ ord.patient }}</td>
+              <td class="py-4 px-3 text-sm text-[#6B7280]">{{ ord.date }}</td>
+              <td class="py-4 px-3">
+                <span class="px-3 py-1 rounded-full text-xs font-medium" [ngClass]="ord.statutClass">
+                  {{ ord.statut }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Graphique des statuts -->
+    <div class="bg-white rounded-xl shadow-sm p-6">
+      <h2 class="text-base font-bold text-[#2C3E50] mb-6">Répartition des prescriptions par statut (%)</h2>
+
+      <!-- État de chargement -->
+      <div *ngIf="loadingStats" class="h-80 bg-gray-200 rounded animate-pulse"></div>
+
+      <!-- Graphique Chart.js -->
+      <div *ngIf="!loadingStats" class="h-80">
+        <canvas #medicamentChart></canvas>
+      </div>
+    </div>
+  </div>
+</div>
