@@ -2,7 +2,21 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { InscriptionService, InscriptionData } from '../../../services/inscription.service';
+import { of } from 'rxjs';
+import { delay } from 'rxjs/operators';
+
+// Inlined InscriptionData (replacing InscriptionService dependency)
+interface InscriptionData {
+  nom: string;
+  prenom: string;
+  email: string;
+  password: string;
+  telephone: string;
+  adress: string;
+  lat: number;
+  lon: number;
+  profil: string;
+}
 
 @Component({
   selector: 'app-register',
@@ -62,7 +76,7 @@ export class RegisterComponent implements OnInit {
   registrationError = '';
   isLoadingLocation = false;
 
-  constructor(private inscriptionService: InscriptionService) { }
+  constructor() { }
 
   ngOnInit(): void {
     this.getCurrentLocation();
@@ -141,8 +155,8 @@ export class RegisterComponent implements OnInit {
       return;
     }
 
-    // Validation des données via le service
-    if (!this.inscriptionService.validateUserData(this.userInfo)) {
+    // Validation des données via validator (mock)
+    if (!this.localValidateUserData(this.userInfo)) {
       this.registrationError = 'Veuillez vérifier les informations saisies (email valide, téléphone correct).';
       return;
     }
@@ -159,22 +173,36 @@ export class RegisterComponent implements OnInit {
       password: '[MASQUÉ]' // Pour la sécurité dans les logs
     });
 
-    this.inscriptionService.createUser(this.userInfo).subscribe({
+    this.localCreateUser(this.userInfo).subscribe({
       next: (response) => {
-        console.log('Inscription réussie:', response);
+        console.log('Inscription réussie (mock):', response);
         this.isRegistering = false;
         this.registrationSuccess = true;
-        // Ne pas réinitialiser immédiatement pour permettre à l'utilisateur de voir le succès
         setTimeout(() => {
           this.resetForm();
         }, 3000);
       },
-      error: (error) => {
-        console.error('Erreur inscription:', error);
+      error: (error: any) => {
+        console.error('Erreur inscription (mock):', error);
         this.isRegistering = false;
         this.registrationError = this.getErrorMessage(error);
       }
     });
+  }
+
+  // ===== Local mock implementations =====
+  private localValidateUserData(userData: InscriptionData): boolean {
+    if (!userData.nom || !userData.prenom || !userData.email || !userData.password) return false;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(userData.email)) return false;
+    if (!userData.telephone || userData.telephone.length < 8) return false;
+    return true;
+  }
+
+  private localCreateUser(userData: InscriptionData) {
+    // Simulate server-side response
+    const response = { success: true, message: 'Utilisateur créé (mock)', data: { id: Date.now(), ...userData } };
+    return of(response).pipe(delay(250));
   }
 
   // Obtenir un message d'erreur personnalisé

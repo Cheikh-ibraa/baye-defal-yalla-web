@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { FinancePharmaciesComponent } from './finance-pharmacies.routes';
+import { FinancePharmaciesComponent } from './finance-pharmacies.component';
 
 describe('FinancePharmaciesComponent', () => {
   let component: FinancePharmaciesComponent;

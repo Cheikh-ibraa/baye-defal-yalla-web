@@ -2,13 +2,104 @@ import { Component, OnInit, ViewChild, ElementRef, OnDestroy, AfterViewInit } fr
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Chart, registerables } from 'chart.js';
-import { Subject } from 'rxjs';
-import { takeUntil, finalize } from 'rxjs/operators';
-import { DashboardMedService, PrescriptionsKPI, PrescriptionsStats } from '../../services/dashboard-med.service';
-import { OrdonnanceService, Ordonnance, OrdonnanceResponse } from '../../services/ordonnance.service';
-import { AuthService } from '../../services/auth.service';
-import { PlanningService } from '../../services/planning.service';
+import { Subject, of } from 'rxjs';
+import { takeUntil, finalize, delay } from 'rxjs/operators';
 
+// Inlined dashboard types (replacing DashboardMedService dependency)
+interface PrescriptionsKPI {
+  totalPrescriptions: number;
+  todayPrescriptions: number;
+  todayVsYesterdayPercent: number;
+  pendingPrescriptions: number;
+  validatedLast7Days: number;
+  validationRate: number;
+}
+
+interface PrescriptionsStats {
+  [status: string]: number;
+}
+// Inlined Ordonnance types and local mock service replacements
+interface Medication {
+  id?: number;
+  name: string;
+  quantity: number;
+  dosage: string;
+  price: number;
+}
+
+interface Person {
+  id: number;
+  nom: string;
+  prenom: string;
+}
+
+interface Pharmacist {
+  id: number;
+  nom: string;
+  prenom: string;
+}
+
+interface Pharmacy {
+  id: number;
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+  latitude: number;
+  longitude: number;
+  logo: string;
+  hourly: string | null;
+  pharmacist: Pharmacist;
+}
+
+interface Ordonnance {
+  id: number;
+  reference: string;
+  doctor: Person;
+  patient: Person;
+  createdAt: string;
+  status: string;
+  qrCodeUrl: string;
+  fullyPaidByDonor: boolean;
+  partiallyPaidByDonor: boolean;
+  pharmacy: Pharmacy;
+  amount: number;
+  needsHelp: boolean;
+  address: string;
+  latitude: number;
+  longitude: number;
+  prescriptionFile: string | null;
+  medications: Medication[];
+}
+
+interface PageableSort {
+  unsorted: boolean;
+  sorted: boolean;
+  empty: boolean;
+}
+
+interface Pageable {
+  pageNumber: number;
+  pageSize: number;
+  sort: PageableSort;
+  offset: number;
+  paged: boolean;
+  unpaged: boolean;
+}
+
+interface OrdonnanceResponse {
+  content: Ordonnance[];
+  pageable: Pageable;
+  totalPages: number;
+  totalElements: number;
+  last: boolean;
+  numberOfElements: number;
+  size: number;
+  number: number;
+  sort: PageableSort;
+  first: boolean;
+  empty: boolean;
+}
 Chart.register(...registerables);
 
 interface StatCard {
@@ -76,6 +167,11 @@ export class DashboardMedecinComponent implements OnInit, AfterViewInit, OnDestr
 
   // ID du docteur connecté
   currentDoctorId: number = 0;
+  private readonly mockCurrentDoctor = {
+    id: 10,
+    nom: 'Mbaye',
+    prenom: 'Awa'
+  };
 
   // Données des cartes statistiques
   statsCards: StatCard[] = [
@@ -132,50 +228,19 @@ export class DashboardMedecinComponent implements OnInit, AfterViewInit, OnDestr
 
   private destroy$ = new Subject<void>();
 
-  constructor(
-    private dashboardService: DashboardMedService,
-    private ordonnanceService: OrdonnanceService,
-    private authService: AuthService,
-    private planningService: PlanningService,
-    private router: Router
-  ) { }
+  constructor(private router: Router) { }
 
   ngOnInit(): void {
     console.log('🏥 DashboardMedecinComponent - Initialisation');
 
-    // Récupérer l'ID du docteur connecté
-    const currentUser = this.authService.getCurrentUser();
-
-    if (!currentUser) {
-      console.error('❌ Aucun utilisateur connecté');
-      this.error = true;
-      this.errorMessage = 'Vous devez être connecté pour accéder à cette page';
-      this.router.navigate(['/login']);
-      return;
-    }
-
-    if (currentUser.profil !== 'DOCTOR') {
-      console.error('❌ Utilisateur n\'est pas un docteur');
-      this.error = true;
-      this.errorMessage = 'Accès réservé aux docteurs';
-      this.router.navigate(['/dashboard']);
-      return;
-    }
-
-    if (!currentUser.id) {
-      console.error('❌ ID utilisateur manquant');
-      this.error = true;
-      this.errorMessage = 'Erreur lors de la récupération de vos informations';
-      return;
-    }
-
-    this.currentDoctorId = currentUser.id;
-    console.log('👨‍⚕️ ID Docteur:', this.currentDoctorId);
+    // Utilisateur local mocké pour un mode UI-only
+    this.currentDoctorId = this.mockCurrentDoctor.id;
+    console.log('👨‍⚕️ ID Docteur (mock):', this.currentDoctorId);
 
     // Charger les données du dashboard
     this.loadDashboardData();
 
-    // Charger les rendez-vous simulés (à remplacer par un vrai service)
+    // Charger les rendez-vous simulés (mocks)
     this.loadAppointments();
   }
 
@@ -217,7 +282,7 @@ export class DashboardMedecinComponent implements OnInit, AfterViewInit, OnDestr
   loadPrescriptionsKPI(): void {
     console.log('📊 Chargement des KPI pour le docteur:', this.currentDoctorId);
 
-    this.dashboardService.getPrescriptionsKpi(this.currentDoctorId)
+    this.localGetPrescriptionsKpi(this.currentDoctorId)
       .pipe(
         takeUntil(this.destroy$),
         finalize(() => {
@@ -238,7 +303,7 @@ export class DashboardMedecinComponent implements OnInit, AfterViewInit, OnDestr
           this.statsCards[3].value = kpi.validatedLast7Days;
           this.statsCards[3].subtitle = `Taux de validation ${kpi.validationRate}%`;
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('❌ Erreur lors du chargement des KPI:', error);
           this.error = true;
           this.errorMessage = 'Erreur lors du chargement des statistiques';
@@ -253,7 +318,7 @@ export class DashboardMedecinComponent implements OnInit, AfterViewInit, OnDestr
     console.log('📈 Chargement des statistiques pour le docteur:', this.currentDoctorId);
 
     this.loadingStats = true;
-    this.dashboardService.getStat(this.currentDoctorId)
+    this.localGetStat(this.currentDoctorId)
       .pipe(
         takeUntil(this.destroy$),
         finalize(() => this.loadingStats = false)
@@ -266,7 +331,7 @@ export class DashboardMedecinComponent implements OnInit, AfterViewInit, OnDestr
           // Créer le graphique après avoir reçu les données
           setTimeout(() => this.createStatsChart(), 100);
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('❌ Erreur lors du chargement des statistiques:', error);
         }
       });
@@ -279,7 +344,7 @@ export class DashboardMedecinComponent implements OnInit, AfterViewInit, OnDestr
     console.log('📋 Chargement des dernières ordonnances pour le docteur:', this.currentDoctorId);
 
     this.loadingOrdonnances = true;
-    this.ordonnanceService.getOrdonnances(this.currentDoctorId, 0, 4)
+    this.localGetOrdonnances(this.currentDoctorId, 0, 4)
       .pipe(
         takeUntil(this.destroy$),
         finalize(() => this.loadingOrdonnances = false)
@@ -296,11 +361,109 @@ export class DashboardMedecinComponent implements OnInit, AfterViewInit, OnDestr
             statutClass: this.getStatusClass(ord.status)
           }));
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('❌ Erreur lors du chargement des ordonnances:', error);
           this.dernieresOrdonnances = [];
         }
       });
+  }
+
+  // Local mock for ordonnances (simulates OrdonnanceService.getOrdonnances)
+  private mockOrdonnances: Ordonnance[] = [
+    {
+      id: 1,
+      reference: 'ORD-0001',
+      doctor: { id: 10, nom: 'Dupont', prenom: 'Jean' },
+      patient: { id: 100, nom: 'Martin', prenom: 'Alice' },
+      createdAt: new Date().toISOString(),
+      status: 'PENDING',
+      qrCodeUrl: null as any,
+      fullyPaidByDonor: false,
+      partiallyPaidByDonor: false,
+      pharmacy: {
+        id: 1,
+        name: 'Pharmacie Centrale',
+        address: '1 Rue Principale',
+        phone: '000000000',
+        email: 'pharmacie@example.com',
+        latitude: 0,
+        longitude: 0,
+        logo: '',
+        hourly: null,
+        pharmacist: { id: 1, nom: 'Pharm', prenom: 'Admin' }
+      },
+      amount: 0,
+      needsHelp: false,
+      address: '1 Rue Principale',
+      latitude: 0,
+      longitude: 0,
+      prescriptionFile: null,
+      medications: [
+        { id: 1, name: 'Paracétamol', quantity: 2, dosage: '500mg', price: 2.5 }
+      ]
+    }
+  ];
+
+  private localGetOrdonnances(doctorId: number, page: number = 0, size: number = 4) {
+    const start = page * size;
+    const content = this.mockOrdonnances.slice(start, start + size);
+    const response: OrdonnanceResponse = {
+      content,
+      pageable: {
+        pageNumber: page,
+        pageSize: size,
+        sort: { unsorted: true, sorted: false, empty: true },
+        offset: start,
+        paged: true,
+        unpaged: false
+      },
+      totalPages: Math.ceil(this.mockOrdonnances.length / size),
+      totalElements: this.mockOrdonnances.length,
+      last: start + content.length >= this.mockOrdonnances.length,
+      numberOfElements: content.length,
+      size,
+      number: page,
+      sort: { unsorted: true, sorted: false, empty: true },
+      first: page === 0,
+      empty: content.length === 0
+    };
+
+    return of(response).pipe(delay(250));
+  }
+
+  // Local mock to fetch appointments for doctor
+  private localGetDoctorAppointments(doctorId: number, page: number = 0, size: number = 3) {
+    const mock: AppointmentAPI[] = [
+      { id: 1, doctorName: 'Dr Mock', specialty: 'Généraliste', patientName: 'Alice', date: this.formatDateToDDMMYYYY(new Date()), startTime: '09:00', endTime: '09:30', reason: 'Consultation', type: null, status: 'EN_ATTENTE', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
+    ];
+    const response = { content: mock, totalElements: mock.length, totalPages: 1, number: page, size: mock.length, first: true, last: true } as any;
+    return of(response).pipe(delay(180));
+  }
+
+  // Local mock for prescriptions KPI
+  private localGetPrescriptionsKpi(doctorId: number) {
+    const kpi: PrescriptionsKPI = {
+      totalPrescriptions: 42,
+      todayPrescriptions: 3,
+      todayVsYesterdayPercent: 0,
+      pendingPrescriptions: 5,
+      validatedLast7Days: 10,
+      validationRate: 75
+    };
+    return of(kpi).pipe(delay(220));
+  }
+
+  // Local mock for prescriptions stats
+  private localGetStat(doctorId: number) {
+    const stats: PrescriptionsStats = {
+      PENDING: 5,
+      ACCEPTED: 12,
+      REFUSED: 1,
+      IN_PREPARATION: 8,
+      READY: 6,
+      DELIVERED: 10
+    };
+    return of(stats).pipe(delay(200));
   }
 
   /**
@@ -324,13 +487,11 @@ export class DashboardMedecinComponent implements OnInit, AfterViewInit, OnDestr
 
     this.loadingAppointments = true;
 
-    // Charger avec tri par date croissante pour avoir les prochains RDV
-    this.planningService.getDoctorAppointments(this.currentDoctorId, 0, 3).subscribe({
+    // Charger avec mock local
+    this.localGetDoctorAppointments(this.currentDoctorId, 0, 3).subscribe({
       next: (response: any) => {
         const appointments: AppointmentAPI[] = response.content || [];
 
-        // Filtrer seulement les RDV futurs et les mapper
-        const now = new Date();
         const futureAppointments = appointments
           .filter(apt => this.isAppointmentFuture(apt.date))
           .slice(0, 3);
@@ -338,8 +499,8 @@ export class DashboardMedecinComponent implements OnInit, AfterViewInit, OnDestr
         this.prochainsRendezVous = futureAppointments.map(apt => this.mapAppointmentToRendezVous(apt));
         this.loadingAppointments = false;
       },
-      error: (error) => {
-        console.error('Erreur lors du chargement des rendez-vous:', error);
+      error: (error: any) => {
+        console.error('Erreur lors du chargement des rendez-vous (mock):', error);
         this.prochainsRendezVous = [];
         this.loadingAppointments = false;
       }
@@ -686,6 +847,13 @@ export class DashboardMedecinComponent implements OnInit, AfterViewInit, OnDestr
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
+  }
+
+  private formatDateToDDMMYYYY(date: Date): string {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
   }
 
   changePeriod(period: string): void {

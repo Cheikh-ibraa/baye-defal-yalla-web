@@ -1,8 +1,8 @@
 import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { AuthService, User } from '../../../services/auth.service';
-import { Subscription } from 'rxjs';
+import { Router, NavigationEnd } from '@angular/router';
+import { User } from '../../../core/auth.types';
+import { Subscription, filter } from 'rxjs';
 
 @Component({
     selector: 'app-header',
@@ -26,6 +26,15 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   // Subscription pour l'utilisateur
   private userSubscription?: Subscription;
+  private readonly mockCurrentUser: User = {
+    id: 1,
+    nom: 'Ndiaye',
+    prenom: 'Awa',
+    email: 'awa.ndiaye@local.test',
+    telephone: '+221770000000',
+    profil: 'PHARMACIST',
+    pharmacyId: 1
+  } as User;
 
   // Breadcrumb data
   breadcrumbs = [
@@ -34,38 +43,25 @@ export class HeaderComponent implements OnInit, OnDestroy {
   ];
 
   constructor(
-    private authService: AuthService,
     private router: Router
   ) {
   }
 
   ngOnInit(): void {
+    this.currentUser = this.getMockCurrentUser();
+    this.updateUserDisplay();
 
-    // Vérifier que le service est bien injecté
-    if (!this.authService) {
-      return;
-    }
-
-    // S'abonner aux changements de l'utilisateur
-    this.userSubscription = this.authService.currentUser$.subscribe({
-      next: (user) => {
-        this.currentUser = user;
+    this.userSubscription = this.router.events
+      .pipe(filter(e => e instanceof NavigationEnd))
+      .subscribe(() => {
+        this.currentUser = this.getMockCurrentUser();
+        const url = this.router.url;
+        const detectedProfile = this.detectProfileFromUrl(url);
+        if (detectedProfile && this.currentUser) {
+          this.currentUser.profil = detectedProfile;
+        }
         this.updateUserDisplay();
-      },
-      error: (error) => {
-        console.error('Erreur lors de la récupération de l\'utilisateur:', error);
-      }
-    });
-
-    // Récupérer l'utilisateur actuel immédiatement
-    this.currentUser = this.authService.getCurrentUser();
-
-    // Si l'utilisateur existe mais que les données sont incomplètes, les charger
-    if (this.currentUser && this.currentUser.id && (!this.currentUser.nom || !this.currentUser.prenom)) {
-      this.loadUserProfile();
-    } else {
-      this.updateUserDisplay();
-    }
+      });
   }
 
   ngOnDestroy(): void {
@@ -82,17 +78,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
       return;
     }
 
-
-    this.authService.getCurrentUserById(this.currentUser.id).subscribe({
-      next: (user) => {
-        this.currentUser = user;
-        this.updateUserDisplay();
-      },
-      error: (error) => {
-        // Utiliser les données du token si disponibles
-        this.updateUserDisplay();
-      }
-    });
+    this.currentUser = this.getMockCurrentUser();
+    this.updateUserDisplay();
   }
 
   /**
@@ -131,22 +118,33 @@ export class HeaderComponent implements OnInit, OnDestroy {
   /**
    * Convertit le code du profil en nom lisible
    */
- private getRoleDisplayName(profil: string): string {
-  const roleMap: { [key: string]: string } = {
-    ADMIN: 'Administrateur',
-    DOCTOR: 'Médecin',
-    PHARMACIST: 'Pharmacien',
-    PATIENT: 'Patient',
-    REPRESENTATIVE: 'Représentant',
-    DONOR: 'Donateur',
-    DELIVERY_PERSON: 'Livreur',
-    IMAGING_CENTER: 'Centre d’imagerie',
-    LABORATORY: 'Laboratoire',
-    EMERGENCY: 'Service d’urgence'
-  };
+  private getRoleDisplayName(profil: string): string {
+    if (!profil) return 'Utilisateur';
+    const cleanProfil = profil.toUpperCase();
+    const roleMap: { [key: string]: string } = {
+      ADMIN: 'Administrateur',
+      DOCTOR: 'Médecin',
+      MEDECIN: 'Médecin',
+      PHARMACIST: 'Pharmacien',
+      PHARMACIE: 'Pharmacien',
+      PATIENT: 'Patient',
+      REPRESENTATIVE: 'Représentant',
+      DONOR: 'Donateur',
+      DONATEUR: 'Donateur',
+      DELIVERY_PERSON: 'Livreur',
+      LIVREUR: 'Livreur',
+      IMAGING_CENTER: 'Centre d’imagerie',
+      IMAGERIE: 'Centre d’imagerie',
+      LABORATORY: 'Laboratoire',
+      LAB: 'Laboratoire',
+      LABORATOIRE: 'Laboratoire',
+      HOSPITAL: 'Hôpital',
+      HOPITAL: 'Hôpital',
+      EMERGENCY: 'Service d’urgence'
+    };
 
-  return roleMap[profil] || 'Utilisateur';
-}
+    return roleMap[cleanProfil] || profil;
+  }
 
 
   /**
@@ -238,29 +236,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   onLogout() {
-
-    if (!this.authService) {
-      console.error('ERREUR: AuthService non disponible pour logout');
-      localStorage.clear();
-      this.router.navigate(['/login']);
-      return;
-    }
-
-    try {
-      // Déconnexion via le service
-      this.authService.logout();
-
-      // Redirection vers la page de connexion
-      this.router.navigate(['/login']);
-
-      // Fermer tous les menus
-      this.closeMenus();
-    } catch (error) {
-      console.error('Erreur lors de la déconnexion:', error);
-      // En cas d'erreur, forcer la déconnexion
-      localStorage.clear();
-      this.router.navigate(['/login']);
-    }
+    localStorage.clear();
+    this.currentUser = null;
+    this.updateUserDisplay();
+    this.router.navigate(['/portail']);
+    this.closeMenus();
   }
 
   // ===== MÉTHODES UTILITAIRES =====
@@ -269,7 +249,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
    * Vérifie si l'utilisateur est connecté
    */
   isLoggedIn(): boolean {
-    return this.authService?.isLoggedIn() || false;
+    return !!this.currentUser;
   }
 
   /**
@@ -323,4 +303,66 @@ private capitalizeWords(text: string): string {
     .join(' ');
 }
 
+  private getMockCurrentUser(): User {
+    const stored = localStorage.getItem('user_data');
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch {
+        // ignore
+      }
+    }
+    return { ...this.mockCurrentUser };
+  }
+
+  private detectProfileFromUrl(url: string): string | null {
+    if (url.startsWith('/dashboard-admin') || 
+        url.startsWith('/medecins') || 
+        url.startsWith('/pharmacies') || 
+        url.startsWith('/livreurs') || 
+        url.startsWith('/patientmanage') || 
+        url.startsWith('/paiements-help') || 
+        url.startsWith('/administration') || 
+        url.startsWith('/finance-dashboard') || 
+        url.startsWith('/finance-pharmacies') || 
+        url.startsWith('/finance-virements')) {
+      return 'ADMIN';
+    }
+    if (url.startsWith('/dashboard-med') || 
+        url.startsWith('/create-ordonnance') || 
+        url.startsWith('/ordonnances') || 
+        url.startsWith('/patients') || 
+        url.startsWith('/planings')) {
+      if (url.startsWith('/patients-hospital')) return 'HOSPITAL';
+      return 'DOCTOR';
+    }
+    if (url.startsWith('/dashboard-lab') || 
+        url.startsWith('/examens-laboratoire')) {
+      return 'LABORATORY';
+    }
+    if (url.startsWith('/dashboard-imagerie') || 
+        url.startsWith('/examens-imagerie')) {
+      return 'IMAGING_CENTER';
+    }
+    if (url.startsWith('/dashboard-hospital') || 
+        url.startsWith('/demandes') || 
+        url.startsWith('/patients-hospital') || 
+        url.startsWith('/hospitalisations') || 
+        url.startsWith('/chirurgie') || 
+        url.startsWith('/demande-materiels') || 
+        url.startsWith('/paiements-hospital')) {
+      return 'HOSPITAL';
+    }
+    if (url.startsWith('/dashboard') || 
+        url.startsWith('/commande') || 
+        url.startsWith('/gestion-stock') || 
+        url.startsWith('/livraison') || 
+        url.startsWith('/finance-dashboardpharmacie') || 
+        url.startsWith('/finance-transactions') || 
+        url.startsWith('/finance-retraits') || 
+        url.startsWith('/parametre-bancaire')) {
+      return 'PHARMACIST';
+    }
+    return null;
+  }
 }

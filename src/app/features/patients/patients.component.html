@@ -1,5 +1,5 @@
 <!-- Vue principale - Liste des patients -->
-<div *ngIf="!showPatientDetail" class="min-h-screen bg-[#f4f6f9] p-3">
+<div *ngIf="!showPatientDetail" class="min-h-screen bg-[#f4f6f9]">
   <div class="max-w-6xl mx-auto">
 
     <!-- En-tête -->
@@ -18,10 +18,10 @@
               d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input type="text" [(ngModel)]="rechercheTexte" placeholder="Téléphone du patient ou ID dossier"
-            class="w-full pl-10 pr-4 py-3 text-[#777777] border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none required" />
+            class="w-full pl-10 pr-4 py-3 text-[#777777] border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none required" />
         </div>
         <button (click)="handleOpenDossier()"
-          class="bg-[#01b894] text-sm text-white px-6 py-3 rounded-lg hover:bg-[#019d7e] transition flex items-center gap-2">
+          class="bg-[#104382] text-sm text-white px-6 py-3 rounded-lg transition flex items-center gap-2">
           Ouvrir le dossier
           <svg width="15" height="13" viewBox="0 0 15 13" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M0 6H12.25L7 0.75L7.66 0L14.16 6.5L7.66 13L7 12.25L12.25 7H0V6Z" fill="white" />
@@ -86,8 +86,8 @@
 
         <!-- Accès complet (OTP) -->
         <div (click)="selectAccessType('complet')" [class.ring-2]="accessType === 'complet'"
-          [class.ring-[#01b894]]="accessType === 'complet'"
-          class="border border-gray-300 rounded-lg p-4 cursor-pointer hover:border-[#01b894] transition">
+          [class.ring-[#104382]]="accessType === 'complet'"
+          class="border border-gray-300 rounded-lg p-4 cursor-pointer hover:border-[#104382] transition">
           <div class="flex items-start gap-3">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
@@ -101,8 +101,8 @@
             </div>
             <div class="flex-shrink-0">
               <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center"
-                [class.border-[#01b894]]="accessType === 'complet'" [class.border-gray-300]="accessType !== 'complet'">
-                <div *ngIf="accessType === 'complet'" class="w-3 h-3 rounded-full bg-[#01b894]"></div>
+                [class.border-[#104382]]="accessType === 'complet'" [class.border-gray-300]="accessType !== 'complet'">
+                <div *ngIf="accessType === 'complet'" class="w-3 h-3 rounded-full bg-[#104382]"></div>
               </div>
             </div>
           </div>
@@ -120,7 +120,7 @@
         </button>
 
         <button (click)="handleContinue()" [disabled]="!accessType || otpLoading"
-          class="flex-1 px-4 py-3 bg-[#01b894] text-white rounded-lg font-medium hover:bg-[#019d7e] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+          class="flex-1 px-4 py-3 bg-[#104382] text-white rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
           <svg *ngIf="otpLoading" class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
@@ -160,7 +160,7 @@
     <!-- Boutons -->
     <div class="flex items-center gap-6 mt-2">
       <button (click)="openOtpInput()"
-        class="px-6 py-3 bg-[#00B894] hover:bg-[#00a07e] text-white text-base font-semibold rounded-md transition-colors">
+        class="px-6 py-3 bg-[#104382] hover:bg-[#00a07e] text-white text-base font-semibold rounded-md transition-colors">
         Saisir le code
       </button>
       <button (click)="cancelOtpSent()"
@@ -204,7 +204,7 @@
     <!-- Boutons -->
     <div class="flex items-center gap-6 mt-1">
       <button (click)="validateOtpCode()" [disabled]="otpValue.length < 4 || otpValidating"
-        class="px-6 py-3 bg-[#00B894] hover:bg-[#00a07e] text-white text-sm font-semibold rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+        class="px-6 py-3 bg-[#104382] hover:bg-[#00a07e] text-white text-sm font-semibold rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
         <svg *ngIf="otpValidating" class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
@@ -258,7 +258,7 @@
             </div>
             <div class="flex-1 text-left">
               <h3 class="text-base font-semibold text-[#111111]">Ordonnance médicale</h3>
-              <p class="text-sm text-[#64748B] mt-0.5">Médicaments, soins</p>
+              <p class="text-sm text-[#6B7280] mt-0.5">Médicaments, soins</p>
             </div>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
@@ -294,7 +294,7 @@
             </div>
             <div class="flex-1 text-left">
               <h3 class="text-base font-semibold text-[#111111]">Demande d'hospitalisation</h3>
-              <p class="text-sm text-[#64748B] mt-0.5">Admission, prise en charge médicale...</p>
+              <p class="text-sm text-[#6B7280] mt-0.5">Admission, prise en charge médicale...</p>
             </div>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
@@ -319,7 +319,7 @@
             </div>
             <div class="flex-1 text-left">
               <h3 class="text-base font-semibold text-[#111111]">Certificat médical</h3>
-              <p class="text-sm text-[#64748B] mt-0.5">Consultation, soins</p>
+              <p class="text-sm text-[#6B7280] mt-0.5">Consultation, soins</p>
             </div>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
@@ -345,7 +345,7 @@
             </div>
             <div class="flex-1 text-left">
               <h3 class="text-base font-semibold text-[#111111]">Imagerie médicale</h3>
-              <p class="text-sm text-[#64748B] mt-0.5">Radio, IRM, Scanner...</p>
+              <p class="text-sm text-[#6B7280] mt-0.5">Radio, IRM, Scanner...</p>
             </div>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
@@ -371,7 +371,7 @@
             </div>
             <div class="flex-1 text-left">
               <h3 class="text-base font-semibold text-[#111111]">Analyses médicales</h3>
-              <p class="text-sm text-[#64748B] mt-0.5">Radio, IRM, Scanner, Biologie...</p>
+              <p class="text-sm text-[#6B7280] mt-0.5">Radio, IRM, Scanner, Biologie...</p>
             </div>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
@@ -449,7 +449,7 @@
 
       <!-- Bouton Nouvelle demande -->
       <button (click)="openNouvelleDemandeModal()"
-        class="flex items-center gap-2 bg-[#00B894] hover:bg-[#00C29A] text-white font-medium px-5 py-2 rounded-lg transition-colors duration-200 shadow-sm">
+        class="flex items-center gap-2 bg-[#104382] text-white font-medium px-5 py-2 rounded-lg transition-colors duration-200 shadow-sm">
         <!-- SVG Placeholder - Icône Plus -->
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -476,7 +476,7 @@
         (click)="openModeVieModal(!!modeDeVie)" class="flex items-center text-sm font-medium text-gray-600
          border border-gray-300 rounded-lg
          px-3 py-2
-         hover:text-[#01b894] hover:border-[#01b894]
+         hover:text-[#104382] hover:border-[#104382]
          transition-colors duration-200">
         <svg *ngIf="modeDeVie" class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036
@@ -491,7 +491,7 @@
       <button *ngIf="activeTab === 'vaccinations'" (click)="openVaccinationModal()" class="flex items-center gap-2 text-sm font-medium text-gray-600
          border border-gray-300 rounded-lg
          px-3 py-2
-         hover:text-[#01b894] hover:border-[#01b894]
+         hover:text-[#104382] hover:border-[#104382]
          transition-colors duration-200">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -507,7 +507,7 @@
       <button *ngIf="activeTab === 'certificats'" (click)="goTocertificatmedical()" class="flex items-center gap-2 text-sm font-medium text-gray-600
          border border-gray-300 rounded-lg
          px-3 py-2
-         hover:text-[#01b894] hover:border-[#01b894]
+         hover:text-[#104382] hover:border-[#104382]
          transition-colors duration-200">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -523,7 +523,7 @@
       <button *ngIf="activeTab === 'hospitalisation'" (click)="openHospitalisationPage()" class="flex items-center gap-2 text-sm font-medium text-gray-600
                    border border-gray-300 rounded-lg
                    px-3 py-2
-                   hover:text-[#01b894] hover:border-[#01b894]
+                   hover:text-[#104382] hover:border-[#104382]
                    transition-colors duration-200">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -538,7 +538,7 @@
       <button *ngIf="activeTab === 'medicaments'" (click)="openTraitementModal()" class="flex items-center gap-2 text-sm font-medium text-gray-600
                    border border-gray-300 rounded-lg
                    px-3 py-2
-                   hover:text-[#01b894] hover:border-[#01b894]
+                   hover:text-[#104382] hover:border-[#104382]
                    transition-colors duration-200">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -553,7 +553,7 @@
       <button *ngIf="activeTab === 'consultations'" (click)="openConsultationsPage()" class="flex items-center gap-2 text-sm font-medium text-gray-600
                    border border-gray-300 rounded-lg
                    px-3 py-2
-                   hover:text-[#01b894] hover:border-[#01b894]
+                   hover:text-[#104382] hover:border-[#104382]
                    transition-colors duration-200">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -568,7 +568,7 @@
       <button *ngIf="activeTab === 'examens'" (click)="goToanalysesmedical()" class="flex items-center gap-2 text-sm font-medium text-gray-600
                    border border-gray-300 rounded-lg
                    px-3 py-2
-                   hover:text-[#01b894] hover:border-[#01b894]
+                   hover:text-[#104382] hover:border-[#104382]
                    transition-colors duration-200">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -584,7 +584,7 @@
       <button *ngIf="activeTab === 'imagerie'" (click)="goToimageriemedical()" class="flex items-center gap-2 text-sm font-medium text-gray-600
                    border border-gray-300 rounded-lg
                    px-3 py-2
-                   hover:text-[#01b894] hover:border-[#01b894]
+                   hover:text-[#104382] hover:border-[#104382]
                    transition-colors duration-200">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -600,7 +600,7 @@
       <button *ngIf="activeTab === 'ordonnances'" (click)="goToOrdonnance()" class="flex items-center gap-2 text-sm font-medium text-gray-600
                    border border-gray-300 rounded-lg
                    px-3 py-2
-                   hover:text-[#01b894] hover:border-[#01b894]
+                   hover:text-[#104382] hover:border-[#104382]
                    transition-colors duration-200">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -617,7 +617,7 @@
       <button *ngIf="activeTab === 'signes-vitaux'" (click)="openPopup()" class="flex items-center gap-2 text-sm font-medium text-gray-600
                border border-gray-300 rounded-lg
                px-3 py-2
-               hover:text-[#01b894] hover:border-[#01b894]
+               hover:text-[#104382] hover:border-[#104382]
                transition-colors duration-200">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -635,7 +635,7 @@
     <!-- Tabs Navigation -->
     <div class="flex items-center gap-8 overflow-x-auto mb-6 border-b border-gray-200">
       <button *ngFor="let tab of tabs" (click)="selectTab(tab.id)" [class]="activeTab === tab.id 
-          ? 'pb-3 text-sm font-medium text-[#01b894] border-b-2 border-[#01b894] whitespace-nowrap' 
+          ? 'pb-3 text-sm font-medium text-[#104382] border-b-2 border-[#104382] whitespace-nowrap' 
           : 'pb-3 text-sm font-medium text-gray-600 hover:text-gray-900 whitespace-nowrap'">
         {{ tab.label }}
       </button>
@@ -650,7 +650,7 @@
         <div class="border border-gray-200 rounded-lg bg-white rounded-lg shadow-sm p-6">
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-base font-semibold text-[#2C3E50]">Données cliniques</h3>
-            <button (click)="openCliniqueDataModal()" class="text-[#01b894] hover:text-[#019d7e]">
+            <button (click)="openCliniqueDataModal()" class="text-[#104382] hover:text-[#019d7e]">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <g clip-path="url(#clip0_3622_14546)">
                   <path
@@ -668,23 +668,23 @@
 
           <div class="space-y-2" *ngIf="cliniqueData">
             <div class="flex justify-between">
-              <span class="text-sm text-[#64748B]">Sexe</span>
+              <span class="text-sm text-[#6B7280]">Sexe</span>
               <span class="text-sm text-[#333333] font-medium">{{ cliniqueData.sex }}</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-sm text-[#64748B]">Groupe sanguin</span>
+              <span class="text-sm text-[#6B7280]">Groupe sanguin</span>
               <span class="text-sm text-[#333333] font-medium">{{ cliniqueData.bloodGroup }}</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-sm text-[#64748B]">Poids</span>
+              <span class="text-sm text-[#6B7280]">Poids</span>
               <span class="text-sm text-[#333333] font-medium">{{ cliniqueData.weight }} kg</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-sm text-[#64748B]">Taille</span>
+              <span class="text-sm text-[#6B7280]">Taille</span>
               <span class="text-sm text-[#333333] font-medium">{{ cliniqueData.height }} cm</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-sm text-[#64748B]">IMC</span>
+              <span class="text-sm text-[#6B7280]">IMC</span>
               <span class="text-sm text-[#333333] font-medium">{{ cliniqueData.bmi }}</span>
             </div>
           </div>
@@ -706,7 +706,7 @@
               <div>
                 <label class="block text-sm font-medium text-gray-900 mb-2">Sexe</label>
                 <select [(ngModel)]="formCliniqueData.sex"
-                  class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none">
+                  class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none">
                   <option value="Masculin">Masculin</option>
                   <option value="Féminin">Féminin</option>
                 </select>
@@ -715,7 +715,7 @@
               <div>
                 <label class="block text-sm font-medium text-gray-900 mb-2">Groupe sanguin</label>
                 <select [(ngModel)]="formCliniqueData.bloodGroup"
-                  class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none">
+                  class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none">
                   <option value="A+">A+</option>
                   <option value="A-">A-</option>
                   <option value="B+">B+</option>
@@ -731,13 +731,13 @@
                 <div>
                   <label class="block text-sm font-medium text-gray-900 mb-2">Poids (kg)</label>
                   <input type="number" [(ngModel)]="formCliniqueData.weight" placeholder="68"
-                    class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none">
+                    class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none">
                 </div>
 
                 <div>
                   <label class="block text-sm font-medium text-gray-900 mb-2">Taille (cm)</label>
                   <input type="number" [(ngModel)]="formCliniqueData.height" placeholder="165"
-                    class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none">
+                    class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none">
                 </div>
               </div>
 
@@ -745,7 +745,7 @@
 
             <div class="mt-8 flex items-center justify-between">
               <button type="button" (click)="saveCliniqueData()"
-                class="px-14 py-4 rounded-lg bg-[#01b894] text-white hover:bg-[#019d7e] transition-colors">
+                class="px-14 py-4 rounded-lg bg-[#104382] text-white transition-colors">
                 Enregistrer
               </button>
               <button type="button" (click)="closeCliniqueDataModal()"
@@ -760,7 +760,7 @@
         <div class="border border-gray-200 rounded-lg bg-white rounded-lg shadow-sm p-6">
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-base font-semibold text-[#2C3E50]">Allergies connues</h3>
-            <button (click)="openAllergieModal()" class="text-[#01b894] hover:text-[#019d7e]">
+            <button (click)="openAllergieModal()" class="text-[#104382] hover:text-[#019d7e]">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M10 18.75C7.67936 18.75 5.45376 17.8281 3.81282 16.1872C2.17187 14.5462 1.25 12.3206 1.25 10C1.25 7.67936 2.17187 5.45376 3.81282 3.81282C5.45376 2.17187 7.67936 1.25 10 1.25C12.3206 1.25 14.5462 2.17187 16.1872 3.81282C17.8281 5.45376 18.75 7.67936 18.75 10C18.75 12.3206 17.8281 14.5462 16.1872 16.1872C14.5462 17.8281 12.3206 18.75 10 18.75ZM10 20C12.6522 20 15.1957 18.9464 17.0711 17.0711C18.9464 15.1957 20 12.6522 20 10C20 7.34784 18.9464 4.8043 17.0711 2.92893C15.1957 1.05357 12.6522 0 10 0C7.34784 0 4.8043 1.05357 2.92893 2.92893C1.05357 4.8043 0 7.34784 0 10C0 12.6522 1.05357 15.1957 2.92893 17.0711C4.8043 18.9464 7.34784 20 10 20Z"
@@ -815,7 +815,7 @@
               <div>
                 <label class="block text-sm font-medium text-gray-900 mb-2">Nom de l'allergie *</label>
                 <input type="text" [(ngModel)]="formAllergie.name" placeholder="Ex: Poisson"
-                  class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none">
+                  class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none">
               </div>
             </div>
 
@@ -823,7 +823,7 @@
 
             <div class="mt-8 flex items-center justify-between">
               <button type="button" (click)="saveAllergie()"
-                class="px-14 py-4 rounded-lg bg-[#01b894] text-white hover:bg-[#019d7e] transition-colors">
+                class="px-14 py-4 rounded-lg bg-[#104382] text-white transition-colors">
                 Enregistrer
               </button>
               <button type="button" (click)="closeAllergieModal()"
@@ -841,7 +841,7 @@
         <div class="border border-gray-200 rounded-lg bg-white rounded-lg shadow-sm p-6">
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-base font-semibold text-[#2C3E50]">Maladies chroniques</h3>
-            <button (click)="openMaladieChroniqueModal()" class="text-[#01b894] hover:text-[#019d7e]">
+            <button (click)="openMaladieChroniqueModal()" class="text-[#104382] hover:text-[#019d7e]">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M10 18.75C7.67936 18.75 5.45376 17.8281 3.81282 16.1872C2.17187 14.5462 1.25 12.3206 1.25 10C1.25 7.67936 2.17187 5.45376 3.81282 3.81282C5.45376 2.17187 7.67936 1.25 10 1.25C12.3206 1.25 14.5462 2.17187 16.1872 3.81282C17.8281 5.45376 18.75 7.67936 18.75 10C18.75 12.3206 17.8281 14.5462 16.1872 16.1872C14.5462 17.8281 12.3206 18.75 10 18.75ZM10 20C12.6522 20 15.1957 18.9464 17.0711 17.0711C18.9464 15.1957 20 12.6522 20 10C20 7.34784 18.9464 4.8043 17.0711 2.92893C15.1957 1.05357 12.6522 0 10 0C7.34784 0 4.8043 1.05357 2.92893 2.92893C1.05357 4.8043 0 7.34784 0 10C0 12.6522 1.05357 15.1957 2.92893 17.0711C4.8043 18.9464 7.34784 20 10 20Z"
@@ -895,7 +895,7 @@
               <div>
                 <label class="block text-sm font-medium text-gray-900 mb-2">Nom de la maladie *</label>
                 <input type="text" [(ngModel)]="formMaladieCronique.name" placeholder="Ex: Hypertension artérielle"
-                  class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none">
+                  class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none">
               </div>
             </div>
 
@@ -903,7 +903,7 @@
 
             <div class="mt-8 flex items-center justify-between">
               <button type="button" (click)="saveMaladieCronique()"
-                class="px-14 py-4 rounded-lg bg-[#01b894] text-white hover:bg-[#019d7e] transition-colors">
+                class="px-14 py-4 rounded-lg bg-[#104382] text-white transition-colors">
                 Enregistrer
               </button>
               <button type="button" (click)="closeMaladieChroniqueModal()"
@@ -918,7 +918,7 @@
         <div class="border border-gray-200 rounded-lg bg-white rounded-lg shadow-sm p-6">
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-base font-semibold text-[#2C3E50]">Antécédents chirurgicaux</h3>
-            <button (click)="openAntecedentChirurgicalModal()" class="text-[#01b894] hover:text-[#019d7e]">
+            <button (click)="openAntecedentChirurgicalModal()" class="text-[#104382] hover:text-[#019d7e]">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M10 18.75C7.67936 18.75 5.45376 17.8281 3.81282 16.1872C2.17187 14.5462 1.25 12.3206 1.25 10C1.25 7.67936 2.17187 5.45376 3.81282 3.81282C5.45376 2.17187 7.67936 1.25 10 1.25C12.3206 1.25 14.5462 2.17187 16.1872 3.81282C17.8281 5.45376 18.75 7.67936 18.75 10C18.75 12.3206 17.8281 14.5462 16.1872 16.1872C14.5462 17.8281 12.3206 18.75 10 18.75ZM10 20C12.6522 20 15.1957 18.9464 17.0711 17.0711C18.9464 15.1957 20 12.6522 20 10C20 7.34784 18.9464 4.8043 17.0711 2.92893C15.1957 1.05357 12.6522 0 10 0C7.34784 0 4.8043 1.05357 2.92893 2.92893C1.05357 4.8043 0 7.34784 0 10C0 12.6522 1.05357 15.1957 2.92893 17.0711C4.8043 18.9464 7.34784 20 10 20Z"
@@ -933,7 +933,7 @@
             <div *ngFor="let chirurgie of antecedentsChirurgicaux"
               class="flex justify-between items-start py-2 px-3 bg-gray-50 rounded-lg group">
               <div class="flex-1">
-                <span class="text-sm text-[#64748B]">{{ chirurgie.label }}</span>
+                <span class="text-sm text-[#6B7280]">{{ chirurgie.label }}</span>
               </div>
               <div class="flex items-center gap-3">
                 <span class="text-sm font-medium text-[#333333]">{{ chirurgie.date }}</span>
@@ -968,13 +968,13 @@
               <div>
                 <label class="block text-sm font-medium text-gray-900 mb-2">Type d'intervention *</label>
                 <input type="text" [(ngModel)]="formAntecedentChirurgical.label" placeholder="Ex: Appendicectomie"
-                  class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none">
+                  class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none">
               </div>
 
               <div>
                 <label class="block text-sm font-medium text-gray-900 mb-2">Date *</label>
                 <input type="date" [(ngModel)]="formAntecedentChirurgical.date"
-                  class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none text-gray-700">
+                  class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none text-gray-700">
               </div>
             </div>
 
@@ -982,7 +982,7 @@
 
             <div class="mt-8 flex items-center justify-between">
               <button type="button" (click)="saveAntecedentChirurgical()"
-                class="px-14 py-4 rounded-lg bg-[#01b894] text-white hover:bg-[#019d7e] transition-colors">
+                class="px-14 py-4 rounded-lg bg-[#104382] text-white transition-colors">
                 Enregistrer
               </button>
               <button type="button" (click)="closeAntecedentChirurgicalModal()"
@@ -997,7 +997,7 @@
         <div class="border border-gray-200 rounded-lg bg-white rounded-lg shadow-sm p-6">
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-base font-semibold text-[#2C3E50]">Intolérances médicamenteuses</h3>
-            <button (click)="openIntoleranceModal()" class="text-[#01b894] hover:text-[#019d7e]">
+            <button (click)="openIntoleranceModal()" class="text-[#104382] hover:text-[#019d7e]">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M10 18.75C7.67936 18.75 5.45376 17.8281 3.81282 16.1872C2.17187 14.5462 1.25 12.3206 1.25 10C1.25 7.67936 2.17187 5.45376 3.81282 3.81282C5.45376 2.17187 7.67936 1.25 10 1.25C12.3206 1.25 14.5462 2.17187 16.1872 3.81282C17.8281 5.45376 18.75 7.67936 18.75 10C18.75 12.3206 17.8281 14.5462 16.1872 16.1872C14.5462 17.8281 12.3206 18.75 10 18.75ZM10 20C12.6522 20 15.1957 18.9464 17.0711 17.0711C18.9464 15.1957 20 12.6522 20 10C20 7.34784 18.9464 4.8043 17.0711 2.92893C15.1957 1.05357 12.6522 0 10 0C7.34784 0 4.8043 1.05357 2.92893 2.92893C1.05357 4.8043 0 7.34784 0 10C0 12.6522 1.05357 15.1957 2.92893 17.0711C4.8043 18.9464 7.34784 20 10 20Z"
@@ -1051,7 +1051,7 @@
                 <label class="block text-sm font-medium text-gray-900 mb-2">Medication de l'intorlérance
                   *</label>
                 <input type="text" [(ngModel)]="formIntolerance.medication" placeholder="Ex: Hypertension artérielle"
-                  class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none">
+                  class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none">
               </div>
             </div>
 
@@ -1059,7 +1059,7 @@
 
             <div class="mt-8 flex items-center justify-between">
               <button type="button" (click)="saveIntolerance()"
-                class="px-14 py-4 rounded-lg bg-[#01b894] text-white hover:bg-[#019d7e] transition-colors">
+                class="px-14 py-4 rounded-lg bg-[#104382] text-white transition-colors">
                 Enregistrer
               </button>
               <button type="button" (click)="closeIntoleranceModal()"
@@ -1078,7 +1078,7 @@
         <div class="border border-gray-200 rounded-lg bg-white rounded-lg shadow-sm p-6">
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-base font-semibold text-[#2C3E50]">Antécédents familiaux</h3>
-            <button (click)="openAntecedentFamilialModal()" class="text-[#01b894] hover:text-[#019d7e]">
+            <button (click)="openAntecedentFamilialModal()" class="text-[#104382] hover:text-[#019d7e]">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M10 18.75C7.67936 18.75 5.45376 17.8281 3.81282 16.1872C2.17187 14.5462 1.25 12.3206 1.25 10C1.25 7.67936 2.17187 5.45376 3.81282 3.81282C5.45376 2.17187 7.67936 1.25 10 1.25C12.3206 1.25 14.5462 2.17187 16.1872 3.81282C17.8281 5.45376 18.75 7.67936 18.75 10C18.75 12.3206 17.8281 14.5462 16.1872 16.1872C14.5462 17.8281 12.3206 18.75 10 18.75ZM10 20C12.6522 20 15.1957 18.9464 17.0711 17.0711C18.9464 15.1957 20 12.6522 20 10C20 7.34784 18.9464 4.8043 17.0711 2.92893C15.1957 1.05357 12.6522 0 10 0C7.34784 0 4.8043 1.05357 2.92893 2.92893C1.05357 4.8043 0 7.34784 0 10C0 12.6522 1.05357 15.1957 2.92893 17.0711C4.8043 18.9464 7.34784 20 10 20Z"
@@ -1133,14 +1133,14 @@
               <div>
                 <label class="block text-sm font-medium text-gray-900 mb-2">Maladie/Condition *</label>
                 <input type="text" [(ngModel)]="formAntecedentFamilial.label" placeholder="Ex: Diabète type 2"
-                  class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none">
+                  class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none">
               </div>
 
               <div>
                 <label class="block text-sm font-medium text-gray-900 mb-2">Membre de la famille *</label>
                 <input type="text" [(ngModel)]="formAntecedentFamilial.relatedPerson"
                   placeholder="Ex: Père, Mère, Grand-père..."
-                  class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none">
+                  class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none">
               </div>
             </div>
 
@@ -1148,7 +1148,7 @@
 
             <div class="mt-8 flex items-center justify-between">
               <button type="button" (click)="saveAntecedentFamilial()"
-                class="px-14 py-4 rounded-lg bg-[#01b894] text-white hover:bg-[#019d7e] transition-colors">
+                class="px-14 py-4 rounded-lg bg-[#104382] text-white transition-colors">
                 Enregistrer
               </button>
               <button type="button" (click)="closeAntecedentFamilialModal()"
@@ -1316,7 +1316,7 @@
 
       <!-- Loading state -->
       <div *ngIf="loadingModeDeVie" class="flex justify-center items-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#01b894]"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#104382]"></div>
       </div>
 
       <!-- Contenu si données chargées -->
@@ -1486,7 +1486,7 @@
         <div *ngIf="loadingMedicaments" class="flex justify-center items-center py-12">
           <div class="text-center">
             <div
-              class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[#01b894] border-r-transparent">
+              class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[#104382] border-r-transparent">
             </div>
             <p class="mt-3 text-gray-600">Chargement des médicaments...</p>
           </div>
@@ -1500,7 +1500,7 @@
               d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
           <p class="text-red-800 font-medium">{{ medicamentsError }}</p>
-          <button (click)="reloadMedicaments()" class="mt-4 text-sm text-[#01b894] hover:underline">Réessayer</button>
+          <button (click)="reloadMedicaments()" class="mt-4 text-sm text-[#104382] hover:underline">Réessayer</button>
         </div>
 
         <!-- Liste vide -->
@@ -1538,7 +1538,7 @@
                   </div>
 
                   <!-- Description -->
-                  <div class="inline-flex items-center text-sm font-medium text-[#64748B]
+                  <div class="inline-flex items-center text-sm font-medium text-[#6B7280]
                         bg-[#F2F2F2] rounded-full
                         px-5 py-1.5
                         ">
@@ -1567,7 +1567,7 @@
 
       <!-- Loading state -->
       <div *ngIf="loadingHospitalisations" class="flex justify-center items-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#01b894]"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#104382]"></div>
       </div>
 
       <!-- Liste des hospitalisations -->
@@ -1588,7 +1588,7 @@
 
             <div class="flex-1">
               <h3 class="text-base font-semibold text-[#333333]">{{ hosp.facility.name }}</h3>
-              <p class="text-xs text-[#64748B]">{{ hosp.department.name }} • Admission : {{
+              <p class="text-xs text-[#6B7280]">{{ hosp.department.name }} • Admission : {{
                 formatDateFr(hosp.entryDateTime) }}</p>
             </div>
 
@@ -1603,7 +1603,7 @@
 
           <div class="mb-4 pt-4 border-t border-[#F2F2F2]">
             <h4 class="text-sm font-bold text-[#2C3E50] mb-2">Motif d'hospitalisation</h4>
-            <p class="text-sm text-[#64748B]">{{ hosp.hospitalizationReason }}</p>
+            <p class="text-sm text-[#6B7280]">{{ hosp.hospitalizationReason }}</p>
           </div>
 
           <div class="flex items-center justify-between pt-4 border-t border-[#F2F2F2]">
@@ -1629,7 +1629,7 @@
             d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
         </svg>
         <p class="text-gray-500 mb-4">Aucune hospitalisation enregistrée</p>
-        <button (click)="openHospitalisationPage()" class="text-[#01b894] hover:text-[#019d7e] font-medium">
+        <button (click)="openHospitalisationPage()" class="text-[#104382] hover:text-[#019d7e] font-medium">
           + Créer une hospitalisation
         </button>
       </div>
@@ -1654,7 +1654,7 @@
       <!-- État de chargement -->
       <div *ngIf="loadingConsultations" class="flex justify-center items-center py-12">
         <div class="text-center">
-          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#01b894] mx-auto"></div>
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#104382] mx-auto"></div>
           <p class="mt-4 text-gray-600">Chargement des consultations...</p>
         </div>
       </div>
@@ -1669,7 +1669,7 @@
           <p class="text-lg font-semibold">{{ consultationsError }}</p>
         </div>
         <button (click)="reloadConsultations()"
-          class="px-4 py-2 bg-[#01b894] text-white rounded-lg hover:bg-[#019874] transition-colors">
+          class="px-4 py-2 bg-[#104382] text-white rounded-lg hover:bg-[#019874] transition-colors">
           Réessayer
         </button>
       </div>
@@ -1756,7 +1756,7 @@
       <!-- État de chargement -->
       <div *ngIf="loadingOrdonnances" class="flex justify-center items-center py-12">
         <div class="text-center">
-          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#01b894] mx-auto"></div>
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#104382] mx-auto"></div>
           <p class="mt-4 text-gray-600">Chargement des ordonnances...</p>
         </div>
       </div>
@@ -1768,7 +1768,7 @@
             d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <p class="text-red-600 font-medium mb-2">{{ ordonnancesError }}</p>
-        <button (click)="reloadOrdonnances()" class="text-[#01b894] hover:underline">Réessayer</button>
+        <button (click)="reloadOrdonnances()" class="text-[#104382] hover:underline">Réessayer</button>
       </div>
 
       <!-- Vide -->
@@ -1838,7 +1838,7 @@
 
           <!-- Pied de carte avec expiration et bouton -->
           <div class="px-6 py-4 flex items-center justify-between">
-            <span class="text-xs text-[#64748B]">
+            <span class="text-xs text-[#6B7280]">
               Expire le {{ formatExpiryDate(ordonnance.createdAt) }}
             </span>
             <button
@@ -1869,7 +1869,7 @@
         <div class="flex items-center gap-1">
           <span *ngFor="let page of [].constructor(totalPagesOrdonnances); let i = index"
             (click)="changePageOrdonnances(i)" [ngClass]="{
-              'bg-[#01b894] text-white': i === currentPageOrdonnances,
+              'bg-[#104382] text-white': i === currentPageOrdonnances,
               'bg-white text-gray-700 hover:bg-gray-50': i !== currentPageOrdonnances
             }"
             class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 text-sm font-medium cursor-pointer">
@@ -1891,7 +1891,7 @@
 
       <!-- Loading State -->
       <div *ngIf="loadingCertificats" class="flex justify-center items-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#01b894]"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#104382]"></div>
       </div>
 
       <!-- Error State -->
@@ -1931,7 +1931,7 @@
               </div>
             </div>
             <button (click)="downloadCertificatePdf(certificat.id)"
-              class="text-gray-400 hover:text-[#01b894] transition-colors flex-shrink-0" title="Télécharger le PDF">
+              class="text-gray-400 hover:text-[#104382] transition-colors flex-shrink-0" title="Télécharger le PDF">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M12 15.577L8.461 12.039L9.169 11.319L11.5 13.65V5H12.5V13.65L14.83 11.32L15.539 12.039L12 15.577ZM6.616 19C6.15533 19 5.771 18.846 5.463 18.538C5.155 18.23 5.00067 17.8453 5 17.384V14.961H6V17.384C6 17.538 6.064 17.6793 6.192 17.808C6.32 17.9367 6.461 18.0007 6.615 18H17.385C17.5383 18 17.6793 17.936 17.808 17.808C17.9367 17.68 18.0007 17.5387 18 17.384V14.961H19V17.384C19 17.8447 18.846 18.229 18.538 18.537C18.23 18.845 17.8453 18.9993 17.384 19H6.616Z"
@@ -1959,34 +1959,34 @@
         <div>
           <label class="block text-sm font-medium text-gray-900 mb-2">Habitudes alimentaires</label>
           <textarea [(ngModel)]="formModeDeVie.dietaryHabits" rows="3" placeholder="Équilibrée, réduite en sucres..."
-            class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none resize-none"></textarea>
+            class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none resize-none"></textarea>
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-900 mb-2">Activité physique</label>
           <textarea [(ngModel)]="formModeDeVie.physicalActivity" rows="3"
             placeholder="Marche 30 min/jour, yoga 2x/semaine..."
-            class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none resize-none"></textarea>
+            class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none resize-none"></textarea>
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-900 mb-2">Consommation d'alcool</label>
           <input [(ngModel)]="formModeDeVie.alcoholConsumption" type="text"
             placeholder="Occasionnel (1-2 verres/semaine)"
-            class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none" />
+            class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none" />
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-900 mb-2">Tabac</label>
           <input [(ngModel)]="formModeDeVie.smoker" type="text" placeholder="Non-fumeur"
-            class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none" />
+            class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none" />
         </div>
       </div>
 
       <div class="mt-8 flex items-center justify-between">
         <button type="button" (click)="saveModeVie()" [disabled]="savingModeDeVie" [class.opacity-50]="savingModeDeVie"
           [class.cursor-not-allowed]="savingModeDeVie"
-          class="flex items-center gap-2 px-14 py-4 rounded-lg bg-[#01b894] text-white hover:bg-[#019d7e] transition-colors">
+          class="flex items-center gap-2 px-14 py-4 rounded-lg bg-[#104382] text-white transition-colors">
           <div *ngIf="savingModeDeVie"
             class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
           {{ savingModeDeVie ? 'Enregistrement...' : 'Enregistrer' }}
@@ -2015,31 +2015,31 @@
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Nom du vaccin *</label>
           <input type="text" [(ngModel)]="newVaccination.vaccineName" placeholder="Ex: COVID-19"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#01b894]">
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#104382]">
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Numéro de dose</label>
           <input type="number" [(ngModel)]="newVaccination.doseNumber" placeholder="1"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#01b894]">
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#104382]">
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Date de vaccination *</label>
           <input type="date" [(ngModel)]="newVaccination.vaccinationDate"
-            class="w-full text-gray-700 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#01b894]">
+            class="w-full text-gray-700 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#104382]">
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Prochaine dose (optionnel)</label>
           <input type="date" [(ngModel)]="newVaccination.nextDoseDate"
-            class="w-full text-gray-700 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#01b894]">
+            class="w-full text-gray-700 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#104382]">
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Statut</label>
           <select [(ngModel)]="newVaccination.status"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#01b894]">
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#104382]">
             <option value="PLANNED">Planifié</option>
             <option value="DONE">Terminé</option>
             <option value="MISSED">Manqué</option>
@@ -2049,12 +2049,12 @@
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Notes (optionnel)</label>
           <textarea [(ngModel)]="newVaccination.notes" rows="2" placeholder="Remarques..."
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#01b894] resize-none"></textarea>
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#104382] resize-none"></textarea>
         </div>
 
         <div class="flex gap-3 pt-4">
           <button (click)="addVaccination()"
-            class="flex-1 bg-[#01b894] text-white py-2.5 rounded-lg font-medium hover:bg-[#019f7f] transition-colors">
+            class="flex-1 bg-[#104382] text-white py-2.5 rounded-lg font-medium transition-colors">
             Enregistrer
           </button>
           <button (click)="closeVaccinationModal()"
@@ -2078,14 +2078,14 @@
         <div>
           <label class="block text-sm font-medium text-gray-900 mb-2">Nom du médicament *</label>
           <input type="text" [(ngModel)]="formTraitement.label" placeholder="Ex: Paracétamol 1000mg"
-            class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none">
+            class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none">
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-900 mb-2">Posologie / Instructions *</label>
           <textarea [(ngModel)]="formTraitement.description" placeholder="Ex: 1 comprimé matin et soir pendant 5 jours"
             rows="3"
-            class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none resize-none"></textarea>
+            class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none resize-none"></textarea>
         </div>
       </div>
 
@@ -2093,7 +2093,7 @@
 
       <div class="mt-8 flex items-center justify-between">
         <button type="button" (click)="saveTraitement()"
-          class="px-14 py-4 rounded-lg bg-[#01b894] text-white hover:bg-[#019d7e] transition-colors">
+          class="px-14 py-4 rounded-lg bg-[#104382] text-white transition-colors">
           Enregistrer
         </button>
         <button type="button" (click)="closeTraitementModal()"
@@ -2139,7 +2139,7 @@
             Tension artérielle
           </label>
           <input type="text" [(ngModel)]="formData.tensionArterielle" placeholder="Ex: 12/8" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm
-                        focus:outline-none focus:ring-2 focus:ring-[#01b894] focus:border-transparent
+                        focus:outline-none focus:ring-2 focus:ring-[#104382] focus:border-transparent
                         placeholder-gray-400">
         </div>
 
@@ -2149,7 +2149,7 @@
             Fréquence cardiaque (bpm)
           </label>
           <input type="text" [(ngModel)]="formData.frequenceCardiaque" placeholder="Ex: 72" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm
-                        focus:outline-none focus:ring-2 focus:ring-[#01b894] focus:border-transparent
+                        focus:outline-none focus:ring-2 focus:ring-[#104382] focus:border-transparent
                         placeholder-gray-400">
         </div>
       </div>
@@ -2162,7 +2162,7 @@
             Fréquence respiratoire (/min)
           </label>
           <input type="text" [(ngModel)]="formData.frequenceRespiratoire" placeholder="Ex: 16" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm
-                        focus:outline-none focus:ring-2 focus:ring-[#01b894] focus:border-transparent
+                        focus:outline-none focus:ring-2 focus:ring-[#104382] focus:border-transparent
                         placeholder-gray-400">
         </div>
 
@@ -2172,7 +2172,7 @@
             Température (°C)
           </label>
           <input type="text" [(ngModel)]="formData.temperature" placeholder="Ex: 36.8" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm
-                        focus:outline-none focus:ring-2 focus:ring-[#01b894] focus:border-transparent
+                        focus:outline-none focus:ring-2 focus:ring-[#104382] focus:border-transparent
                         placeholder-gray-400">
         </div>
       </div>
@@ -2183,7 +2183,7 @@
           Saturation en oxygène (%)
         </label>
         <input type="text" [(ngModel)]="formData.saturationOxygene" placeholder="Ex: 98" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm
-                      focus:outline-none focus:ring-2 focus:ring-[#01b894] focus:border-transparent
+                      focus:outline-none focus:ring-2 focus:ring-[#104382] focus:border-transparent
                       placeholder-gray-400">
       </div>
 
@@ -2191,8 +2191,8 @@
 
     <!-- Footer avec boutons -->
     <div class="flex gap-3 px-6 py-4 bg-gray-50 rounded-b-2xl">
-      <button (click)="enregistrer()" class="flex-1 bg-[#01b894] text-white font-medium py-3 px-4 rounded-lg
-                     hover:bg-[#019a7d] transition-colors duration-200">
+      <button (click)="enregistrer()" class="flex-1 bg-[#104382] text-white font-medium py-3 px-4 rounded-lg
+                    transition-colors duration-200">
         Enregistrer
       </button>
       <button (click)="annuler()" class="flex-1 bg-gray-200 text-gray-700 font-medium py-3 px-4 rounded-lg
@@ -2240,8 +2240,8 @@
           <div class="flex-1">
             <h2 class="text-base font-semibold text-[#333333]">{{ selectedHospitalisationData.facility.name }}
             </h2>
-            <p class="text-xs text-[#64748B] mt-1">{{ selectedHospitalisationData.department.name }}</p>
-            <p class="text-xs text-[#64748B] mt-1">
+            <p class="text-xs text-[#6B7280] mt-1">{{ selectedHospitalisationData.department.name }}</p>
+            <p class="text-xs text-[#6B7280] mt-1">
               Admission : {{ formatDateFr(selectedHospitalisationData.entryDateTime) }}
               <span *ngIf="selectedHospitalisationData.exitDateTime">
                 • Sortie : {{ formatDateFr(selectedHospitalisationData.exitDateTime) }}
@@ -2286,20 +2286,20 @@
 
               <div class="space-y-3">
                 <div class="flex justify-between">
-                  <span class="text-sm text-[#64748B]">Établissement</span>
+                  <span class="text-sm text-[#6B7280]">Établissement</span>
                   <span class="text-sm font-medium text-[#333333]">{{ selectedHospitalisationData.facility.name
                     }}</span>
                 </div>
 
                 <div class="flex justify-between">
-                  <span class="text-sm text-[#64748B]">Service</span>
+                  <span class="text-sm text-[#6B7280]">Service</span>
                   <span class="text-sm font-medium text-[#333333]">{{
                     selectedHospitalisationData.department.name
                     }}</span>
                 </div>
 
                 <div class="flex justify-between">
-                  <span class="text-sm text-[#64748B]">Médecin référent</span>
+                  <span class="text-sm text-[#6B7280]">Médecin référent</span>
                   <span class="text-sm font-medium text-[#333333]">
                     Dr. {{ selectedHospitalisationData.responsibleMedical.prenom }} {{
                     selectedHospitalisationData.responsibleMedical.nom }}
@@ -2307,14 +2307,14 @@
                 </div>
 
                 <div class="flex justify-between">
-                  <span class="text-sm text-[#64748B]">Chambre / Lit</span>
+                  <span class="text-sm text-[#6B7280]">Chambre / Lit</span>
                   <span class="text-sm font-medium text-[#333333]">
                     {{ selectedHospitalisationData.room }} - {{ selectedHospitalisationData.bedNumber }}
                   </span>
                 </div>
 
                 <div class="flex justify-between items-center">
-                  <span class="text-sm text-[#64748B]">Priorité</span>
+                  <span class="text-sm text-[#6B7280]">Priorité</span>
                   <span class="px-2 py-1 text-xs font-medium rounded-full" [ngClass]="{
                   'bg-[#e3f9f4] text-[#00B894]': selectedHospitalisationData.priority === 'NORMAL',
                   'bg-[#FFE5E5] text-[#DC2626]': selectedHospitalisationData.priority === 'URGENCE'
@@ -2331,19 +2331,19 @@
 
               <div class="space-y-3">
                 <div class="flex justify-between">
-                  <span class="text-sm text-[#64748B]">Date d'entrée</span>
+                  <span class="text-sm text-[#6B7280]">Date d'entrée</span>
                   <span class="text-sm font-medium text-[#333333]">{{
                     formatDateFr(selectedHospitalisationData.entryDateTime) }}</span>
                 </div>
 
                 <div class="flex justify-between" *ngIf="selectedHospitalisationData.exitDateTime">
-                  <span class="text-sm text-[#64748B]">Sortie effective</span>
+                  <span class="text-sm text-[#6B7280]">Sortie effective</span>
                   <span class="text-sm font-medium text-[#333333]">{{
                     formatDateFr(selectedHospitalisationData.exitDateTime) }}</span>
                 </div>
 
                 <div class="flex justify-between" *ngIf="!selectedHospitalisationData.exitDateTime">
-                  <span class="text-sm text-[#64748B]">Statut</span>
+                  <span class="text-sm text-[#6B7280]">Statut</span>
                   <span class="text-sm font-medium text-blue-600">En cours d'hospitalisation</span>
                 </div>
               </div>
@@ -2354,12 +2354,12 @@
           <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="border border-gray-200 rounded-xl bg-white shadow-sm p-4">
               <h3 class="text-base font-semibold text-[#2C3E50] mb-2">Motif d'hospitalisation</h3>
-              <p class="text-sm text-[#64748B]">{{ selectedHospitalisationData.hospitalizationReason }}</p>
+              <p class="text-sm text-[#6B7280]">{{ selectedHospitalisationData.hospitalizationReason }}</p>
             </div>
 
             <div class="border border-gray-200 rounded-xl bg-white shadow-sm p-4">
               <h3 class="text-base font-semibold text-[#2C3E50] mb-2">Diagnostic initial</h3>
-              <p class="text-sm text-[#64748B]">{{ selectedHospitalisationData.initialDiagnosis }}</p>
+              <p class="text-sm text-[#6B7280]">{{ selectedHospitalisationData.initialDiagnosis }}</p>
             </div>
           </div>
 
@@ -2367,7 +2367,7 @@
           <div class="border border-gray-200 rounded-xl shadow-sm p-4 mt-6"
             *ngIf="selectedHospitalisationData.observation">
             <h3 class="text-base font-semibold text-[#2C3E50] mb-2">Observations médicales</h3>
-            <p class="text-sm text-[#64748B]">{{ selectedHospitalisationData.observation }}</p>
+            <p class="text-sm text-[#6B7280]">{{ selectedHospitalisationData.observation }}</p>
           </div>
         </div>
 
@@ -2381,7 +2381,7 @@
 
             <!-- Bouton visible uniquement si des types existent -->
             <button *ngIf="typesActionData.length > 0" (click)="openAddActionModalData()"
-              class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#00B894] rounded-lg hover:bg-[#00a884]">
+              class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#104382] rounded-lg">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
               </svg>
@@ -2403,7 +2403,7 @@
               Pour ajouter des actions au journal infirmier, vous devez d'abord créer au moins un type d'action.
             </p>
             <button (click)="openCreateActionTypeModal()"
-              class="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-[#00B894] rounded-lg hover:bg-[#00a884] transition-colors">
+              class="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-[#104382] rounded-lg transition-colors">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
               </svg>
@@ -2695,7 +2695,7 @@
 
                 <div class="ml-auto">
                   <div *ngIf="nouvelleAction.type === type.id.toString()"
-                    class="w-5 h-5 rounded-full border-2 border-[#00B894] bg-[#00B894] flex items-center justify-center">
+                    class="w-5 h-5 rounded-full border-2 border-[#00B894] bg-[#104382] flex items-center justify-center">
                     <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
                     </svg>
@@ -2736,7 +2736,7 @@
       <div class="flex gap-3 p-6 border-t bg-gray-50">
         <button (click)="ajouterActionData()" [disabled]="!nouvelleAction.type"
           [class.opacity-50]="!nouvelleAction.type" [class.cursor-not-allowed]="!nouvelleAction.type"
-          class="flex-1 px-6 py-3 text-sm font-medium text-white bg-[#00B894] rounded-lg transition-colors">
+          class="flex-1 px-6 py-3 text-sm font-medium text-white bg-[#104382] rounded-lg transition-colors">
           Ajouter au journal
         </button>
 
@@ -2813,7 +2813,7 @@
           [disabled]="!newActionType.name.trim() || !newActionType.icon || creatingActionType"
           [class.opacity-50]="!newActionType.name.trim() || !newActionType.icon || creatingActionType"
           [class.cursor-not-allowed]="!newActionType.name.trim() || !newActionType.icon || creatingActionType"
-          class="flex-1 flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium text-white bg-[#00B894] rounded-lg transition-colors">
+          class="flex-1 flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium text-white bg-[#104382] rounded-lg transition-colors">
           <div *ngIf="creatingActionType"
             class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
           {{ creatingActionType ? 'Création en cours...' : 'Créer le type' }}
@@ -2854,12 +2854,12 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Date de sortie *</label>
             <input type="date" [(ngModel)]="formulaireSortie.dateSortie"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#01b894] focus:border-transparent">
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent">
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Heure de sortie *</label>
             <input type="time" [(ngModel)]="formulaireSortie.heureSortie"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#01b894] focus:border-transparent">
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent">
           </div>
         </div>
 
@@ -2867,7 +2867,7 @@
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">État du patient à la sortie *</label>
           <textarea [(ngModel)]="formulaireSortie.etatPatient" rows="3" placeholder="Ex: Améliorée, Bon état général..."
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#01b894] focus:border-transparent resize-none"></textarea>
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent resize-none"></textarea>
         </div>
 
         <!-- Recommandations -->
@@ -2876,7 +2876,7 @@
             *</label>
           <textarea [(ngModel)]="formulaireSortie.recommandations" rows="3"
             placeholder="Ex: Repos pendant 24h. Éviter les aliments chauds..."
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#01b894] focus:border-transparent resize-none"></textarea>
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent resize-none"></textarea>
         </div>
 
         <!-- Traitement à domicile -->
@@ -2884,21 +2884,21 @@
           <label class="block text-sm font-medium text-gray-700 mb-2">Traitement à domicile</label>
           <textarea [(ngModel)]="formulaireSortie.traitementDomicile" rows="3"
             placeholder="Ex: Amoxicilline 1g toutes les 8h pendant 5 jours..."
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#01b894] focus:border-transparent resize-none"></textarea>
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent resize-none"></textarea>
         </div>
 
         <!-- Commentaires médicaux -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Commentaires médicaux</label>
           <textarea [(ngModel)]="formulaireSortie.commentaires" rows="3" placeholder="Commentaires complémentaires..."
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#01b894] focus:border-transparent resize-none"></textarea>
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent resize-none"></textarea>
         </div>
       </div>
 
       <!-- Footer -->
       <div class="flex gap-3 p-6 border-t bg-gray-50 rounded-b-2xl">
         <button (click)="autoriserSortieData()"
-          class="flex-1 bg-[#01b894] text-white font-medium py-3 px-6 rounded-lg hover:bg-[#019d7e] transition">
+          class="flex-1 bg-[#104382] text-white font-medium py-3 px-6 rounded-lg transition">
           Autoriser la sortie
         </button>
         <button (click)="closeFormulaireSortie()"

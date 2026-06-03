@@ -2,10 +2,91 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-import { OrdonnanceService, Ordonnance, OrdonnanceResponse } from '../../services/ordonnance.service';
-import { AuthService } from '../../services/auth.service';
+import { Subject, of } from 'rxjs';
+import { takeUntil, delay } from 'rxjs/operators';
+// Inlined Ordonnance types from ordonnance.service
+interface Medication {
+  id?: number;
+  name: string;
+  quantity: number;
+  dosage: string;
+  price: number;
+}
+
+interface Person {
+  id: number;
+  nom: string;
+  prenom: string;
+}
+
+interface Pharmacist {
+  id: number;
+  nom: string;
+  prenom: string;
+}
+
+interface Pharmacy {
+  id: number;
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+  latitude: number;
+  longitude: number;
+  logo: string;
+  hourly: string | null;
+  pharmacist: Pharmacist;
+}
+
+interface Ordonnance {
+  id: number;
+  reference: string;
+  doctor: Person;
+  patient: Person;
+  createdAt: string;
+  status: string;
+  qrCodeUrl: string;
+  fullyPaidByDonor: boolean;
+  partiallyPaidByDonor: boolean;
+  pharmacy: Pharmacy;
+  amount: number;
+  needsHelp: boolean;
+  address: string;
+  latitude: number;
+  longitude: number;
+  prescriptionFile: string | null;
+  medications: Medication[];
+}
+
+interface PageableSort {
+  unsorted: boolean;
+  sorted: boolean;
+  empty: boolean;
+}
+
+interface Pageable {
+  pageNumber: number;
+  pageSize: number;
+  sort: PageableSort;
+  offset: number;
+  paged: boolean;
+  unpaged: boolean;
+}
+
+interface OrdonnanceResponse {
+  content: Ordonnance[];
+  pageable: Pageable;
+  totalPages: number;
+  totalElements: number;
+  last: boolean;
+  numberOfElements: number;
+  size: number;
+  number: number;
+  sort: PageableSort;
+  first: boolean;
+  empty: boolean;
+}
+// AuthFacade removed — using local mock user for static frontend
 
 @Component({
   standalone: true,
@@ -53,30 +134,133 @@ export class OrdonnancesComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
+  // Mock local data to run the frontend statically (sandbox)
+  private mockOrdonnances: Ordonnance[] = [
+    {
+      id: 1,
+      reference: 'ORD-0001',
+      doctor: { id: 10, nom: 'Dupont', prenom: 'Jean' },
+      patient: { id: 100, nom: 'Martin', prenom: 'Alice' },
+      createdAt: new Date().toISOString(),
+      status: 'PENDING',
+      qrCodeUrl: null as any,
+      fullyPaidByDonor: false,
+      partiallyPaidByDonor: false,
+      pharmacy: {
+        id: 1,
+        name: 'Pharmacie Centrale',
+        address: '1 Rue Principale',
+        phone: '000000000',
+        email: 'pharmacie@example.com',
+        latitude: 0,
+        longitude: 0,
+        logo: '',
+        hourly: null,
+        pharmacist: { id: 1, nom: 'Pharm', prenom: 'Admin' }
+      },
+      amount: 0,
+      needsHelp: false,
+      address: '1 Rue Principale',
+      latitude: 0,
+      longitude: 0,
+      prescriptionFile: null,
+      medications: [
+        { id: 1, name: 'Paracétamol', quantity: 2, dosage: '500mg', price: 2.5 }
+      ]
+    }
+  ];
+
+  // Local helpers that simulate service calls with a small delay
+  private localGetOrdonnances(doctorId: number, page: number = 0, size: number = 10) {
+    const start = page * size;
+    const content = this.mockOrdonnances.slice(start, start + size);
+    const response: OrdonnanceResponse = {
+      content,
+      pageable: {
+        pageNumber: page,
+        pageSize: size,
+        sort: { unsorted: true, sorted: false, empty: true },
+        offset: start,
+        paged: true,
+        unpaged: false
+      },
+      totalPages: Math.ceil(this.mockOrdonnances.length / size),
+      totalElements: this.mockOrdonnances.length,
+      last: start + content.length >= this.mockOrdonnances.length,
+      numberOfElements: content.length,
+      size,
+      number: page,
+      sort: { unsorted: true, sorted: false, empty: true },
+      first: page === 0,
+      empty: content.length === 0
+    };
+
+    return of(response).pipe(delay(250));
+  }
+
+  private localGetOrdonnancesByStatus(doctorId: number, status: string, page: number = 0, size: number = 10) {
+    const filtered = this.mockOrdonnances.filter(o => o.status === status);
+    const start = page * size;
+    const content = filtered.slice(start, start + size);
+    const response: OrdonnanceResponse = {
+      content,
+      pageable: {
+        pageNumber: page,
+        pageSize: size,
+        sort: { unsorted: true, sorted: false, empty: true },
+        offset: start,
+        paged: true,
+        unpaged: false
+      },
+      totalPages: Math.ceil(filtered.length / size),
+      totalElements: filtered.length,
+      last: start + content.length >= filtered.length,
+      numberOfElements: content.length,
+      size,
+      number: page,
+      sort: { unsorted: true, sorted: false, empty: true },
+      first: page === 0,
+      empty: content.length === 0
+    };
+
+    return of(response).pipe(delay(200));
+  }
+
+  private localGetOrdonnanceById(id: number) {
+    const found = this.mockOrdonnances.find(o => o.id === id) || null;
+    return of(found).pipe(delay(150));
+  }
+
+  private localGetStatusLabel(statut: string): string {
+    const mapping: { [key: string]: string } = {
+      'PENDING': 'En attente',
+      'ACCEPTED': 'Acceptée',
+      'REJECTED': 'Rejetée',
+      'IN_PREPARATION': 'En préparation',
+      'READY': 'Prête',
+      'DELIVERED': 'Livrée'
+    };
+    return mapping[statut] || statut;
+  }
+
   constructor(
-    private ordonnanceService: OrdonnanceService,
-    private authService: AuthService,
     private router: Router
   ) { }
+
+  // Local mock current user (replaces AuthFacade)
+  private getMockCurrentUser() {
+    return { id: 10, nom: 'Dupont', prenom: 'Jean' } as { id: number; nom?: string; prenom?: string };
+  }
 
   ngOnInit(): void {
     console.log('🏥 OrdonnancesComponent - Initialisation');
 
-    const currentUser = this.authService.getCurrentUser();
+    const currentUser = this.getMockCurrentUser();
 
     if (!currentUser) {
       console.error('❌ Aucun utilisateur connecté');
       this.error = true;
       this.errorMessage = 'Vous devez être connecté pour accéder à cette page';
-      this.router.navigate(['/login']);
-      return;
-    }
-
-    if (currentUser.profil !== 'DOCTOR') {
-      console.error('❌ Utilisateur n\'est pas un docteur');
-      this.error = true;
-      this.errorMessage = 'Accès réservé aux docteurs';
-      this.router.navigate(['/dashboard']);
       return;
     }
 
@@ -114,7 +298,7 @@ export class OrdonnancesComponent implements OnInit, OnDestroy {
 
     console.log('📥 Chargement des ordonnances - Page:', page, '| Taille:', this.elementsParPage);
 
-    this.ordonnanceService.getOrdonnances(this.currentDoctorId, page, this.elementsParPage)
+    this.localGetOrdonnances(this.currentDoctorId, page, this.elementsParPage)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: OrdonnanceResponse) => {
@@ -153,10 +337,10 @@ export class OrdonnancesComponent implements OnInit, OnDestroy {
     this.loadingDetails = true;
     console.log('📥 Chargement des détails de l\'ordonnance:', ordonnanceId);
 
-    this.ordonnanceService.getOrdonnanceById(ordonnanceId)
+    this.localGetOrdonnanceById(ordonnanceId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (ordonnance: Ordonnance) => {
+        next: (ordonnance: Ordonnance | null) => {
           console.log('✅ Détails chargés:', ordonnance);
           this.ordonnanceDetails = ordonnance;
           this.loadingDetails = false;
@@ -199,7 +383,7 @@ export class OrdonnancesComponent implements OnInit, OnDestroy {
 
   private filterByStatus(status: string): void {
     this.loading = true;
-    this.ordonnanceService.getOrdonnancesByStatus(this.currentDoctorId, status, 0, this.elementsParPage)
+    this.localGetOrdonnancesByStatus(this.currentDoctorId, status, 0, this.elementsParPage)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
@@ -237,7 +421,7 @@ export class OrdonnancesComponent implements OnInit, OnDestroy {
   }
 
   getStatutLabel(statut: string): string {
-    return this.ordonnanceService.getStatusLabel(statut);
+    return this.localGetStatusLabel(statut);
   }
 
   changerElementsParPage(nombre: number): void {

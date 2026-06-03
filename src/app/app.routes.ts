@@ -1,33 +1,30 @@
 import { Routes } from '@angular/router';
-import { MainLayoutComponent } from './features/layouts/main-layout/main-layout.component';
-import { LoginComponent } from './features/auth/login/login.component';
-import { RegisterComponent } from './features/auth/register/register.component';
-import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
-import { PortailComponent } from './features/portail/portail.component';
-import { authGuard } from './guards/auth.guard';
-import { DonsComponent } from './features/dons/dons.component';
 
 export const routes: Routes = [
 
-  { path: 'portail', component: PortailComponent },
-  { path: 'login', component: LoginComponent },
-  { path: 'dons', component: DonsComponent },
-  { path: 'register', component: RegisterComponent },
-  { path: 'forgot-password', component: ForgotPasswordComponent },
+  { path: 'portail', loadComponent: () => import('./features/portail/portail.component').then(m => m.PortailComponent) },
+  { path: 'dons', loadComponent: () => import('./features/dons/dons.component').then(m => m.DonsComponent) },
+  { path: 'register', loadComponent: () => import('./features/auth/register/register.component').then(m => m.RegisterComponent) },
+  {
+    path: '',
+    loadComponent: () => import('./features/layouts/auth-layout/auth-layout.component').then(m => m.AuthLayoutComponent),
+    children: [
+      { path: 'login', loadComponent: () => import('./features/auth/login/login.component').then(m => m.LoginComponent) },
+      { path: 'forgot-password', loadComponent: () => import('./features/auth/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent) }
+    ]
+  },
   {
     path: 'viewer/:accessionNumber',
     loadComponent: () =>
       import('./features/mobile-dicom-viewer/mobile-dicom-viewer.component')
-        .then(m => m.MobileDicomViewerComponent),
-    canActivate: [authGuard]
+        .then(m => m.MobileDicomViewerComponent)
   },
 
   { path: '', redirectTo: '/portail', pathMatch: 'full' },
 
   {
     path: '',
-    component: MainLayoutComponent,
-    canActivate: [authGuard], // Protection globale du layout
+    loadComponent: () => import('./features/layouts/main-layout/main-layout.component').then(m => m.MainLayoutComponent),
     children: [
 
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
@@ -50,6 +47,90 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/dashboard-admin/dashboard-admin.component')
             .then(m => m.DashboardAdminComponent)
+      },
+      {
+        path: 'dashboard-hospital',
+        loadComponent: () =>
+          import('./features/dashboard-hospital/dashboard-hospital.component')
+            .then(m => m.DashboardHospitalComponent)
+      },
+      {
+        path: 'demandes',
+        loadComponent: () =>
+          import('./features/demandes-medicales/demandes-medicales.component')
+            .then(m => m.DemandesMedicalesComponent)
+      },
+      {
+        path: 'demandes/:id',
+        loadComponent: () =>
+          import('./features/detail-demande-medicale/detail-demande-medicale.component')
+            .then(m => m.DetailDemandeMedicaleComponent)
+      },
+      {
+        path: 'patients-hospital',
+        loadComponent: () =>
+          import('./features/patients-hospital/patients-hospital.component')
+            .then(m => m.PatientsHospitalComponent)
+      },
+      {
+        path: 'patients-hospital/:id',
+        loadComponent: () =>
+          import('./features/patients-hospital/detail-patient.component')
+            .then(m => m.DetailPatientComponent)
+      },
+      {
+        path: 'hospitalisations',
+        loadComponent: () =>
+          import('./features/hospitalisation/hospitalisation.component')
+            .then(m => m.HospitalisationComponent)
+      },
+      {
+        path: 'hospitalisations/:id',
+        loadComponent: () =>
+          import('./features/hospitalisation/detail-hospitalisation.component')
+            .then(m => m.DetailHospitalisationComponent)
+      },
+      {
+        path: 'chirurgie',
+        loadComponent: () =>
+          import('./features/chirurgie/chirurgie.component')
+            .then(m => m.ChirurgieComponent)
+      },
+      {
+        path: 'chirurgie/:id',
+        loadComponent: () =>
+          import('./features/chirurgie/detail-chirurgie.component')
+            .then(m => m.DetailChirurgieComponent)
+      },
+      {
+        path: 'demande-materiels',
+        loadComponent: () =>
+          import('./features/demande-materiels/demande-materiels.component')
+            .then(m => m.DemandeMaterielComponent)
+      },
+      {
+        path: 'demande-materiels/:ref',
+        loadComponent: () =>
+          import('./features/demande-materiels/detail-demande-materiels.component')
+            .then(m => m.DetailDemandeMaterielComponent)
+      },
+      {
+        path: 'demande-materiels/:ref/devis/:fournisseur',
+        loadComponent: () =>
+          import('./features/demande-materiels/detail-devis.component')
+            .then(m => m.DetailDevisComponent)
+      },
+      {
+        path: 'paiements-hospital',
+        loadComponent: () =>
+          import('./features/paiements-hospital/paiements-hospital.component')
+            .then(m => m.PaiementsHospitalComponent)
+      },
+      {
+        path: 'paiements-hospital/:id',
+        loadComponent: () =>
+          import('./features/paiements-hospital/detail-paiement.component')
+            .then(m => m.DetailPaiementComponent)
       },
 
 
@@ -285,9 +366,5 @@ export const routes: Routes = [
 
 
 
-
-
-
-
-  { path: '**', redirectTo: '/login' }
+  { path: '**', redirectTo: '/portail' }
 ];

@@ -3,8 +3,42 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Location } from '@angular/common';
 import { Router } from '@angular/router';
-import { MedicalCertificateService, CertificateType, CreateCertificateRequest, CreateCertificateTypeRequest } from '../../../services/medical-certificate.service';
-import { AuthService } from '../../../services/auth.service';
+import { of, delay } from 'rxjs';
+
+// Local types replacing medical-certificate.service interfaces
+interface CreateCertificateRequest {
+  doctorId: number;
+  patientId: number;
+  typeId: number;
+  startDate: string;
+  endDate: string;
+  motif: string;
+}
+
+interface MedicalCertificate {
+  id: number;
+  doctorName?: string;
+  patientName?: string;
+  patientPhone?: string;
+  type: string;
+  startDate: string;
+  endDate: string;
+  issueDate?: string;
+}
+
+interface CertificateType {
+  id: number;
+  code: string;
+  label: string;
+  description?: string;
+}
+
+interface CreateCertificateTypeRequest {
+  id: number;
+  code: string;
+  label: string;
+  description?: string;
+}
 
 @Component({
   selector: 'app-certificat-medical',
@@ -17,8 +51,29 @@ export class CertificatMedicalComponent implements OnInit {
   @Output() close = new EventEmitter<void>();
   private location = inject(Location);
   private router = inject(Router);
-  private certificateService = inject(MedicalCertificateService);
-  private authService = inject(AuthService);
+  // Local auth mock
+  private mockCurrentUser: any = { id: 999, prenom: 'Dr', nom: 'Mock' };
+
+  // --- Local Medical Certificate mocks ---
+  private mockCertificateTypes: CertificateType[] = [
+    { id: 1, code: 'AT', label: 'Arrêt de travail', description: 'Arrêt maladie' }
+  ];
+
+  private localGetCertificateTypes() {
+    return of(this.mockCertificateTypes).pipe(delay(120));
+  }
+
+  private localAddCertificateType(req: CreateCertificateTypeRequest) {
+    const id = this.mockCertificateTypes.length + 1;
+    const created: CertificateType = { id, code: req.code, label: req.label, description: req.description };
+    this.mockCertificateTypes.push(created);
+    return of(created).pipe(delay(150));
+  }
+
+  private localCreateCertificate(req: CreateCertificateRequest) {
+    const created = { id: Math.floor(Math.random() * 10000), ...req };
+    return of(created).pipe(delay(200));
+  }
 
   // Date minimum (aujourd'hui)
   minDate: string = '';
@@ -62,7 +117,7 @@ export class CertificatMedicalComponent implements OnInit {
     this.loadPatientData();
     this.loadCurrentDoctor();
 
-    // Charger les types de certificats
+    // Charger les types de certificats (local mock)
     this.loadCertificateTypes();
   }
 
@@ -96,13 +151,10 @@ export class CertificatMedicalComponent implements OnInit {
    * Charge les informations du médecin connecté
    */
   private loadCurrentDoctor(): void {
-    const currentUser = this.authService.getCurrentUser();
+    const currentUser = this.mockCurrentUser;
     if (currentUser) {
       this.doctorId = currentUser.id;
-      console.log('✅ Médecin connecté:', {
-        id: this.doctorId,
-        nom: `${currentUser.prenom} ${currentUser.nom}`
-      });
+      console.log('✅ Médecin connecté (mock):', { id: this.doctorId, nom: `${currentUser.prenom} ${currentUser.nom}` });
     }
   }
 
@@ -111,14 +163,14 @@ export class CertificatMedicalComponent implements OnInit {
    */
   loadCertificateTypes(): void {
     this.loadingTypes = true;
-    this.certificateService.getCertificateTypes().subscribe({
+    this.localGetCertificateTypes().subscribe({
       next: (types) => {
         this.typesCertificat = types;
         this.loadingTypes = false;
-        console.log('✅ Types de certificats chargés:', types);
+        console.log('✅ Types de certificats chargés (mock):', types);
       },
       error: (error) => {
-        console.error('❌ Erreur lors du chargement des types:', error);
+        console.error('❌ Erreur lors du chargement des types (mock):', error);
         this.loadingTypes = false;
       }
     });
@@ -155,14 +207,14 @@ export class CertificatMedicalComponent implements OnInit {
       description: this.newType.description
     };
 
-    this.certificateService.addCertificateType(typeData).subscribe({
+    this.localAddCertificateType(typeData).subscribe({
       next: (newType) => {
-        console.log('✅ Nouveau type ajouté:', newType);
+        console.log('✅ Nouveau type ajouté (mock):', newType);
         this.loadCertificateTypes(); // Recharger la liste
         this.closeAddTypeModal();
       },
       error: (error) => {
-        console.error('❌ Erreur lors de l\'ajout du type:', error);
+        console.error('❌ Erreur lors de l\'ajout du type (mock):', error);
         alert('Erreur lors de l\'ajout du type');
       }
     });
@@ -193,15 +245,15 @@ export class CertificatMedicalComponent implements OnInit {
 
     console.log('📤 Envoi du certificat:', certificateData);
 
-    this.certificateService.createCertificate(certificateData).subscribe({
+    this.localCreateCertificate(certificateData).subscribe({
       next: (response) => {
-        console.log('✅ Certificat créé avec succès:', response);
+        console.log('✅ Certificat créé avec succès (mock):', response);
         this.isSubmitting = false;
         alert('Certificat médical créé avec succès');
         this.router.navigate(['/patients'], { queryParams: { tab: 'certificats' } });
       },
       error: (error) => {
-        console.error('❌ Erreur lors de la création du certificat:', error);
+        console.error('❌ Erreur lors de la création du certificat (mock):', error);
         this.isSubmitting = false;
         const errorMessage = error.error?.message || 'Une erreur est survenue';
         alert(errorMessage);

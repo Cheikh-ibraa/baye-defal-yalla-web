@@ -1,11 +1,8 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { Subject, interval } from 'rxjs';
-import { takeUntil, takeWhile } from 'rxjs/operators';
-import { AuthService, AuthResult } from '../../../services/auth.service';
-import { HttpErrorResponse } from '@angular/common/http';
+import { User } from '../../../core/auth.types';
 
 @Component({
   selector: 'app-login',
@@ -14,29 +11,18 @@ import { HttpErrorResponse } from '@angular/common/http';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent implements OnInit, OnDestroy {
+export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   showPassword: boolean = false;
   isLoading: boolean = false;
   errorMessage: string = '';
 
-  // Stats avec animation
-  pharmaciesCount: number = 0;
-  deliveriesCount: number = 0;
-  doctorsCount: number = 0;
-
-  private readonly PHARMACIES_TARGET = 100;
-  private readonly DELIVERIES_TARGET = 500;
-  private readonly DOCTORS_TARGET = 50;
-
-  private destroy$ = new Subject<void>();
   private returnUrl: string = '';
 
   constructor(
     private formBuilder: FormBuilder,
     private router: Router,
-    private route: ActivatedRoute,
-    private authService: AuthService
+    private route: ActivatedRoute
   ) {
     this.loginForm = this.createLoginForm();
   }
@@ -44,53 +30,6 @@ export class LoginComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Récupérer l'URL de retour si elle existe
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '';
-
-    // Vérifier si l'utilisateur est déjà connecté
-    const currentUser = this.authService.getCurrentUser();
-    if (currentUser) {
-      this.redirectAfterLogin();
-    }
-
-    // Démarrer l'animation des compteurs
-    this.animateCounters();
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  /**
-   * Anime les compteurs de statistiques
-   */
-  private animateCounters(): void {
-    const duration = 3000; // Durée de l'animation en ms (augmentée à 3s)
-    const steps = 80; // Nombre d'étapes augmenté pour plus de fluidité
-    const stepDuration = duration / steps;
-
-    let currentStep = 0;
-
-    interval(stepDuration)
-      .pipe(
-        takeUntil(this.destroy$),
-        takeWhile(() => currentStep <= steps)
-      )
-      .subscribe(() => {
-        const progress = this.easeOutQuad(currentStep / steps);
-
-        this.pharmaciesCount = Math.floor(progress * this.PHARMACIES_TARGET);
-        this.deliveriesCount = Math.floor(progress * this.DELIVERIES_TARGET);
-        this.doctorsCount = Math.floor(progress * this.DOCTORS_TARGET);
-
-        currentStep++;
-      });
-  }
-
-  /**
-   * Fonction d'easing pour une animation plus naturelle
-   */
-  private easeOutQuad(t: number): number {
-    return t * (2 - t);
   }
 
   /**
@@ -98,8 +37,8 @@ export class LoginComponent implements OnInit, OnDestroy {
    */
   private createLoginForm(): FormGroup {
     return this.formBuilder.group({
-      email: ['', [Validators.required]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required]],
       rememberMe: [false]
     });
   }
@@ -122,24 +61,7 @@ export class LoginComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Sinon, rediriger vers le dashboard par défaut
-    const user = this.authService.getCurrentUser();
-
-    if (!user) {
-      return;
-    }
-
-    if (user.profil === 'DOCTOR') {
-      this.router.navigate(['/dashboard-med']);
-    } else if (user.profil === 'ADMIN') {
-      this.router.navigate(['/dashboard-admin']);
-    } else if (user.profil === 'LABORATORY') {
-      this.router.navigate(['/dashboard-lab']);
-    } else if (user.profil === 'IMAGING_CENTER') {
-      this.router.navigate(['/dashboard-imagerie']);
-    } else {
-      this.router.navigate(['/dashboard']);
-    }
+    this.router.navigate(['/medecins']);
   }
 
   // Alias pour compatibilité (utilisé dans d'autres méthodes)
@@ -147,9 +69,6 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.redirectAfterLogin();
   }
 
-  /**
-   * Handles form submission
-   */
   onSubmit(): void {
     if (this.loginForm.valid) {
       this.isLoading = true;
@@ -157,68 +76,31 @@ export class LoginComponent implements OnInit, OnDestroy {
 
       const { email, password, rememberMe } = this.loginForm.value;
 
-      this.authService.authenticate(email, password)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (result: AuthResult) => {
-            this.isLoading = false;
+      if (rememberMe) {
+        localStorage.setItem('remember_me', 'true');
+      }
 
-            if (result.isSuccess) {
-              if (rememberMe) {
-                localStorage.setItem('remember_me', 'true');
-              }
+      const mockUser: User = {
+        id: 1,
+        nom: 'Ndiaye',
+        prenom: 'Awa',
+        email: email.toLowerCase(),
+        telephone: '+221770000000',
+        profil: 'PHARMACIST',
+        pharmacyId: 1,
+        adress: 'Dakar',
+        lat: null,
+        lon: null
+      };
 
-              this.showSuccessMessage('Connexion réussie !');
+      localStorage.setItem('user_data', JSON.stringify(mockUser));
+      localStorage.setItem('access_token', 'static-auth-token');
 
-              const user = this.authService.getCurrentUser();
-
-              if (!user) {
-                console.error('❌ Pas d\'utilisateur après authentification');
-                this.errorMessage = 'Erreur lors de la récupération des informations utilisateur';
-                return;
-              }
-
-              setTimeout(() => {
-                this.redirectToDefaultDashboard();
-              }, 1000);
-            } else {
-              this.errorMessage = result.errorMessage || 'Erreur de connexion';
-              this.showErrorMessage(this.errorMessage);
-            }
-          },
-          error: (error: any) => {
-            console.error('❌ Erreur complète:', error);
-            this.isLoading = false;
-
-            if (error instanceof HttpErrorResponse) {
-              switch (error.status) {
-                case 403:
-                  this.errorMessage = 'Accès refusé. Vérifiez vos identifiants ou contactez l\'administrateur.';
-                  break;
-                case 401:
-                  this.errorMessage = 'Identifiants incorrects. Veuillez vérifier votre nom d\'utilisateur et mot de passe.';
-                  break;
-                case 0:
-                  this.errorMessage = 'Impossible de contacter le serveur. Vérifiez votre connexion internet.';
-                  break;
-                case 404:
-                  this.errorMessage = 'Service d\'authentification non trouvé.';
-                  break;
-                case 500:
-                  this.errorMessage = 'Erreur serveur. Veuillez réessayer plus tard.';
-                  break;
-                default:
-                  this.errorMessage = error.error?.message || `Erreur ${error.status}: ${error.message}`;
-              }
-            } else if (error.errorMessage) {
-              this.errorMessage = error.errorMessage;
-            } else {
-              this.errorMessage = 'Une erreur inattendue est survenue';
-            }
-
-            this.showErrorMessage(this.errorMessage);
-          }
-        });
+      setTimeout(() => {
+        this.isLoading = false;
+        this.showSuccessMessage('Connexion réussie !');
+        this.router.navigate(['/dashboard']);
+      }, 400);
     } else {
       this.markFormGroupTouched(this.loginForm);
       console.warn('⚠️ Formulaire invalide');

@@ -9,7 +9,7 @@
           <p class="text-sm md:text-base text-[#343A40] mt-1">Consultez et gérez les ordonnances des patients</p>
         </div>
         <button (click)="creerNouvelleOrdonnance()"
-          class="flex items-center gap-2 px-5 py-3 bg-[#00B894] text-white rounded-lg hover:bg-[#00a085] transition font-medium text-sm whitespace-nowrap">
+          class="flex items-center gap-2 px-5 py-3 bg-[#104382] text-white rounded-lg transition font-medium text-sm whitespace-nowrap">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
@@ -57,7 +57,7 @@
                 </div>
                 <input type="text" [(ngModel)]="rechercheTexte" (input)="rechercher(rechercheTexte)"
                   placeholder="Rechercher une ordonnance"
-                  class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B894] focus:border-transparent outline-none text-xs" />
+                  class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none text-xs" />
               </div>
 
               <!-- Filtre statut -->
@@ -97,7 +97,7 @@
         <!-- Loading -->
         <div *ngIf="loading" class="flex-1 flex items-center justify-center p-12 min-h-[300px]">
           <div class="text-center">
-            <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-[#00B894]">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-[#104382]">
             </div>
             <p class="mt-4 text-gray-500">Chargement des ordonnances...</p>
           </div>
@@ -113,7 +113,7 @@
             </svg>
             <p class="text-gray-500 mb-4">Aucune ordonnance trouvée</p>
             <button (click)="creerNouvelleOrdonnance()"
-              class="px-6 py-2 bg-[#00B894] text-white rounded-lg hover:bg-[#00a085] transition text-sm">
+              class="px-6 py-2 bg-[#104382] text-white rounded-lg transition text-sm">
               Créer une ordonnance
             </button>
           </div>
@@ -174,7 +174,7 @@
             <div class="flex items-center gap-2 w-full sm:w-auto justify-center sm:justify-start">
               <span class="text-gray-700 text-xs sm:text-sm">Par page:</span>
               <select [(ngModel)]="elementsParPage" (change)="changerElementsParPage(elementsParPage)"
-                class="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-[#00B894] outline-none">
+                class="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-[#104382] outline-none">
                 <option [value]="5">5</option>
                 <option [value]="10">10</option>
                 <option [value]="20">20</option>
@@ -225,7 +225,7 @@
               </h2>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <button (click)="sendToPatient()"
-                  class="flex items-center justify-center gap-2 px-3 py-2.5 bg-[#00B894] text-white rounded-lg hover:bg-[#00a085] transition text-xs font-medium">
+                  class="flex items-center justify-center gap-2 px-3 py-2.5 bg-[#104382] text-white rounded-lg transition text-xs font-medium">
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                       d="M15.6683 0.685806C15.7047 0.594942 15.7136 0.495402 15.6939 0.399526C15.6742 0.303649 15.6269 0.215653 15.5576 0.146447C15.4884 0.0772403 15.4004 0.0298668 15.3046 0.0101994C15.2087 -0.0094681 15.1092 -0.000564594 15.0183 0.0358061L0.471288 5.85481C0.343177 5.90609 0.231698 5.99172 0.149119 6.10227C0.0665401 6.21283 0.0160632 6.34402 0.00324374 6.48142C-0.00957573 6.61882 0.0157593 6.75709 0.0764603 6.88101C0.137161 7.00494 0.230875 7.10971 0.347288 7.18381L5.34229 10.3618L6.87329 12.7678C6.9456 12.877 7.05785 12.9534 7.18592 12.9807C7.31399 13.008 7.44766 12.984 7.55819 12.9138C7.66873 12.8436 7.74732 12.7328 7.77707 12.6053C7.80682 12.4778 7.78535 12.3437 7.71729 12.2318L6.34129 10.0698L13.8353 2.57581L11.9403 7.31381C11.9143 7.37504 11.9007 7.44085 11.9004 7.50738C11.9001 7.57392 11.9132 7.63984 11.9387 7.70128C11.9642 7.76273 12.0017 7.81846 12.0491 7.86521C12.0964 7.91196 12.1526 7.9488 12.2144 7.97355C12.2761 7.99831 12.3422 8.01049 12.4087 8.00938C12.4753 8.00828 12.5409 7.9939 12.6018 7.9671C12.6627 7.9403 12.7176 7.90162 12.7634 7.85332C12.8092 7.80502 12.8448 7.74807 12.8683 7.68581L15.6683 0.685806ZM13.1283 1.86881L5.63429 9.36281L1.29529 6.60181L13.1283 1.86881Z"
@@ -256,7 +256,7 @@
 
               <!-- Loading détails -->
               <div *ngIf="loadingDetails" class="text-center py-8">
-                <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-[#00B894]">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-[#104382]">
                 </div>
                 <p class="mt-2 text-sm text-gray-500">Chargement des détails...</p>
               </div>

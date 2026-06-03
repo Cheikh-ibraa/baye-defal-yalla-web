@@ -1,14 +1,56 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, Inject, PLATFORM_ID, OnDestroy } from '@angular/core';
 import { CommonModule, CurrencyPipe, isPlatformBrowser } from '@angular/common';
-import { Router } from '@angular/router';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Subject, of } from 'rxjs';
+import { takeUntil, delay } from 'rxjs/operators';
 import { Chart, registerables } from 'chart.js';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { DashboardService, PharmacyCounter, DeliveryEvolution, PaymentStats, PeriodType } from '../../services/dashboard.service';
-import { AuthService, User } from '../../services/auth.service';
-import { PharmacieService, PharmacyByPharmacistInfo } from '../../services/pharmacie.service';
+// Inlined dashboard types (replacing DashboardService dependency)
+
+interface PharmacyCounter {
+  pendingCount: number;
+  inPreparationCount: number;
+  readyCount: number;
+  deliveredCount: number;
+  pendingPercentage: number;
+  inPreparationPercentage: number;
+  readyPercentage: number;
+  deliveredPercentage: number;
+  averagePrepTime: string | number;
+}
+
+interface DeliveryEvolution {
+  label: string;
+  count: number;
+}
+
+interface PaymentStats {
+  todayTotal: number;
+  yesterdayTotal: number;
+  last7DaysTotal: number;
+  last30DaysTotal: number;
+}
+
+type PeriodType = 'DAILY' | 'WEEKLY' | 'MONTHLY';
+import { User } from '../../core/auth.types';
+// AuthFacade removed — using local mock current user for static UI
+// Local PharmacyByPharmacistInfo inlined from pharmacie.service
+interface PharmacistBasic {
+  id: number;
+  nom: string;
+  prenom: string;
+}
+
+interface PharmacyByPharmacistInfo {
+  id: number;
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+  logo: string;
+  hourly: string | null;
+  pharmacist: PharmacistBasic;
+}
 import { environment } from '../../../environments/environment';
 
 Chart.register(...registerables);
@@ -60,31 +102,98 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   errorMessage: string = '';
 
   private destroy$ = new Subject<void>();
+  private readonly localPharmacyInfo: PharmacyByPharmacistInfo = {
+    id: 1,
+    name: 'Pharmacie Centrale',
+    address: 'Dakar, 89 Avenue du Principal',
+    phone: '33 000 00 00',
+    email: 'contact@pharmacie-centrale.local',
+    hourly: null,
+    logo: 'assets/images/pharmacy-logo.png',
+    pharmacist: {
+      id: 1,
+      nom: 'Ndiaye',
+      prenom: 'Awa'
+    }
+  };
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
-    private dashboardService: DashboardService,
-    private authService: AuthService,
-    private pharmacieService: PharmacieService,
-    private router: Router
+    
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
+  // Local mock current user
+  private getMockCurrentUser(): User {
+    return {
+      id: 1,
+      prenom: 'Admin',
+      nom: 'Pharmacie',
+      profil: 'PHARMACIE',
+      lat: 14.7,
+      lon: -17.45,
+      pharmacyId: 1,
+      email: 'admin@pharmacie.local',
+      telephone: '330000000'
+    } as any;
+  }
+
+  // Local replacement for getCurrentUserById
+  private localGetCurrentUserById(id: number) {
+    const mock: User = { id, prenom: 'Admin', nom: 'Pharmacie', profil: 'PHARMACIE', lat: 14.7, lon: -17.45, pharmacyId: 1 } as any;
+    return of(mock).pipe(delay(150));
+  }
+
+  // ===== Local mock implementations for dashboard data =====
+  private localGetPharmatieCounter(pharmacyId: number) {
+    const counter: PharmacyCounter = {
+      pendingCount: 8,
+      inPreparationCount: 5,
+      readyCount: 3,
+      deliveredCount: 12,
+      pendingPercentage: 20,
+      inPreparationPercentage: 12,
+      readyPercentage: 8,
+      deliveredPercentage: 60,
+      averagePrepTime: '00:12:00'
+    };
+    return of(counter).pipe(delay(200));
+  }
+
+  private localGetPaymentState(pharmacyId: number) {
+    const stats: PaymentStats = {
+      todayTotal: 120000,
+      yesterdayTotal: 90000,
+      last7DaysTotal: 560000,
+      last30DaysTotal: 2300000
+    };
+    return of(stats).pipe(delay(200));
+  }
+
+  private localGetEvolution(pharmacyId: number, period: PeriodType) {
+    const mock: DeliveryEvolution[] = [
+      { label: period === 'DAILY' ? '00:00' : 'Semaine 1', count: 10 },
+      { label: period === 'DAILY' ? '06:00' : 'Semaine 2', count: 12 },
+      { label: period === 'DAILY' ? '12:00' : 'Semaine 3', count: 8 },
+      { label: period === 'DAILY' ? '18:00' : 'Semaine 4', count: 15 }
+    ];
+    return of(mock).pipe(delay(250));
+  }
+
   ngOnInit(): void {
 
-    const currentUser = this.authService.getCurrentUser();
+    const currentUser = this.getMockCurrentUser();
 
     if (!currentUser) {
       console.error('❌ Aucun utilisateur connecté');
       this.error = true;
       this.errorMessage = 'Vous devez être connecté pour accéder à cette page';
-      this.router.navigate(['/login']);
       return;
     }
 
 
-    // Si l'utilisateur n'a pas de pharmacyId OU si les données semblent incomplètes, recharger depuis l'API
+    // Si l'utilisateur n'a pas de pharmacyId OU si les données semblent incomplètes, recharger localement
     if ((!currentUser.pharmacyId || currentUser.pharmacyId === null) && currentUser.id) {
       this.loadCompleteUserData(currentUser.id);
     } else if (currentUser.pharmacyId) {
@@ -105,22 +214,19 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private loadCompleteUserData(userId: number): void {
     this.isLoadingUser = true;
 
-    this.authService.getCurrentUserById(userId)
+    this.localGetCurrentUserById(userId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (user: User) => {
-
           // Mettre à jour le localStorage avec les données complètes
           localStorage.setItem('user_data', JSON.stringify(user));
-
-          // Mettre à jour le BehaviorSubject dans AuthService
-          this.authService['currentUserSubject'].next(user);
-
+          // Update local currentUser
+          this.currentUser = user;
           this.isLoadingUser = false;
           this.initializeWithUser(user);
         },
-        error: (error) => {
-          console.error('❌ Erreur lors du chargement des données utilisateur:', error);
+        error: (error: any) => {
+          console.error('❌ Erreur lors du chargement des données utilisateur (mock):', error);
           this.error = true;
           this.errorMessage = 'Impossible de charger vos informations utilisateur';
           this.isLoadingUser = false;
@@ -161,19 +267,13 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isLoadingPharmacyInfo = true;
     this.pharmacyInfoError = false;
 
-    this.pharmacieService.getPharmacyByPharmacist(pharmacistId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (data) => {
-          this.pharmacyInfo = data;
-          this.isLoadingPharmacyInfo = false;
-        },
-        error: (error) => {
-          console.error('❌ Erreur lors du chargement des infos pharmacie:', error);
-          this.pharmacyInfoError = true;
-          this.isLoadingPharmacyInfo = false;
-        }
-      });
+    setTimeout(() => {
+      this.pharmacyInfo = {
+        ...this.localPharmacyInfo,
+        pharmacist: { ...this.localPharmacyInfo.pharmacist, id: pharmacistId }
+      };
+      this.isLoadingPharmacyInfo = false;
+    }, 250);
   }
 
   /**
@@ -213,21 +313,19 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   loadPharmatieCounter(): void {
     this.isLoadingCounter = true;
-
-    this.dashboardService.getPharmatieCounter(this.pharmacyId)
+    this.localGetPharmatieCounter(this.pharmacyId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (data) => {
+        next: (data: PharmacyCounter) => {
           this.pharmacyCounter = data;
           this.isLoadingCounter = false;
 
-          // Mettre à jour le graphique en camembert si disponible
           if (this.pieChartInstance) {
             this.updatePieChart();
           }
         },
-        error: (error) => {
-          console.error('❌ Erreur lors du chargement des compteurs:', error);
+        error: (error: any) => {
+          console.error('❌ Erreur lors du chargement des compteurs (mock):', error);
           this.isLoadingCounter = false;
           this.handleError('Erreur lors du chargement des compteurs', error);
         }
@@ -236,16 +334,15 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   loadPaymentStats(): void {
     this.isLoadingPayments = true;
-
-    this.dashboardService.getPaymentState(this.pharmacyId)
+    this.localGetPaymentState(this.pharmacyId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (data) => {
+        next: (data: PaymentStats) => {
           this.paymentStats = data;
           this.isLoadingPayments = false;
         },
-        error: (error) => {
-          console.error('❌ Erreur lors du chargement des stats de paiement:', error);
+        error: (error: any) => {
+          console.error('❌ Erreur lors du chargement des stats de paiement (mock):', error);
           this.isLoadingPayments = false;
           this.handleError('Erreur lors du chargement des statistiques de paiement', error);
         }
@@ -254,21 +351,19 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   loadDeliveryEvolution(): void {
     this.isLoadingEvolution = true;
-
-    this.dashboardService.getEvolution(this.pharmacyId, this.selectedPeriod)
+    this.localGetEvolution(this.pharmacyId, this.selectedPeriod)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (data) => {
+        next: (data: DeliveryEvolution[]) => {
           this.deliveryEvolution = data;
           this.isLoadingEvolution = false;
 
-          // Mettre à jour le graphique linéaire si disponible
           if (this.lineChartInstance) {
             this.updateLineChart();
           }
         },
-        error: (error) => {
-          console.error('❌ Erreur lors du chargement de l\'évolution:', error);
+        error: (error: any) => {
+          console.error('❌ Erreur lors du chargement de l\'évolution (mock):', error);
           this.isLoadingEvolution = false;
           this.handleError('Erreur lors du chargement de l\'évolution des livraisons', error);
         }

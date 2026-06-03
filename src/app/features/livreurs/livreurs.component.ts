@@ -249,7 +249,7 @@ export class LivreursComponent implements OnInit, AfterViewInit {
           datasets: [{
             label: 'Livraisons',
             data: this.topLivreurs.map(l => l.livraisons),
-            backgroundColor: '#10B981',
+            backgroundColor: '#5DADE2',
             borderRadius: 6,
             barThickness: 24
           }]

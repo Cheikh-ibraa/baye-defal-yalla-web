@@ -2,8 +2,34 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ConsultationService, CreateConsultationRequest } from '../../../services/consultation.service';
-import { AuthService } from '../../../services/auth.service';
+// Inlined consultation types (replacing consultation.service imports)
+interface CreateConsultationRequest {
+  patientId: number;
+  doctorId: number;
+  date: string; // Format: "DD-MM-YYYY HH:mm"
+  title: string;
+  observation: string;
+  recommendation: string;
+  type: 'TELECONSULTATION' | 'PRESENTIEL';
+}
+
+interface Consultation {
+  id: number;
+  patientId: number;
+  patientName?: string;
+  patientPhone?: string;
+  doctorId: number;
+  doctorName?: string;
+  date: string;
+  title: string;
+  observation: string;
+  recommendation: string;
+  type: 'TELECONSULTATION' | 'PRESENTIEL';
+  createdAt?: string;
+  updatedAt?: string;
+}
+import { of } from 'rxjs';
+import { delay } from 'rxjs/operators';
 
 interface ConsultationForm {
   nReferent: string;
@@ -55,8 +81,7 @@ export class ConsultationsComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private consultationService: ConsultationService,
-    private authService: AuthService
+    // consultationService replaced by local mock
   ) { }
 
   ngOnInit(): void {
@@ -93,13 +118,11 @@ export class ConsultationsComponent implements OnInit {
    * Charge les informations du médecin connecté
    */
   private loadCurrentDoctor(): void {
-    const currentUser = this.authService.getCurrentUser();
+    // Local mock current user
+    const currentUser = { id: 999, prenom: 'Dr', nom: 'Mock' };
     if (currentUser) {
       this.doctorId = currentUser.id;
-      console.log('✅ Médecin connecté:', {
-        id: this.doctorId,
-        nom: `${currentUser.prenom} ${currentUser.nom}`
-      });
+      console.log('✅ Médecin connecté (mock):', { id: this.doctorId, nom: `${currentUser.prenom} ${currentUser.nom}` });
     }
   }
 
@@ -164,19 +187,26 @@ export class ConsultationsComponent implements OnInit {
 
     console.log('📤 Envoi de la consultation:', consultationData);
 
-    this.consultationService.createConsultation(consultationData).subscribe({
+    this.localCreateConsultation(consultationData).subscribe({
       next: (response) => {
-        console.log('✅ Consultation créée avec succès:', response);
+        console.log('✅ Consultation (mock) créée avec succès:', response);
         this.isSubmitting = false;
         this.showAlert('success', 'Succès', 'La consultation a été enregistrée avec succès');
       },
       error: (error) => {
-        console.error('❌ Erreur lors de la création de la consultation:', error);
+        console.error('❌ Erreur lors de la création de la consultation (mock):', error);
         this.isSubmitting = false;
-        const errorMessage = error.error?.message || 'Une erreur est survenue lors de l\'enregistrement de la consultation';
+        const errorMessage = 'Une erreur est survenue lors de l\'enregistrement de la consultation';
         this.showAlert('error', 'Erreur', errorMessage);
       }
     });
+  }
+
+  // Mock local pour création de consultation
+  private localCreateConsultation(data: CreateConsultationRequest) {
+    const id = Math.floor(Math.random() * 10000) + 1;
+    const created: Consultation = { id, ...data } as Consultation;
+    return of(created).pipe(delay(150));
   }
 
   /**

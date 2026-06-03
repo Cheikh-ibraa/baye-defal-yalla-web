@@ -33,7 +33,8 @@
             "outputMode": "static",
             "allowedCommonJsDependencies": [
               "sweetalert2",
-              "qrcode"
+              "qrcode",
+              "file-saver"
             ]
           },
           "configurations": {
@@ -46,11 +47,11 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "10kB",
-                  "maximumError": "20kB"
-                }
-              ],
-              "outputHashing": "all"
+                      "maximumWarning": "10kB",
+                      "maximumError": "20kB"
+                    }
+                  ],
+                  "outputHashing": "all"
             },
             "development": {
               "optimization": false,

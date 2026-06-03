@@ -1,8 +1,9 @@
 // standalone-pacs-viewer.component.ts
 import { Component, OnInit, OnChanges, SimpleChanges, Input } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { of } from 'rxjs';
+import { delay } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 // Interface pour typer la réponse
@@ -165,13 +166,7 @@ export class StandalonePacsViewerComponent implements OnInit, OnChanges {
   isLoading: boolean = true;
   errorMessage: string | null = null;
 
-  // URL de l'API (utilise environment)
-  private apiUrl = `${environment.baseUrl}/imaging/viewers`;
-
-  constructor(
-    private http: HttpClient,
-    private sanitizer: DomSanitizer
-  ) { }
+  constructor(private sanitizer: DomSanitizer) { }
 
   ngOnInit() {
     if (this.accessionNumber) {
@@ -201,35 +196,51 @@ export class StandalonePacsViewerComponent implements OnInit, OnChanges {
     this.isLoading = true;
     this.errorMessage = null;
 
-    this.http.get<PacsResponse>(`${this.apiUrl}/${this.accessionNumber}`).subscribe({
-      next: (data) => {
-        // Prendre la première série de la première étude
-        if (data.studies && data.studies.length > 0) {
-          const firstStudyId = data.studies[0];
-          const seriesUrls = data.series[firstStudyId];
+    // Simulate a backend call: if accessionNumber contains 'noimg' we simulate no images (404-like),
+    // otherwise return a data URL that renders a simple placeholder HTML for the viewer iframe.
+    const accession = (this.accessionNumber || '').trim();
+    const hasImages = accession.length > 0 && !accession.toLowerCase().includes('noimg');
 
-          if (seriesUrls && seriesUrls.length > 0) {
-            // Prendre la première URL de viewer
-            this.viewerUrl = seriesUrls[0];
-            // Nettoyer l'URL pour le iframe
-            this.safeViewerUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.viewerUrl);
-          } else {
-            this.errorMessage = 'Aucune série disponible pour cette étude';
-          }
+    if (!accession) {
+      // No accession provided -> immediate error state
+      of(null).pipe(delay(200)).subscribe(() => {
+        this.viewerUrl = null;
+        this.errorMessage = 'Accession Number non fourni';
+        this.isLoading = false;
+      });
+      return;
+    }
+
+    if (!hasImages) {
+      // Simulate 404 / no images
+      of(null).pipe(delay(300)).subscribe(() => {
+        this.viewerUrl = null;
+        this.safeViewerUrl = null;
+        this.errorMessage = null; // show empty state, not an error
+        this.isLoading = false;
+      });
+      return;
+    }
+
+    // Simulate successful response with a data URL viewer page
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>OHIF Mock</title></head><body style="margin:0;background:#000;color:#fff;font-family:Arial,Helvetica,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;"><div style="text-align:center;"><h2>OHIF Viewer Mock</h2><p style="opacity:.8">Accession: ${accession}</p><div style="margin-top:1rem;color:#bbb;font-size:0.9rem;">This is a static mock viewer used for UI-only mode.</div></div></body></html>`;
+    const dataUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(html);
+
+    of({ studies: ['s1'], series: { 's1': [dataUrl] } } as PacsResponse).pipe(delay(300)).subscribe({
+      next: (data) => {
+        const firstStudyId = data.studies[0];
+        const seriesUrls = data.series[firstStudyId];
+
+        if (seriesUrls && seriesUrls.length > 0) {
+          this.viewerUrl = seriesUrls[0];
+          this.safeViewerUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.viewerUrl);
         } else {
-          this.errorMessage = 'Aucune étude trouvée';
+          this.errorMessage = 'Aucune série disponible pour cette étude';
         }
         this.isLoading = false;
       },
-      error: (error) => {
-        console.error('Erreur:', error);
-        // 404 = pas encore d'images uploadées, ce n'est pas une erreur
-        if (error.status === 404) {
-          this.viewerUrl = null;
-          this.errorMessage = null;
-        } else {
-          this.errorMessage = 'Erreur lors du chargement des images';
-        }
+      error: () => {
+        this.errorMessage = 'Erreur lors du chargement des images';
         this.isLoading = false;
       }
     });

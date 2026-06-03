@@ -1,7 +1,7 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-forgot-password',
@@ -39,7 +39,7 @@ export class ForgotPasswordComponent implements OnInit {
     this.selectMethod('email');
   }
   goToLogin(): void {
-    this.router.navigate(['/login']);
+    this.router.navigate(['/portail']);
   }
   /**
    * Creates the reactive form for password reset

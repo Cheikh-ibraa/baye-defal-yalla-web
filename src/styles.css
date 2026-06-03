@@ -1,4 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+/* Commented out to avoid Google Fonts inlining during build (fetch fails in CI)
+  @import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+*/
 
 @tailwind base;
 @tailwind components;

@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd, RouterLink, RouterLinkActive } from '@angular/router';
-import { AuthService, User } from '../../../services/auth.service';
+import { User } from '../../../core/auth.types';
 import { Subscription, filter } from 'rxjs';
 
 export interface MenuItem {
@@ -36,6 +36,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   isPharmacy = false;
   isLab = false;        // LABORATORY
   isImagerie = false;  // IMAGING_CENTER
+  isHospital = false;  // HOSPITAL
 
   financeOpen: boolean = false;
 
@@ -50,6 +51,15 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   private userSubscription?: Subscription;
   private routerSubscription?: Subscription;
+  private readonly mockCurrentUser: User = {
+    id: 1,
+    nom: 'Ndiaye',
+    prenom: 'Awa',
+    email: 'awa.ndiaye@local.test',
+    telephone: '+221770000000',
+    profil: 'PHARMACIST',
+    pharmacyId: 1
+  } as User;
 
   // Menus DOCTOR
   doctorMenuItems: MenuItem[] = [
@@ -105,11 +115,32 @@ export class SidebarComponent implements OnInit, OnDestroy {
     { id: 'comptes', label: 'Mon compte', route: '/compte' }
   ];
 
+  // Menus HOSPITAL
+  hospitalMenuItems: MenuItem[] = [
+    { id: 'dashboard-hospital', label: 'Tableau de bord', route: '/dashboard-hospital' },
+    { id: 'demandes', label: 'Demandes médicales', route: '/demandes' },
+    { id: 'patients-hospital', label: 'Patients', route: '/patients-hospital' },
+    { id: 'hospitalisations', label: 'Hospitalisations', route: '/hospitalisations' },
+    { id: 'chirurgie', label: 'Chirurgie', route: '/chirurgie' },
+    { id: 'demande-materiels', label: 'Demande de matériels', route: '/demande-materiels' },
+    { id: 'paiements-hospital', label: 'Paiements', route: '/paiements-hospital' },
+    { id: 'comptes', label: 'Mon compte', route: '/compte' }
+  ];
+
   menuItems: MenuItem[] = [];
+  // Mode sandbox: on expose tous les groupes pour garder la navigation libre.
+  // À rebrancher plus tard si on réintroduit une logique de rôle.
+  private readonly allMenuItems: MenuItem[] = [
+    ...this.adminMenuItems,
+    ...this.doctorMenuItems,
+    ...this.pharmacyMenuItems,
+    ...this.labMenuItems,
+    ...this.imagerieMenuItems,
+    ...this.hospitalMenuItems
+  ];
 
   constructor(
     private router: Router,
-    private authService: AuthService
   ) { }
 
   @HostListener('window:resize')
@@ -121,24 +152,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.onResize();
 
-    this.currentUser = this.authService.getCurrentUser();
+    this.currentUser = this.getMockCurrentUser();
     this.updateMenuBasedOnProfile();
     this.setActiveItemFromCurrentRoute();
-
-    // Ne rediriger que si l'utilisateur change (pas au refresh)
-    let isFirstLoad = true;
-
-    this.userSubscription = this.authService.currentUser$.subscribe(user => {
-      this.currentUser = user;
-      this.updateMenuBasedOnProfile();
-
-      // Ne rediriger que lors d'un vrai changement d'utilisateur (login)
-      // Pas lors d'un refresh où l'utilisateur est juste restauré
-      if (!isFirstLoad && user) {
-        this.redirectToDefaultDashboard();
-      }
-      isFirstLoad = false;
-    });
 
     this.routerSubscription = this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
@@ -151,11 +167,14 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   private updateMenuBasedOnProfile(): void {
-    this.isAdmin = this.currentUser?.profil === 'ADMIN';
-    this.isDoctor = this.currentUser?.profil === 'DOCTOR';
-    this.isPharmacy = this.currentUser?.profil === 'PHARMACIST';
-    this.isLab = this.currentUser?.profil === 'LABORATORY';
-    this.isImagerie = this.currentUser?.profil === 'IMAGING_CENTER';
+    const profile = this.currentUser?.profil?.toUpperCase() || 'PHARMACIST';
+
+    this.isAdmin = profile === 'ADMIN';
+    this.isDoctor = profile === 'DOCTOR' || profile === 'MEDECIN';
+    this.isPharmacy = profile === 'PHARMACIST' || profile === 'PHARMACIE';
+    this.isLab = profile === 'LABORATORY' || profile === 'LAB' || profile === 'LABORATOIRE';
+    this.isImagerie = profile === 'IMAGING_CENTER' || profile === 'IMAGERIE';
+    this.isHospital = profile === 'HOSPITAL' || profile === 'HOPITAL';
 
     if (this.isAdmin) {
       this.menuItems = [...this.adminMenuItems];
@@ -167,13 +186,76 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.menuItems = [...this.labMenuItems];
     } else if (this.isImagerie) {
       this.menuItems = [...this.imagerieMenuItems];
+    } else if (this.isHospital) {
+      this.menuItems = [...this.hospitalMenuItems];
     } else {
-      this.menuItems = [...this.pharmacyMenuItems];
+      this.menuItems = [...this.pharmacyMenuItems]; // fallback
     }
+  }
+
+  private detectProfileFromUrl(url: string): string | null {
+    if (url.startsWith('/dashboard-admin') || 
+        url.startsWith('/medecins') || 
+        url.startsWith('/pharmacies') || 
+        url.startsWith('/livreurs') || 
+        url.startsWith('/patientmanage') || 
+        url.startsWith('/paiements-help') || 
+        url.startsWith('/administration') || 
+        url.startsWith('/finance-dashboard') || 
+        url.startsWith('/finance-pharmacies') || 
+        url.startsWith('/finance-virements')) {
+      return 'ADMIN';
+    }
+    if (url.startsWith('/dashboard-med') || 
+        url.startsWith('/create-ordonnance') || 
+        url.startsWith('/ordonnances') || 
+        url.startsWith('/patients') || 
+        url.startsWith('/planings')) {
+      if (url.startsWith('/patients-hospital')) return 'HOSPITAL';
+      return 'DOCTOR';
+    }
+    if (url.startsWith('/dashboard-lab') || 
+        url.startsWith('/examens-laboratoire')) {
+      return 'LABORATORY';
+    }
+    if (url.startsWith('/dashboard-imagerie') || 
+        url.startsWith('/examens-imagerie')) {
+      return 'IMAGING_CENTER';
+    }
+    if (url.startsWith('/dashboard-hospital') || 
+        url.startsWith('/demandes') || 
+        url.startsWith('/patients-hospital') || 
+        url.startsWith('/hospitalisations') || 
+        url.startsWith('/chirurgie') || 
+        url.startsWith('/demande-materiels') || 
+        url.startsWith('/paiements-hospital')) {
+      return 'HOSPITAL';
+    }
+    if (url.startsWith('/dashboard') || 
+        url.startsWith('/commande') || 
+        url.startsWith('/gestion-stock') || 
+        url.startsWith('/livraison') || 
+        url.startsWith('/finance-dashboardpharmacie') || 
+        url.startsWith('/finance-transactions') || 
+        url.startsWith('/finance-retraits') || 
+        url.startsWith('/parametre-bancaire')) {
+      return 'PHARMACIST';
+    }
+    return null;
   }
 
   private setActiveItemFromCurrentRoute(): void {
     const url = this.router.url;
+
+    const detectedProfile = this.detectProfileFromUrl(url);
+    if (detectedProfile) {
+      if (!this.currentUser) {
+        this.currentUser = { ...this.mockCurrentUser };
+      }
+      this.currentUser.profil = detectedProfile;
+      this.updateMenuBasedOnProfile();
+    }
+
     const item = this.menuItems.find(i => i.route && url.startsWith(i.route));
 
     if (item) {
@@ -186,27 +268,25 @@ export class SidebarComponent implements OnInit, OnDestroy {
     else if (this.isPharmacy) this.activeItem = 'dashboard';
     else if (this.isLab) this.activeItem = 'dashboard-lab';
     else if (this.isImagerie) this.activeItem = 'dashboard-imagerie';
+    else if (this.isHospital) this.activeItem = 'dashboard-hospital';
     else this.activeItem = '';
   }
 
   private redirectToDefaultDashboard(): void {
-    // Ne rediriger que si on est sur la page de login, portail ou racine
-    const currentUrl = this.router.url;
-    const shouldRedirect = currentUrl === '/' ||
-      currentUrl === '/login' ||
-      currentUrl === '/portail' ||
-      currentUrl === '/register' ||
-      currentUrl === '/forgot-password';
+    // Pas d'auto-redirection en mode sandbox: on laisse l'utilisateur rester sur sa page courante.
+    return;
+  }
 
-    if (!shouldRedirect) {
-      return; // L'utilisateur est déjà sur une page valide
+  private getMockCurrentUser(): User {
+    const stored = localStorage.getItem('user_data');
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch {
+        // ignore
+      }
     }
-
-    if (this.isDoctor) this.router.navigate(['/dashboard-med']);
-    else if (this.isAdmin) this.router.navigate(['/dashboard-admin']);
-    else if (this.isPharmacy) this.router.navigate(['/dashboard']);
-    else if (this.isLab) this.router.navigate(['/dashboard-lab']);
-    else if (this.isImagerie) this.router.navigate(['/dashboard-imagerie']);
+    return { ...this.mockCurrentUser };
   }
 
   selectItem(id: string): void {
@@ -224,7 +304,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
+    localStorage.clear();
+    this.currentUser = null;
+    this.router.navigate(['/portail']);
   }
 }

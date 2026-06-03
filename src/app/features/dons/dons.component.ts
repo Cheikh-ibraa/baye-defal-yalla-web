@@ -1,8 +1,6 @@
 import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { forkJoin } from 'rxjs';
-import { ContributionService, HelpNeededItem } from '../../services/contribution.service';
 
 interface Donor {
   name: string;
@@ -28,6 +26,77 @@ interface DonationItem {
   progressColor: string;
   donors: Donor[];
 }
+
+const STATIC_DONATIONS: DonationItem[] = [
+  {
+    id: 1,
+    type: 'Ordonnance',
+    urgency: 'Urgent',
+    urgencyColor: 'text-white',
+    urgencyBg: 'bg-[#E74C3C]',
+    patientName: 'Mamadou Sow',
+    patientAge: 65,
+    indication: 'Hypertension',
+    doctorName: 'Dr. Awa Diop',
+    doctorSpecialty: 'Généraliste',
+    description:
+      'Cette ordonnance médicale a été délivrée pour financer des médicaments nécessaires à la prise en charge du patient.',
+    objectif: 25000,
+    collected: 17789,
+    percentage: 72,
+    progressColor: 'bg-[#2AB396]',
+    donors: [
+      { name: 'Moussa Ndiaye', date: '06 février 2026', amount: '+2 000 F' },
+      { name: 'Anonyme', date: '09 février 2026', amount: '+5 000 F' },
+      { name: 'Fatou Diallo', date: '12 février 2026', amount: '+3 500 F' },
+      { name: 'Ibrahima Ba', date: '14 février 2026', amount: '+1 000 F' }
+    ]
+  },
+  {
+    id: 2,
+    type: 'Analyse médicale',
+    urgency: 'Normal',
+    urgencyColor: 'text-white',
+    urgencyBg: 'bg-[#58D68D]',
+    patientName: 'Seydou Diop',
+    patientAge: 35,
+    indication: 'Analyse sanguine',
+    doctorName: 'Dr. Mamadou Sarr',
+    doctorSpecialty: 'Généraliste',
+    description:
+      'Le patient nécessite un bilan sanguin complet pour confirmer le diagnostic et orienter le traitement.',
+    objectif: 50000,
+    collected: 16500,
+    percentage: 33,
+    progressColor: 'bg-[#2AB396]',
+    donors: [
+      { name: 'Aminata Fall', date: '10 février 2026', amount: '+4 000 F' },
+      { name: 'Anonyme', date: '11 février 2026', amount: '+3 000 F' }
+    ]
+  },
+  {
+    id: 3,
+    type: 'Imagerie médicale',
+    urgency: 'Prioritaire',
+    urgencyColor: 'text-white',
+    urgencyBg: 'bg-[#E74C3C]',
+    patientName: 'Awa Cisse',
+    patientAge: 43,
+    indication: 'Radiographie pulmonaire',
+    doctorName: 'Dr. Demba Thioune',
+    doctorSpecialty: 'Cardiologue',
+    description:
+      'Un examen d’imagerie est requis en urgence pour évaluer la situation clinique du patient.',
+    objectif: 75000,
+    collected: 49890,
+    percentage: 66,
+    progressColor: 'bg-[#2AB396]',
+    donors: [
+      { name: 'Moussa Ndiaye', date: '06 février 2026', amount: '+2 000 F' },
+      { name: 'Anonyme', date: '09 février 2026', amount: '+5 000 F' }
+    ]
+  }
+];
 
 @Component({
   selector: 'app-dons',
@@ -66,119 +135,17 @@ export class DonsComponent implements OnInit, OnDestroy, AfterViewInit {
   private autoScrollInterval: ReturnType<typeof setInterval> | null = null;
   private isHovered = false;
 
-  constructor(
-    private router: Router,
-    private contributionService: ContributionService
-  ) { }
+  constructor(private router: Router) { }
 
   ngOnInit(): void {
     this.loadAllDons();
   }
 
   private loadAllDons(): void {
-    this.isLoadingDons = true;
+    this.isLoadingDons = false;
     this.donsError = null;
-
-    this.contributionService.getHelpNeeded(0, 10).subscribe({
-      next: (firstPage) => {
-        const totalPages = firstPage.totalPages ?? 1;
-
-        if (totalPages <= 1) {
-          this.donations = this.mapHelpItemsToDonations(firstPage.content ?? []);
-          this.applyCurrentFilter();
-          this.isLoadingDons = false;
-          return;
-        }
-
-        const pageRequests = Array.from({ length: totalPages }, (_, page) =>
-          this.contributionService.getHelpNeeded(page, 10)
-        );
-
-        forkJoin(pageRequests).subscribe({
-          next: (responses) => {
-            const allItems = responses.flatMap(response => response.content ?? []);
-            this.donations = this.mapHelpItemsToDonations(allItems);
-            this.applyCurrentFilter();
-            this.isLoadingDons = false;
-          },
-          error: () => {
-            this.donsError = 'Impossible de charger les besoins médicaux.';
-            this.donations = [];
-            this.applyCurrentFilter();
-            this.isLoadingDons = false;
-          }
-        });
-      },
-      error: () => {
-        this.donsError = 'Impossible de charger les besoins médicaux.';
-        this.donations = [];
-        this.applyCurrentFilter();
-        this.isLoadingDons = false;
-      }
-    });
-  }
-
-  private mapHelpItemsToDonations(items: HelpNeededItem[]): DonationItem[] {
-    return items.map(item => {
-      const type = this.getTypeLabel(item.type);
-      const urgency = this.getUrgencyLabel(item.urgencyLevel);
-      const urgencyBg = this.getUrgencyBg(item.urgencyLevel);
-      const percentage = Math.min(Math.max(Math.round(item.contributionPercentage ?? 0), 0), 100);
-
-      return {
-        id: item.id,
-        type,
-        urgency,
-        urgencyColor: 'text-white',
-        urgencyBg,
-        patientName: item.patientName || 'Patient inconnu',
-        patientAge: item.youngPatient ? 12 : 35,
-        indication: item.itemType || item.facilityName || 'Besoin médical',
-        doctorName: item.doctorName || 'Médecin non renseigné',
-        doctorSpecialty: item.doctorspeciality || 'Spécialité non renseignée',
-        description: item.description || 'Aucune description disponible.',
-        objectif: item.amount || 0,
-        collected: item.amountContributed || 0,
-        percentage,
-        progressColor: 'bg-[#2AB396]',
-        donors: []
-      };
-    });
-  }
-
-  private getUrgencyLabel(level: string | null): string {
-    switch (level) {
-      case 'CRITICAL':
-        return 'Prioritaire';
-      case 'URGENT':
-        return 'Urgent';
-      default:
-        return 'Normal';
-    }
-  }
-
-  private getUrgencyBg(level: string | null): string {
-    switch (level) {
-      case 'CRITICAL':
-        return 'bg-[#E74C3C]';
-      case 'URGENT':
-        return 'bg-[#FFA500]';
-      default:
-        return 'bg-[#58D68D]';
-    }
-  }
-
-  private getTypeLabel(type: string): string {
-    switch (type) {
-      case 'ANALYSIS':
-        return 'Analyse médicale';
-      case 'IMAGING':
-        return 'Imagerie médicale';
-      case 'PRESCRIPTION':
-        return 'Ordonnance';
-      default:
-        return type;
-    }
+    this.donations = [...STATIC_DONATIONS];
+    this.applyCurrentFilter();
   }
 
   private applyCurrentFilter(): void {
@@ -218,7 +185,7 @@ export class DonsComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   goToLogin(): void {
-    this.router.navigate(['/login']);
+    this.router.navigate(['/portail']);
   }
 
   goToPortail(): void {

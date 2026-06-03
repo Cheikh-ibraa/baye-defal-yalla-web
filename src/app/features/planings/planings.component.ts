@@ -1,9 +1,24 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PlanningService, AvailableDay, TimeSlot } from '../../services/planning.service';
-import { AuthService } from '../../services/auth.service';
+import { Observable, of } from 'rxjs';
+import { delay } from 'rxjs/operators';
 import Swal from 'sweetalert2';
+
+// Local interfaces for static scheduling state
+interface AvailableDay {
+  date: string; // Format: DD-MM-YYYY
+  startTime: string; // Format: HH:mm
+  endTime: string; // Format: HH:mm
+}
+
+interface TimeSlot {
+  id: number;
+  date: string; // Format: DD-MM-YYYY
+  startTime: string; // Format: HH:mm
+  endTime: string; // Format: HH:mm
+  booked: boolean;
+}
 
 interface WeekDay {
   label: string;
@@ -103,11 +118,12 @@ export class PlaningsComponent implements OnInit {
     heureFin: ''
   };
 
-  constructor(
-    private planningService: PlanningService,
-    private authService: AuthService
-  ) {
+  constructor() {
     this.initializeCurrentWeek();
+  }
+
+  private getMockCurrentUser(): { id: number; nom?: string; prenom?: string } {
+    return { id: 10, nom: 'Dupont', prenom: 'Jean' } as { id: number; nom?: string; prenom?: string };
   }
 
   ngOnInit(): void {
@@ -118,18 +134,16 @@ export class PlaningsComponent implements OnInit {
    * Charge le doctorId depuis l'utilisateur connecté et les disponibilités
    */
   loadDoctorIdAndAvailabilities(): void {
-    this.authService.getUserMe().subscribe({
-      next: (user) => {
-        this.doctorId = user.id;
-        this.loadAvailableDays();
-        // Charger tous les rendez-vous pour l'affichage dans la grille calendrier
-        this.loadAppointmentsForCalendar();
-      },
-      error: (error) => {
-        console.error('Erreur lors de la récupération du médecin connecté:', error);
-        this.errorMessage = 'Impossible de récupérer vos informations. Veuillez vous reconnecter.';
-      }
-    });
+    const currentUser = this.getMockCurrentUser();
+    if (currentUser) {
+      this.doctorId = currentUser.id;
+      this.loadAvailableDays();
+      // Charger tous les rendez-vous pour l'affichage dans la grille calendrier
+      this.loadAppointmentsForCalendar();
+    } else {
+      console.error('Erreur lors de la récupération du médecin connecté: utilisateur non connecté');
+      this.errorMessage = 'Impossible de récupérer vos informations. Veuillez vous reconnecter.';
+    }
   }
 
   /**
@@ -139,12 +153,12 @@ export class PlaningsComponent implements OnInit {
     if (!this.doctorId) return;
 
     // Charger avec une grande taille de page pour avoir tous les RDV
-    this.planningService.getDoctorAppointments(this.doctorId, 0, 1000).subscribe({
+    this.localGetDoctorAppointments(this.doctorId, 0, 1000).subscribe({
       next: (response: PagedResponse<Appointment>) => {
         this.calendarAppointments = response.content;
       },
-      error: (error) => {
-        console.error('Erreur lors du chargement des rendez-vous pour le calendrier:', error);
+      error: (error: any) => {
+        console.error('Erreur lors du chargement des rendez-vous pour le calendrier (mock):', error);
       }
     });
   }
@@ -203,13 +217,12 @@ export class PlaningsComponent implements OnInit {
     this.isLoadingDays = true;
     this.errorMessage = null;
 
-    this.planningService.getAvailableDays(this.doctorId, month).subscribe({
+    this.localGetAvailableDays(this.doctorId, month).subscribe({
       next: (days) => {
         this.availableDaysCache = days;
         this.updateWeekAvailability();
         this.isLoadingDays = false;
 
-        // Auto-sélectionner le premier jour disponible pour afficher la grille
         if (!this.selectedDay) {
           const firstAvailableDay = this.weekDays.find(day => day.isAvailable);
           if (firstAvailableDay) {
@@ -217,8 +230,8 @@ export class PlaningsComponent implements OnInit {
           }
         }
       },
-      error: (error) => {
-        console.error('Erreur lors du chargement des disponibilités:', error);
+      error: (error: any) => {
+        console.error('Erreur lors du chargement des disponibilités (mock):', error);
         this.errorMessage = 'Impossible de charger les disponibilités.';
         this.isLoadingDays = false;
       }
@@ -305,13 +318,13 @@ export class PlaningsComponent implements OnInit {
     this.timeSlots = [];
 
     // Charger les créneaux du jour sélectionné
-    this.planningService.getTimeSlots(this.doctorId, this.selectedDay.dateString).subscribe({
+    this.localGetTimeSlots(this.doctorId, this.selectedDay.dateString).subscribe({
       next: (slots) => {
         this.timeSlots = slots;
         this.isLoadingSlots = false;
       },
-      error: (error) => {
-        console.error('Erreur lors du chargement des créneaux:', error);
+      error: (error: any) => {
+        console.error('Erreur lors du chargement des créneaux (mock):', error);
         this.slotsErrorMessage = 'Impossible de charger les créneaux.';
         this.timeSlots = [];
         this.isLoadingSlots = false;
@@ -384,7 +397,7 @@ export class PlaningsComponent implements OnInit {
     this.isLoadingAppointments = true;
     this.appointmentsErrorMessage = null;
 
-    this.planningService.getDoctorAppointments(this.doctorId, this.currentPage, this.pageSize).subscribe({
+    this.localGetDoctorAppointments(this.doctorId, this.currentPage, this.pageSize).subscribe({
       next: (response: PagedResponse<Appointment>) => {
         this.appointments = response.content;
         this.totalPages = response.totalPages;
@@ -394,8 +407,8 @@ export class PlaningsComponent implements OnInit {
         this.isLastPage = response.last;
         this.isLoadingAppointments = false;
       },
-      error: (error) => {
-        console.error('Erreur lors du chargement des rendez-vous:', error);
+      error: (error: any) => {
+        console.error('Erreur lors du chargement des rendez-vous (mock):', error);
         this.appointmentsErrorMessage = 'Erreur lors du chargement des rendez-vous. Veuillez réessayer.';
         this.isLoadingAppointments = false;
       }
@@ -513,9 +526,9 @@ export class PlaningsComponent implements OnInit {
       endTime: this.newSlot.heureFin
     };
 
-    this.planningService.generateAvailabilities(availabilityData).subscribe({
-      next: (response) => {
-        console.log('Créneaux créés avec succès:', response);
+    this.localGenerateAvailabilities(availabilityData).subscribe({
+      next: (response: { message: string }) => {
+        console.log('Créneaux créés avec succès (mock):', response);
         Swal.fire({
           icon: 'success',
           title: 'Succès !',
@@ -528,8 +541,8 @@ export class PlaningsComponent implements OnInit {
         // Recharger les disponibilités
         this.loadAvailableDays();
       },
-      error: (error) => {
-        console.error('Erreur lors de la création des créneaux:', error);
+      error: (error: any) => {
+        console.error('Erreur lors de la création des créneaux (mock):', error);
         Swal.fire({
           icon: 'error',
           title: 'Erreur',
@@ -563,7 +576,7 @@ export class PlaningsComponent implements OnInit {
       cancelButtonText: 'Annuler'
     }).then((result) => {
       if (result.isConfirmed) {
-        this.planningService.deleteAppointment(appointment.id).subscribe({
+        this.localDeleteAppointment(appointment.id).subscribe({
           next: () => {
             Swal.fire({
               icon: 'success',
@@ -579,8 +592,8 @@ export class PlaningsComponent implements OnInit {
               this.loadAppointmentsForCalendar();
             }
           },
-          error: (error) => {
-            console.error('Erreur lors de la suppression:', error);
+          error: (error: any) => {
+            console.error('Erreur lors de la suppression (mock):', error);
             Swal.fire({
               icon: 'error',
               title: 'Erreur',
@@ -700,5 +713,45 @@ export class PlaningsComponent implements OnInit {
       'ANNULE': 'border-rose-500'
     };
     return classMap[status] || 'border-gray-400';
+  }
+
+  // ===== Local mock implementations =====
+  private localGetDoctorAppointments(doctorId: number | null, page = 0, size = 10): Observable<PagedResponse<Appointment>> {
+    const mockAppointments: Appointment[] = [
+      { id: 1, doctorName: 'Dr Mock', specialty: 'Généraliste', patientName: 'Alice', date: this.formatDateToDDMMYYYY(new Date()), startTime: '09:00', endTime: '09:30', reason: '', type: null, status: 'EN_ATTENTE', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
+    ];
+    const response: PagedResponse<Appointment> = {
+      content: mockAppointments,
+      totalElements: mockAppointments.length,
+      totalPages: 1,
+      number: page,
+      size: mockAppointments.length,
+      first: true,
+      last: true,
+    };
+    return of(response).pipe(delay(200));
+  }
+
+  private localGetAvailableDays(doctorId: number | null, month: string): Observable<AvailableDay[]> {
+    const mock: AvailableDay[] = [
+      { date: this.formatDateToDDMMYYYY(new Date()), startTime: '08:00', endTime: '17:00' }
+    ];
+    return of(mock).pipe(delay(150));
+  }
+
+  private localGetTimeSlots(doctorId: number | null, date: string): Observable<TimeSlot[]> {
+    const mock: TimeSlot[] = [
+      { id: 1, date, startTime: '08:00', endTime: '08:30', booked: false },
+      { id: 2, date, startTime: '08:30', endTime: '09:00', booked: false }
+    ];
+    return of(mock).pipe(delay(150));
+  }
+
+  private localGenerateAvailabilities(data: { doctorId: number; date: string; startTime: string; endTime: string }): Observable<{ message: string }> {
+    return of({ message: 'Generated' }).pipe(delay(180));
+  }
+
+  private localDeleteAppointment(appointmentId: number): Observable<{ message: string }> {
+    return of({ message: 'Deleted' }).pipe(delay(150));
   }
 }

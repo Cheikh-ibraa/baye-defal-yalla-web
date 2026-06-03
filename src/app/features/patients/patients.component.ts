@@ -9,26 +9,345 @@ import { ImagerieListComponent } from '../imagerie-list/imagerie-list.component'
 import { FileToDataUrlPipe } from '../../pipes/file-to-data-url.pipe';
 import { environment } from '../../../environments/environment';
 import { buildImageUrl } from '../../core/utils/image.helper';
+import { of } from 'rxjs';
+import { delay } from 'rxjs/operators';
 import Swal from 'sweetalert2';
-// Import des services
-import { VueEnsembleService, ClinicalData, ChronicDisease, FamilyHistory, Allergy, ChirurgicalHistory, DrugIntolerance, Treatment } from '../../services/vue-ensemble.service';
-import { VitalSignsService, VitalSign } from '../../services/vital-signs.service';
-import { LifestyleService, Lifestyle } from '../../services/lifestyle.service';
-import { VaccinationService, Vaccination as VaccinationData } from '../../services/vaccination.service';
-import { SmsService } from '../../services/sms.service';
-import { AuthService } from '../../services/auth.service';
-import { OrdonnanceService, Ordonnance as OrdonnanceData, OrdonnanceResponse } from '../../services/ordonnance.service';
-import { ConsultationService, ConsultationPageResponse } from '../../services/consultation.service';
-import { MedicalCertificateService, CertificatePageResponse, MedicalCertificate } from '../../services/medical-certificate.service';
-import {
-  HospitalisationService,
-  Hospitalization,
-  JournalAction,
-  ActionType,
-  DischargeOrder,
-  CreateActionRequest,
-  CreateDischargeOrderRequest
-} from '../../services/hospitalisation.service';
+// Local types replacing removed service types
+interface VitalSign {
+  id: number;
+  bloodPressure: string;
+  heartRate: number;
+  respiratoryRate: number;
+  temperature: number;
+  oxygenSaturation: number;
+  updatedAt: string;
+}
+
+interface Lifestyle {
+  id: number;
+  dietaryHabits: string;
+  physicalActivity: string;
+  alcoholConsumption: string;
+  smoker: string;
+}
+
+interface Vaccination {
+  id: number;
+  vaccineName: string;
+  doseNumber: number;
+  vaccinationDate: string;
+  nextDoseDate?: string;
+  status?: string;
+  notes?: string;
+}
+
+// Local vue-ensemble types
+interface ClinicalData {
+  id: number;
+  sex: string;
+  bloodGroup: string;
+  weight: number;
+  height: number;
+  bmi: number;
+}
+
+interface ChronicDisease {
+  id: number;
+  name: string;
+}
+
+interface FamilyHistory {
+  id: number;
+  label: string;
+  relatedPerson: string;
+}
+
+interface Allergy {
+  id: number;
+  name: string;
+}
+
+interface ChirurgicalHistory {
+  id: number;
+  label: string;
+  date: string;
+}
+
+interface DrugIntolerance {
+  id: number;
+  medication: string;
+  details: string;
+}
+
+interface Treatment {
+  id: number;
+  label: string;
+  description: string;
+}
+// Inlined Ordonnance types (from ordonnance.service)
+interface Medication {
+  id?: number;
+  name: string;
+  quantity: number;
+  dosage: string;
+  price: number;
+}
+
+interface Person {
+  id: number;
+  nom: string;
+  prenom: string;
+}
+
+interface Pharmacist {
+  id: number;
+  nom: string;
+  prenom: string;
+}
+
+interface Pharmacy {
+  id: number;
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+  latitude: number;
+  longitude: number;
+  logo: string;
+  hourly: string | null;
+  pharmacist: Pharmacist;
+}
+
+interface OrdonnanceData {
+  id: number;
+  reference: string;
+  doctor: Person;
+  patient: Person;
+  createdAt: string;
+  status: string;
+  qrCodeUrl: string;
+  fullyPaidByDonor: boolean;
+  partiallyPaidByDonor: boolean;
+  pharmacy: Pharmacy;
+  amount: number;
+  needsHelp: boolean;
+  address: string;
+  latitude: number;
+  longitude: number;
+  prescriptionFile: string | null;
+  medications: Medication[];
+}
+
+interface PageableSort {
+  unsorted: boolean;
+  sorted: boolean;
+  empty: boolean;
+}
+
+interface Pageable {
+  pageNumber: number;
+  pageSize: number;
+  sort: PageableSort;
+  offset: number;
+  paged: boolean;
+  unpaged: boolean;
+}
+
+interface OrdonnanceResponse {
+  content: OrdonnanceData[];
+  pageable: Pageable;
+  totalPages: number;
+  totalElements: number;
+  last: boolean;
+  numberOfElements: number;
+  size: number;
+  number: number;
+  sort: PageableSort;
+  first: boolean;
+  empty: boolean;
+}
+// Inlined Consultation types (replacing consultation.service imports)
+interface Consultation {
+  id: number;
+  patientId: number;
+  patientName?: string;
+  patientPhone?: string;
+  doctorId: number;
+  doctorName?: string;
+  date: string;
+  title: string;
+  observation: string;
+  recommendation: string;
+  type: 'TELECONSULTATION' | 'PRESENTIEL';
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+interface ConsultationPageResponse {
+  content: Consultation[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: any;
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  totalPages: number;
+  totalElements: number;
+  last: boolean;
+  numberOfElements: number;
+  size: number;
+  number: number;
+  sort: any;
+  first: boolean;
+  empty: boolean;
+}
+// Local MedicalCertificate interfaces (replacing medical-certificate.service types)
+interface MedicalCertificate {
+  id: number;
+  doctorName?: string;
+  patientName?: string;
+  patientPhone?: string;
+  type: string;
+  startDate: string;
+  endDate: string;
+  issueDate?: string;
+}
+
+interface CertificatePageResponse {
+  content: MedicalCertificate[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: any;
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  totalPages: number;
+  totalElements: number;
+  last: boolean;
+  numberOfElements: number;
+  size: number;
+  number: number;
+  sort: any;
+  first: boolean;
+  empty: boolean;
+}
+interface Authority {
+  authority: string;
+}
+
+interface User {
+  id: number;
+  reference: string | null;
+  lat: number;
+  lon: number;
+  nom: string;
+  prenom: string;
+  email: string;
+  password: string;
+  adress: string;
+  technicalSheet: string | null;
+  profil: string;
+  activated: boolean;
+  notifiable: boolean;
+  online: boolean;
+  telephone: string;
+  funds: number;
+  photo: string | null;
+  validated: boolean;
+  accountNonExpired: boolean;
+  credentialsNonExpired: boolean;
+  authorities: Authority[];
+  username: string;
+  accountNonLocked: boolean;
+  averageRating: number;
+  enabled: boolean;
+}
+
+interface FacilityType {
+  id: number;
+  name: string;
+}
+
+interface Facility {
+  id: number;
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+  type: FacilityType;
+}
+
+interface Department {
+  id: number;
+  name: string;
+  description: string;
+  facility: Facility;
+}
+
+interface Hospitalization {
+  id: number;
+  patient: User;
+  facility: Facility;
+  department: Department;
+  responsibleMedical: User;
+  hospitalizationReason: string;
+  initialDiagnosis: string;
+  observation: string;
+  entryDateTime: string;
+  exitDateTime: string | null;
+  room: string;
+  bedNumber: string;
+  priority: 'NORMAL' | 'URGENCE';
+}
+
+interface ActionType {
+  id: number;
+  name: string;
+  description: string;
+  icon: string;
+}
+
+interface JournalAction {
+  id: number;
+  hospitalization: Hospitalization;
+  actionDateTime: string;
+  type: ActionType;
+  description: string;
+  remark: string;
+  author: User;
+}
+
+interface CreateActionRequest {
+  hospitalizationId: number;
+  actionTypeId: number;
+  authorId: number;
+  actionDateTime: string;
+  description: string;
+  remark: string;
+}
+
+interface CreateDischargeOrderRequest {
+  hospitalizationId: number;
+  dischargeDateTime: string;
+  patientCondition: string;
+  postHospitalizationRecommendations: string;
+  homeTreatment: string;
+  comment: string;
+}
+
+interface DischargeOrder {
+  id: number;
+  hospitalization: Hospitalization;
+  dischargeDateTime: string;
+  patientCondition: string;
+  postHospitalizationRecommendations: string;
+  homeTreatment: string;
+  comment: string;
+}
 
 interface Patient {
   id: string;
@@ -280,6 +599,642 @@ export class PatientsComponent implements OnInit {
     { nom: 'Radio Thorax', resultat: 'Absence de foyer parenchymateux. Silhouette cardio-médiastinale normale.', date: '15/11/2025', medecin: 'Dr. Diop' }
   ];
 
+  // --- Mocks et helpers locaux pour VueEnsemble (sandbox) ---
+  private mockCliniqueData = {
+    id: 1,
+    sex: 'M',
+    bloodGroup: 'O+',
+    weight: 70,
+    height: 175,
+    bmi: 22.9
+  };
+
+  private mockAllergies = [
+    { id: 1, name: 'Pollen' },
+    { id: 2, name: 'Pénicilline' }
+  ];
+
+  private mockFamilyHistory = [
+    { id: 1, label: 'Hypertension', relatedPerson: 'Père' }
+  ];
+
+  private mockChronicDiseases = [
+    { id: 1, name: 'Diabète' }
+  ];
+
+  private mockChirurgicalHistory = [
+    { id: 1, label: 'Appendicectomie', date: '2010-05-12' }
+  ];
+
+  private mockDrugIntolerances = [
+    { id: 1, medication: 'Aspirine', details: 'Réaction cutanée' }
+  ];
+
+  private mockTreatments = [
+    { id: 1, label: 'Metformine', description: '500mg deux fois par jour' }
+  ];
+
+  // --- Mocks et helpers locaux pour Vaccinations ---
+  private mockVaccinations: Vaccination[] = [
+    {
+      id: 1,
+      vaccineName: 'COVID-19 - Pfizer',
+      doseNumber: 2,
+      vaccinationDate: '2025-03-10',
+      nextDoseDate: '',
+      status: 'DONE',
+      notes: 'Aucune réaction'
+    }
+  ];
+
+  private localGetVaccinations(telephone: string, page: number = 0, size: number = 50) {
+    const start = page * size;
+    const content = this.mockVaccinations.slice(start, start + size);
+    const response = {
+      content,
+      pageable: {
+        pageNumber: page,
+        pageSize: size,
+        sort: { unsorted: true, sorted: false, empty: true },
+        offset: start,
+        paged: true,
+        unpaged: false
+      },
+      totalElements: this.mockVaccinations.length,
+      totalPages: Math.ceil(this.mockVaccinations.length / size),
+      last: start + content.length >= this.mockVaccinations.length,
+      numberOfElements: content.length,
+      size,
+      number: page,
+      sort: { unsorted: true, sorted: false, empty: true },
+      first: page === 0,
+      empty: content.length === 0
+    };
+    return of(response).pipe(delay(150));
+  }
+
+  private localCreateVaccination(telephone: string, data: any) {
+    const id = this.mockVaccinations.length + 1;
+    const created: Vaccination = { id, ...data };
+    this.mockVaccinations.unshift(created);
+    return of(created).pipe(delay(150));
+  }
+
+  private localDeleteVaccination(telephone: string, id: number) {
+    this.mockVaccinations = this.mockVaccinations.filter(v => v.id !== id);
+    return of(null).pipe(delay(150));
+  }
+
+  // --- Mocks et helpers locaux pour Consultations ---
+  private mockConsultations: Consultation[] = [
+    {
+      id: 1,
+      patientId: 1,
+      patientName: 'Jean Dupont',
+      patientPhone: '+221771234567',
+      doctorId: 10,
+      doctorName: 'Dr. Mbaye',
+      date: new Date().toISOString(),
+      title: 'Consultation générale',
+      observation: 'Rien de particulier',
+      recommendation: 'Repos',
+      type: 'PRESENTIEL'
+    }
+  ];
+
+  private localGetConsultations(phone?: string, doctorId?: number, page: number = 0, size: number = 10) {
+    const start = page * size;
+    const filtered = phone
+      ? this.mockConsultations.filter(c => (c.patientPhone || '').includes(phone))
+      : this.mockConsultations.slice();
+    const content = filtered.slice(start, start + size);
+    const response: ConsultationPageResponse = {
+      content,
+      pageable: { pageNumber: page, pageSize: size, sort: { unsorted: true, sorted: false, empty: true }, offset: start, paged: true, unpaged: false },
+      totalPages: Math.ceil(filtered.length / size),
+      totalElements: filtered.length,
+      last: start + content.length >= filtered.length,
+      numberOfElements: content.length,
+      size,
+      number: page,
+      sort: { unsorted: true, sorted: false, empty: true },
+      first: page === 0,
+      empty: content.length === 0
+    };
+    return of(response).pipe(delay(150));
+  }
+
+  private localCreateConsultation(data: any) {
+    const id = this.mockConsultations.length + 1;
+    const created: Consultation = { id, ...data };
+    this.mockConsultations.unshift(created);
+    return of(created).pipe(delay(150));
+  }
+
+  private localDeleteConsultation(id: number) {
+    this.mockConsultations = this.mockConsultations.filter(c => c.id !== id);
+    return of(null).pipe(delay(150));
+  }
+
+  // --- Mocks et helpers locaux pour Ordonnances ---
+  private mockOrdonnances: OrdonnanceData[] = [
+    {
+      id: 1,
+      reference: 'ORD-0001',
+      doctor: { id: 10, nom: 'Dupont', prenom: 'Jean' },
+      patient: { id: 100, nom: 'Martin', prenom: 'Alice' },
+      createdAt: new Date().toISOString(),
+      status: 'PENDING',
+      qrCodeUrl: '',
+      fullyPaidByDonor: false,
+      partiallyPaidByDonor: false,
+      pharmacy: {
+        id: 1,
+        name: 'Pharmacie Centrale',
+        address: '1 Rue Principale',
+        phone: '000000000',
+        email: 'pharmacie@example.com',
+        latitude: 0,
+        longitude: 0,
+        logo: '',
+        hourly: null,
+        pharmacist: { id: 1, nom: 'Pharm', prenom: 'Admin' }
+      },
+      amount: 0,
+      needsHelp: false,
+      address: '1 Rue Principale',
+      latitude: 0,
+      longitude: 0,
+      prescriptionFile: null,
+      medications: []
+    }
+  ];
+
+  private localGetOrdonnancesByPhone(phone: string, page: number = 0, size: number = 10) {
+    const start = page * size;
+    const filtered = this.mockOrdonnances.filter(o => (o.patient?.nom || '').includes(phone) || (o.patient?.prenom || '').includes(phone) || (o.patient && `${o.patient.nom} ${o.patient.prenom}`).includes(phone) );
+    const content = filtered.slice(start, start + size);
+    const response: OrdonnanceResponse = {
+      content,
+      pageable: { pageNumber: page, pageSize: size, sort: { unsorted: true, sorted: false, empty: true }, offset: start, paged: true, unpaged: false },
+      totalPages: Math.ceil(filtered.length / size),
+      totalElements: filtered.length,
+      last: start + content.length >= filtered.length,
+      numberOfElements: content.length,
+      size,
+      number: page,
+      sort: { unsorted: true, sorted: false, empty: true },
+      first: page === 0,
+      empty: content.length === 0
+    };
+    return of(response).pipe(delay(150));
+  }
+
+  private localGetStatusLabel(status: string): string {
+    const mapping: { [key: string]: string } = {
+      'PENDING': 'En attente',
+      'ACCEPTED': 'Acceptée',
+      'REJECTED': 'Rejetée',
+      'IN_PREPARATION': 'En préparation',
+      'READY': 'Prête',
+      'DELIVERED': 'Livrée'
+    };
+    return mapping[status] || status;
+  }
+
+  // --- Mocks et helpers locaux pour Certificats ---
+  private mockCertificates: MedicalCertificate[] = [];
+
+  private localGetCertificatesByPatient(telephone: string, page: number = 0, size: number = 10) {
+    const start = page * size;
+    const filtered = this.mockCertificates.filter(c => (c.patientPhone || '').includes(telephone));
+    const content = filtered.slice(start, start + size);
+    const response: CertificatePageResponse = {
+      content,
+      pageable: { pageNumber: page, pageSize: size, sort: { unsorted: true, sorted: false, empty: true }, offset: start, paged: true, unpaged: false },
+      totalPages: Math.ceil(filtered.length / size),
+      totalElements: filtered.length,
+      last: start + content.length >= filtered.length,
+      numberOfElements: content.length,
+      size,
+      number: page,
+      sort: { unsorted: true, sorted: false, empty: true },
+      first: page === 0,
+      empty: content.length === 0
+    };
+    return of(response).pipe(delay(150));
+  }
+
+  private localDownloadCertificatePdf(certificatId: number) {
+    // Return an empty PDF blob for the mock
+    const blob = new Blob([], { type: 'application/pdf' });
+    return of(blob).pipe(delay(150));
+  }
+
+  // --- Mocks et helpers locaux pour Hospitalisations ---
+  private mockHospitalisations: Hospitalization[] = [
+    {
+      id: 1,
+      patient: {
+        id: 100,
+        reference: null,
+        lat: 0,
+        lon: 0,
+        nom: 'Diallo',
+        prenom: 'Aminata',
+        email: 'aminata@example.com',
+        password: '',
+        adress: '',
+        technicalSheet: null,
+        profil: 'PATIENT',
+        activated: true,
+        notifiable: false,
+        online: false,
+        telephone: '+221771234567',
+        funds: 0,
+        photo: null,
+        validated: true,
+        accountNonExpired: true,
+        credentialsNonExpired: true,
+        authorities: [],
+        username: 'aminata',
+        accountNonLocked: true,
+        averageRating: 0,
+        enabled: true
+      },
+      facility: {
+        id: 1,
+        name: 'Hôpital Central',
+        address: 'Rue Principale',
+        phone: '000000000',
+        email: 'contact@hopital.example',
+        type: { id: 1, name: 'Hôpital' }
+      },
+      department: {
+        id: 10,
+        name: 'Urgences',
+        description: 'Service des urgences',
+        facility: {
+          id: 1,
+          name: 'Hôpital Central',
+          address: 'Rue Principale',
+          phone: '000000000',
+          email: 'contact@hopital.example',
+          type: { id: 1, name: 'Hôpital' }
+        }
+      },
+      responsibleMedical: {
+        id: 200,
+        reference: null,
+        lat: 0,
+        lon: 0,
+        nom: 'Dr. Ndiaye',
+        prenom: 'Ibrahim',
+        email: 'dr.ndiaye@example.com',
+        password: '',
+        adress: '',
+        technicalSheet: null,
+        profil: 'DOCTOR',
+        activated: true,
+        notifiable: false,
+        online: false,
+        telephone: '+221700000000',
+        funds: 0,
+        photo: null,
+        validated: true,
+        accountNonExpired: true,
+        credentialsNonExpired: true,
+        authorities: [],
+        username: 'drndiaye',
+        accountNonLocked: true,
+        averageRating: 0,
+        enabled: true
+      },
+      hospitalizationReason: 'Douleurs abdominales',
+      initialDiagnosis: 'Suspicion appendicite',
+      observation: 'Patient stable',
+      entryDateTime: new Date().toISOString(),
+      exitDateTime: null,
+      room: 'A101',
+      bedNumber: '1',
+      priority: 'NORMAL'
+    }
+  ];
+
+  private mockActionTypes: ActionType[] = [
+    { id: 1, name: 'Medication', description: 'Médication', icon: '' },
+    { id: 2, name: 'Monitoring', description: 'Surveillance', icon: '' }
+  ];
+
+  private mockJournalActions: JournalAction[] = [];
+
+  private mockOrdreSortie: DischargeOrder | null = null;
+
+  private localGetHospitalisationsByPatient(telephone: string) {
+    // return all mock hospitalisations for the patient
+    const response = this.mockHospitalisations;
+    return of(response).pipe(delay(150));
+  }
+
+  private localGetHospitalisationById(id: number) {
+    const found = this.mockHospitalisations.find(h => h.id === id) || null;
+    return of(found).pipe(delay(150));
+  }
+
+  private localGetTypeActions() {
+    return of(this.mockActionTypes).pipe(delay(120));
+  }
+
+  private localGetActions(hospitalisationId: number, page: number = 0, size: number = 50) {
+    const content = this.mockJournalActions.slice(page * size, (page + 1) * size);
+    return of({ content, totalElements: this.mockJournalActions.length }).pipe(delay(150));
+  }
+
+  private localRecupereOrdreSortie(hospitalisationId: number) {
+    return of(this.mockOrdreSortie).pipe(delay(150));
+  }
+
+  private localCreateAction(actionRequest: CreateActionRequest) {
+    const hospitalization = this.mockHospitalisations.find(h => h.id === actionRequest.hospitalizationId) as any || this.mockHospitalisations[0] as any;
+    const actionType = this.mockActionTypes.find(t => t.id === actionRequest.actionTypeId) as any || this.mockActionTypes[0] as any;
+    const action: JournalAction = {
+      id: Math.floor(Math.random() * 10000),
+      hospitalization: hospitalization,
+      actionDateTime: actionRequest.actionDateTime,
+      type: actionType as any,
+      description: actionRequest.description || '',
+      remark: actionRequest.remark || '',
+      author: {} as any
+    };
+    this.mockJournalActions.unshift(action);
+    return of(action).pipe(delay(150));
+  }
+
+  private localCreateSortie(sortieRequest: CreateDischargeOrderRequest) {
+    const hospitalization = this.mockHospitalisations.find(h => h.id === sortieRequest.hospitalizationId) as any || this.mockHospitalisations[0] as any;
+    this.mockOrdreSortie = {
+      id: Math.floor(Math.random() * 10000),
+      hospitalization,
+      dischargeDateTime: sortieRequest.dischargeDateTime,
+      patientCondition: sortieRequest.patientCondition,
+      postHospitalizationRecommendations: sortieRequest.postHospitalizationRecommendations,
+      homeTreatment: sortieRequest.homeTreatment,
+      comment: sortieRequest.comment
+    } as DischargeOrder;
+    return of(this.mockOrdreSortie).pipe(delay(150));
+  }
+
+  private localCreateActionType(formData: any) {
+    const id = this.mockActionTypes.length + 1;
+    const created: ActionType = {
+      id,
+      name: formData.get ? (formData.get('name') as string) : formData.name || `Type ${id}`,
+      description: formData.get ? (formData.get('description') as string) : formData.description || '',
+      icon: ''
+    };
+    this.mockActionTypes.push(created);
+    return of(created).pipe(delay(150));
+  }
+
+  // --- Mocks et helpers locaux pour le mode de vie ---
+  private mockLifestyle: Lifestyle = {
+    id: 1,
+    dietaryHabits: 'Repas équilibrés',
+    physicalActivity: 'Marche 30 min / jour',
+    alcoholConsumption: 'Occasionnel',
+    smoker: 'Non'
+  };
+
+  private localGetLifeStyle(telephone: string) {
+    return of(this.mockLifestyle).pipe(delay(150));
+  }
+
+  private localCreateLifeStyle(telephone: string, data: any) {
+    this.mockLifestyle = {
+      ...this.mockLifestyle,
+      id: this.mockLifestyle.id || 1,
+      dietaryHabits: data.dietaryHabits || '',
+      physicalActivity: data.physicalActivity || '',
+      alcoholConsumption: data.alcoholConsumption || '',
+      smoker: data.smoker || ''
+    };
+    return of(this.mockLifestyle).pipe(delay(150));
+  }
+
+  private localUpdateLifeStyle(telephone: string, data: any) {
+    return this.localCreateLifeStyle(telephone, data);
+  }
+
+  // --- Mocks et helpers locaux pour Signes vitaux ---
+  private mockVitalSigns: VitalSign = {
+    id: 1,
+    bloodPressure: '120/80',
+    heartRate: 72,
+    respiratoryRate: 16,
+    temperature: 36.6,
+    oxygenSaturation: 98,
+    updatedAt: new Date().toISOString()
+  };
+
+  private mockVitalHistory: VitalSign[] = [
+    { ...this.mockVitalSigns, id: 1, updatedAt: new Date().toISOString() },
+    { ...this.mockVitalSigns, id: 2, updatedAt: new Date(Date.now() - 86400000).toISOString() }
+  ];
+
+  private localGetVitalSigns(telephone: string) {
+    return of(this.mockVitalSigns).pipe(delay(150));
+  }
+
+  private localGetVitalHistory(telephone: string, page: number = 0, size: number = 10) {
+    const start = page * size;
+    const content = this.mockVitalHistory.slice(start, start + size);
+    const response = {
+      content,
+      pageable: {
+        pageNumber: page,
+        pageSize: size,
+        sort: { unsorted: true, sorted: false, empty: true },
+        offset: start,
+        paged: true,
+        unpaged: false
+      },
+      totalElements: this.mockVitalHistory.length,
+      totalPages: Math.ceil(this.mockVitalHistory.length / size),
+      last: start + content.length >= this.mockVitalHistory.length,
+      numberOfElements: content.length,
+      size,
+      number: page,
+      sort: { unsorted: true, sorted: false, empty: true },
+      first: page === 0,
+      empty: content.length === 0
+    };
+    return of(response).pipe(delay(150));
+  }
+
+  private localCreateVitalSign(telephone: string, data: any) {
+    const id = this.mockVitalHistory.length + 1;
+    const created: VitalSign = {
+      id,
+      bloodPressure: data.bloodPressure || '',
+      heartRate: data.heartRate || 0,
+      respiratoryRate: data.respiratoryRate || 0,
+      temperature: data.temperature || 0,
+      oxygenSaturation: data.oxygenSaturation || 0,
+      updatedAt: new Date().toISOString()
+    };
+    this.mockVitalHistory.unshift(created);
+    this.mockVitalSigns = created;
+    return of(created).pipe(delay(150));
+  }
+
+  private localGetCliniqueData(telephone: string) {
+    return of(this.mockCliniqueData).pipe(delay(150));
+  }
+
+  // --- Local SMS mocks ---
+  private mockSentOtps: Record<string, string> = {};
+
+  private localSendOtp(phone: string) {
+    // generate a deterministic OTP for dev: '1234'
+    const otp = '1234';
+    this.mockSentOtps[phone] = otp;
+    return of(null).pipe(delay(150));
+  }
+
+  private localValidateOtp(phone: string, otp: string) {
+    const valid = this.mockSentOtps[phone] ? this.mockSentOtps[phone] === otp : otp === '1234';
+    return of(valid).pipe(delay(150));
+  }
+
+  // --- Local AuthFacade mocks ---
+  private mockCurrentUser: any = {
+    id: 999,
+    nom: 'Dr Mock',
+    prenom: 'User',
+    telephone: '+221700000000'
+  };
+
+  private localGetCurrentUser() {
+    return this.mockCurrentUser;
+  }
+
+  private localGetCurrentUserById(id: number) {
+    // return observable like the real service
+    return of({ ...this.mockCurrentUser, id }).pipe(delay(120));
+  }
+
+  private localGetUserByPhone(phone: string) {
+    // simplistic mock: return a user with that phone
+    const user = { ...this.mockCurrentUser, telephone: phone, id: Math.floor(Math.random() * 1000) };
+    return of(user).pipe(delay(150));
+  }
+
+  private localGetUserByReference(reference: string) {
+    const user = { ...this.mockCurrentUser, reference, id: Math.floor(Math.random() * 1000) };
+    return of(user).pipe(delay(150));
+  }
+
+  private localCreateCliniqueData(telephone: string, data: any) {
+    this.mockCliniqueData = { ...this.mockCliniqueData, ...data };
+    return of(this.mockCliniqueData).pipe(delay(150));
+  }
+
+  private localGetAllergy(telephone: string) {
+    return of(this.mockAllergies).pipe(delay(150));
+  }
+
+  private localCreateAllergy(telephone: string, data: any) {
+    const id = this.mockAllergies.length + 1;
+    const created = { id, ...data };
+    this.mockAllergies.push(created);
+    return of(created).pipe(delay(150));
+  }
+
+  private localDeleteAllergy(id: number) {
+    this.mockAllergies = this.mockAllergies.filter(a => a.id !== id);
+    return of(null).pipe(delay(150));
+  }
+
+  private localGetFamilyHistory(telephone: string) {
+    return of(this.mockFamilyHistory).pipe(delay(150));
+  }
+
+  private localCreateFamilyHistory(telephone: string, data: any) {
+    const id = this.mockFamilyHistory.length + 1;
+    const created = { id, ...data };
+    this.mockFamilyHistory.push(created);
+    return of(created).pipe(delay(150));
+  }
+
+  private localDeleteFamilyHistory(id: number) {
+    this.mockFamilyHistory = this.mockFamilyHistory.filter(a => a.id !== id);
+    return of(null).pipe(delay(150));
+  }
+
+  private localGetChronicDiseases(telephone: string) {
+    return of(this.mockChronicDiseases).pipe(delay(150));
+  }
+
+  private localCreateChronicDiseases(telephone: string, data: any) {
+    const id = this.mockChronicDiseases.length + 1;
+    const created = { id, ...data };
+    this.mockChronicDiseases.push(created);
+    return of(created).pipe(delay(150));
+  }
+
+  private localDeleteChronicDiseases(id: number) {
+    this.mockChronicDiseases = this.mockChronicDiseases.filter(a => a.id !== id);
+    return of(null).pipe(delay(150));
+  }
+
+  private localGetChirurgicalHistory(telephone: string) {
+    return of(this.mockChirurgicalHistory).pipe(delay(150));
+  }
+
+  private localCreateChirurgicalHistory(telephone: string, data: any) {
+    const id = this.mockChirurgicalHistory.length + 1;
+    const created = { id, ...data };
+    this.mockChirurgicalHistory.push(created);
+    return of(created).pipe(delay(150));
+  }
+
+  private localDeleteChirurgicalHistory(id: number) {
+    this.mockChirurgicalHistory = this.mockChirurgicalHistory.filter(a => a.id !== id);
+    return of(null).pipe(delay(150));
+  }
+
+  private localGetDrugIntolerance(telephone: string) {
+    return of(this.mockDrugIntolerances).pipe(delay(150));
+  }
+
+  private localCreateDrugIntolerance(telephone: string, data: any) {
+    const id = this.mockDrugIntolerances.length + 1;
+    const created = { id, ...data };
+    this.mockDrugIntolerances.push(created);
+    return of(created).pipe(delay(150));
+  }
+
+  private localDeleteDrugIntolerance(id: number) {
+    this.mockDrugIntolerances = this.mockDrugIntolerances.filter(a => a.id !== id);
+    return of(null).pipe(delay(150));
+  }
+
+  private localGetTreatment(telephone: string) {
+    return of(this.mockTreatments).pipe(delay(150));
+  }
+
+  private localCreateTreatment(telephone: string, data: any) {
+    const id = this.mockTreatments.length + 1;
+    const created = { id, ...data };
+    this.mockTreatments.push(created);
+    return of(created).pipe(delay(150));
+  }
+
+  private localDeleteTreatment(id: number) {
+    this.mockTreatments = this.mockTreatments.filter(t => t.id !== id);
+    return of(null).pipe(delay(150));
+  }
+
   consultations: Consultation[] = [];
 
   // États de chargement pour consultations
@@ -410,7 +1365,7 @@ export class PatientsComponent implements OnInit {
     smoker: ''
   };
 
-  vaccinations: VaccinationData[] = [];
+  vaccinations: Vaccination[] = [];
 
   // === États de chargement et erreurs pour les médicaments ===
   loadingMedicaments = false;
@@ -516,45 +1471,16 @@ export class PatientsComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private sanitizer: DomSanitizer,
-    private vueEnsembleService: VueEnsembleService,
-    private vitalSignsService: VitalSignsService,
-    private lifestyleService: LifestyleService,
-    private vaccinationService: VaccinationService,
-    private smsService: SmsService,
-    private hospitalisationService: HospitalisationService,
-    private authService: AuthService,
-    private ordonnanceService: OrdonnanceService,
-    private consultationService: ConsultationService,
-    private certificateService: MedicalCertificateService
+    // vaccinationService replaced by local mocks
+    // hospitalisationService replaced by local mocks
+    // ordonnanceService replaced by local mocks
+    // consultationService replaced by local mocks
+    // certificateService replaced by local mocks
   ) { }
 
   ngOnInit(): void {
-    // Récupérer l'utilisateur connecté (même approche que le header)
-    this.currentUser = this.authService.getCurrentUser();
-
-    // S'abonner aux changements de l'utilisateur
-    this.authService.currentUser$.subscribe({
-      next: (user) => {
-        if (user) {
-          this.currentUser = user;
-        }
-      },
-      error: (error) => {
-        console.error('Erreur lors de la récupération de l\'utilisateur:', error);
-      }
-    });
-
-    // Si l'utilisateur existe et a un ID, charger son profil complet
-    if (this.currentUser && this.currentUser.id) {
-      this.authService.getCurrentUserById(this.currentUser.id).subscribe({
-        next: (user) => {
-          this.currentUser = user;
-        },
-        error: (error) => {
-          console.error('Erreur lors du chargement du profil:', error);
-        }
-      });
-    }
+    // Local current user mock (sandbox)
+    this.currentUser = this.localGetCurrentUser();
 
     // Restaurer l'onglet actif depuis les query params (pour persister après refresh)
     this.route.queryParams.subscribe(params => {
@@ -592,7 +1518,7 @@ export class PatientsComponent implements OnInit {
     const telephone = this.selectedPatient.telephone.replace(/\s/g, '');
 
     this.formErrorMessage = '';
-    this.vueEnsembleService.createTreatment(telephone, this.formTraitement).subscribe({
+    this.localCreateTreatment(telephone, this.formTraitement).subscribe({
       next: () => {
         this.loadTraitements(telephone);
         this.closeTraitementModal();
@@ -621,7 +1547,7 @@ export class PatientsComponent implements OnInit {
       }
     }).then((result) => {
       if (result.isConfirmed) {
-        this.vueEnsembleService.deleteTreatment(id).subscribe({
+        this.localDeleteTreatment(id).subscribe({
           next: () => {
             if (this.selectedPatient) {
               const telephone = this.selectedPatient.telephone.replace(/\s/g, '');
@@ -631,7 +1557,7 @@ export class PatientsComponent implements OnInit {
               title: 'Supprimé!',
               text: 'Le traitement a été supprimé avec succès.',
               icon: 'success',
-              confirmButtonColor: '#01b894',
+              confirmButtonColor: '#104382',
               confirmButtonText: 'OK',
               width: '400px'
             });
@@ -642,7 +1568,7 @@ export class PatientsComponent implements OnInit {
               title: 'Erreur!',
               text: 'Impossible de supprimer le traitement.',
               icon: 'error',
-              confirmButtonColor: '#01b894',
+              confirmButtonColor: '#104382',
               confirmButtonText: 'OK',
               width: '400px'
             });
@@ -672,7 +1598,7 @@ export class PatientsComponent implements OnInit {
     const telephone = this.selectedPatient.telephone.replace(/\s/g, '');
 
     this.formErrorMessage = '';
-    this.vueEnsembleService.createAllergy(telephone, this.formAllergie).subscribe({
+    this.localCreateAllergy(telephone, this.formAllergie).subscribe({
       next: () => {
         this.loadAllergies(telephone);
         this.closeAllergieModal();
@@ -705,7 +1631,7 @@ export class PatientsComponent implements OnInit {
     const telephone = this.selectedPatient.telephone.replace(/\s/g, '');
 
     this.formErrorMessage = '';
-    this.vueEnsembleService.createFamilyHistory(telephone, this.formAntecedentFamilial).subscribe({
+    this.localCreateFamilyHistory(telephone, this.formAntecedentFamilial).subscribe({
       next: () => {
         this.loadAntecedentsFamiliaux(telephone);
         this.closeAntecedentFamilialModal();
@@ -737,7 +1663,7 @@ export class PatientsComponent implements OnInit {
     const telephone = this.selectedPatient.telephone.replace(/\s/g, '');
 
     this.formErrorMessage = '';
-    this.vueEnsembleService.createChronicDiseases(telephone, this.formMaladieCronique).subscribe({
+    this.localCreateChronicDiseases(telephone, this.formMaladieCronique).subscribe({
       next: () => {
         this.loadMaladiesChroniques(telephone);
         this.closeMaladieChroniqueModal();
@@ -789,7 +1715,7 @@ export class PatientsComponent implements OnInit {
     };
 
     this.formErrorMessage = '';
-    this.vueEnsembleService.createChirurgicalHistory(telephone, chirurgicalData).subscribe({
+    this.localCreateChirurgicalHistory(telephone, chirurgicalData).subscribe({
       next: () => {
         this.loadAntecedentsChirurgicaux(telephone);
         this.closeAntecedentChirurgicalModal();
@@ -821,7 +1747,7 @@ export class PatientsComponent implements OnInit {
     const telephone = this.selectedPatient.telephone.replace(/\s/g, '');
 
     this.formErrorMessage = '';
-    this.vueEnsembleService.createDrugIntolerance(telephone, this.formIntolerance).subscribe({
+    this.localCreateDrugIntolerance(telephone, this.formIntolerance).subscribe({
       next: () => {
         this.loadIntolerances(telephone);
         this.closeIntoleranceModal();
@@ -870,23 +1796,23 @@ export class PatientsComponent implements OnInit {
 
     switch (type) {
       case 'allergie':
-        deleteObservable = this.vueEnsembleService.deleteAllergy(id);
+        deleteObservable = this.localDeleteAllergy(id);
         reloadFunction = () => this.loadAllergies(telephone);
         break;
       case 'antecedentFamilial':
-        deleteObservable = this.vueEnsembleService.deleteFamilyHistory(id);
+        deleteObservable = this.localDeleteFamilyHistory(id);
         reloadFunction = () => this.loadAntecedentsFamiliaux(telephone);
         break;
       case 'maladieCronique':
-        deleteObservable = this.vueEnsembleService.deleteChronicDiseases(id);
+        deleteObservable = this.localDeleteChronicDiseases(id);
         reloadFunction = () => this.loadMaladiesChroniques(telephone);
         break;
       case 'antecedentChirurgical':
-        deleteObservable = this.vueEnsembleService.deleteChirurgicalHistory(id);
+        deleteObservable = this.localDeleteChirurgicalHistory(id);
         reloadFunction = () => this.loadAntecedentsChirurgicaux(telephone);
         break;
       case 'intolerance':
-        deleteObservable = this.vueEnsembleService.deleteDrugIntolerance(id);
+        deleteObservable = this.localDeleteDrugIntolerance(id);
         reloadFunction = () => this.loadIntolerances(telephone);
         break;
       default:
@@ -941,7 +1867,7 @@ export class PatientsComponent implements OnInit {
 
   // Données cliniques
   loadCliniqueData(telephone: string): void {
-    this.vueEnsembleService.getCliniqueData(telephone).subscribe({
+    this.localGetCliniqueData(telephone).subscribe({
       next: (data) => {
         this.cliniqueData = data;
         // Mettre à jour les données du patient sélectionné
@@ -957,7 +1883,7 @@ export class PatientsComponent implements OnInit {
     });
   }
   loadAllergies(telephone: string): void {
-    this.vueEnsembleService.getAllergy(telephone).subscribe({
+    this.localGetAllergy(telephone).subscribe({
       next: (data) => this.allergies = data,
       error: (error) => console.error('Erreur lors du chargement des allergies:', error)
     });
@@ -965,7 +1891,7 @@ export class PatientsComponent implements OnInit {
 
   // Antécédents familiaux
   loadAntecedentsFamiliaux(telephone: string): void {
-    this.vueEnsembleService.getFamilyHistory(telephone).subscribe({
+    this.localGetFamilyHistory(telephone).subscribe({
       next: (data) => this.antecedentsFamiliaux = data,
       error: (error) => console.error('Erreur lors du chargement des antécédents familiaux:', error)
     });
@@ -973,7 +1899,7 @@ export class PatientsComponent implements OnInit {
 
   // Maladies chroniques
   loadMaladiesChroniques(telephone: string): void {
-    this.vueEnsembleService.getChronicDiseases(telephone).subscribe({
+    this.localGetChronicDiseases(telephone).subscribe({
       next: (data) => this.maladiesChroniques = data,
       error: (error) => console.error('Erreur lors du chargement des maladies chroniques:', error)
     });
@@ -981,7 +1907,7 @@ export class PatientsComponent implements OnInit {
 
   // Antécédents chirurgicaux
   loadAntecedentsChirurgicaux(telephone: string): void {
-    this.vueEnsembleService.getChirurgicalHistory(telephone).subscribe({
+    this.localGetChirurgicalHistory(telephone).subscribe({
       next: (data) => this.antecedentsChirurgicaux = data,
       error: (error) => console.error('Erreur lors du chargement des antécédents chirurgicaux:', error)
     });
@@ -989,7 +1915,7 @@ export class PatientsComponent implements OnInit {
 
   // Intolérances médicamenteuses
   loadIntolerances(telephone: string): void {
-    this.vueEnsembleService.getDrugIntolerance(telephone).subscribe({
+    this.localGetDrugIntolerance(telephone).subscribe({
       next: (data) => this.intolerances = data,
       error: (error) => console.error('Erreur lors du chargement des intolérances:', error)
     });
@@ -1000,7 +1926,7 @@ export class PatientsComponent implements OnInit {
     this.loadingMedicaments = true;
     this.medicamentsError = '';
 
-    this.vueEnsembleService.getTreatment(telephone).subscribe({
+    this.localGetTreatment(telephone).subscribe({
       next: (data) => {
         this.traitementActuel = data;
         this.loadingMedicaments = false;
@@ -1015,13 +1941,13 @@ export class PatientsComponent implements OnInit {
 
   // Signes vitaux
   loadSignesVitaux(telephone: string): void {
-    this.vitalSignsService.getVitalSigns(telephone).subscribe({
+    this.localGetVitalSigns(telephone).subscribe({
       next: (data) => this.signesVitaux = data,
       error: (error) => console.error('Erreur lors du chargement des signes vitaux:', error)
     });
 
     // Charger l'historique des signes vitaux
-    this.vitalSignsService.getHistory(telephone, 0, 10).subscribe({
+    this.localGetVitalHistory(telephone, 0, 10).subscribe({
       next: (data) => this.historiqueSignesVitaux = data.content,
       error: (error) => console.error('Erreur lors du chargement de l\'historique:', error)
     });
@@ -1032,7 +1958,7 @@ export class PatientsComponent implements OnInit {
     this.loadingModeDeVie = true;
     this.modeDeVie = null;
 
-    this.lifestyleService.getLifeStyle(telephone).subscribe({
+    this.localGetLifeStyle(telephone).subscribe({
       next: (data) => {
         this.modeDeVie = data;
         this.loadingModeDeVie = false;
@@ -1050,7 +1976,7 @@ export class PatientsComponent implements OnInit {
 
   // Vaccinations
   loadVaccinations(telephone: string): void {
-    this.vaccinationService.getVaccination(telephone, 0, 50).subscribe({
+    this.localGetVaccinations(telephone, 0, 50).subscribe({
       next: (data) => this.vaccinations = data.content,
       error: (error) => console.error('Erreur lors du chargement des vaccinations:', error)
     });
@@ -1080,7 +2006,7 @@ export class PatientsComponent implements OnInit {
 
     const telephone = this.selectedPatient.telephone.replace(/\s/g, '');
 
-    this.vueEnsembleService.createCliniqueData(telephone, this.formCliniqueData).subscribe({
+    this.localCreateCliniqueData(telephone, this.formCliniqueData).subscribe({
       next: (data) => {
         this.cliniqueData = data;
         if (this.selectedPatient) {
@@ -1136,18 +2062,17 @@ export class PatientsComponent implements OnInit {
         title: 'Téléphone invalide',
         text: 'Veuillez saisir un numéro de téléphone valide',
         icon: 'warning',
-        confirmButtonColor: '#01b894',
+        confirmButtonColor: '#104382',
         width: '400px'
       });
       return;
     }
 
-    this.authService.getUserByPhone(cleanPhone).subscribe({
+    this.localGetUserByPhone(cleanPhone).subscribe({
       next: (user) => {
-        console.log('✅ Patient trouvé par téléphone:', user);
+        console.log('✅ Patient trouvé par téléphone (mock):', user);
         this.mapUserToPatient(user);
 
-        // Sauvegarder le patientId pour les formulaires (consultation, hospitalisation, etc.)
         if ((user as any).id) {
           localStorage.setItem('selectedPatientId', (user as any).id.toString());
         }
@@ -1156,24 +2081,14 @@ export class PatientsComponent implements OnInit {
         this.accessType = null;
       },
       error: (error) => {
-        console.error('❌ Erreur recherche par téléphone:', error);
-        if (error.status === 404) {
-          Swal.fire({
-            title: 'Patient introuvable',
-            text: 'Aucun patient trouvé avec ce numéro de téléphone',
-            icon: 'error',
-            confirmButtonColor: '#01b894',
-            width: '400px'
-          });
-        } else {
-          Swal.fire({
-            title: 'Erreur',
-            text: 'Une erreur est survenue lors de la recherche',
-            icon: 'error',
-            confirmButtonColor: '#01b894',
-            width: '400px'
-          });
-        }
+        console.error('❌ Erreur recherche par téléphone (mock):', error);
+        Swal.fire({
+          title: 'Erreur',
+          text: 'Une erreur est survenue lors de la recherche (mock)',
+          icon: 'error',
+          confirmButtonColor: '#104382',
+          width: '400px'
+        });
       }
     });
   }
@@ -1182,32 +2097,22 @@ export class PatientsComponent implements OnInit {
    * Recherche par référence
    */
   private searchByReference(reference: string): void {
-    this.authService.getUserByReference(reference).subscribe({
+    this.localGetUserByReference(reference).subscribe({
       next: (patient) => {
-        console.log('✅ Patient trouvé par référence:', patient);
+        console.log('✅ Patient trouvé par référence (mock):', patient);
         this.mapPatientByReferenceToPatient(patient);
         this.showAccessModal = true;
         this.accessType = null;
       },
       error: (error) => {
-        console.error('❌ Erreur recherche par référence:', error);
-        if (error.status === 404) {
-          Swal.fire({
-            title: 'Patient introuvable',
-            text: 'Aucun patient trouvé avec cette référence',
-            icon: 'error',
-            confirmButtonColor: '#01b894',
-            width: '400px'
-          });
-        } else {
-          Swal.fire({
-            title: 'Erreur',
-            text: 'Une erreur est survenue lors de la recherche',
-            icon: 'error',
-            confirmButtonColor: '#01b894',
-            width: '400px'
-          });
-        }
+        console.error('❌ Erreur recherche par référence (mock):', error);
+        Swal.fire({
+          title: 'Erreur',
+          text: 'Une erreur est survenue lors de la recherche (mock)',
+          icon: 'error',
+          confirmButtonColor: '#104382',
+          width: '400px'
+        });
       }
     });
   }
@@ -1283,7 +2188,7 @@ export class PatientsComponent implements OnInit {
         title: 'Champ vide',
         text: 'Veuillez entrer un numéro de téléphone ou une référence patient',
         icon: 'warning',
-        confirmButtonColor: '#01b894',
+        confirmButtonColor: '#104382',
         width: '400px'
       });
       return;
@@ -1313,7 +2218,7 @@ export class PatientsComponent implements OnInit {
 
     this.otpLoading = true;
 
-    this.smsService.validateOtp(phoneNumber, otpValue).subscribe({
+    this.localValidateOtp(phoneNumber, otpValue).subscribe({
       next: (isValid) => {
         this.otpLoading = false;
         if (isValid) {
@@ -1384,7 +2289,7 @@ export class PatientsComponent implements OnInit {
     this.otpLoading = true;
     this.otpError = '';
 
-    this.smsService.sendOtp(phoneNumber).subscribe({
+    this.localSendOtp(phoneNumber).subscribe({
       next: () => {
         this.otpLoading = false;
         this.showAccessModal = false;
@@ -1435,7 +2340,7 @@ export class PatientsComponent implements OnInit {
     this.otpValidating = true;
     this.otpError = '';
 
-    this.smsService.validateOtp(phoneNumber, otp).subscribe({
+    this.localValidateOtp(phoneNumber, otp).subscribe({
       next: (isValid) => {
         this.otpValidating = false;
         if (isValid) {
@@ -1545,7 +2450,7 @@ export class PatientsComponent implements OnInit {
         smoker: this.formModeDeVie.smoker
       };
 
-      this.lifestyleService.updateLifeStyle(telephone, updateData).subscribe({
+      this.localUpdateLifeStyle(telephone, updateData).subscribe({
         next: (data) => {
           this.modeDeVie = data;
           this.savingModeDeVie = false;
@@ -1579,7 +2484,7 @@ export class PatientsComponent implements OnInit {
         smoker: this.formModeDeVie.smoker
       };
 
-      this.lifestyleService.createLifeStyle(telephone, createData).subscribe({
+      this.localCreateLifeStyle(telephone, createData).subscribe({
         next: (data) => {
           this.modeDeVie = data;
           this.savingModeDeVie = false;
@@ -1640,7 +2545,7 @@ export class PatientsComponent implements OnInit {
       updatedAt: new Date().toISOString()
     };
 
-    this.vitalSignsService.createVitalSign(telephone, vitalSignData).subscribe({
+    this.localCreateVitalSign(telephone, vitalSignData).subscribe({
       next: (data) => {
         this.signesVitaux = data;
         this.loadSignesVitaux(telephone);
@@ -1689,7 +2594,7 @@ export class PatientsComponent implements OnInit {
         : ''
     };
 
-    this.vaccinationService.createVaccination(telephone, vaccinationData).subscribe({
+    this.localCreateVaccination(telephone, vaccinationData).subscribe({
       next: () => {
         this.loadVaccinations(telephone);
         this.closeVaccinationModal();
@@ -1719,7 +2624,7 @@ export class PatientsComponent implements OnInit {
 
       const telephone = this.selectedPatient!.telephone.replace(/\s/g, '');
 
-      this.vaccinationService.deleteVaccination(telephone, id).subscribe({
+      this.localDeleteVaccination(telephone, id).subscribe({
         next: () => {
           this.loadVaccinations(telephone);
           Swal.fire({
@@ -1806,35 +2711,20 @@ export class PatientsComponent implements OnInit {
     formData.append('description', this.newActionType.description || '');
     formData.append('icon', this.newActionType.icon);
 
-    this.hospitalisationService.createActionType(formData).subscribe({
+    this.localCreateActionType(formData).subscribe({
       next: (createdType) => {
         this.creatingActionType = false;
         this.closeCreateActionTypeModal();
 
-        // Rafraîchir la liste et auto-sélectionner
         this.typesActionData = [...this.typesActionData, createdType];
-        this.nouvelleAction.type = createdType.id.toString();
+        this.nouvelleAction.type = (createdType.id || '').toString();
 
-        Swal.fire({
-          title: 'Succès',
-          text: 'Type d\'action créé avec succès',
-          icon: 'success',
-          confirmButtonColor: '#00B894',
-          timer: 2000,
-          showConfirmButton: false,
-          width: '400px'
-        });
+        Swal.fire({ icon: 'success', title: 'Succès', text: 'Type d\'action créé avec succès', confirmButtonColor: '#00B894', timer: 2000, showConfirmButton: false, width: '400px' });
       },
-      error: (error) => {
+      error: (err) => {
         this.creatingActionType = false;
-        console.error('Erreur création type action:', error);
-        Swal.fire({
-          title: 'Erreur',
-          text: 'Impossible de créer le type d\'action. Veuillez réessayer.',
-          icon: 'error',
-          confirmButtonColor: '#00B894',
-          width: '400px'
-        });
+        console.error('Erreur création type action (mock):', err);
+        Swal.fire({ title: 'Erreur', text: 'Impossible de créer le type d\'action. Veuillez réessayer.', icon: 'error', confirmButtonColor: '#00B894', width: '400px' });
       }
     });
   }
@@ -1940,7 +2830,7 @@ export class PatientsComponent implements OnInit {
 
       meal: `
       <svg width="13" height="14" viewBox="0 0 13 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M0.5 0.5V5.16667C0.5 5.6971 0.710714 6.20581 1.08579 6.58088C1.46086 6.95595 1.96957 7.16667 2.5 7.16667H3.16667M3.16667 7.16667H3.83333C4.36377 7.16667 4.87247 6.95595 5.24755 6.58088C5.62262 6.20581 5.83333 5.6971 5.83333 5.16667V0.5M3.16667 7.16667V0.5M3.16667 7.16667V12.8333M12.1667 12.8333V8.5M12.1667 8.5V0.857333C12.1667 0.762563 12.129 0.671674 12.062 0.604661C11.995 0.537648 11.9041 0.5 11.8093 0.5C11.02 0.5 10.2631 0.813542 9.70498 1.37165C9.14688 1.92976 8.83333 2.68672 8.83333 3.476V7.16667C8.83333 7.52029 8.97381 7.85943 9.22386 8.10948C9.47391 8.35952 9.81304 8.5 10.1667 8.5H12.1667Z" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M0.5 0.5V5.16667C0.5 5.6971 0.710714 6.20581 1.08579 6.58088C1.46086 6.95595 1.96957 7.16667 2.5 7.16667H3.16667M3.16667 7.16667H3.83333C4.36377 7.16667 4.87247 6.95595 5.24755 6.58088C5.62262 6.20581 5.83333 5.6971 5.83333 5.16667V0.5M3.16667 7.16667V0.5M3.16667 7.16667V12.8333M12.1667 12.8333V8.5M12.1667 8.5V0.857333C12.1667 0.762563 12.129 0.671674 12.062 0.604661C11.995 0.537648 11.9041 0.5 11.8093 0.5C11.02 0.5 10.2631 0.813542 9.70498 1.37165C9.14688 1.92976 8.83333 2.68672 8.83333 3.476V7.16667C8.83333 7.52029 8.97381 7.85943 9.22386 8.10948C9.47391 8.35952 9.81304 8.5 10.1667 8.5H12.1667Z" stroke="#6B7280" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
 
     `,
@@ -2020,42 +2910,24 @@ export class PatientsComponent implements OnInit {
     // Récupérer l'ID du médecin connecté si disponible
     const responsibleMedicalId = this.currentUser?.id;
 
-    this.hospitalisationService.getHospitalisationsByPatient(
-      telephone,
-      undefined, // facilityId
-      undefined, // departmentId
-      responsibleMedicalId, // ID du médecin connecté
-      0,
-      50
-    ).subscribe({
+    this.localGetHospitalisationsByPatient(telephone).subscribe({
       next: (response) => {
-        this.hospitalisationsData = response.content;
+        this.hospitalisationsData = response;
         this.loadingHospitalisations = false;
 
-        // Extraire les informations du patient (birthDate et age) depuis la première hospitalisation
-        if (response.content.length > 0 && response.content[0].patient) {
-          const patientData = response.content[0].patient as any;
-
-          // Mettre à jour selectedPatient avec birthDate et age
+        if (response.length > 0 && (response[0] as any).patient) {
+          const patientData = (response[0] as any).patient;
           if (this.selectedPatient) {
             this.selectedPatient.age = patientData.age || 0;
             this.selectedPatient.dateNaissance = patientData.birthDate || '';
-
-            // Mettre à jour le localStorage
             localStorage.setItem('selectedPatient', JSON.stringify(this.selectedPatient));
-
-            console.log('✅ Informations patient mises à jour:', {
-              age: this.selectedPatient.age,
-              dateNaissance: this.selectedPatient.dateNaissance
-            });
           }
         }
 
-        // Charger le statut de sortie pour chaque hospitalisation
         this.loadDischargeStatusForAll();
       },
-      error: (error) => {
-        console.error('Erreur lors du chargement des hospitalisations:', error);
+      error: (err) => {
+        console.error('Erreur lors du chargement des hospitalisations (mock):', err);
         this.loadingHospitalisations = false;
         this.hospitalisationsData = [];
       }
@@ -2066,26 +2938,22 @@ export class PatientsComponent implements OnInit {
    * Ouvre le détail d'une hospitalisation
    */
   openHospitalisationDetailData(hospitalisationId: number): void {
-    this.hospitalisationService.getHospitalisationById(hospitalisationId).subscribe({
+    this.localGetHospitalisationById(hospitalisationId).subscribe({
       next: (data) => {
         this.selectedHospitalisationData = data;
         this.showHospitalisationDetail = true;
         this.activeDetailTab = 'resume';
         document.body.style.overflow = 'hidden';
 
-        // Charger les types d'actions si pas encore chargés
         if (this.typesActionData.length === 0) {
           this.loadTypesAction();
         }
 
-        // Charger le journal infirmier
         this.loadActionsJournal(hospitalisationId);
-
-        // Charger l'ordre de sortie si existe
         this.loadOrdreSortie(hospitalisationId);
       },
-      error: (error) => {
-        console.error('Erreur lors du chargement du détail:', error);
+      error: (err) => {
+        console.error('Erreur lors du chargement du détail (mock):', err);
         alert('Erreur lors du chargement des détails de l\'hospitalisation');
       }
     });
@@ -2096,13 +2964,13 @@ export class PatientsComponent implements OnInit {
    */
   loadTypesAction(): void {
     this.loadingTypesAction = true;
-    this.hospitalisationService.getTypeActions().subscribe({
+    this.localGetTypeActions().subscribe({
       next: (data) => {
         this.typesActionData = data;
         this.loadingTypesAction = false;
       },
-      error: (error) => {
-        console.error('Erreur lors du chargement des types d\'actions:', error);
+      error: (err) => {
+        console.error('Erreur lors du chargement des types d\'actions (mock):', err);
         this.loadingTypesAction = false;
       }
     });
@@ -2114,13 +2982,13 @@ export class PatientsComponent implements OnInit {
   loadActionsJournal(hospitalisationId: number): void {
     this.loadingActions = true;
 
-    this.hospitalisationService.getActions(hospitalisationId, 0, 50).subscribe({
+    this.localGetActions(hospitalisationId, 0, 50).subscribe({
       next: (response) => {
         this.actionsJournalData = response.content;
         this.loadingActions = false;
       },
-      error: (error) => {
-        console.error('Erreur lors du chargement du journal:', error);
+      error: (err) => {
+        console.error('Erreur lors du chargement du journal (mock):', err);
         this.loadingActions = false;
         this.actionsJournalData = [];
       }
@@ -2132,15 +3000,9 @@ export class PatientsComponent implements OnInit {
    */
   loadDischargeStatusForAll(): void {
     this.hospitalisationsData.forEach(hosp => {
-      this.hospitalisationService.recupereOrdreSortie(hosp.id).subscribe({
-        next: () => {
-          // Un ordre de sortie existe
-          this.dischargeOrderMap.set(hosp.id, true);
-        },
-        error: () => {
-          // Pas d'ordre de sortie
-          this.dischargeOrderMap.set(hosp.id, false);
-        }
+      this.localRecupereOrdreSortie(hosp.id).subscribe({
+        next: () => this.dischargeOrderMap.set(hosp.id, true),
+        error: () => this.dischargeOrderMap.set(hosp.id, false)
       });
     });
   }
@@ -2149,13 +3011,12 @@ export class PatientsComponent implements OnInit {
    * Charge l'ordre de sortie d'une hospitalisation
    */
   loadOrdreSortie(hospitalisationId: number): void {
-    this.hospitalisationService.recupereOrdreSortie(hospitalisationId).subscribe({
+    this.localRecupereOrdreSortie(hospitalisationId).subscribe({
       next: (data) => {
-        this.ordreSortieData = data;
+        this.ordreSortieData = data as any;
         this.dischargeOrderMap.set(hospitalisationId, true);
       },
-      error: (error) => {
-        // Pas d'ordre de sortie - normal si l'hospitalisation est en cours
+      error: () => {
         this.ordreSortieData = null;
         this.dischargeOrderMap.set(hospitalisationId, false);
       }
@@ -2241,29 +3102,15 @@ export class PatientsComponent implements OnInit {
       remark: this.nouvelleAction.remarques || ''
     };
 
-    this.hospitalisationService.createAction(actionRequest).subscribe({
+    this.localCreateAction(actionRequest).subscribe({
       next: () => {
         this.loadActionsJournal(this.selectedHospitalisationData!.id);
         this.closeAddActionModal();
-        Swal.fire({
-          title: 'Succès',
-          text: 'Action ajoutée avec succès au journal',
-          icon: 'success',
-          confirmButtonColor: '#00B894',
-          timer: 2000,
-          showConfirmButton: false,
-          width: '400px'
-        });
+        Swal.fire({ icon: 'success', title: 'Succès', text: 'Action ajoutée avec succès au journal', confirmButtonColor: '#00B894', timer: 2000, showConfirmButton: false, width: '400px' });
       },
-      error: (error) => {
-        console.error('Erreur lors de l\'ajout de l\'action:', error);
-        Swal.fire({
-          title: 'Erreur',
-          text: 'Impossible d\'ajouter l\'action au journal. Veuillez réessayer.',
-          icon: 'error',
-          confirmButtonColor: '#00B894',
-          width: '400px'
-        });
+      error: (err) => {
+        console.error('Erreur lors de l\'ajout de l\'action (mock):', err);
+        Swal.fire({ title: 'Erreur', text: 'Impossible d\'ajouter l\'action au journal. Veuillez réessayer.', icon: 'error', confirmButtonColor: '#00B894', width: '400px' });
       }
     });
   }
@@ -2313,18 +3160,16 @@ export class PatientsComponent implements OnInit {
       comment: this.formulaireSortie.commentaires || ''
     };
 
-    this.hospitalisationService.createSortie(sortieRequest).subscribe({
+    this.localCreateSortie(sortieRequest).subscribe({
       next: (data) => {
-        this.ordreSortieData = data;
-        // Mettre à jour le Map pour la liste
+        this.ordreSortieData = data as any;
         this.dischargeOrderMap.set(this.selectedHospitalisationData!.id, true);
 
-        // Recharger l'hospitalisation pour mettre à jour le statut
         if (this.selectedHospitalisationData) {
           this.loadHospitalisations(this.selectedPatient!.telephone.replace(/\s/g, ''));
-          this.hospitalisationService.getHospitalisationById(this.selectedHospitalisationData.id).subscribe({
+          this.localGetHospitalisationById(this.selectedHospitalisationData.id).subscribe({
             next: (updatedHosp) => {
-              this.selectedHospitalisationData = updatedHosp;
+              this.selectedHospitalisationData = updatedHosp as any;
             }
           });
         }
@@ -2333,8 +3178,8 @@ export class PatientsComponent implements OnInit {
         this.activeDetailTab = 'sortie';
         alert('Sortie autorisée avec succès');
       },
-      error: (error) => {
-        console.error('Erreur lors de l\'autorisation de sortie:', error);
+      error: (err) => {
+        console.error('Erreur lors de l\'autorisation de sortie (mock):', err);
         alert('Erreur lors de l\'autorisation de sortie');
       }
     });
@@ -2479,7 +3324,7 @@ export class PatientsComponent implements OnInit {
     this.loadingOrdonnances = true;
     this.ordonnancesError = '';
 
-    this.ordonnanceService.getOrdonnancesByPhone(telephone, page, this.pageSizeOrdonnances).subscribe({
+    this.localGetOrdonnancesByPhone(telephone, page, this.pageSizeOrdonnances).subscribe({
       next: (response: OrdonnanceResponse) => {
         this.ordonnancesData = response.content;
         this.totalOrdonnances = response.totalElements;
@@ -2489,7 +3334,7 @@ export class PatientsComponent implements OnInit {
         this.loadingOrdonnances = false;
       },
       error: (error) => {
-        console.error('Erreur lors du chargement des ordonnances:', error);
+        console.error('Erreur lors du chargement des ordonnances (mock):', error);
         this.ordonnancesError = 'Impossible de charger les ordonnances';
         this.loadingOrdonnances = false;
         this.ordonnancesData = [];
@@ -2521,7 +3366,7 @@ export class PatientsComponent implements OnInit {
    * Obtient le libellé du statut d'une ordonnance
    */
   getOrdonnanceStatusLabel(status: string): string {
-    return this.ordonnanceService.getStatusLabel(status);
+    return this.localGetStatusLabel(status);
   }
 
   /**
@@ -2551,7 +3396,7 @@ export class PatientsComponent implements OnInit {
         return;
       }
 
-      this.authService.getCurrentUserById(doctorId).subscribe({
+      this.localGetCurrentUserById(doctorId).subscribe({
         next: (doctor) => {
           const specialty = (doctor as any)?.medicalSpecialty?.name;
           this.doctorSpecialties[doctorId] = specialty || 'Spécialité non renseignée';
@@ -2636,14 +3481,14 @@ export class PatientsComponent implements OnInit {
 
     console.log('📥 Chargement des consultations pour le téléphone:', cleanPhone);
 
-    this.consultationService.getAllConsultations(cleanPhone, undefined, page, size).subscribe({
+    this.localGetConsultations(cleanPhone, undefined, page, size).subscribe({
       next: (response: ConsultationPageResponse) => {
-        console.log('✅ Consultations chargées:', response);
+        console.log('✅ Consultations chargées (mock):', response);
         this.consultations = response.content;
         this.loadingConsultations = false;
       },
       error: (error) => {
-        console.error('❌ Erreur lors du chargement des consultations:', error);
+        console.error('❌ Erreur lors du chargement des consultations (mock):', error);
         this.consultationsError = 'Impossible de charger les consultations';
         this.loadingConsultations = false;
         this.consultations = [];
@@ -2677,14 +3522,14 @@ export class PatientsComponent implements OnInit {
     const telephone = this.selectedPatient.telephone.replace(/\s/g, '');
     console.log('📥 Chargement des certificats médicaux pour téléphone:', telephone);
 
-    this.certificateService.getCertificatesByPatient(telephone, page, size).subscribe({
+    this.localGetCertificatesByPatient(telephone, page, size).subscribe({
       next: (response: CertificatePageResponse) => {
-        console.log('✅ Certificats chargés:', response);
+        console.log('✅ Certificats chargés (mock):', response);
         this.certificats = response.content;
         this.loadingCertificats = false;
       },
       error: (error) => {
-        console.error('❌ Erreur lors du chargement des certificats:', error);
+        console.error('❌ Erreur lors du chargement des certificats (mock):', error);
         this.certificatsError = 'Impossible de charger les certificats';
         this.loadingCertificats = false;
         this.certificats = [];
@@ -2705,18 +3550,15 @@ export class PatientsComponent implements OnInit {
   downloadCertificatePdf(certificatId: number): void {
     console.log('📥 Téléchargement du PDF du certificat:', certificatId);
 
-    this.certificateService.downloadCertificatePdf(certificatId).subscribe({
+    this.localDownloadCertificatePdf(certificatId).subscribe({
       next: (blob: Blob) => {
-        console.log('✅ PDF téléchargé');
-        // Créer une URL pour le blob
+        console.log('✅ PDF téléchargé (mock)');
         const url = window.URL.createObjectURL(blob);
-        // Ouvrir dans un nouvel onglet
         window.open(url, '_blank');
-        // Libérer l'URL après un délai
         setTimeout(() => window.URL.revokeObjectURL(url), 100);
       },
       error: (error) => {
-        console.error('❌ Erreur lors du téléchargement du PDF:', error);
+        console.error('❌ Erreur lors du téléchargement du PDF (mock):', error);
         alert('Impossible de télécharger le certificat');
       }
     });

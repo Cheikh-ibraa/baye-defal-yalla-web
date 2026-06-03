@@ -1,11 +1,38 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { AuthService, User } from '../../../services/auth.service';
-import {
-  DashboardImagerieService,
-  DashboardImagerieResponse
-} from '../../../services/imagerie/dashboard-imagerie.service';
+// AuthFacade removed — use local mock user
+import { User } from '../../../core/auth.types';
+import { of } from 'rxjs';
+import { delay } from 'rxjs/operators';
+
+// Inlined DashboardImagerieResponse (replacing DashboardImagerieService)
+interface DashboardImagerieResponse {
+  totalRequests: number;
+  pendingRequests: number;
+  completedRequests: number;
+  urgentRequests: number;
+  youngPatients: number;
+
+  monthlyRequests: {
+    [month: string]: number;
+  };
+
+  requestsByStatus: {
+    CANCELLED: number;
+    COMPLETED: number;
+    ACCEPTED: number;
+    PENDING: number;
+  };
+
+  requestsByType: {
+    [type: string]: number;
+  };
+
+  requestsByRegion: {
+    [region: string]: number;
+  };
+}
 
 import {
   Chart,
@@ -25,7 +52,6 @@ import {
 } from 'chart.js';
 import { FormsModule } from '@angular/forms';
 import { Imagerie } from '../../../modele/imagerie.model';
-import { ImagerieService } from '../../../services/imagerie/imagerie.service';
 
 // 🔥 Enregistrement Chart.js
 Chart.register(
@@ -93,25 +119,25 @@ dashboardData: DashboardImagerieResponse | null = null;
 
   constructor(
     private router: Router,
-    private authService: AuthService,
-    private dashboardService: DashboardImagerieService,
-    private imagerieService: ImagerieService
-
   ) {}
+
+  // Local mock current user (replaces AuthFacade)
+  private getMockCurrentUser(): User {
+    return { id: 1, nom: 'Demo', prenom: 'Lab' } as User;
+  }
 
   // =====================
   // INIT
   // =====================
   ngOnInit(): void {
-    this.authService.currentUser$.subscribe(user => {
-      this.currentUser = user;
-      console.log('✅ User connecté :', user);
+    const user = this.getMockCurrentUser();
+    this.currentUser = user;
+    console.log('✅ User (mock) :', user);
 
-      if (user) {
-        this.loadDashboard(user.id);
-        this.loadPlanningDuJour();
-      }
-    });
+    if (user) {
+      this.loadDashboard(user.id);
+      this.loadPlanningDuJour();
+    }
   }
 
   // =====================
@@ -138,9 +164,10 @@ dashboardData: DashboardImagerieResponse | null = null;
     this.typeChartState = 'loading';
     this.regionChartState = 'loading';
 
-    this.dashboardService.getDashboard(userId).subscribe({
+    // Use local mock for dashboard data
+    this.localGetDashboard(userId).subscribe({
       next: (data) => {
-        console.log('📊 Dashboard API :', data);
+        console.log('📊 Dashboard (mock) :', data);
         this.dashboardData = data;
         this.dashboardLoading = 'success';
 
@@ -151,8 +178,8 @@ dashboardData: DashboardImagerieResponse | null = null;
         this.createTypeChart(data.requestsByType);
         this.createRegionChart(data.requestsByRegion);
       },
-      error: (err) => {
-        console.error('❌ Dashboard error', err);
+      error: (err: any) => {
+        console.error('❌ Dashboard error (mock)', err);
         this.dashboardLoading = 'error';
         this.monthlyChartState = 'error';
         this.statusChartState = 'error';
@@ -180,21 +207,21 @@ dashboardData: DashboardImagerieResponse | null = null;
   this.planningLoading = 'loading';
   const today = this.getTodayDate(); // jj-mm-aaaa
 
-  this.dashboardService.getAllImagingRequests().subscribe({
-    next: (res) => {
-      this.examens = res.content.filter((item: Imagerie) =>
-        item.status === 'ACCEPTED' &&
-        item.appointmentDate === today
-      );
+    this.localGetAllImagingRequests().subscribe({
+      next: (res: any) => {
+        this.examens = (res.content || []).filter((item: Imagerie) =>
+          item.status === 'ACCEPTED' &&
+          item.appointmentDate === today
+        );
 
-      this.planningLoading = 'success';
-      console.log('📅 Planning du jour (Imagerie):', this.examens);
-    },
-    error: (err) => {
-      console.error('❌ Erreur planning', err);
-      this.planningLoading = 'error';
-    }
-  });
+        this.planningLoading = 'success';
+        console.log('📅 Planning du jour (Imagerie - mock):', this.examens);
+      },
+      error: (err: any) => {
+        console.error('❌ Erreur planning (mock)', err);
+        this.planningLoading = 'error';
+      }
+    });
 }
 
 
@@ -568,6 +595,55 @@ getInitials(name: string): string {
   getInitialsColor(initials: string): string {
     const colors = ['bg-blue-500','bg-purple-500','bg-pink-500','bg-indigo-500','bg-teal-500'];
     return colors[initials.charCodeAt(0) % colors.length];
+  }
+
+  // ===== Local mocks for dashboard-imagerie =====
+  private localGetDashboard(userId: number) {
+    const mock: DashboardImagerieResponse = {
+      totalRequests: 120,
+      pendingRequests: 18,
+      completedRequests: 80,
+      urgentRequests: 5,
+      youngPatients: 22,
+      monthlyRequests: {
+        '1': 8, '2': 6, '3': 9, '4': 12, '5': 15, '6': 10, '7': 11, '8': 13, '9': 7, '10': 9, '11': 8, '12': 12
+      },
+      requestsByStatus: {
+        CANCELLED: 3,
+        COMPLETED: 80,
+        ACCEPTED: 34,
+        PENDING: 3
+      },
+      requestsByType: {
+        'Radio': 40,
+        'Scanner': 30,
+        'IRM': 20
+      },
+      requestsByRegion: {
+        'Dakar': 50,
+        'Thiès': 20,
+        'Saint-Louis': 10
+      }
+    };
+    return of(mock).pipe(delay(240));
+  }
+
+  private localGetAllImagingRequests() {
+    const mockItem: Imagerie = {
+      id: 1,
+      patientFirstName: 'Alice',
+      patientLastName: 'Martin',
+      status: 'ACCEPTED',
+      appointmentDate: this.getTodayDate(),
+      // fill other Imagerie fields with safe defaults
+      images: [],
+      type: 'Radio',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    } as any;
+
+    const response = { content: [mockItem] };
+    return of(response).pipe(delay(180));
   }
 
 

@@ -236,7 +236,7 @@ select.form-input {
   height: 40px;
   margin: 0 auto 16px;
   border: 3px solid #e5e5e5;
-  border-top-color: #00d4aa;
+  border-top-color: #104382;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -270,12 +270,12 @@ select.form-input {
 }
 
 .btn-primary {
-  background: #00d4aa;
+  background: #104382;
   color: white;
 }
 
 .btn-primary:hover {
-  background: #00c29d;
+  background: 00d4aa;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 212, 170, 0.3);
 }
@@ -355,8 +355,8 @@ select.form-input {
 }
 
 .radio-label input[type="radio"]:checked ~ .radio-custom {
-  border-color: #01b894;
-  background-color: #01b894;
+  border-color: #104382;
+  background-color: #104382;
 }
 
 .radio-label input[type="radio"]:checked ~ .radio-custom::after {
@@ -378,7 +378,7 @@ select.form-input {
 }
 
 .radio-label:hover .radio-custom {
-  border-color: #01b894;
+  border-color: #104382;
 }
 
 /* Disabled state for select */
@@ -438,7 +438,7 @@ input[type="time"].form-input::-webkit-calendar-picker-indicator {
   display: inline-block;
   width: 16px;
   height: 16px;
-  border: 2px solid #01b894;
+  border: 2px solid #104382;
   border-radius: 50%;
   border-top-color: transparent;
   animation: spin 0.6s linear infinite;

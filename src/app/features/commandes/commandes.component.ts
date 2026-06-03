@@ -1,11 +1,113 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Observable, of, throwError } from 'rxjs';
+import { delay } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import Swal from 'sweetalert2';
-import { CommandeService, Prescription, PaginatedResponse, MedicationValidation, ReadyCommandeRequest, RejectCommandeRequest, ValidateCommandeRequest } from '../../services/commande.service';
-import { AuthService, User } from '../../services/auth.service';
+// Inlined types from commande.service
+interface Doctor {
+  id: number;
+  nom: string;
+  prenom: string;
+}
+
+interface Patient {
+  id: number;
+  nom: string;
+  prenom: string;
+}
+
+interface Pharmacist {
+  id: number;
+  nom: string;
+  prenom: string;
+}
+
+interface PharmacyInfo {
+  id: number;
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+  latitude: number;
+  longitude: number;
+  logo: string;
+  pharmacist: Pharmacist;
+}
+
+interface Medication {
+  id: number;
+  name: string;
+  quantity: number;
+  dosage: string;
+  price: number;
+}
+
+interface Prescription {
+  id: number;
+  doctor: Doctor;
+  patient: Patient;
+  createdAt: string;
+  status: string;
+  qrCodeUrl: string;
+  fullyPaidByDonor: boolean;
+  partiallyPaidByDonor: boolean;
+  pharmacy: PharmacyInfo;
+  amount: number | null;
+  needsHelp: boolean;
+  address: string;
+  latitude: number;
+  longitude: number;
+  prescriptionFile: string | null;
+  medications: Medication[];
+}
+
+interface PaginatedResponse<T> {
+  content: T[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      unsorted: boolean;
+      sorted: boolean;
+      empty: boolean;
+    };
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  numberOfElements: number;
+  size: number;
+  number: number;
+  sort: {
+    unsorted: boolean;
+    sorted: boolean;
+    empty: boolean;
+  };
+  first: boolean;
+  empty: boolean;
+}
+
+interface MedicationValidation {
+  medicationId: number;
+  unitPrice: number;
+}
+
+interface ValidateCommandeRequest {
+  prescriptionId: number;
+  amount: number;
+  medications: MedicationValidation[];
+}
+
+interface RejectCommandeRequest { prescriptionId: number; }
+interface ReadyCommandeRequest { prescriptionId: number; }
+import { User } from '../../core/auth.types';
+// AuthFacade removed — using local mock current user for static UI
 
 export interface OrderItem {
   name: string;
@@ -29,6 +131,8 @@ export interface Order {
   styleUrls: ['./commandes.component.css']
 })
 export class CommandesComponent implements OnInit, OnDestroy {
+  private readonly statuses: Prescription['status'][] = ['PENDING', 'ACCEPTED', 'REJECTED', 'IN_PREPARATION', 'READY', 'DELIVERED'];
+
   // Data properties from service
   prescriptions: Prescription[] = [];
   selectedPrescription: Prescription | null = null;
@@ -62,13 +166,165 @@ export class CommandesComponent implements OnInit, OnDestroy {
   // User and pharmacy IDs - dynamically retrieved from AuthService
   private userId: number = 0;
   private pharmacyId: number = 0;
+  private mockPrescriptions: Prescription[] = [];
+  private nextPrescriptionId = 1;
   private destroy$ = new Subject<void>();
 
   constructor(
-    private commandeService: CommandeService,
-    private authService: AuthService
   ) {
+    this.initLocalCommandesData();
     this.checkScreenSize();
+  }
+
+  private initLocalCommandesData(): void {
+    const pharmacy = {
+      id: 1,
+      name: 'Pharmacie Demo',
+      address: 'Adresse de démonstration',
+      phone: '000000000',
+      email: 'demo@pharmacie.local',
+      latitude: 0,
+      longitude: 0,
+      logo: '',
+      pharmacist: { id: 1, nom: 'Demo', prenom: 'Pharmacien' }
+    };
+
+    for (let i = 1; i <= 24; i++) {
+      const status = this.statuses[(i - 1) % this.statuses.length];
+      const medications = [
+        { id: i * 10 + 1, name: `Médicament ${i}-A`, dosage: '500mg', quantity: 2, price: 1200 },
+        { id: i * 10 + 2, name: `Médicament ${i}-B`, dosage: '250mg', quantity: 1, price: 850 }
+      ];
+
+      this.mockPrescriptions.push({
+        id: this.nextPrescriptionId++,
+        doctor: { id: i, nom: `Docteur${i}`, prenom: 'Amina' },
+        patient: { id: i, nom: `Patient${i}`, prenom: 'Ali' },
+        createdAt: new Date(Date.now() - i * 86400000).toISOString(),
+        status,
+        qrCodeUrl: '',
+        fullyPaidByDonor: false,
+        partiallyPaidByDonor: i % 3 === 0,
+        pharmacy,
+        amount: medications.reduce((sum, med) => sum + (med.quantity * med.price), 0),
+        needsHelp: i % 4 === 0,
+        address: `Quartier ${i}`,
+        latitude: 0,
+        longitude: 0,
+        prescriptionFile: i % 2 === 0 ? `ordonnance-${i}.pdf` : null,
+        medications
+      });
+    }
+  }
+
+  // Local mock for current user
+  private getMockCurrentUser(): User {
+    return { id: 1, prenom: 'Demo', nom: 'Pharmacien', profil: 'PHARMACIE', lat: 0, lon: 0, pharmacyId: 1 } as any;
+  }
+
+  // Local replacement for getCurrentUserById
+  private localGetCurrentUserById(id: number) {
+    const mock: User = { id, prenom: 'Demo', nom: 'Pharmacien', profil: 'PHARMACIE', lat: 0, lon: 0, pharmacyId: 1 } as any;
+    return of(mock).pipe(delay(120));
+  }
+
+  private clonePrescription(prescription: Prescription): Prescription {
+    return {
+      ...prescription,
+      doctor: { ...prescription.doctor },
+      patient: { ...prescription.patient },
+      pharmacy: {
+        ...prescription.pharmacy,
+        pharmacist: { ...prescription.pharmacy.pharmacist }
+      },
+      medications: prescription.medications.map(medication => ({ ...medication }))
+    };
+  }
+
+  private toPageResponse(items: Prescription[], page: number, size: number): PaginatedResponse<Prescription> {
+    const totalElements = items.length;
+    const totalPages = Math.max(1, Math.ceil(totalElements / size));
+    const start = page * size;
+    const content = items.slice(start, start + size).map(item => this.clonePrescription(item));
+
+    return {
+      content,
+      pageable: {
+        pageNumber: page,
+        pageSize: size,
+        sort: { unsorted: false, sorted: true, empty: false },
+        offset: start,
+        paged: true,
+        unpaged: false
+      },
+      totalElements,
+      totalPages,
+      last: page >= totalPages - 1,
+      numberOfElements: content.length,
+      size,
+      number: page,
+      sort: { unsorted: false, sorted: true, empty: false },
+      first: page === 0,
+      empty: content.length === 0
+    };
+  }
+
+  private localGetCommandes(pharmacyId: number, page: number = 0, size: number = 10): Observable<PaginatedResponse<Prescription>> {
+    const filtered = this.mockPrescriptions.filter(p => p.pharmacy?.id === pharmacyId);
+    return of(this.toPageResponse(filtered, page, size)).pipe(delay(250));
+  }
+
+  private localGetDetailsCommande(prescriptionId: number): Observable<Prescription> {
+    const found = this.mockPrescriptions.find(p => p.id === prescriptionId);
+    if (!found) return throwError(() => new Error('Commande introuvable'));
+    return of(this.clonePrescription(found)).pipe(delay(180));
+  }
+
+  private localValiderCommande(validationData: ValidateCommandeRequest): Observable<any> {
+    const index = this.mockPrescriptions.findIndex(p => p.id === validationData.prescriptionId);
+    if (index === -1) return throwError(() => new Error('Commande introuvable'));
+
+    const current = this.mockPrescriptions[index];
+    const validatedMedications = current.medications.map(medication => {
+      const validation = validationData.medications.find(item => item.medicationId === medication.id);
+      return {
+        ...medication,
+        price: validation ? validation.unitPrice : medication.price
+      };
+    });
+
+    this.mockPrescriptions[index] = {
+      ...current,
+      status: 'ACCEPTED',
+      amount: validationData.amount,
+      medications: validatedMedications
+    };
+
+    return of({ message: 'Commande acceptée' }).pipe(delay(250));
+  }
+
+  private localMarquerCommandePrete(readyData: ReadyCommandeRequest): Observable<any> {
+    const index = this.mockPrescriptions.findIndex(p => p.id === readyData.prescriptionId);
+    if (index === -1) return throwError(() => new Error('Commande introuvable'));
+
+    this.mockPrescriptions[index] = {
+      ...this.mockPrescriptions[index],
+      status: 'READY'
+    };
+
+    return of({ message: 'Commande prête' }).pipe(delay(200));
+  }
+
+  private localRejeterCommande(rejectionData: RejectCommandeRequest): Observable<any> {
+    const index = this.mockPrescriptions.findIndex(p => p.id === rejectionData.prescriptionId);
+    if (index === -1) return throwError(() => new Error('Commande introuvable'));
+
+    this.mockPrescriptions[index] = {
+      ...this.mockPrescriptions[index],
+      status: 'REJECTED'
+    };
+
+    return of({ message: 'Commande refusée' }).pipe(delay(200));
   }
 
   ngOnInit(): void {
@@ -119,38 +375,11 @@ export class CommandesComponent implements OnInit, OnDestroy {
    * Initialiser les données utilisateur à partir de l'AuthService
    */
   private initializeUserData(): void {
-    // Vérifier si l'AuthService est disponible
-    if (!this.authService) {
-      console.error('AuthService non disponible');
-      this.showAuthenticationError();
-      return;
-    }
-
-    // Vérifier si l'utilisateur est connecté
-    if (!this.authService.isLoggedIn()) {
-      console.error('Utilisateur non connecté');
-      this.showAuthenticationError();
-      return;
-    }
-
-    // Récupérer l'utilisateur actuel depuis l'AuthService
-    const currentUser = this.authService.getCurrentUser();
-
+    // Use local mock current user for static UI
+    const currentUser = this.getMockCurrentUser();
     if (currentUser && currentUser.id) {
       this.userId = currentUser.id;
-
-      // Charger les données une fois l'ID récupéré
       this.loadUserDataAndCommandes();
-    } else {
-      // Si pas d'utilisateur en cache, écouter les changements
-      this.authService.currentUser$
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(user => {
-          if (user && user.id) {
-            this.userId = user.id;
-            this.loadUserDataAndCommandes();
-          }
-        });
     }
   }
 
@@ -165,22 +394,20 @@ export class CommandesComponent implements OnInit, OnDestroy {
 
     this.loading = true;
 
-    // Récupérer les informations complètes de l'utilisateur pour obtenir le pharmacyId
-    this.authService.getCurrentUserById(this.userId).subscribe({
-      next: (user: User) => {
+    // Use local mock to get user details including pharmacyId
+    this.localGetCurrentUserById(this.userId).subscribe({
+      next: (user: any) => {
         if (user.pharmacyId) {
           this.pharmacyId = user.pharmacyId;
-
-          // Maintenant charger les commandes
           this.loadCommandes();
         } else {
-          console.error('Aucun ID de pharmacie trouvé pour l\'utilisateur connecté');
+          console.error('Aucun ID de pharmacie trouvé pour l\'utilisateur (mock)');
           this.loading = false;
           this.showNoPharmacyError();
         }
       },
-      error: (error) => {
-        console.error('Erreur lors du chargement des données utilisateur:', error);
+      error: (error: any) => {
+        console.error('Erreur lors du chargement des données utilisateur (mock):', error);
         this.loading = false;
         this.showUserDataError();
       }
@@ -201,7 +428,7 @@ export class CommandesComponent implements OnInit, OnDestroy {
     this.error = '';
     const page = this.currentPage - 1; // API uses 0-based pagination
 
-    this.commandeService.getCommandes(this.pharmacyId, page, this.itemsPerPage)
+    this.localGetCommandes(this.pharmacyId, page, this.itemsPerPage)
       .subscribe({
         next: (response: PaginatedResponse<Prescription>) => {
           this.prescriptions = response.content;
@@ -229,7 +456,7 @@ export class CommandesComponent implements OnInit, OnDestroy {
    * Charger les détails d'une commande
    */
   loadCommandeDetails(prescriptionId: number): void {
-    this.commandeService.getDetailsCommande(prescriptionId)
+    this.localGetDetailsCommande(prescriptionId)
       .subscribe({
         next: (prescription: Prescription) => {
           this.selectedPrescription = prescription;
@@ -448,8 +675,8 @@ export class CommandesComponent implements OnInit, OnDestroy {
           };
         }
 
-        // Appeler le service pour valider la commande
-        this.commandeService.validerCommande(validationData)
+        // Appliquer la validation localement dans le state sandbox
+        this.localValiderCommande(validationData)
           .subscribe({
             next: (response) => {
               this.loading = false;
@@ -567,7 +794,7 @@ export class CommandesComponent implements OnInit, OnDestroy {
         prescriptionId: this.selectedPrescription.id
       };
 
-      this.commandeService.marquerCommandePrete(readyData).subscribe({
+      this.localMarquerCommandePrete(readyData).subscribe({
         next: () => {
           this.loading = false;
 
@@ -627,7 +854,7 @@ export class CommandesComponent implements OnInit, OnDestroy {
           prescriptionId: this.selectedPrescription!.id
         };
 
-        this.commandeService.rejeterCommande(rejectionData)
+        this.localRejeterCommande(rejectionData)
           .subscribe({
             next: () => {
               const raison = result.value || 'Non précisée';
@@ -870,11 +1097,11 @@ export class CommandesComponent implements OnInit, OnDestroy {
 
   // Utility methods for component state
   isUserLoggedIn(): boolean {
-    return this.authService.isLoggedIn();
+    return !!this.getMockCurrentUser();
   }
 
   getCurrentUserProfile(): string {
-    const user = this.authService.getCurrentUser();
+    const user = this.getMockCurrentUser();
     return user?.profil || '';
   }
 

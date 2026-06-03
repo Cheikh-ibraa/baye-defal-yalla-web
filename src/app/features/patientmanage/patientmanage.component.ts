@@ -172,8 +172,7 @@ export class PatientsComponent implements OnInit, AfterViewInit {
             label: 'Aides',
             data: [1800, 2200, 2400, 2100, 2600, 2900],
             backgroundColor: '#3B82F6',
-            borderRadius: 6,
-            barThickness: 40
+            barThickness: 48
           }]
         },
         options: {
@@ -239,7 +238,6 @@ export class PatientsComponent implements OnInit, AfterViewInit {
             label: 'Commandes',
             data: this.commandesStats.map(s => s.count),
             backgroundColor: '#10B981',
-            borderRadius: 6,
             barThickness: 24
           }]
         },

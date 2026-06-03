@@ -1,7 +1,39 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LaboratoireService } from '../../services/laboratoire/laboratoire.service';
+import { of } from 'rxjs';
+import { delay } from 'rxjs/operators';
+
+// Inlined Laboratoire interfaces (replacing LaboratoireService dependency)
+interface Laboratoire {
+    id: number;
+    patientName: string;
+    doctorName: string;
+    laboratoryName: string;
+    type: string;
+    clinicalIndication: string;
+    youngPatient: boolean;
+    urgencyLevel: 'NORMAL' | 'PRIORITAIRE' | 'URGENT';
+    status: 'PENDING' | 'ACCEPTED' | 'COMPLETED' | 'CANCELLED';
+    createdAt: string;
+    appointmentDate: string;
+    appointmentTime: string;
+    pictures: string[];
+    report: string;
+    reportFile: string;
+    pdfPassword?: string;
+}
+
+interface LaboratoireResponse {
+    content: Laboratoire[];
+    totalElements: number;
+    totalPages: number;
+    number: number;
+    size: number;
+    first: boolean;
+    last: boolean;
+    empty: boolean;
+}
 
 @Component({
     selector: 'app-examens',
@@ -87,7 +119,7 @@ export class ExamensComponent implements OnInit {
         return end > this.totalElements ? this.totalElements : end;
     }
 
-    constructor(private laboratoireService: LaboratoireService) { }
+    constructor() { }
 
     ngOnInit(): void {
         this.loadAnalyses();
@@ -115,23 +147,20 @@ export class ExamensComponent implements OnInit {
         this.error = null;
 
         // Charger toutes les analyses en une fois (pagination côté client)
-        this.laboratoireService.getAnalysesByPatientPhone(
-            telephone,
-            0,
-            1000  // Charger toutes les données
-        ).subscribe({
-            next: (response) => {
-                this.allAnalyses = response.content;
-                this.applyFilters();  // Appliquer les filtres côté client
-                this.loading = false;
-                console.log('✅ Analyses chargées:', this.allAnalyses.length, 'résultats');
-            },
-            error: (err) => {
-                console.error('❌ Erreur chargement analyses:', err);
-                this.error = 'Erreur lors du chargement des analyses';
-                this.loading = false;
-            }
-        });
+        this.localGetAnalysesByPatientPhone(telephone, 0, 1000)
+            .subscribe({
+                next: (response) => {
+                    this.allAnalyses = response.content;
+                    this.applyFilters();
+                    this.loading = false;
+                    console.log('✅ Analyses chargées (mock):', this.allAnalyses.length, 'résultats');
+                },
+                error: (err: any) => {
+                    console.error('❌ Erreur chargement analyses (mock):', err);
+                    this.error = 'Erreur lors du chargement des analyses';
+                    this.loading = false;
+                }
+            });
     }
 
     // ============= FILTRES & RECHERCHE ===========
@@ -328,23 +357,26 @@ export class ExamensComponent implements OnInit {
         this.ongletActif = 'images';
 
         // Appel API pour récupérer les détails complets
-        this.laboratoireService.getLaboratoireById(analyse.id).subscribe({
+        this.localGetLaboratoireById(analyse.id).subscribe({
             next: (details) => {
                 this.selectedAnalyse = details;
 
-                // Charger les images médicales
-                this.imagesMedicales = (details.pictures || []).map((fileName: string, i: number) => ({
-                    id: i + 1,
-                    titre: `Image ${i + 1}`,
-                    name: fileName,
-                    url: `${this.imageBaseUrl}${fileName}`
-                }));
+                if (details) {
+                    this.imagesMedicales = (details.pictures || []).map((fileName: string, i: number) => ({
+                        id: i + 1,
+                        titre: `Image ${i + 1}`,
+                        name: fileName,
+                        url: `${this.imageBaseUrl}${fileName}`
+                    }));
+                } else {
+                    this.imagesMedicales = [];
+                }
 
                 this.detailsLoading = false;
-                console.log('✅ Détails chargés:', details);
+                console.log('✅ Détails chargés (mock):', details);
             },
-            error: (err) => {
-                console.error('❌ Erreur chargement détails:', err);
+            error: (err: any) => {
+                console.error('❌ Erreur chargement détails (mock):', err);
                 this.detailsError = 'Impossible de charger les détails de l\'examen.';
                 this.detailsLoading = false;
             }
@@ -423,26 +455,24 @@ export class ExamensComponent implements OnInit {
             formData.append('files', file);
         });
 
-        this.laboratoireService.uploadMultiplePictures(this.selectedAnalyse.id, formData)
-            .subscribe({
-                next: () => {
-                    this.showImportImageModal = false;
-                    this.showImportImageSuccess = true;
-                    this.selectedFiles = [];
-                    this.previewUrls = [];
+        this.localUploadMultiplePictures(this.selectedAnalyse.id, formData).subscribe({
+            next: () => {
+                this.showImportImageModal = false;
+                this.showImportImageSuccess = true;
+                this.selectedFiles = [];
+                this.previewUrls = [];
 
-                    setTimeout(() => {
-                        this.showImportImageSuccess = false;
-                    }, 2000);
+                setTimeout(() => {
+                    this.showImportImageSuccess = false;
+                }, 2000);
 
-                    // Recharger les détails pour afficher les nouvelles images
-                    this.viewDetails(this.selectedAnalyse);
-                },
-                error: (err) => {
-                    console.error('❌ Erreur upload images:', err);
-                    alert('Erreur lors de l\'importation des images');
-                }
-            });
+                this.viewDetails(this.selectedAnalyse);
+            },
+            error: (err: any) => {
+                console.error('❌ Erreur upload images (mock):', err);
+                alert('Erreur lors de l\'importation des images');
+            }
+        });
     }
 
     closeImportImageSuccess(): void {
@@ -474,27 +504,24 @@ export class ExamensComponent implements OnInit {
             return;
         }
 
-        this.laboratoireService
-            .deleteAnalysisPicture(this.selectedAnalyse.id, this.selectedImage.name)
-            .subscribe({
-                next: () => {
-                    this.showDeleteImageModal = false;
-                    this.showViewImageModal = false;
-                    this.showDeleteImageSuccess = true;
+        this.localDeleteAnalysisPicture(this.selectedAnalyse.id, this.selectedImage.name).subscribe({
+            next: () => {
+                this.showDeleteImageModal = false;
+                this.showViewImageModal = false;
+                this.showDeleteImageSuccess = true;
 
-                    setTimeout(() => {
-                        this.showDeleteImageSuccess = false;
-                    }, 2000);
+                setTimeout(() => {
+                    this.showDeleteImageSuccess = false;
+                }, 2000);
 
-                    // Recharger les détails pour mettre à jour la liste des images
-                    this.viewDetails(this.selectedAnalyse);
-                    this.selectedImage = null;
-                },
-                error: (err) => {
-                    console.error('❌ Erreur suppression image:', err);
-                    alert('Erreur lors de la suppression de l\'image');
-                }
-            });
+                this.viewDetails(this.selectedAnalyse);
+                this.selectedImage = null;
+            },
+            error: (err: any) => {
+                console.error('❌ Erreur suppression image (mock):', err);
+                alert('Erreur lors de la suppression de l\'image');
+            }
+        });
     }
 
     closeDeleteImage(): void {
@@ -588,13 +615,13 @@ export class ExamensComponent implements OnInit {
 
         console.log('📤 Envoi du compte rendu...');
 
-        this.laboratoireService.submitAnalysisReport({
+        this.localSubmitAnalysisReport({
             requestId: this.selectedAnalyse.id,
             report: this.compteRenduForm.description,
             reportFile: this.compteRenduFile || undefined
         }).subscribe({
-            next: (response) => {
-                console.log('✅ Compte rendu publié:', response);
+            next: (response: any) => {
+                console.log('✅ Compte rendu publié (mock):', response);
 
                 if (this.selectedAnalyse) {
                     this.selectedAnalyse.status = 'COMPLETED';
@@ -607,13 +634,66 @@ export class ExamensComponent implements OnInit {
                     this.showValidateCompteRenduSuccess = false;
                 }, 2000);
 
-                // Recharger les analyses pour mettre à jour le statut dans la liste
                 this.loadAnalyses();
             },
-            error: (err) => {
-                console.error('❌ Erreur publication compte rendu:', err);
+            error: (err: any) => {
+                console.error('❌ Erreur publication compte rendu (mock):', err);
                 alert('Erreur lors de la publication du compte rendu');
             }
         });
+    }
+
+    // ======= Local mock implementations =======
+    private mockAnalyses: Laboratoire[] = [
+        {
+            id: 1,
+            patientName: 'Alice Martin',
+            doctorName: 'Dr Dupont',
+            laboratoryName: 'Lab Central',
+            type: 'Blood Test',
+            clinicalIndication: 'Checkup',
+            youngPatient: false,
+            urgencyLevel: 'NORMAL',
+            status: 'PENDING',
+            createdAt: new Date().toISOString(),
+            appointmentDate: '',
+            appointmentTime: '',
+            pictures: [],
+            report: '',
+            reportFile: ''
+        }
+    ];
+
+    private localGetAnalysesByPatientPhone(telephone: string, page = 0, size = 1000) {
+        const content = this.mockAnalyses.slice(0, size);
+        const response: LaboratoireResponse = {
+            content,
+            totalElements: content.length,
+            totalPages: 1,
+            number: 0,
+            size: content.length,
+            first: true,
+            last: true,
+            empty: content.length === 0
+        };
+        return of(response).pipe(delay(200));
+    }
+
+    private localGetLaboratoireById(id: number) {
+        const found = this.mockAnalyses.find(a => a.id === id) || null;
+        return of(found).pipe(delay(150));
+    }
+
+    private localUploadMultiplePictures(requestId: number, formData: FormData) {
+        // Simulate success
+        return of({ message: 'Uploaded' }).pipe(delay(250));
+    }
+
+    private localDeleteAnalysisPicture(requestId: number, pictureName: string) {
+        return of({ message: 'Deleted' }).pipe(delay(180));
+    }
+
+    private localSubmitAnalysisReport(payload: { requestId: number; report: string; reportFile?: File }) {
+        return of({ message: 'Report submitted' }).pipe(delay(250));
     }
 }

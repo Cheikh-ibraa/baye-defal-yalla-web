@@ -4,8 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { Chart, registerables, ChartConfiguration } from 'chart.js';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { PharmacieService, RevenueLast7Days } from '../../services/pharmacie.service';
-import { AuthService } from '../../services/auth.service';
+// Local RevenueLast7Days type (inlined from pharmacie.service)
+interface RevenueLast7Days {
+  date: string;
+  total: number;
+}
+import { Observable, of, throwError } from 'rxjs';
+import { delay } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -55,7 +60,7 @@ export class FinanceDashboardpharmacieComponent implements OnInit, AfterViewInit
   selectedPeriod: string = 'Ce mois';
   pharmacyId: number | null = null;
   userId: number | null = null;
-  
+
   // Pagination
   currentPage: number = 0;
   pageSize: number = 10;
@@ -76,12 +81,92 @@ export class FinanceDashboardpharmacieComponent implements OnInit, AfterViewInit
   errorMessage: string = '';
   showError: boolean = false;
 
-  constructor(
-    private pharmacieService: PharmacieService,
-    private authService: AuthService
-  ) {
+  constructor() {
     console.log('💊 FinanceDashboardpharmacieComponent initialisé');
     this.initializeStatsCards();
+  }
+
+  // Local mock current user + fetcher (replaces AuthFacade)
+  private getMockCurrentUser(): User {
+    return {
+      id: 5,
+      pharmacyId: 1,
+      nom: 'Pharmacie Centrale',
+      prenom: 'Admin',
+      telephone: '+221770000000'
+    };
+  }
+
+  private localGetCurrentUserById(userId: number): Observable<User> {
+    const mock: User = {
+      id: userId,
+      pharmacyId: 1,
+      nom: 'Pharmacie Centrale',
+      prenom: 'Admin',
+      telephone: '+221770000000'
+    };
+    return of(mock).pipe(delay(120));
+  }
+
+  // Local mock/state for sandbox mode
+  private mockSolde: number = 125420;
+  private mockTotalYear: number = 4523000;
+  private mockTotalMonth: number = 352400;
+  private mockPendingCount: number = 7;
+  private mockPayments: any[] = [];
+
+  private initMockPayments(): void {
+    if (this.mockPayments.length) return;
+    for (let i = 1; i <= 23; i++) {
+      const amount = Math.floor(Math.random() * 15000) + 500;
+      const status = i % 5 === 0 ? 'FAILED' : (i % 3 === 0 ? 'PENDING' : 'COMPLETED');
+      this.mockPayments.push({
+        id: i,
+        createdAt: new Date(Date.now() - i * 86400000).toISOString(),
+        paidAt: new Date(Date.now() - i * 86400000).toISOString(),
+        amount,
+        method: i % 2 === 0 ? 'CARD' : 'CASH',
+        status,
+        prescription: {
+          patient: { prenom: `Patient${i}`, nom: `Demo` }
+        }
+      });
+    }
+  }
+
+  private localGetSoldeDashboard(pharmacyId: number): Observable<any> {
+    return of({ solde: this.mockSolde }).pipe(delay(200));
+  }
+
+  private localGetStatsSlate(pharmacyId: number): Observable<any> {
+    return of({ totalYearAmount: this.mockTotalYear, totalMonthAmount: this.mockTotalMonth }).pipe(delay(220));
+  }
+
+  private localGetPendingPayment(pharmacyId: number): Observable<any> {
+    return of({ count: this.mockPendingCount }).pipe(delay(160));
+  }
+
+  private localGetPaymentHistoric(pharmacyId: number, page: number, size: number): Observable<any> {
+    this.initMockPayments();
+    const start = page * size;
+    const content = this.mockPayments.slice(start, start + size);
+    const response = {
+      content,
+      totalPages: Math.max(1, Math.ceil(this.mockPayments.length / size)),
+      totalElements: this.mockPayments.length,
+      number: page
+    };
+    return of(response).pipe(delay(250));
+  }
+
+  private localGetRevenuLast7days(pharmacyId: number): Observable<RevenueLast7Days[]> {
+    const days: RevenueLast7Days[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      days.push({ date: date.toISOString(), total: Math.floor(Math.random() * 50000) });
+    }
+    return of(days).pipe(delay(220));
   }
 
   ngOnInit() {
@@ -97,7 +182,7 @@ export class FinanceDashboardpharmacieComponent implements OnInit, AfterViewInit
     console.log('🔴 Destruction du composant');
     this.destroy$.next();
     this.destroy$.complete();
-    
+
     if (this.revenueChart) {
       this.revenueChart.destroy();
       this.revenueChart = null;
@@ -141,17 +226,11 @@ export class FinanceDashboardpharmacieComponent implements OnInit, AfterViewInit
    */
   private initializeDashboard(): void {
     console.log('[INIT] 🚀 Démarrage initialisation dashboard');
-    
-    if (!this.authService.isLoggedIn()) {
-      console.error('❌ Utilisateur non connecté');
-      this.showErrorMessage('Vous devez être connecté pour accéder à cette page');
-      return;
-    }
 
     this.isLoading = true;
 
-    const currentUser = this.authService.getCurrentUser();
-    
+    const currentUser = this.getMockCurrentUser();
+
     if (!currentUser || !currentUser.id) {
       console.error('❌ Aucun utilisateur connecté trouvé');
       this.showErrorMessage('Impossible de récupérer les informations utilisateur');
@@ -162,12 +241,12 @@ export class FinanceDashboardpharmacieComponent implements OnInit, AfterViewInit
     this.userId = currentUser.id;
     console.log('✅ User ID récupéré:', this.userId);
 
-    this.authService.getCurrentUserById(this.userId)
+    this.localGetCurrentUserById(this.userId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (user: User) => {
           console.log('✅ Utilisateur complet récupéré:', user);
-          
+
           if (!user.pharmacyId) {
             console.error('❌ Aucun pharmacyId trouvé pour l\'utilisateur');
             this.showErrorMessage('Aucune pharmacie associée à votre compte');
@@ -177,7 +256,7 @@ export class FinanceDashboardpharmacieComponent implements OnInit, AfterViewInit
 
           this.pharmacyId = user.pharmacyId;
           console.log('✅ Pharmacy ID récupéré:', this.pharmacyId);
-          
+
           this.loadDashboardData();
         },
         error: (error) => {
@@ -198,7 +277,7 @@ export class FinanceDashboardpharmacieComponent implements OnInit, AfterViewInit
     }
 
     console.log('📊 Chargement des données du dashboard pour pharmacie:', this.pharmacyId);
-    
+
     this.loadSoldeDisponible();
     this.loadStats();
     this.loadPendingPayments();
@@ -214,7 +293,7 @@ export class FinanceDashboardpharmacieComponent implements OnInit, AfterViewInit
 
     console.log('💰 Chargement du solde pour pharmacie:', this.pharmacyId);
 
-    this.pharmacieService.getSoldeDashboard(this.pharmacyId)
+    this.localGetSoldeDashboard(this.pharmacyId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
@@ -238,18 +317,18 @@ export class FinanceDashboardpharmacieComponent implements OnInit, AfterViewInit
 
     console.log('📈 Chargement des stats pour pharmacie:', this.pharmacyId);
 
-    this.pharmacieService.getStatsSlate(this.pharmacyId)
+    this.localGetStatsSlate(this.pharmacyId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
           console.log('📥 Réponse stats brute:', response);
-          
+
           const totalYear = response.totalYearAmount || 0;
           const totalMonth = response.totalMonthAmount || 0;
-          
+
           this.statsCards[1].value = this.formatAmount(totalYear);
           this.statsCards[2].value = this.formatAmount(totalMonth);
-          
+
           console.log('✅ Stats mises à jour - Année:', totalYear, 'Mois:', totalMonth);
         },
         error: (error) => {
@@ -268,7 +347,7 @@ export class FinanceDashboardpharmacieComponent implements OnInit, AfterViewInit
 
     console.log('⏳ Chargement des paiements en attente pour pharmacie:', this.pharmacyId);
 
-    this.pharmacieService.getPendingPayment(this.pharmacyId)
+    this.localGetPendingPayment(this.pharmacyId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
@@ -292,17 +371,17 @@ export class FinanceDashboardpharmacieComponent implements OnInit, AfterViewInit
 
     console.log('📜 Chargement historique page:', page, 'size:', size);
 
-    this.pharmacieService.getPaymentHistoric(this.pharmacyId, page, size)
+    this.localGetPaymentHistoric(this.pharmacyId, page, size)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
           console.log('📥 Réponse historique:', response);
-          
+
           this.recentTransactions = response.content.map((payment: any) => {
-            const patientName = payment.prescription?.patient 
+            const patientName = payment.prescription?.patient
               ? `${payment.prescription.patient.prenom || ''} ${payment.prescription.patient.nom || ''}`.trim()
               : 'N/A';
-            
+
             return {
               date: this.formatDate(payment.createdAt || payment.paidAt),
               id: `TXN-${payment.id}`,
@@ -318,7 +397,7 @@ export class FinanceDashboardpharmacieComponent implements OnInit, AfterViewInit
           this.totalElements = response.totalElements;
           this.currentPage = response.number;
           this.isLoading = false;
-          
+
           console.log('✅ Historique chargé:', response.content.length, 'transactions');
         },
         error: (error) => {
@@ -340,12 +419,12 @@ export class FinanceDashboardpharmacieComponent implements OnInit, AfterViewInit
 
     console.log('📈 [REVENU] Chargement revenus 7 derniers jours pour pharmacie:', this.pharmacyId);
 
-    this.pharmacieService.getRevenuLast7days(this.pharmacyId)
+    this.localGetRevenuLast7days(this.pharmacyId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: RevenueLast7Days[]) => {
           console.log('📥 [REVENU] Réponse API brute:', JSON.stringify(response, null, 2));
-          
+
           if (!response || !Array.isArray(response)) {
             console.warn('⚠️ [REVENU] Réponse invalide ou non-array:', response);
             this.createRevenueChart([], []);
@@ -359,23 +438,23 @@ export class FinanceDashboardpharmacieComponent implements OnInit, AfterViewInit
           }
 
           console.log('✅ [REVENU] Nombre d\'éléments reçus:', response.length);
-          
+
           const labels = response.map(item => {
             const label = this.formatDateForChart(item.date);
             console.log('📅 [REVENU] Date:', item.date, '→ Label:', label);
             return label;
           });
-          
+
           const data = response.map(item => {
             const value = item.total || 0;
             console.log('💰 [REVENU] Total:', value);
             return value;
           });
-          
+
           console.log('📊 [REVENU] Labels finaux:', labels);
           console.log('📊 [REVENU] Data finales:', data);
           console.log('💵 [REVENU] Somme totale:', data.reduce((sum, val) => sum + val, 0));
-          
+
           setTimeout(() => {
             console.log('🎨 [REVENU] Création du graphique...');
             this.createRevenueChart(labels, data);
@@ -404,7 +483,7 @@ export class FinanceDashboardpharmacieComponent implements OnInit, AfterViewInit
     }
 
     const ctx = this.revenueChartRef.nativeElement.getContext('2d');
-    
+
     if (!ctx) {
       console.error('❌ [CHART] Impossible d\'obtenir le contexte 2D');
       return;
@@ -420,10 +499,10 @@ export class FinanceDashboardpharmacieComponent implements OnInit, AfterViewInit
     const hasData = data.length > 0;
     const chartLabels = hasData ? labels : ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
     const chartData = hasData ? data : [0, 0, 0, 0, 0, 0, 0];
-    
+
     const maxValue = Math.max(...chartData, 100);
     const minValue = Math.min(...chartData, 0);
-    
+
     console.log('📊 [CHART] Échelle - Min:', minValue, 'Max:', maxValue);
     console.log('📊 [CHART] Utilisation données réelles:', hasData);
 
@@ -598,7 +677,7 @@ export class FinanceDashboardpharmacieComponent implements OnInit, AfterViewInit
             tx.status
           ]);
         });
-        
+
         const totalAmount = this.recentTransactions.reduce((sum, tx) => {
           const amount = parseInt(tx.amount?.replace(' F', '') ?? '0', 10);
           return sum + (isNaN(amount) ? 0 : amount);
@@ -621,7 +700,7 @@ export class FinanceDashboardpharmacieComponent implements OnInit, AfterViewInit
       XLSX.utils.book_append_sheet(wb, ws2, 'Transactions');
 
       // Sheet 3: Revenus avec appel API
-      this.pharmacieService.getRevenuLast7days(this.pharmacyId!)
+      this.localGetRevenuLast7days(this.pharmacyId!)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (revenueData: RevenueLast7Days[]) => {
@@ -707,7 +786,7 @@ export class FinanceDashboardpharmacieComponent implements OnInit, AfterViewInit
 
   formatDate(dateString: string): string {
     if (!dateString) return 'N/A';
-    
+
     try {
       const date = new Date(dateString);
       return date.toLocaleString('fr-FR', {
@@ -724,7 +803,7 @@ export class FinanceDashboardpharmacieComponent implements OnInit, AfterViewInit
 
   formatDateForChart(dateString: string): string {
     if (!dateString) return '';
-    
+
     try {
       const date = new Date(dateString);
       const day = date.getDate().toString().padStart(2, '0');
@@ -774,7 +853,7 @@ export class FinanceDashboardpharmacieComponent implements OnInit, AfterViewInit
   private showErrorMessage(message: string): void {
     this.errorMessage = message;
     this.showError = true;
-    
+
     setTimeout(() => {
       this.showError = false;
     }, 5000);

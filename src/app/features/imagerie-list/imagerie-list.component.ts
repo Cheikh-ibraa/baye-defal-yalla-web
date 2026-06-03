@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ImagerieService } from '../../services/imagerie/imagerie.service';
+import { of, delay } from 'rxjs';
 import { StandalonePacsViewerComponent } from '../../core/utils/standalone-pacs-viewer.component';
 import { DicomQrCodeComponent } from '../../core/utils/dicom-qr-code.component';
 
@@ -87,7 +87,30 @@ export class ImagerieListComponent implements OnInit {
         return end > this.totalElements ? this.totalElements : end;
     }
 
-    constructor(private imagerieService: ImagerieService) { }
+    // Local mock dataset + helpers replacing ImagerieService
+    private mockImageries: any[] = [
+        { id: 1, patientPhone: '770000000', status: 'PENDING', urgencyLevel: 'NORMAL', imagingCenterName: 'Centre A', type: 'Radiologie', region: 'Thorax', clinicalIndication: 'Douleur' },
+        { id: 2, patientPhone: '770000000', status: 'COMPLETED', urgencyLevel: 'URGENT', imagingCenterName: 'Clinique B', type: 'Échographie', region: 'Abdomen', clinicalIndication: 'Contrôle' }
+    ];
+
+    private localGetImageriesByPatientPhone(telephone: string, page = 0, size = 10) {
+        const content = this.mockImageries.filter(i => i.patientPhone === telephone);
+        return of({ content, totalElements: content.length }).pipe(delay(120));
+    }
+
+    private localGetImagerieById(id: number) {
+        const found: any = this.mockImageries.find(i => i.id === id) || null;
+        // enrich with pictures and accessionNumber for UI
+        const enriched = found ? { ...found, pictures: ['img1.jpg','img2.jpg'], accessionNumber: 'ACC-' + id } : null;
+        return of(enriched).pipe(delay(120));
+    }
+
+    private localGetDicomViewer(accessionNumber: string) {
+        const response: any = { series: { 'study1': ['https://viewer.example.com/' + accessionNumber] } };
+        return of(response).pipe(delay(120));
+    }
+
+    constructor() { }
 
     ngOnInit(): void {
         this.loadImageries();
@@ -115,19 +138,19 @@ export class ImagerieListComponent implements OnInit {
         this.error = null;
 
         // Charger toutes les imageries en une fois (pagination côté client)
-        this.imagerieService.getImageriesByPatientPhone(
+        this.localGetImageriesByPatientPhone(
             telephone,
             0,
-            1000  // Charger toutes les données
+            1000
         ).subscribe({
             next: (response) => {
                 this.allImageries = response.content;
-                this.applyFilters();  // Appliquer les filtres côté client
+                this.applyFilters();
                 this.loading = false;
-                console.log('✅ Imageries chargées:', this.allImageries.length, 'résultats');
+                console.log('✅ Imageries chargées (mock):', this.allImageries.length, 'résultats');
             },
             error: (err) => {
-                console.error('❌ Erreur chargement imageries:', err);
+                console.error('❌ Erreur chargement imageries (mock):', err);
                 this.error = 'Erreur lors du chargement des imageries';
                 this.loading = false;
             }
@@ -276,14 +299,13 @@ export class ImagerieListComponent implements OnInit {
         this.accessionNumber = '';
 
         // Appel API pour récupérer les détails complets
-        this.imagerieService.getImagerieById(imagerie.id).subscribe({
+        this.localGetImagerieById(imagerie.id).subscribe({
             next: (data) => {
                 this.selectedImagerie = data;
                 this.accessionNumber = (data as any).accessionNumber || '';
 
-                // Récupérer l'URL du viewer DICOM pour le QR code
                 if (this.accessionNumber) {
-                    this.imagerieService.getDicomViewer(this.accessionNumber).subscribe({
+                    this.localGetDicomViewer(this.accessionNumber).subscribe({
                         next: (response) => {
                             const studyIds = Object.keys(response.series || {});
                             if (studyIds.length > 0) {
@@ -300,8 +322,7 @@ export class ImagerieListComponent implements OnInit {
                     this.dicomViewerUrl = '';
                 }
 
-                // Mapper les images médicales
-                this.imagesMedicales = (data.pictures || []).map((fileName: string, i: number) => ({
+                this.imagesMedicales = (data?.pictures || []).map((fileName: string, i: number) => ({
                     id: i + 1,
                     titre: `Image ${i + 1}`,
                     name: fileName,
@@ -309,11 +330,11 @@ export class ImagerieListComponent implements OnInit {
                 }));
 
                 this.detailsLoading = false;
-                console.log('✅ Détails imagerie chargés:', data);
+                console.log('✅ Détails imagerie chargés (mock):', data);
                 console.log('✅ Accession Number:', this.accessionNumber);
             },
             error: (err) => {
-                console.error('❌ Erreur chargement détails imagerie:', err);
+                console.error('❌ Erreur chargement détails imagerie (mock):', err);
                 this.detailsError = 'Impossible de charger les détails de l\'examen.';
                 this.detailsLoading = false;
             }

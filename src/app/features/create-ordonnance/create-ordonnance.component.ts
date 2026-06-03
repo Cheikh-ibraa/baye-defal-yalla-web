@@ -2,11 +2,54 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Subject } from 'rxjs';
-import { takeUntil, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
-import { OrdonnanceService, SaveOrdonnanceRequest, Medication, PatientByReference } from '../../services/ordonnance.service';
-import { AuthService } from '../../services/auth.service';
-import { PharmacieService, PharmacySearchResult } from '../../services/pharmacie.service';
+import { Subject, of, throwError } from 'rxjs';
+import { takeUntil, debounceTime, distinctUntilChanged, switchMap, delay } from 'rxjs/operators';
+// Inlined ordonnance types
+interface Medication {
+  id?: number;
+  name: string;
+  quantity: number;
+  dosage: string;
+  price: number;
+}
+
+interface SaveOrdonnanceRequest {
+  doctorId: number;
+  patientId: number;
+  medications: string;
+  needsHelp: boolean;
+  pharmacyId: number;
+  address: string;
+  latitude: number;
+  longitude: number;
+  prescriptionFile?: File;
+}
+
+interface PatientByReference {
+  id: number;
+  reference: string;
+  nom: string;
+  prenom: string;
+  email: string;
+  telephone: string;
+  adress: string;
+  lat: number;
+  lon: number;
+  profil: string;
+  pharmacyId: number;
+}
+// AuthFacade removed — using local mock stores for static UI
+
+// Local PharmacySearchResult type (inlined from pharmacie.service)
+interface PharmacySearchResult {
+  id: number;
+  name: string;
+  address: string;
+  phone?: string;
+  email?: string;
+  logo?: string;
+  distance?: number;
+}
 
 @Component({
   standalone: true,
@@ -51,10 +94,7 @@ export class CreateOrdonnanceComponent implements OnInit, OnDestroy {
 
   constructor(
     private fb: FormBuilder,
-    private ordonnanceService: OrdonnanceService,
-    private authService: AuthService,
-    private router: Router,
-    private pharmacieService: PharmacieService
+    private router: Router
   ) {
     this.ordonnanceForm = this.fb.group({
       // Référence patient (pour recherche)
@@ -88,21 +128,12 @@ export class CreateOrdonnanceComponent implements OnInit, OnDestroy {
     console.log('🏥 CreateOrdonnanceComponent - Initialisation');
 
     // Récupérer l'ID du docteur connecté
-    const currentUser = this.authService.getCurrentUser();
+    const currentUser = this.getMockCurrentUser();
 
     if (!currentUser) {
       console.error('❌ Aucun utilisateur connecté');
       this.error = true;
       this.errorMessage = 'Vous devez être connecté pour créer une ordonnance';
-      this.router.navigate(['/login']);
-      return;
-    }
-
-    if (currentUser.profil !== 'DOCTOR') {
-      console.error('❌ Utilisateur n\'est pas un docteur');
-      this.error = true;
-      this.errorMessage = 'Accès réservé aux docteurs';
-      this.router.navigate(['/dashboard']);
       return;
     }
 
@@ -148,7 +179,7 @@ export class CreateOrdonnanceComponent implements OnInit, OnDestroy {
         const telephone = patient.telephone || patient.phone;
         if (telephone) {
           const cleanPhone = telephone.replace(/[\s\-\(\)]/g, '');
-          this.authService.getUserByPhone(cleanPhone).subscribe({
+          this.localGetUserByPhone(cleanPhone).subscribe({
             next: (user: any) => {
               this.patientData = {
                 id: user.id,
@@ -233,6 +264,47 @@ export class CreateOrdonnanceComponent implements OnInit, OnDestroy {
     setTimeout(() => this.successMessage = '', 3000);
   }
 
+  private localSearchPharmacies(term: string): any {
+    const mockPharmacies: PharmacySearchResult[] = [
+      { id: 1, name: 'Pharmacie Centrale', address: 'Dakar Plateau' },
+      { id: 2, name: 'Pharmacie de la Medina', address: 'Dakar Medina' },
+      { id: 3, name: 'Pharmacie Point E', address: 'Dakar Point E' }
+    ];
+    const filtered = mockPharmacies.filter(p => p.name.toLowerCase().includes(term.toLowerCase()));
+    return of(filtered).pipe(delay(200));
+  }
+
+  // Local mock for current user (doctor)
+  private getMockCurrentUser() {
+    return {
+      id: 42,
+      prenom: 'Dr. Amina',
+      nom: 'Sow',
+      profil: 'DOCTOR',
+      lat: 14.7,
+      lon: -17.45,
+      pharmacyId: 1
+    };
+  }
+
+  // Local replacement for authFacade.getUserByPhone
+  private localGetUserByPhone(phone: string) {
+    const mock = {
+      id: 2,
+      reference: 'REF-123',
+      prenom: 'Patient',
+      nom: 'Test',
+      telephone: phone,
+      email: 'patient.test@example.com',
+      adress: 'Somewhere',
+      lat: 14.7,
+      lon: -17.45,
+      profil: 'PATIENT',
+      pharmacyId: 0
+    };
+    return of(mock).pipe(delay(150));
+  }
+
   /**
    * Configure l'autocomplétion de recherche de pharmacie
    */
@@ -248,7 +320,7 @@ export class CreateOrdonnanceComponent implements OnInit, OnDestroy {
         return;
       }
       this.pharmacySearching = true;
-      this.pharmacieService.searchPharmacies(term, 0, 0, 0, 10).pipe(
+      this.localSearchPharmacies(term).pipe(
         takeUntil(this.destroy$)
       ).subscribe({
         next: (results: any) => {
@@ -311,6 +383,30 @@ export class CreateOrdonnanceComponent implements OnInit, OnDestroy {
   /**
    * Recherche un patient par sa référence
    */
+  private localGetPatientByReference(reference: string): any {
+    const mockPatient: PatientByReference = {
+      id: 1,
+      reference: reference,
+      prenom: 'Moussa',
+      nom: 'Diop',
+      telephone: '771234567',
+      email: 'moussa.diop@example.com',
+      adress: 'Médina, Dakar',
+      lat: 14.68,
+      lon: -17.44,
+      profil: 'PATIENT',
+      pharmacyId: 0
+    };
+    if (reference === 'UNKNOWN') {
+      return throwError(() => 'Patient not found').pipe(delay(200));
+    }
+    return of(mockPatient).pipe(delay(200));
+  }
+
+  private localSaveOrdonnance(request: SaveOrdonnanceRequest): any {
+    return of({ reference: 'ORD-2026-XYZ', success: true }).pipe(delay(300));
+  }
+
   private rechercherPatient(reference: string): void {
     console.log('🔍 Recherche du patient avec la référence:', reference);
 
@@ -318,10 +414,10 @@ export class CreateOrdonnanceComponent implements OnInit, OnDestroy {
     this.patientNotFound = false;
     this.errorMessage = '';
 
-    this.ordonnanceService.getPatientByReference(reference)
+    this.localGetPatientByReference(reference)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (patient) => {
+        next: (patient: any) => {
           console.log('✅ Patient trouvé:', patient);
           this.searchingPatient = false;
           this.patientNotFound = false;
@@ -342,7 +438,7 @@ export class CreateOrdonnanceComponent implements OnInit, OnDestroy {
           this.successMessage = `Patient trouvé: ${patient.prenom} ${patient.nom}`;
           setTimeout(() => this.successMessage = '', 3000);
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('❌ Patient non trouvé:', error);
           this.searchingPatient = false;
           this.patientNotFound = true;
@@ -427,7 +523,7 @@ export class CreateOrdonnanceComponent implements OnInit, OnDestroy {
     }));
 
     // Convertir les médicaments en JSON string
-    const medicationsJson = this.ordonnanceService.formatMedicationsToJson(medications);
+    const medicationsJson = JSON.stringify(medications);
 
     // Construire la requête selon l'interface SaveOrdonnanceRequest
     const request: SaveOrdonnanceRequest = {
@@ -447,10 +543,10 @@ export class CreateOrdonnanceComponent implements OnInit, OnDestroy {
     });
 
     // Appel au service pour sauvegarder l'ordonnance
-    this.ordonnanceService.saveOrdonnance(request)
+    this.localSaveOrdonnance(request)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
+        next: (response: any) => {
           console.log('✅ Ordonnance créée avec succès:', response);
           this.loading = false;
           this.successMessage = `Ordonnance créée avec succès! Référence: ${response.reference}`;
@@ -463,7 +559,7 @@ export class CreateOrdonnanceComponent implements OnInit, OnDestroy {
             this.router.navigate(['/ordonnances']);
           }, 2000);
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('❌ Erreur lors de la création:', error);
           this.loading = false;
           this.error = true;

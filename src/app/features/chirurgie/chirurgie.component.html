@@ -1,0 +1,125 @@
+<div class="min-h-screen bg-[#F4F6F9]">
+
+  <!-- En-tête -->
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold tracking-tight text-[#0F172A] sm:text-3xl">Chirurgie</h1>
+    <p class="mt-1 text-sm text-[#64748B]">Supervision des interventions planifiées</p>
+  </div>
+
+  <!-- Barre recherche + filtre -->
+  <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+    <div class="relative flex-1">
+      <svg class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94A3B8]"
+        viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <circle cx="11" cy="11" r="7" stroke-width="1.8"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="m21 21-4.35-4.35"/>
+      </svg>
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        placeholder="Rechercher un médecin"
+        class="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
+      />
+    </div>
+
+    <button class="inline-flex shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-[#475569] transition hover:bg-slate-50">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 6h18M7 12h10M11 18h2"/>
+      </svg>
+      Tous les services
+    </button>
+  </div>
+
+  <!-- Grille des cartes -->
+  <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+    <article *ngFor="let c of filtered"
+      class="flex flex-col rounded-2xl bg-white p-5 ring-1 ring-slate-100 transition hover:shadow-sm cursor-pointer"
+      (click)="openDetail(c.id)">
+
+      <!-- Header carte : avatar + infos + badge -->
+      <div class="flex items-start gap-4">
+        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#F1F5F9] text-[#94A3B8]">
+          <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="8" r="3.5" stroke-width="1.8"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 19a7 7 0 0 1 14 0"/>
+          </svg>
+        </div>
+
+        <div class="flex-1 min-w-0">
+          <div class="flex flex-wrap items-center gap-2">
+            <h2 class="text-base font-semibold text-[#0F172A]">{{ c.fullname }}</h2>
+            <span class="inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-semibold tracking-wide"
+              [ngClass]="statusBadgeClass(c.status)">
+              {{ c.status }}
+            </span>
+          </div>
+          <p class="mt-0.5 text-xs text-[#94A3B8]">ID: #{{ c.id }} &bull; {{ c.age }} ans</p>
+        </div>
+      </div>
+
+      <!-- Séparateur -->
+      <div class="my-4 border-t border-slate-100"></div>
+
+      <!-- Détails intervention -->
+      <div class="space-y-2.5 text-sm">
+        <div class="flex items-start justify-between gap-4">
+          <span class="shrink-0 text-[10px] font-semibold uppercase tracking-widest text-[#94A3B8]">Intervention</span>
+          <span class="text-right font-semibold text-[#0F172A]">{{ c.intervention }}</span>
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <span class="shrink-0 text-[10px] font-semibold uppercase tracking-widest text-[#94A3B8]">Service</span>
+          <span class="text-right text-[#475569]">{{ c.service }}</span>
+        </div>
+        <div class="flex items-start justify-between gap-4">
+          <span class="shrink-0 text-[10px] font-semibold uppercase tracking-widest text-[#94A3B8]">Planification</span>
+          <span class="text-right text-[#475569]">
+            {{ c.planificationDate }}<br>
+            <span class="font-semibold text-[#2563EB]">{{ c.planificationTime }}</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Chirurgien responsable -->
+      <div class="mt-4 rounded-xl bg-[#F8FAFC] px-4 py-3">
+        <p class="text-[10px] font-semibold uppercase tracking-widest text-[#94A3B8]">Chirurgien responsable</p>
+        <p class="mt-1 text-sm font-semibold text-[#0F172A]">{{ c.chirurgien }}</p>
+      </div>
+
+      <!-- Paiement -->
+      <div class="mt-4 flex items-center justify-between text-sm">
+        <span class="text-[10px] font-semibold uppercase tracking-widest text-[#94A3B8]">Paiement</span>
+        <span class="flex items-center gap-1.5 font-semibold" [ngClass]="paiementClass(c.paiement)">
+
+          <!-- icône check -->
+          <ng-container *ngIf="paiementIcon(c.paiement) === 'check'">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <circle cx="12" cy="12" r="9" stroke-width="1.8"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m8.5 12.5 2.3 2.3 4.7-5"/>
+            </svg>
+          </ng-container>
+
+          <!-- icône warning -->
+          <ng-container *ngIf="paiementIcon(c.paiement) === 'warning'">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <circle cx="12" cy="12" r="9" stroke-width="1.8"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4M12 16h.01"/>
+            </svg>
+          </ng-container>
+
+          {{ c.paiement }}
+        </span>
+      </div>
+
+    </article>
+  </div>
+
+  <!-- État vide -->
+  <div *ngIf="filtered.length === 0" class="mt-16 flex flex-col items-center gap-3 text-center text-[#94A3B8]">
+    <svg class="h-12 w-12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <circle cx="11" cy="11" r="7" stroke-width="1.5"/>
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m21 21-4.35-4.35"/>
+    </svg>
+    <p class="text-sm font-medium">Aucune intervention trouvée</p>
+  </div>
+
+</div>

@@ -20,11 +20,22 @@ import {
   ChartConfiguration
 } from 'chart.js';
 
-import { AuthService, User } from '../../services/auth.service';
-import {
-  DashboardLaboratoireResponse,
-  DashboardLaboratoireService
-} from '../../services/laboratoire/dashboard-laboratoire.service';
+import { of } from 'rxjs';
+import { delay } from 'rxjs/operators';
+
+// Inline response type for dashboard (replace DashboardLaboratoireService dependency)
+interface DashboardLaboratoireResponse {
+  monthlyRequests: { [key: string]: number };
+  requestsByStatus: { [key: string]: number };
+  requestsByType: { [key: string]: number };
+  requestsByUrgency: { [key: string]: number };
+  // Additional counts used in template
+  totalRequests?: number;
+  pendingRequests?: number;
+  urgentRequests?: number;
+  completedRequests?: number;
+  youngPatients?: number;
+}
 
 import { Laboratoire } from '../../modele/laboratoir';
 
@@ -48,6 +59,8 @@ Chart.register(
 
 type ChartLoadingState = 'idle' | 'loading' | 'success' | 'error';
 
+interface UserLocal { id: number; [key: string]: any }
+
 @Component({
   selector: 'app-dashboard-lab',
   standalone: true,
@@ -60,7 +73,7 @@ export class DashboardLabComponent implements OnInit, OnDestroy {
   // =====================
   // USER
   // =====================
-  currentUser: User | null = null;
+  currentUser: UserLocal | null = null;
 
   // =====================
   // DASHBOARD DATA
@@ -93,8 +106,7 @@ export class DashboardLabComponent implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
-    private authService: AuthService,
-    private dashboardService: DashboardLaboratoireService
+    
   ) {}
 
   // =====================
@@ -102,20 +114,18 @@ export class DashboardLabComponent implements OnInit, OnDestroy {
   // =====================
   ngOnInit(): void {
     console.log('🧪 [LAB] Dashboard init');
+    const user = this.getMockCurrentUser();
+    console.log('👤 [AUTH MOCK] currentUser =', user);
 
-    this.authService.currentUser$.subscribe(user => {
-      console.log('👤 [AUTH] currentUser =', user);
+    this.currentUser = user;
 
-      this.currentUser = user;
-
-      if (user) {
-        console.log('✅ [AUTH] User détecté → chargement dashboard');
-        this.loadDashboard(user.id);
-        this.loadPlanningDuJour();
-      } else {
-        console.warn('⚠️ [AUTH] Aucun utilisateur connecté');
-      }
-    });
+    if (user) {
+      console.log('✅ [AUTH MOCK] User détecté → chargement dashboard');
+      this.loadDashboard(user.id);
+      this.loadPlanningDuJour();
+    } else {
+      console.warn('⚠️ [AUTH MOCK] Aucun utilisateur connecté');
+    }
   }
 
   // =====================
@@ -146,23 +156,23 @@ export class DashboardLabComponent implements OnInit, OnDestroy {
     this.typeChartState = 'loading';
     this.urgencyChartState = 'loading';
 
-    this.dashboardService.getDashboard(laboratoryId).subscribe({
+    this.localGetDashboard(laboratoryId).subscribe({
       next: (data) => {
-        console.log('📊 [API] Dashboard response =', data);
+        console.log('📊 [API MOCK] Dashboard response =', data);
 
         this.dashboardData = data;
         this.dashboardLoading = 'success';
 
         this.destroyCharts();
 
-        console.log('📈 Création graphiques...');
+        console.log('📈 Création graphiques (mock)...');
         this.createMonthlyChart(data.monthlyRequests);
         this.createStatusChart(data.requestsByStatus);
         this.createTypeChart(data.requestsByType);
         this.createUrgencyChart(data.requestsByUrgency);
       },
-      error: (err) => {
-        console.error('❌ [API] Dashboard error', err);
+      error: (err: any) => {
+        console.error('❌ [API MOCK] Dashboard error', err);
         this.dashboardLoading = 'error';
       }
     });
@@ -187,23 +197,49 @@ export class DashboardLabComponent implements OnInit, OnDestroy {
     this.planningLoading = 'loading';
     const today = this.getTodayDate();
 
-    this.dashboardService.getAllAnalysisRequests().subscribe({
-      next: (res) => {
-        console.log('📋 [API] Planning brut =', res);
+    this.localGetAllAnalysisRequests().subscribe({
+      next: (res: any) => {
+        console.log('📋 [API MOCK] Planning brut =', res);
 
-        this.examens = res.content.filter((e: Laboratoire) =>
+        this.examens = (res.content || res).filter((e: Laboratoire) =>
           e.status === 'ACCEPTED' &&
           e.appointmentDate === today
         );
 
-        console.log('📅 Planning filtré =', this.examens);
+        console.log('📅 Planning filtré (mock) =', this.examens);
         this.planningLoading = 'success';
       },
-      error: (err) => {
-        console.error('❌ [API] Planning error', err);
+      error: (err: any) => {
+        console.error('❌ [API MOCK] Planning error', err);
         this.planningLoading = 'error';
       }
     });
+  }
+
+  // ===== Local mocks =====
+  private localGetDashboard(_laboratoryId: number) {
+    const mock: DashboardLaboratoireResponse = {
+      monthlyRequests: { '1': 5, '2': 8, '3': 12 },
+      requestsByStatus: { PENDING: 3, ACCEPTED: 10, COMPLETED: 12 },
+      requestsByType: { 'Blood Test': 10, 'X-Ray': 8 },
+      requestsByUrgency: { NORMAL: 18, URGENT: 7 }
+    };
+    return of(mock).pipe(delay(200));
+  }
+
+  // Local mock for current user
+  private getMockCurrentUser(): UserLocal {
+    return { id: 1, prenom: 'Lab', nom: 'Demo' } as UserLocal;
+  }
+
+  private localGetAllAnalysisRequests() {
+    const mock = {
+      content: [
+        { id: 1, patientName: 'Alice', status: 'ACCEPTED', appointmentDate: this.getTodayDate() },
+        { id: 2, patientName: 'Bob', status: 'PENDING', appointmentDate: this.getTodayDate() }
+      ]
+    };
+    return of(mock).pipe(delay(150));
   }
 
   // =====================

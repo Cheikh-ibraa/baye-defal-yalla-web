@@ -1,0 +1,8 @@
+{
+  "/pharma-delivery/api": {
+    "target": "https://wakana.online",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}

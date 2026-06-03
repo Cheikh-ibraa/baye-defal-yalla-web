@@ -148,20 +148,17 @@ export class PaiementsHelpComponent implements OnInit, AfterViewInit {
             {
               label: 'Direct',
               data: [3500, 4200, 3800, 4500, 4800, 5200],
-              backgroundColor: '#3B82F6',
-              borderRadius: 4
+              backgroundColor: '#3B82F6'
             },
             {
               label: 'Aides',
               data: [1800, 2100, 1900, 2300, 2500, 2700],
-              backgroundColor: '#10B981',
-              borderRadius: 4
+              backgroundColor: '#10B981'
             },
             {
               label: 'Urgent',
               data: [1200, 1500, 1300, 1600, 1800, 2000],
-              backgroundColor: '#F59E0B',
-              borderRadius: 4
+              backgroundColor: '#F59E0B'
             }
           ]
         },
@@ -207,7 +204,7 @@ export class PaiementsHelpComponent implements OnInit, AfterViewInit {
     const ctx = this.paiementsRepartitionChartRef.nativeElement.getContext('2d');
     if (ctx) {
       this.paiementsRepartitionChart = new Chart(ctx, {
-        type: 'doughnut',
+        type: 'pie',
         data: {
           labels: ['Paiements directs', 'Aides', 'Ordonnances urgentes'],
           datasets: [{
@@ -231,7 +228,7 @@ export class PaiementsHelpComponent implements OnInit, AfterViewInit {
               }
             }
           },
-          cutout: '70%'
+          
         }
       });
     }

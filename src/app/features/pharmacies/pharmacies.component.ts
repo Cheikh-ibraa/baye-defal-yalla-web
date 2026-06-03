@@ -274,7 +274,7 @@ export class PharmaciesComponent implements OnInit, AfterViewInit {
           datasets: [{
             label: 'Ordonnances',
             data: this.topPharmacies.map(p => p.ordonnances),
-            backgroundColor: '#10B981',
+            backgroundColor: '#104382',
             borderRadius: 4
           }]
         },

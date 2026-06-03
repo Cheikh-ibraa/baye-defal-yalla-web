@@ -190,8 +190,8 @@ export class DashboardAdminComponent implements OnInit, AfterViewInit, OnDestroy
           {
             label: 'Web',
             data: [120, 150, 130, 180, 160, 190, 140],
-            backgroundColor: '#3B82F6',
-            borderColor: '#3B82F6',
+            backgroundColor: '#5DADE2',
+            borderColor: '#5DADE2',
             borderWidth: 1,
             borderRadius: 0, // Barres rectangulaires
             barPercentage: 0.8,
@@ -200,8 +200,8 @@ export class DashboardAdminComponent implements OnInit, AfterViewInit, OnDestroy
           {
             label: 'Mobile',
             data: [220, 280, 240, 320, 300, 350, 270],
-            backgroundColor: '#10B981',
-            borderColor: '#10B981',
+            backgroundColor: '#104382',
+            borderColor: '#104382',
             borderWidth: 1,
             borderRadius: 0, // Barres rectangulaires
             barPercentage: 0.8,

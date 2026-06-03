@@ -4,7 +4,7 @@
     <div>
       <h1 class="text-[28px] font-semibold text-[#343A40]">Mon compte</h1>
       <p class="text-base text-[#343A40] mt-2">
-        Gérez les informations de votre pharmacie
+        {{ subtitle }}
       </p>
     </div>
   </div>
@@ -15,7 +15,7 @@
       <!-- Menu de navigation -->
       <nav class="bg-white rounded-lg space-y-2 p-4">
         <button *ngFor="let item of menuItems" (click)="setActiveSection(item.id)"
-          [class.bg-[#00B894]]="activeSection === item.id" [class.text-white]="activeSection === item.id"
+          [class.bg-[#104382]]="activeSection === item.id" [class.text-white]="activeSection === item.id"
           [class.text-gray-700]="activeSection !== item.id"
           class="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-all duration-200 text-sm font-medium">
           <!-- Icône -->
@@ -93,12 +93,12 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Prénom</label>
               <input type="text" [(ngModel)]="personalInfo.prenom"
-                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B894] outline-none text-sm" />
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] outline-none text-sm" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Nom</label>
               <input type="text" [(ngModel)]="personalInfo.nom"
-                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B894] outline-none text-sm" />
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] outline-none text-sm" />
             </div>
           </div>
 
@@ -112,7 +112,7 @@
                 </svg>
               </div>
               <input type="email" [(ngModel)]="personalInfo.email"
-                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B894] outline-none text-sm" />
+                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] outline-none text-sm" />
             </div>
           </div>
 
@@ -126,7 +126,7 @@
                 </svg>
               </div>
               <input type="tel" [(ngModel)]="personalInfo.telephone"
-                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B894] outline-none text-sm" />
+                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] outline-none text-sm" />
             </div>
           </div>
 
@@ -141,13 +141,13 @@
                 </svg>
               </div>
               <input type="text" [(ngModel)]="personalInfo.adresse"
-                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B894] outline-none text-sm" />
+                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] outline-none text-sm" />
             </div>
           </div>
 
           <div class="flex justify-end pt-4">
             <button (click)="onSaveChanges()" [disabled]="isLoading"
-              class="px-6 py-3 bg-[#00B894] text-white rounded-lg hover:bg-[#00a085] transition font-medium text-sm disabled:opacity-50">
+              class="px-6 py-3 bg-[#104382] text-white rounded-lg transition font-medium text-sm disabled:opacity-50">
               {{ isLoading ? 'Enregistrement...' : 'Enregistrer les modifications' }}
             </button>
           </div>
@@ -203,7 +203,7 @@
         </div>
 
         <button (click)="addDocument()"
-          class="flex items-center gap-2 px-4 py-2 bg-[#00B894] text-white rounded-lg hover:bg-[#00a085] text-sm mt-4">
+          class="flex items-center gap-2 px-4 py-2 bg-[#104382] text-white rounded-lg text-sm mt-4">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
           </svg>
@@ -216,13 +216,13 @@
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-2">Nom du document</label>
             <input type="text" [(ngModel)]="documentName" placeholder="Ex: Registre de commerce"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B894] outline-none text-sm" />
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] outline-none text-sm" />
           </div>
 
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-2">Fichier</label>
             <input type="file" (change)="onDocumentFileSelected($event)"
-              class="w-full text-sm text-gray-700 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:bg-[#00B894] file:text-white hover:file:bg-[#00a085]" />
+              class="w-full text-sm text-gray-700 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:bg-[#104382] file:text-white hove" />
             <p *ngIf="selectedDocumentFile" class="text-xs text-gray-500 mt-2">
               Fichier sélectionné : {{ selectedDocumentFile.name }}
             </p>
@@ -233,7 +233,7 @@
 
           <div class="flex items-center gap-2">
             <button (click)="submitDocumentUpload()" [disabled]="isUploadingDocument"
-              class="px-4 py-2 bg-[#00B894] text-white rounded-lg hover:bg-[#00a085] transition text-sm disabled:opacity-50">
+              class="px-4 py-2 bg-[#104382] text-white rounded-lg transition text-sm disabled:opacity-50">
               {{ isUploadingDocument ? 'Envoi...' : 'Ajouter' }}
             </button>
             <button (click)="cancelDocumentUpload()" type="button"
@@ -271,7 +271,7 @@
         <div class="mb-6">
           <label class="block text-sm font-medium text-gray-700 mb-2">Nom de la pharmacie</label>
           <input type="text" [(ngModel)]="pharmacyInfo.name"
-            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B894] outline-none text-sm"
+            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] outline-none text-sm"
             placeholder="Nom de la pharmacie" />
         </div>
 
@@ -287,7 +287,7 @@
                 </svg>
               </div>
               <input type="email" [(ngModel)]="pharmacyInfo.email"
-                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B894] outline-none text-sm"
+                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] outline-none text-sm"
                 placeholder="email@pharmacie.sn" />
             </div>
           </div>
@@ -301,7 +301,7 @@
                 </svg>
               </div>
               <input type="tel" [(ngModel)]="pharmacyInfo.phone"
-                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B894] outline-none text-sm"
+                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] outline-none text-sm"
                 placeholder="77 123 45 67" />
             </div>
           </div>
@@ -311,7 +311,7 @@
         <div class="mb-6">
           <label class="block text-sm font-medium text-gray-700 mb-2">Horaire</label>
           <input type="text" [(ngModel)]="pharmacyInfo.hourly"
-            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B894] outline-none text-sm"
+            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] outline-none text-sm"
             placeholder="Ex: 08:00 - 20:00" />
         </div>
 
@@ -328,7 +328,7 @@
               </svg>
             </div>
             <input type="text" [(ngModel)]="pharmacyInfo.address"
-              class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B894] outline-none text-sm"
+              class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] outline-none text-sm"
               placeholder="123 Rue de la Pharmacie, Dakar" />
           </div>
         </div>
@@ -347,7 +347,7 @@
         <!-- Bouton sauvegarde -->
         <div class="flex justify-end pt-4 border-t border-gray-200">
           <button (click)="onSavePharmacyChanges()" [disabled]="isLoading"
-            class="px-6 py-2.5 bg-[#00B894] text-white rounded-lg hover:bg-[#00a085] transition font-medium text-sm disabled:opacity-50">
+            class="px-6 py-2.5 bg-[#104382] text-white rounded-lg transition font-medium text-sm disabled:opacity-50">
             {{ isLoading ? 'Enregistrement...' : 'Enregistrer les modifications' }}
           </button>
         </div>
@@ -402,7 +402,7 @@
             <!-- Actions -->
             <div>
               <button *ngIf="subscription.status === 'Expiré'" (click)="openRenewalModal(subscription)"
-                class="inline-flex items-center gap-2 px-4 py-2 bg-[#00B894] text-white rounded-lg hover:bg-[#00a085] transition text-sm font-medium">
+                class="inline-flex items-center gap-2 px-4 py-2 bg-[#104382] text-white rounded-lg transition text-sm font-medium">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M1.33203 8.33203C1.33203 6.11536 3.1307 4.33203 5.33203 4.33203H14.6654" stroke="white"
                     stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round" />
@@ -433,7 +433,7 @@
           <div class="flex items-center gap-2 text-sm text-gray-600">
             <span>éléments par page:</span>
             <select [(ngModel)]="itemsPerPage" (change)="changeItemsPerPage($any($event.target).value)"
-              class="px-3 py-1.5 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[#00B894]">
+              class="px-3 py-1.5 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[#104382]">
               <option value="10">10</option>
               <option value="25">25</option>
               <option value="50">50</option>
@@ -487,7 +487,7 @@
             <!-- Info abonnement actuel -->
             <div class="bg-gray-50 rounded-xl p-6 mb-8">
               <div class="flex items-center gap-4">
-                <div class="w-14 h-14 bg-[#00B894] rounded-full flex items-center justify-center flex-shrink-0">
+                <div class="w-14 h-14 bg-[#104382] rounded-full flex items-center justify-center flex-shrink-0">
                   <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                       d="M16.0006 15.8828H2.00003C1.44773 15.8828 1 16.3569 1 16.9417C1 17.5265 1.44773 18.0005 2.00003 18.0005H16.0006C16.5529 18.0005 17.0006 17.5265 17.0006 16.9417C17.0006 16.3569 16.5529 15.8828 16.0006 15.8828Z"
@@ -549,7 +549,7 @@
                     </div>
                   </div>
                   <div *ngIf="selectedPlan === 'pro'"
-                    class="w-8 h-8 bg-[#00B894] rounded-full flex items-center justify-center">
+                    class="w-8 h-8 bg-[#104382] rounded-full flex items-center justify-center">
                     <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd"
                         d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -593,7 +593,7 @@
                   </button>
                   <!-- Bouton Renouveler -->
                   <button
-                    class="w-full py-3 bg-[#00B894] text-white font-semibold rounded-lg hover:bg-[#00a085] transition">
+                    class="w-full py-3 bg-[#104382] text-white font-semibold rounded-lg transition">
                     Renouveler
                   </button>
                 </div>
@@ -606,12 +606,12 @@
                   </button>
                   <!-- Bouton Renouveler -->
                   <button
-                    class="w-full py-3 bg-[#00B894] text-white font-semibold rounded-lg hover:bg-[#00a085] transition">
+                    class="w-full py-3 bg-[#104382] text-white font-semibold rounded-lg transition">
                     Renouveler
                   </button>
                 </div>
                 <!-- <button *ngIf="selectedPlan !== 'pro'" (click)="selectPlan('pro')"
-                  class="w-full border-2 border-[#00B894] text-[#00B894] rounded-lg font-semibold hover:bg-[#00B894] hover:text-white transition">
+                  class="w-full border-2 border-[#00B894] text-[#00B894] rounded-lg font-semibold hover:bg-[#104382] hover:text-white transition">
                   Renouveler
                 </button> -->
               </div>
@@ -631,7 +631,7 @@
                     </div>
                   </div>
                   <div *ngIf="selectedPlan === 'pro-plus'"
-                    class="w-8 h-8 bg-[#00B894] rounded-full flex items-center justify-center">
+                    class="w-8 h-8 bg-[#104382] rounded-full flex items-center justify-center">
                     <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd"
                         d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -676,7 +676,7 @@
                 </ul>
 
                 <button (click)="openPaymentModal('pro-plus')"
-                  class="w-full py-3 bg-[#00B894] text-white rounded-lg font-semibold hover:bg-[#00a085] transition">
+                  class="w-full py-3 bg-[#104382] text-white rounded-lg font-semibold transition">
                   Passer à pro
                 </button>
               </div>
@@ -791,7 +791,7 @@
 
                     <!-- Bouton Carte -->
                     <button (click)="selectPaymentMethod('card')" [ngClass]="{
-    'border-[#00B894] bg-[#00B894]/5': paymentMethod === 'card',
+    'border-[#00B894] bg-[#104382]/5': paymentMethod === 'card',
     'border-gray-200': paymentMethod !== 'card'
   }" class="flex items-center justify-center gap-3 p-4 border-2 rounded-xl transition hover:border-[#00B894]">
                       <svg class="w-6 h-6" [ngClass]="{
@@ -813,7 +813,7 @@
 
                     <!-- Bouton Mobile Money - CORRIGÉ -->
                     <button (click)="selectPaymentMethod('mobile')" [class]="'border-2 rounded-xl transition hover:border-[#00B894] flex items-center justify-center gap-3 p-4 ' + 
-                        (paymentMethod === 'mobile' ? 'border-[#00B894] bg-[#00B894]/5' : 'border-gray-200')"
+                        (paymentMethod === 'mobile' ? 'border-[#00B894] bg-[#104382]/5' : 'border-gray-200')"
                       class="flex items-center justify-center gap-3 p-4 border-2 rounded-xl transition hover:border-[#00B894]">
                       <svg class="w-6 h-6" [class.text-[#00B894]]="paymentMethod === 'mobile'"
                         [class.text-gray-400]="paymentMethod !== 'mobile'" fill="none" stroke="currentColor"
@@ -836,13 +836,13 @@
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Nom sur la carte</label>
                     <input type="text" placeholder="Saisir" required
-                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B894] focus:border-transparent outline-none transition">
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none transition">
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Numéro de carte</label>
                     <div class="relative">
                       <input type="text" placeholder="1234 5678 9012 3456" required
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B894] focus:border-transparent outline-none transition">
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none transition">
                       <svg class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-6 text-gray-400" fill="none"
                         stroke="currentColor" viewBox="0 0 24 24">
                         <rect x="2" y="5" width="20" height="14" rx="2" stroke-width="1.5" />
@@ -854,12 +854,12 @@
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-2">Date d'expiration</label>
                       <input type="text" placeholder="MM/AA" required
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B894] focus:border-transparent outline-none transition">
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none transition">
                     </div>
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-2">CVV</label>
                       <input type="text" placeholder="123" required
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B894] focus:border-transparent outline-none transition">
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none transition">
                     </div>
                   </div>
                 </div>
@@ -870,7 +870,7 @@
                     <div class="grid grid-cols-2 gap-4">
                       <!-- Wave -->
                       <button (click)="selectMobileOperator('wave')" [ngClass]="{
-                        'border-[#00B894] bg-[#00B894]/5': mobileOperator === 'wave',
+                        'border-[#00B894] bg-[#104382]/5': mobileOperator === 'wave',
                         'border-gray-200': mobileOperator !== 'wave'
                       }"
                         class="flex flex-col items-center justify-center gap-3 p-6 border-2 rounded-xl transition hover:border-[#00B894]">
@@ -896,7 +896,7 @@
 
                       <!-- Orange Money -->
                       <button (click)="selectMobileOperator('orange')" [ngClass]="{
-                        'border-[#00B894] bg-[#00B894]/5': mobileOperator === 'orange',
+                        'border-[#00B894] bg-[#104382]/5': mobileOperator === 'orange',
                         'border-gray-200': mobileOperator !== 'orange'
                       }"
                         class="flex flex-col items-center justify-center gap-3 p-6 border-2 rounded-xl transition hover:border-[#00B894]">
@@ -920,7 +920,7 @@
                       <div *ngIf="invoiceMobileOperator">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Numéro de téléphone</label>
                         <input type="tel" placeholder="77 123 45 67" [(ngModel)]="invoiceMobileNumber" required
-                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B894] focus:border-transparent outline-none transition">
+                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none transition">
                       </div>
                     </div>
                   </div>
@@ -935,7 +935,7 @@
 
                 <div class="flex gap-4 mt-8">
                   <button (click)="processPayment()"
-                    class="flex-1 px-6 py-3 bg-[#00B894] text-white rounded-lg font-semibold hover:bg-[#00a085] transition">
+                    class="flex-1 px-6 py-3 bg-[#104382] text-white rounded-lg font-semibold transition">
                     Payer {{ billingPeriod === 'monthly' ? '14 900' : '143 040' }} F CFA
                   </button>
                   <button (click)="closePaymentModal()"
@@ -978,7 +978,7 @@
                   </td>
                   <td class="py-4 px-4">
                     <button *ngIf="facture.statut === 'en_attente'" (click)="payerFacture(facture.id)"
-                      class="px-3 py-1.5 text-sm bg-[#00B894] text-white rounded-md hover:bg-[#00a085] transition flex items-center gap-2">
+                      class="px-3 py-1.5 text-sm bg-[#] text-white rounded-md transition flex items-center gap-2">
 
                       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -1103,7 +1103,7 @@
 
               <!-- Bouton télécharger -->
               <button
-                class="w-full px-6 py-3 border-2 border-[#00B894] text-[#00B894] rounded-lg font-semibold hover:bg-[#00B894] hover:text-white transition flex items-center justify-center gap-2">
+                class="w-full px-6 py-3 border-2 border-[#00B894] text-[#00B894] rounded-lg font-semibold hover:bg-[#104382] hover:text-white transition flex items-center justify-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -1157,7 +1157,7 @@
               <div class="grid grid-cols-2 gap-4">
                 <!-- Bouton Carte -->
                 <button (click)="invoicePaymentMethod = 'card'" [ngClass]="{
-                'border-[#00B894] bg-[#00B894]/5': invoicePaymentMethod === 'card',
+                'border-[#00B894] bg-[#104382]/5': invoicePaymentMethod === 'card',
                 'border-gray-200': invoicePaymentMethod !== 'card'
               }"
                   class="flex items-center justify-center gap-3 p-4 border-2 rounded-xl transition hover:border-[#00B894]">
@@ -1176,7 +1176,7 @@
 
                 <!-- Bouton Mobile Money -->
                 <button (click)="invoicePaymentMethod = 'mobile'" [ngClass]="{
-                'border-[#00B894] bg-[#00B894]/5': invoicePaymentMethod === 'mobile',
+                'border-[#00B894] bg-[#104382]/5': invoicePaymentMethod === 'mobile',
                 'border-gray-200': invoicePaymentMethod !== 'mobile'
               }"
                   class="flex items-center justify-center gap-3 p-4 border-2 rounded-xl transition hover:border-[#00B894]">
@@ -1200,13 +1200,13 @@
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Nom sur la carte</label>
                 <input type="text" placeholder="Saisir" [(ngModel)]="invoiceCardName" required
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B894] focus:border-transparent outline-none transition">
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none transition">
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Numéro de carte</label>
                 <div class="relative">
                   <input type="text" placeholder="1234 5678 9012 3456" [(ngModel)]="invoiceCardNumber" required
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B894] focus:border-transparent outline-none transition">
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none transition">
                   <svg class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-6 text-gray-400" fill="none"
                     stroke="currentColor" viewBox="0 0 24 24">
                     <rect x="2" y="5" width="20" height="14" rx="2" stroke-width="1.5" />
@@ -1218,12 +1218,12 @@
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">Date d'expiration</label>
                   <input type="text" placeholder="MM/AA" [(ngModel)]="invoiceCardExpiry" required
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B894] focus:border-transparent outline-none transition">
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none transition">
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">CVV</label>
                   <input type="text" placeholder="123" [(ngModel)]="invoiceCardCVV" required
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B894] focus:border-transparent outline-none transition">
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none transition">
                 </div>
               </div>
             </div>
@@ -1235,7 +1235,7 @@
                 <div class="grid grid-cols-2 gap-4">
                   <!-- Wave -->
                   <button (click)="invoiceMobileOperator = 'wave'" [ngClass]="{
-                  'border-[#00B894] bg-[#00B894]/5': invoiceMobileOperator === 'wave',
+                  'border-[#00B894] bg-[#104382]/5': invoiceMobileOperator === 'wave',
                   'border-gray-200': invoiceMobileOperator !== 'wave'
                 }"
                     class="flex flex-col items-center justify-center gap-3 p-6 border-2 rounded-xl transition hover:border-[#00B894]">
@@ -1255,7 +1255,7 @@
 
                   <!-- Orange Money -->
                   <button (click)="invoiceMobileOperator = 'orange'" [ngClass]="{
-                  'border-[#00B894] bg-[#00B894]/5': invoiceMobileOperator === 'orange',
+                  'border-[#00B894] bg-[#104382]/5': invoiceMobileOperator === 'orange',
                   'border-gray-200': invoiceMobileOperator !== 'orange'
                 }"
                     class="flex flex-col items-center justify-center gap-3 p-6 border-2 rounded-xl transition hover:border-[#00B894]">
@@ -1277,7 +1277,7 @@
               <div *ngIf="invoiceMobileOperator">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Numéro de téléphone</label>
                 <input type="tel" placeholder="77 123 45 67" [(ngModel)]="invoiceMobileNumber" required
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B894] focus:border-transparent outline-none transition">
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none transition">
               </div>
             </div>
 
@@ -1292,7 +1292,7 @@
             <!-- Boutons d'action -->
             <div class="flex gap-4 mt-8">
               <button (click)="processInvoicePayment()"
-                class="flex-1 px-6 py-3 bg-[#00B894] text-white rounded-lg font-semibold hover:bg-[#00a085] transition">
+                class="flex-1 px-6 py-3 bg-[#104382] text-white rounded-lg font-semibold transition">
                 Payer {{ selectedInvoice?.amount }} F CFA
               </button>
               <button (click)="closeInvoicePaymentModal()"

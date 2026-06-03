@@ -3,10 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Location } from '@angular/common';
 import { Router } from '@angular/router';
-import { ImagerieService } from '../../../services/imagerie/imagerie.service';
-import { AuthService } from '../../../services/auth.service';
 import { UrgencyLevel } from '../../../modele/imagerie.model';
-import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
+import { Subject, of, debounceTime, distinctUntilChanged, switchMap, delay } from 'rxjs';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -20,8 +18,56 @@ export class ImagerieMedicalComponent implements OnInit {
   @Output() close = new EventEmitter<void>();
   private location = inject(Location);
   private router = inject(Router);
-  private imagerieService = inject(ImagerieService);
-  private authService = inject(AuthService);
+  // Local auth mock
+  private mockCurrentUser: any = { id: 999, prenom: 'Dr', nom: 'Mock' };
+
+  // --- Local Imagerie mocks ---
+  private mockImagingTypes: any[] = [
+    { id: 1, name: 'Radiologie' },
+    { id: 2, name: 'Échographie' }
+  ];
+
+  private mockImagingRegions: any[] = [
+    { id: 1, name: 'Thorax' },
+    { id: 2, name: 'Abdomen' }
+  ];
+
+  private mockCenters: any[] = [
+    { id: 1, name: 'Centre Imagerie Dakar', address: 'Rue A' },
+    { id: 2, name: 'Clinique N', address: 'Rue B' }
+  ];
+
+  private localGetImagingTypes() {
+    return of(this.mockImagingTypes).pipe(delay(120));
+  }
+
+  private localGetImagingRegions() {
+    return of(this.mockImagingRegions).pipe(delay(120));
+  }
+
+  private localSearchImagingCenters(keyword: string) {
+    const res = this.mockCenters.filter(c => (c.name || '').toLowerCase().includes(keyword.toLowerCase()));
+    return of(res).pipe(delay(150));
+  }
+
+  private localCreateImagingType(name: string) {
+    const id = this.mockImagingTypes.length + 1;
+    const created = { id, name };
+    this.mockImagingTypes.push(created);
+    return of(created).pipe(delay(150));
+  }
+
+  private localCreateImagingRegion(name: string) {
+    const id = this.mockImagingRegions.length + 1;
+    const created = { id, name };
+    this.mockImagingRegions.push(created);
+    return of(created).pipe(delay(150));
+  }
+
+  private localCreateImagerie(payload: any) {
+    const created = { id: Math.floor(Math.random() * 10000), ...payload };
+    return of(created).pipe(delay(200));
+  }
 
   // Sections collapse state
   patientInfoExpanded = true;
@@ -155,27 +201,24 @@ export class ImagerieMedicalComponent implements OnInit {
   }
 
   loadDoctorId() {
-    const currentUser = this.authService.getCurrentUser();
+    const currentUser = this.mockCurrentUser;
     if (currentUser) {
       this.doctorId = currentUser.id;
-      console.log('✅ Médecin connecté:', {
-        id: this.doctorId,
-        nom: `${currentUser.prenom} ${currentUser.nom}`
-      });
+      console.log('✅ Médecin connecté (mock):', { id: this.doctorId, nom: `${currentUser.prenom} ${currentUser.nom}` });
     } else {
-      console.error('❌ Impossible de récupérer l\'utilisateur connecté');
+      console.error('❌ Impossible de récupérer l\'utilisateur connecté (mock)');
     }
   }
 
   loadImagingTypes() {
     this.loadingTypes = true;
-    this.imagerieService.getImagingTypes().subscribe({
+    this.localGetImagingTypes().subscribe({
       next: (types) => {
         this.typesExamens = types;
         this.loadingTypes = false;
       },
       error: (err) => {
-        console.error('Erreur chargement types d\'examens:', err);
+        console.error('Erreur chargement types d\'examens (mock):', err);
         this.loadingTypes = false;
       }
     });
@@ -183,13 +226,13 @@ export class ImagerieMedicalComponent implements OnInit {
 
   loadImagingRegions() {
     this.loadingRegions = true;
-    this.imagerieService.getImagingRegions().subscribe({
+    this.localGetImagingRegions().subscribe({
       next: (regions) => {
         this.regions = regions;
         this.loadingRegions = false;
       },
       error: (err) => {
-        console.error('Erreur chargement régions:', err);
+        console.error('Erreur chargement régions (mock):', err);
         this.loadingRegions = false;
       }
     });
@@ -202,10 +245,10 @@ export class ImagerieMedicalComponent implements OnInit {
       switchMap(keyword => {
         if (keyword.length < 2) {
           this.centerResults = [];
-          return [];
+          return of([]);
         }
         this.loadingCenters = true;
-        return this.imagerieService.searchImagingCenters(keyword);
+        return this.localSearchImagingCenters(keyword);
       })
     ).subscribe({
       next: (results) => {
@@ -259,7 +302,7 @@ export class ImagerieMedicalComponent implements OnInit {
       return;
     }
 
-    this.imagerieService.createImagingType(this.newTypeName.trim()).subscribe({
+    this.localCreateImagingType(this.newTypeName.trim()).subscribe({
       next: (response) => {
         Swal.fire({
           title: 'Succès!',
@@ -310,7 +353,7 @@ export class ImagerieMedicalComponent implements OnInit {
       return;
     }
 
-    this.imagerieService.createImagingRegion(this.newRegionName.trim()).subscribe({
+    this.localCreateImagingRegion(this.newRegionName.trim()).subscribe({
       next: (response) => {
         Swal.fire({
           title: 'Succès!',
@@ -460,7 +503,7 @@ export class ImagerieMedicalComponent implements OnInit {
 
     console.log('📤 Envoi demande d\'imagerie:', payload);
 
-    this.imagerieService.createImagerie(payload).subscribe({
+    this.localCreateImagerie(payload).subscribe({
       next: (response) => {
         console.log('✅ Demande créée avec succès:', response);
         Swal.fire({

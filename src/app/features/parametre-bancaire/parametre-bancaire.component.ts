@@ -1,10 +1,24 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PharmacieService, BankParameterRequest, BankParameterResponse } from '../../services/pharmacie.service';
-import { AuthService } from '../../services/auth.service';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+// Inline BankParameter types from pharmacie.service
+interface BankParameterRequest {
+  bankName: string;
+  rib: string;
+  phone: string;
+  fullName: string;
+  pharmacyId: number;
+}
+
+interface BankParameterResponse {
+  id: number;
+  bankName: string;
+  rib: string;
+  phone: string;
+  fullName: string;
+}
+import { Subject, Observable, of, throwError } from 'rxjs';
+import { takeUntil, delay } from 'rxjs/operators';
 
 interface CartesBancaire {
   id: number;
@@ -77,12 +91,80 @@ export class ParametreBancaireComponent implements OnInit, OnDestroy {
   showError = false;
   showSuccess = false;
 
-  constructor(
-    private pharmacieService: PharmacieService,
-    private authService: AuthService
-  ) {
+  constructor() {
     console.log('💳 ParametreBancaireComponent initialisé');
   }
+
+  // Local mock current user + fetcher (replaces AuthFacade)
+  private getMockCurrentUser(): User {
+    return {
+      id: 42,
+      pharmacyId: 1,
+      nom: 'Pharmacie Centrale',
+      prenom: 'Admin',
+      telephone: '+221770000000'
+    };
+  }
+
+  private localGetCurrentUserById(userId: number): Observable<User> {
+    const mock: User = {
+      id: userId,
+      pharmacyId: 1,
+      nom: 'Pharmacie Centrale',
+      prenom: 'Admin',
+      telephone: '+221770000000'
+    };
+    return of(mock).pipe(delay(150));
+  }
+
+  // == Local State pour sandbox ==
+  private mockBankInfo: BankParameterResponse | null = {
+    id: 1,
+    bankName: 'Banque Demo',
+    rib: 'FR76 1234 5678 9012 3456 7890 123',
+    phone: '+221770000000',
+    fullName: 'Pharmacie Centrale SARL'
+  };
+
+  private localGetBankParameterByPharmacyId(pharmacyId: number): Observable<BankParameterResponse> {
+    if (!this.mockBankInfo) {
+      return throwError(() => ({ 
+        status: 404, 
+        message: 'Aucune information bancaire' 
+      })).pipe(delay(200));
+    }
+    return of(this.mockBankInfo).pipe(delay(200));
+  }
+
+  private localUpdateBankParameter(id: number, data: BankParameterRequest): Observable<any> {
+    this.mockBankInfo = {
+      id: id,
+      bankName: data.bankName,
+      rib: data.rib,
+      phone: data.phone,
+      fullName: data.fullName
+    };
+    return of({ id: id, success: true }).pipe(delay(300));
+  }
+
+  private localSaveBankParameter(data: BankParameterRequest): Observable<any> {
+    if (this.mockBankInfo) {
+      return throwError(() => ({ 
+        status: 400, 
+        message: "La pharmacie dispose déjà d'une information bancaire"
+      })).pipe(delay(200));
+    }
+    const newId = 2;
+    this.mockBankInfo = {
+      id: newId,
+      bankName: data.bankName,
+      rib: data.rib,
+      phone: data.phone,
+      fullName: data.fullName
+    };
+    return of({ id: newId, success: true }).pipe(delay(300));
+  }
+  // =============================
 
   ngOnInit(): void {
     console.log('%c[INIT] Paramètres Bancaires chargé', 'color: green; font-weight: bold');
@@ -101,15 +183,9 @@ export class ParametreBancaireComponent implements OnInit, OnDestroy {
   private initializeComponent(): void {
     console.log('[INIT] 🚀 Démarrage initialisation paramètres bancaires');
 
-    if (!this.authService.isLoggedIn()) {
-      console.error('❌ Utilisateur non connecté');
-      this.showErrorMessage('Vous devez être connecté pour accéder à cette page');
-      return;
-    }
-
     this.isLoading = true;
 
-    const currentUser = this.authService.getCurrentUser();
+    const currentUser = this.getMockCurrentUser();
 
     if (!currentUser || !currentUser.id) {
       console.error('❌ Aucun utilisateur connecté trouvé');
@@ -121,7 +197,7 @@ export class ParametreBancaireComponent implements OnInit, OnDestroy {
     this.userId = currentUser.id;
     console.log('✅ User ID récupéré:', this.userId);
 
-    this.authService.getCurrentUserById(this.userId)
+    this.localGetCurrentUserById(this.userId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (user: User) => {
@@ -264,8 +340,8 @@ export class ParametreBancaireComponent implements OnInit, OnDestroy {
 
     const isEditing = !!this.carteBancaire?.id;
     const request$ = isEditing
-      ? this.pharmacieService.updateBankParameter(this.carteBancaire!.id, bankData)
-      : this.pharmacieService.saveBankParameter(bankData);
+      ? this.localUpdateBankParameter(this.carteBancaire!.id, bankData)
+      : this.localSaveBankParameter(bankData);
 
     console.log('📤 Envoi des données:', bankData);
 
@@ -458,7 +534,7 @@ export class ParametreBancaireComponent implements OnInit, OnDestroy {
 
     this.isLoading = true;
 
-    this.pharmacieService.getBankParameterByPharmacyId(this.pharmacyId)
+    this.localGetBankParameterByPharmacyId(this.pharmacyId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: BankParameterResponse) => {

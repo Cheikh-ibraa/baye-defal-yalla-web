@@ -1,17 +1,76 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Subject } from 'rxjs';
+import { Subject, of } from 'rxjs';
+import { delay } from 'rxjs/operators';
 import { takeUntil } from 'rxjs/operators';
-import {
-  CompteService,
-  User,
-  Document,
-  Pharmacy,
-  UpdateUserRequest,
-  UpdatePharmacyRequest
-} from '../../services/compte.service';
-import { AuthService } from '../../services/auth.service';
+
+interface User {
+  id: number;
+  nom: string;
+  prenom: string;
+  email: string;
+  telephone: string;
+  adress: string;
+  lat: number;
+  lon: number;
+  profil: string;
+  pharmacyId: number;
+}
+
+interface UpdateUserRequest {
+  nom: string;
+  prenom: string;
+  email: string;
+  password: string;
+  telephone: string;
+  adress: string;
+  lat: number;
+  lon: number;
+  profil: string;
+}
+
+interface Document {
+  id: number;
+  name: string;
+  fileUrl: string;
+  status: string;
+  comment: string | null;
+  user: {
+    id: number;
+    nom: string;
+    prenom: string;
+  };
+}
+
+interface Pharmacy {
+  id: number;
+  name: string;
+  address: string;
+  phone: string;
+  hourly: string;
+  email: string;
+  latitude: number;
+  longitude: number;
+  logo: string;
+  pharmacist: {
+    id: number;
+    nom: string;
+    prenom: string;
+  };
+}
+
+interface UpdatePharmacyRequest {
+  name: string;
+  address: string;
+  phone: string;
+  hourly: string;
+  email: string;
+  latitude: number;
+  longitude: number;
+  pharmacistId: number;
+  logoFile?: File;
+}
 
 interface PersonalInfo {
   prenom: string;
@@ -103,31 +162,37 @@ export class ComptesComponent implements OnInit, OnDestroy {
 
   // === Menu dynamique ===
   get menuItems() {
-    try {
-      console.log('[MENU ITEMS] Calcul du menu...');
-      const profile = this.getCurrentUserProfile();
-      console.log('[MENU ITEMS] Profil utilisateur =', profile);
-    } catch (e) {
-      console.error('[MENU ITEMS ERROR] Erreur dans menuItems():', e);
-    }
-
-    const baseItems = [
+    const profile = this.getCurrentUserProfile();
+    const isPharmaOrAdmin = ['PHARMACIEN', 'PHARMACIST', 'PHARMACIE', 'ADMIN'].includes(profile);
+    
+    const items = [
       { id: 'personal', label: 'Informations personnelles', icon: 'user' },
-      { id: 'documents', label: 'Documents justificatifs', icon: 'document' },
-      { id: 'pharmacy', label: 'Informations de la pharmacie', icon: 'pharmacy' },
-      { id: 'invoices', label: 'Mes factures', icon: 'invoice' }
+      { id: 'documents', label: 'Documents justificatifs', icon: 'document' }
     ];
-
-    try {
-      const profile = this.getCurrentUserProfile();
-      if (['PHARMACIEN', 'ADMIN'].includes(profile)) {
-        baseItems.splice(3, 0, { id: 'subscription', label: 'Abonnements', icon: 'package' });
-      }
-    } catch (e) {
-      console.error('[MENU PROFILE ERROR] Erreur lors du traitement du profil:', e);
+    
+    if (isPharmaOrAdmin) {
+      items.push(
+        { id: 'pharmacy', label: 'Informations de la pharmacie', icon: 'pharmacy' },
+        { id: 'subscription', label: 'Abonnements', icon: 'package' },
+        { id: 'invoices', label: 'Mes factures', icon: 'invoice' }
+      );
     }
+    
+    return items;
+  }
 
-    return baseItems;
+  get subtitle(): string {
+    const profile = this.getCurrentUserProfile();
+    if (['PHARMACIEN', 'PHARMACIST', 'PHARMACIE'].includes(profile)) {
+      return 'Gérez les informations de votre pharmacie';
+    }
+    if (['DOCTOR', 'MEDECIN'].includes(profile)) {
+      return 'Gérez vos informations personnelles et professionnelles';
+    }
+    if (['HOSPITAL', 'HOPITAL'].includes(profile)) {
+      return 'Gérez les informations de l\'établissement';
+    }
+    return 'Gérez vos informations personnelles';
   }
 
 
@@ -170,9 +235,95 @@ export class ComptesComponent implements OnInit, OnDestroy {
   invoiceMobileNumber = '';
 
   constructor(
-    private compteService: CompteService,
-    private authService: AuthService
   ) { }
+
+  // --- Local mock stores & helpers for CompteService ---
+  private mockUserStore: User | null = {
+    id: 1,
+    nom: 'DIAW',
+    prenom: 'M',
+    email: 'mock@pharma.test',
+    telephone: '770000000',
+    adress: 'Rue Mock',
+    lat: 0,
+    lon: 0,
+    profil: 'PHARMACIEN',
+    pharmacyId: 1
+  };
+
+  private mockDocuments: Document[] = [
+    { id: 1, name: 'Kbis', fileUrl: '/assets/mock/kbis.pdf', status: 'VALIDATED', comment: null, user: { id: 1, nom: 'DIAW', prenom: 'M' } }
+  ];
+
+  private mockPharmacy: Pharmacy = {
+    id: 1,
+    name: 'Pharmacie Mock',
+    address: 'Ave Mock',
+    phone: '770000000',
+    hourly: '8h-20h',
+    email: 'pharm@mock.test',
+    latitude: 0,
+    longitude: 0,
+    logo: '',
+    pharmacist: { id: 1, nom: 'DIAW', prenom: 'M' }
+  };
+
+  // Provide a mock current user accessor to replace AuthFacade
+  private getMockCurrentUser(): User | null {
+    const stored = localStorage.getItem('user_data');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        return {
+          id: parsed.id || 1,
+          nom: parsed.nom || 'DIAW',
+          prenom: parsed.prenom || 'M',
+          email: parsed.email || 'mock@pharma.test',
+          telephone: parsed.telephone || '770000000',
+          adress: parsed.adress || 'Rue Mock',
+          lat: parsed.lat || 0,
+          lon: parsed.lon || 0,
+          profil: parsed.profil || 'PHARMACIST',
+          pharmacyId: parsed.pharmacyId || 1
+        };
+      } catch {
+        // ignore
+      }
+    }
+    return this.mockUserStore;
+  }
+
+  private localGetUserById(id: number) {
+    return of(this.getMockCurrentUser()).pipe(delay(80));
+  }
+
+  private localGetDocumentByUser(userId: number) {
+    return of(this.mockDocuments).pipe(delay(80));
+  }
+
+  private localGetInfoPharmacie(id: number) {
+    return of(this.mockPharmacy).pipe(delay(80));
+  }
+
+  private localUpdateUser(id: number, payload: UpdateUserRequest) {
+    if (this.mockUserStore && this.mockUserStore.id === id) {
+      this.mockUserStore = { ...this.mockUserStore, nom: payload.nom, prenom: payload.prenom, email: payload.email, telephone: payload.telephone, adress: payload.adress } as User;
+    }
+    return of('OK').pipe(delay(100));
+  }
+
+  private localUpdatePharmacie(id: number, payload: UpdatePharmacyRequest) {
+    if (this.mockPharmacy && this.mockPharmacy.id === id) {
+      this.mockPharmacy = { ...this.mockPharmacy, name: payload.name, address: payload.address, phone: payload.phone, hourly: payload.hourly, email: payload.email } as Pharmacy;
+    }
+    return of('OK').pipe(delay(120));
+  }
+
+  private localUploadUserDocument(userId: number, name: string, file: File) {
+    const newDoc: any = { id: Date.now(), name, fileUrl: '/assets/mock/' + name, status: 'PENDING', comment: null, user: { id: userId, nom: this.mockUserStore?.nom || '', prenom: this.mockUserStore?.prenom || '' } };
+    this.mockDocuments.push(newDoc);
+    return of(newDoc).pipe(delay(200));
+  }
 
   ngOnInit(): void {
     console.log('%c[INIT] ComptesComponent chargé', 'color: green; font-weight: bold');
@@ -192,24 +343,10 @@ export class ComptesComponent implements OnInit, OnDestroy {
 
   // === Initialisation ===
   private initializeUserData(): void {
-    if (!this.authService.isLoggedIn()) {
-      console.error('Utilisateur non connecté');
-      return;
-    }
-
-    const currentUser = this.authService.getCurrentUser();
+    const currentUser = this.getMockCurrentUser();
     if (currentUser?.id) {
       this.userId = currentUser.id;
       this.loadAllData();
-    } else {
-      this.authService.currentUser$
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(user => {
-          if (user?.id) {
-            this.userId = user.id;
-            this.loadAllData();
-          }
-        });
     }
   }
 
@@ -226,19 +363,21 @@ export class ComptesComponent implements OnInit, OnDestroy {
     console.log('[LOAD USER] Chargement user id =', this.userId);
 
     this.isLoading = true;
-    this.compteService.getUserById(this.userId).subscribe({
-      next: (user: User) => {
-        console.log('[LOAD USER OK] Données reçues:', user);
-        this.personalInfo = {
-          prenom: user.prenom,
-          nom: user.nom,
-          email: user.email,
-          telephone: user.telephone,
-          adresse: user.adress
-        };
+    this.localGetUserById(this.userId).subscribe({
+      next: (user: User | null) => {
+        if (user) {
+          console.log('[LOAD USER OK] Données reçues:', user);
+          this.personalInfo = {
+            prenom: user.prenom,
+            nom: user.nom,
+            email: user.email,
+            telephone: user.telephone,
+            adresse: user.adress
+          };
+        }
         this.isLoading = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('[LOAD USER ERROR] Erreur chargement user:', err);
         this.isLoading = false;
       }
@@ -247,44 +386,34 @@ export class ComptesComponent implements OnInit, OnDestroy {
 
 
   loadDocuments(): void {
-    this.compteService.getDocumentByUser(this.userId).subscribe({
+    this.localGetDocumentByUser(this.userId).subscribe({
       next: (docs: Document[]) => {
         this.documents = docs.map(d => ({
           ...d,
           status: this.mapDocumentStatus(d.status)
         }));
       },
-      error: (err) => console.error('Erreur documents:', err)
+      error: (err: any) => console.error('Erreur documents:', err)
     });
   }
 
   loadPharmacyInfo(): void {
     console.log('[PHARMACY] Récupération infos pharmacie pour user', this.userId);
-
-    this.authService.getCurrentUserById(this.userId).subscribe({
-      next: (user: User) => {
-        console.log('[PHARMACY USER OK] Utilisateur récupéré:', user);
-
+    // Use local user store to fetch pharmacyId and then pharmacy info
+    this.localGetUserById(this.userId).subscribe({
+      next: (user: User | null) => {
         if (!user?.pharmacyId) {
           console.warn('[PHARMACY WARNING] Aucune pharmacyId dans le user !');
           return;
         }
-
-        console.log('[PHARMACY] Appel getInfoPharmacie avec ID:', user.pharmacyId);
-
-        this.compteService.getInfoPharmacie(user.pharmacyId).subscribe({
+        this.localGetInfoPharmacie(user.pharmacyId).subscribe({
           next: (ph: Pharmacy) => {
-            console.log('[PHARMACY OK] Données reçues:', ph);
             this.pharmacyInfo = ph;
           },
-          error: (err) => {
-            console.error('[PHARMACY ERROR] Erreur chargement pharmacie:', err);
-          }
+          error: (err: any) => console.error('[PHARMACY ERROR] Erreur chargement pharmacie:', err)
         });
       },
-      error: (err) => {
-        console.error('[PHARMACY ERROR] Erreur récupération utilisateur:', err);
-      }
+      error: (err: any) => console.error('[PHARMACY ERROR] Erreur récupération utilisateur:', err)
     });
   }
 
@@ -306,7 +435,7 @@ export class ComptesComponent implements OnInit, OnDestroy {
   // === Sauvegarde ===
   onSaveChanges(): void {
     this.isLoading = true;
-    const cur = this.authService.getCurrentUser();
+    const cur = this.getMockCurrentUser();
     const payload: UpdateUserRequest = {
       nom: this.personalInfo.nom,
       prenom: this.personalInfo.prenom,
@@ -319,12 +448,12 @@ export class ComptesComponent implements OnInit, OnDestroy {
       profil: cur?.profil ?? 'ADMIN'
     };
 
-    this.compteService.updateUser(this.userId, payload).subscribe({
+    this.localUpdateUser(this.userId, payload).subscribe({
       next: () => {
         alert('Modifications enregistrées !');
         this.isLoading = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         alert('Erreur sauvegarde');
         console.error(err);
         this.isLoading = false;
@@ -346,13 +475,13 @@ export class ComptesComponent implements OnInit, OnDestroy {
       logoFile: this.selectedPharmacyLogoFile ?? undefined
     };
 
-    this.compteService.updatePharmacie(this.pharmacyInfo.id, payload).subscribe({
+    this.localUpdatePharmacie(this.pharmacyInfo.id, payload).subscribe({
       next: () => {
         alert('Pharmacie mise à jour !');
         this.selectedPharmacyLogoFile = null;
         this.isLoading = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         alert('Erreur mise à jour pharmacie');
         console.error(err);
         this.isLoading = false;
@@ -403,7 +532,7 @@ export class ComptesComponent implements OnInit, OnDestroy {
     this.documentUploadError = '';
     this.documentUploadSuccess = '';
 
-    this.compteService.uploadUserDocument(this.userId, trimmedName, this.selectedDocumentFile).subscribe({
+    this.localUploadUserDocument(this.userId, trimmedName, this.selectedDocumentFile).subscribe({
       next: () => {
         this.documentUploadSuccess = 'Document ajouté avec succès.';
         this.loadDocuments();
@@ -411,7 +540,7 @@ export class ComptesComponent implements OnInit, OnDestroy {
         this.showAddDocumentForm = false;
         this.isUploadingDocument = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Erreur upload document:', err);
         this.documentUploadError = 'Erreur lors de l’ajout du document.';
         this.isUploadingDocument = false;
@@ -654,8 +783,7 @@ export class ComptesComponent implements OnInit, OnDestroy {
   // === PROFIL ===
   getCurrentUserProfile(): string {
     try {
-      const user = this.authService.getCurrentUser();
-      console.log('[PROFILE] Profil du user:', user?.profil);
+      const user = this.getMockCurrentUser();
       return user?.profil?.toUpperCase() || '';
     } catch (e) {
       console.error('[PROFILE ERROR] Impossible de récupérer le profil:', e);
@@ -665,7 +793,7 @@ export class ComptesComponent implements OnInit, OnDestroy {
 
 
   isUserLoggedIn(): boolean {
-    return this.authService.isLoggedIn();
+    return !!this.getMockCurrentUser();
   }
 
   getAddressFromCoordinates(lat: number, lng: number): string {

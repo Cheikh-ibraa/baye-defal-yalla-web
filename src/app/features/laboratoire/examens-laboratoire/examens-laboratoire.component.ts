@@ -3,9 +3,29 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
-import { LaboratoireService } from '../../../services/laboratoire/laboratoire.service';
-import { Laboratoire } from '../../../modele/laboratoir';
-import { AuthService, User } from '../../../services/auth.service';
+import { of } from 'rxjs';
+import { delay } from 'rxjs/operators';
+
+// Inlined Laboratoire model
+interface Laboratoire {
+  id: number;
+  patientName: string;
+  doctorName: string;
+  laboratoryName: string;
+  type: string;
+  clinicalIndication: string;
+  youngPatient: boolean;
+  urgencyLevel: 'NORMAL' | 'PRIORITAIRE' | 'URGENT';
+  status: 'PENDING' | 'ACCEPTED' | 'COMPLETED' | 'CANCELLED';
+  createdAt: string;
+  appointmentDate: string;
+  appointmentTime: string;
+  pictures: string[];
+  report: string;
+  reportFile: string;
+  pdfPassword?: string;
+}
+import { User } from '../../../core/auth.types';
 
 @Component({
   selector: 'app-examens-laboratoire',
@@ -79,43 +99,38 @@ onPageSizeChange(): void {
   // =============== FORM DATA ==================
   laboratoireForm = this.getEmptyForm();
 
-  constructor(
-    private laboratoireService: LaboratoireService,
-     private authService: AuthService
+  constructor() {}
 
-  ) {}
+  // Local mock current user (replaces AuthFacade)
+  private getMockCurrentUser(): User {
+    return { id: 1, nom: 'Demo', prenom: 'Labo' } as User;
+  }
 
   // =================== INIT ===================
   ngOnInit(): void {
   this.loadTypes();
   this.loadAllExamens();
 
-  this.authService.currentUser$.subscribe(user => {
-    this.currentUser = user;
-    console.log('👤 Labo User connecté :', user);
-  });
+  const user = this.getMockCurrentUser();
+  this.currentUser = user;
+  console.log('👤 Labo User (mock) :', user);
 }
 
 
   // ================== API CALLS ===============
- loadTypes(): void {
-  this.laboratoireService.getAnalysisTypes().subscribe({
-    next: res => {
-      console.log('🧪 TYPES ANALYSES REÇUS :', res);
-      this.analysisTypes = res;
-    },
-    error: err => console.error('❌ Erreur types labo:', err)
-  });
-}
+  loadTypes(): void {
+    // Mocked types
+    this.analysisTypes = ['Hématologie', 'Biochimie', 'Microbiologie'];
+  }
 
 
   loadAllExamens(): void {
-    this.laboratoireService.getLaboratoires(0, 1000).subscribe({
+    this.localGetLaboratoires(0, 1000).subscribe({
       next: res => {
         this.allExamens = res.content;
         this.applyFilters();
       },
-      error: err => console.error('Erreur examens labo:', err)
+      error: (err: any) => console.error('Erreur examens labo (mock):', err)
     });
   }
 
@@ -132,15 +147,20 @@ onPageSizeChange(): void {
 
   console.log("📤 PAYLOAD LABO ENVOYÉ :", payload);
 
-  this.laboratoireService.createLaboratoire(payload).subscribe({
-    next: () => {
-      this.closeAddLaboratoire();
-      this.showAddLaboratoireSuccess = true;
-      this.loadAllExamens();
-    },
-    error: err => console.error('Erreur création labo:', err)
-  });
+    // Mock creation: add to local list
+    const newItem: Laboratoire = { id: Date.now(), ...payload, patientName: 'Nouveau', doctorName: 'Dr Mock', laboratoryName: 'Lab Mock', type: 'Hématologie', clinicalIndication: '', youngPatient: false, urgencyLevel: 'NORMAL', status: 'PENDING', createdAt: new Date().toISOString(), appointmentDate: '', appointmentTime: '', pictures: [], report: '', reportFile: '' } as any;
+    this.allExamens.unshift(newItem);
+    this.closeAddLaboratoire();
+    this.showAddLaboratoireSuccess = true;
+    this.loadAllExamens();
 }
+
+  // Local mock for laboratoires
+  private localGetLaboratoires(page = 0, size = 1000) {
+    const content = (this.allExamens && this.allExamens.length > 0) ? this.allExamens : [];
+    const response = { content, totalElements: content.length, totalPages: 1, number: 0, size: content.length, first: true, last: true, empty: content.length === 0 };
+    return of(response).pipe(delay(200));
+  }
 
 
   // ================ FILTERS ===================
@@ -312,21 +332,29 @@ onPageSizeChange(): void {
       time: this.validationDemandeForm.heure
     };
 
-    this.laboratoireService.acceptLaboratoire(payload).subscribe({
+    this.localAcceptLaboratoire(payload).subscribe({
       next: () => {
         this.showValidationDemandeModal = false;
         this.showValidationDemandeSuccess = true;
+        // Update local list
+        const idx = this.allExamens.findIndex(e => e.id === this.selectedLaboratoireId);
+        if (idx >= 0) this.allExamens[idx].status = 'ACCEPTED';
         this.loadAllExamens();
 
         setTimeout(() => {
           this.showValidationDemandeSuccess = false;
         }, 2000);
       },
-      error: err => console.error('Erreur validation labo', err)
+      error: (err: any) => console.error('Erreur validation labo (mock)', err)
     });
   }
 
   closeValidationDemandeSuccess(): void {
     this.showValidationDemandeSuccess = false;
+  }
+
+  private localAcceptLaboratoire(payload: { requestId: number; date: string; time: string }) {
+    // Simulate accept
+    return of({ message: 'Accepted' }).pipe(delay(150));
   }
 }

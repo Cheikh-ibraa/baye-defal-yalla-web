@@ -3,9 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Location } from '@angular/common';
 import { Router } from '@angular/router';
-import { LaboratoireService } from '../../../services/laboratoire/laboratoire.service';
-import { AuthService } from '../../../services/auth.service';
-import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
+import { Subject, of, debounceTime, distinctUntilChanged, switchMap, delay } from 'rxjs';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -19,8 +17,40 @@ export class AnalysesMedicalComponent implements OnInit {
   @Output() close = new EventEmitter<void>();
   private location = inject(Location);
   private router = inject(Router);
-  private laboratoireService = inject(LaboratoireService);
-  private authService = inject(AuthService);
+  // Local auth mock
+  private mockCurrentUser: any = { id: 999, prenom: 'Dr', nom: 'Mock' };
+
+  // --- Local Laboratoire mocks ---
+  private mockAnalysisTypes: any[] = [
+    { id: 1, name: 'Hématologie' },
+    { id: 2, name: 'Biochimie' }
+  ];
+
+  private mockLaboratories: any[] = [
+    { id: 1, name: 'Laboratoire Central', address: 'Rue A' },
+    { id: 2, name: 'Lab Clinique', address: 'Rue B' }
+  ];
+
+  private localGetAnalysisTypes() {
+    return of(this.mockAnalysisTypes).pipe(delay(120));
+  }
+
+  private localSearchLaboratories(keyword: string) {
+    const res = this.mockLaboratories.filter(l => (l.name || '').toLowerCase().includes(keyword.toLowerCase()));
+    return of(res).pipe(delay(150));
+  }
+
+  private localCreateAnalysisType(name: string) {
+    const id = this.mockAnalysisTypes.length + 1;
+    const created = { id, name };
+    this.mockAnalysisTypes.push(created);
+    return of(created).pipe(delay(150));
+  }
+
+  private localCreateLaboratoire(payload: any) {
+    const created = { id: Math.floor(Math.random() * 10000), ...payload };
+    return of(created).pipe(delay(200));
+  }
 
   // Sections collapse state
   patientInfoExpanded = true;
@@ -151,28 +181,25 @@ export class AnalysesMedicalComponent implements OnInit {
   }
 
   loadDoctorId() {
-    // Récupérer le doctorId via AuthService
-    const currentUser = this.authService.getCurrentUser();
+    // Local mock current user
+    const currentUser = this.mockCurrentUser;
     if (currentUser) {
       this.doctorId = currentUser.id;
-      console.log('✅ Médecin connecté:', {
-        id: this.doctorId,
-        nom: `${currentUser.prenom} ${currentUser.nom}`
-      });
+      console.log('✅ Médecin connecté (mock):', { id: this.doctorId, nom: `${currentUser.prenom} ${currentUser.nom}` });
     } else {
-      console.error('❌ Impossible de récupérer l\'utilisateur connecté');
+      console.error('❌ Impossible de récupérer l\'utilisateur connecté (mock)');
     }
   }
 
   loadAnalysisTypes() {
     this.loadingTypes = true;
-    this.laboratoireService.getAnalysisTypes().subscribe({
+    this.localGetAnalysisTypes().subscribe({
       next: (types) => {
         this.typesExamens = types;
         this.loadingTypes = false;
       },
       error: (err) => {
-        console.error('Erreur chargement types d\'analyses:', err);
+        console.error('Erreur chargement types d\'analyses (mock):', err);
         this.loadingTypes = false;
       }
     });
@@ -185,10 +212,10 @@ export class AnalysesMedicalComponent implements OnInit {
       switchMap(keyword => {
         if (keyword.length < 2) {
           this.laboratoryResults = [];
-          return [];
+          return of([]);
         }
         this.loadingLaboratories = true;
-        return this.laboratoireService.searchLaboratories(keyword);
+        return this.localSearchLaboratories(keyword);
       })
     ).subscribe({
       next: (results) => {
@@ -244,7 +271,7 @@ export class AnalysesMedicalComponent implements OnInit {
     }
 
     // Créer le type via l'API
-    this.laboratoireService.createAnalysisType(this.newTypeName.trim()).subscribe({
+    this.localCreateAnalysisType(this.newTypeName.trim()).subscribe({
       next: (response) => {
         Swal.fire({
           title: 'Succès!',
@@ -382,7 +409,7 @@ export class AnalysesMedicalComponent implements OnInit {
     console.log('👨‍⚕️ Doctor ID:', this.doctorId);
     console.log('📝 Form Data:', this.formData);
 
-    this.laboratoireService.createLaboratoire(payload).subscribe({
+    this.localCreateLaboratoire(payload).subscribe({
       next: (response) => {
         console.log('✅ Demande créée avec succès:', response);
         Swal.fire({

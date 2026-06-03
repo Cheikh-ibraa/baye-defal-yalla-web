@@ -74,16 +74,16 @@
               <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <label *ngFor="let type of typesExamens"
                   class="flex items-center px-4 py-3 border rounded-md cursor-pointer hover:bg-gray-50 transition-colors"
-                  [class.border-teal-500]="formData.typeId === type.id"
-                  [class.bg-teal-50]="formData.typeId === type.id">
+                  [class.border-[#104382]]="formData.typeId === type.id"
+                  [class.bg-[#10438214]]="formData.typeId === type.id">
                   <input type="radio" [value]="type.id" [(ngModel)]="formData.typeId" name="typeId"
-                    class="w-4 h-4 text-teal-600 border-gray-300 focus:ring-teal-500" />
+                    class="w-4 h-4 text-teal-600 border-gray-300 focus:ring-[#104382]" />
                   <span class="ml-3 text-sm text-[#343A40]">{{ type.name || type.label }}</span>
                 </label>
               </div>
 
               <button type="button" (click)="addAnalysisType()"
-                class="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-md text-sm font-medium text-gray-600 hover:border-teal-500 hover:text-teal-600 transition-colors">
+                class="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-md text-sm font-medium text-gray-600 hover:border-[#104382] hover:text-[#104382] transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
@@ -112,7 +112,7 @@
               <input type="text" [(ngModel)]="laboratorySearchTerm" (input)="onLaboratorySearch($event)"
                 (focus)="showLaboratoryDropdown = laboratoryResults.length > 0" (blur)="closeLaboratoryDropdown()"
                 name="laboratorySearch" placeholder="Tapez au moins 2 caractères..."
-                class="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all text-sm" />
+                class="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none transition-all text-sm" />
 
               <!-- Loading indicator -->
               <div *ngIf="loadingLaboratories" class="absolute right-3 top-11">
@@ -168,7 +168,7 @@
           <div *ngIf="indicationExpanded" class="px-6 pb-6">
             <textarea [(ngModel)]="formData.clinicalIndication" name="clinicalIndication" rows="2"
               placeholder="Contexte médical, suspicion diagnostique, traitement en cours..."
-              class="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all resize-none text-sm"></textarea>
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none transition-all resize-none text-sm"></textarea>
 
             <div class="flex flex-wrap gap-2 mt-3">
               <button *ngFor="let indication of indicationsPredefinies" type="button"
@@ -205,17 +205,17 @@
                 <div class="flex gap-3">
                   <label
                     class="relative flex items-center justify-center px-6 py-2.5 border-2 rounded-md cursor-pointer transition-all flex-1"
-                    [class.border-teal-500]="formData.youngPatient === true"
-                    [class.bg-teal-50]="formData.youngPatient === true"
+                    [class.border-[#104382]]="formData.youngPatient === true"
+                    [class.bg-[#10438214]]="formData.youngPatient === true"
                     [class.border-gray-300]="formData.youngPatient !== true"
                     [class.hover:bg-gray-50]="formData.youngPatient !== true">
                     <input type="radio" name="youngPatient" [value]="true" [(ngModel)]="formData.youngPatient"
                       class="sr-only" />
-                    <span class="text-sm font-medium" [class.text-teal-700]="formData.youngPatient === true"
+                    <span class="text-sm font-medium" [class.text-[#104382]]="formData.youngPatient === true"
                       [class.text-gray-700]="formData.youngPatient !== true">
                       Oui
                     </span>
-                    <svg *ngIf="formData.youngPatient === true" class="absolute right-3 w-5 h-5 text-teal-600"
+                    <svg *ngIf="formData.youngPatient === true" class="absolute right-3 w-5 h-5 text-[#104382]"
                       fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd"
                         d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -225,17 +225,17 @@
 
                   <label
                     class="relative flex items-center justify-center px-6 py-2.5 border-2 rounded-md cursor-pointer transition-all flex-1"
-                    [class.border-teal-500]="formData.youngPatient === false"
-                    [class.bg-teal-50]="formData.youngPatient === false"
+                    [class.border-[#104382]]="formData.youngPatient === false"
+                    [class.bg-[#10438214]]="formData.youngPatient === false"
                     [class.border-gray-300]="formData.youngPatient !== false"
                     [class.hover:bg-gray-50]="formData.youngPatient !== false">
                     <input type="radio" name="youngPatient" [value]="false" [(ngModel)]="formData.youngPatient"
                       class="sr-only" />
-                    <span class="text-sm font-medium" [class.text-teal-700]="formData.youngPatient === false"
+                    <span class="text-sm font-medium" [class.text-[#104382]]="formData.youngPatient === false"
                       [class.text-gray-700]="formData.youngPatient !== false">
                       Non
                     </span>
-                    <svg *ngIf="formData.youngPatient === false" class="absolute right-3 w-5 h-5 text-teal-600"
+                    <svg *ngIf="formData.youngPatient === false" class="absolute right-3 w-5 h-5 text-[#104382]"
                       fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd"
                         d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -253,17 +253,17 @@
                 <div class="flex gap-3">
                   <label
                     class="relative flex items-center justify-center px-4 py-2.5 border-2 rounded-md cursor-pointer transition-all flex-1"
-                    [class.border-teal-500]="formData.urgencyLevel === 'NORMAL'"
-                    [class.bg-teal-50]="formData.urgencyLevel === 'NORMAL'"
+                    [class.border-[#104382]]="formData.urgencyLevel === 'NORMAL'"
+                    [class.bg-[#10438214]]="formData.urgencyLevel === 'NORMAL'"
                     [class.border-gray-300]="formData.urgencyLevel !== 'NORMAL'"
                     [class.hover:bg-gray-50]="formData.urgencyLevel !== 'NORMAL'">
                     <input type="radio" name="urgencyLevel" value="NORMAL" [(ngModel)]="formData.urgencyLevel"
                       class="sr-only" />
-                    <span class="text-sm font-medium" [class.text-teal-700]="formData.urgencyLevel === 'NORMAL'"
+                    <span class="text-sm font-medium" [class.text-[#104382]]="formData.urgencyLevel === 'NORMAL'"
                       [class.text-gray-700]="formData.urgencyLevel !== 'NORMAL'">
                       Normal
                     </span>
-                    <svg *ngIf="formData.urgencyLevel === 'NORMAL'" class="absolute right-2 w-5 h-5 text-teal-600"
+                    <svg *ngIf="formData.urgencyLevel === 'NORMAL'" class="absolute right-2 w-5 h-5 text-[#104382]"
                       fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd"
                         d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -273,17 +273,17 @@
 
                   <label
                     class="relative flex items-center justify-center px-4 py-2.5 border-2 rounded-md cursor-pointer transition-all flex-1"
-                    [class.border-teal-500]="formData.urgencyLevel === 'PRIORITAIRE'"
-                    [class.bg-teal-50]="formData.urgencyLevel === 'PRIORITAIRE'"
+                    [class.border-[#104382]]="formData.urgencyLevel === 'PRIORITAIRE'"
+                    [class.bg-[#10438214]]="formData.urgencyLevel === 'PRIORITAIRE'"
                     [class.border-gray-300]="formData.urgencyLevel !== 'PRIORITAIRE'"
                     [class.hover:bg-gray-50]="formData.urgencyLevel !== 'PRIORITAIRE'">
                     <input type="radio" name="urgencyLevel" value="PRIORITAIRE" [(ngModel)]="formData.urgencyLevel"
                       class="sr-only" />
-                    <span class="text-sm font-medium" [class.text-teal-700]="formData.urgencyLevel === 'PRIORITAIRE'"
+                    <span class="text-sm font-medium" [class.text-[#104382]]="formData.urgencyLevel === 'PRIORITAIRE'"
                       [class.text-gray-700]="formData.urgencyLevel !== 'PRIORITAIRE'">
                       Prioritaire
                     </span>
-                    <svg *ngIf="formData.urgencyLevel === 'PRIORITAIRE'" class="absolute right-2 w-5 h-5 text-teal-600"
+                    <svg *ngIf="formData.urgencyLevel === 'PRIORITAIRE'" class="absolute right-2 w-5 h-5 text-[#104382]"
                       fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd"
                         d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -293,17 +293,17 @@
 
                   <label
                     class="relative flex items-center justify-center px-4 py-2.5 border-2 rounded-md cursor-pointer transition-all flex-1"
-                    [class.border-teal-500]="formData.urgencyLevel === 'URGENT'"
-                    [class.bg-teal-50]="formData.urgencyLevel === 'URGENT'"
+                    [class.border-[#104382]]="formData.urgencyLevel === 'URGENT'"
+                    [class.bg-[#10438214]]="formData.urgencyLevel === 'URGENT'"
                     [class.border-gray-300]="formData.urgencyLevel !== 'URGENT'"
                     [class.hover:bg-gray-50]="formData.urgencyLevel !== 'URGENT'">
                     <input type="radio" name="urgencyLevel" value="URGENT" [(ngModel)]="formData.urgencyLevel"
                       class="sr-only" />
-                    <span class="text-sm font-medium" [class.text-teal-700]="formData.urgencyLevel === 'URGENT'"
+                    <span class="text-sm font-medium" [class.text-[#104382]]="formData.urgencyLevel === 'URGENT'"
                       [class.text-gray-700]="formData.urgencyLevel !== 'URGENT'">
                       Urgent
                     </span>
-                    <svg *ngIf="formData.urgencyLevel === 'URGENT'" class="absolute right-2 w-5 h-5 text-teal-600"
+                    <svg *ngIf="formData.urgencyLevel === 'URGENT'" class="absolute right-2 w-5 h-5 text-[#104382]"
                       fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd"
                         d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -318,7 +318,7 @@
             <div>
               <label class="flex items-start cursor-pointer">
                 <input type="checkbox" [(ngModel)]="formData.needsHelp" name="needsHelp"
-                  class="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500 mt-1" />
+                  class="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-[#104382] mt-1" />
                 <span class="ml-3 text-sm font-medium text-gray-700">Assistance nécessaire</span>
               </label>
               <p class="text-xs text-gray-500 mt-2 ml-7">Cochez si le patient nécessite une assistance particulière pour
@@ -331,7 +331,7 @@
         <div class="px-6 py-6">
           <div class="flex flex-col sm:flex-row gap-3">
             <button type="submit"
-              class="px-6 py-3 bg-[#00B894] text-white font-medium rounded-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors text-sm">
+              class="px-6 py-3 bg-[#104382] text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-[#104382] focus:ring-offset-2 transition-colors text-sm">
               Générer la demande
             </button>
 
@@ -367,7 +367,7 @@
           Nom du type d'analyse <span class="text-red-500">*</span>
         </label>
         <input type="text" [(ngModel)]="newTypeName" (keydown.enter)="submitNewType()" placeholder="Ex: Bilan lipidique"
-          class="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors"
+          class="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#104382] focus:border-transparent transition-colors"
           autofocus>
       </div>
 
@@ -378,7 +378,7 @@
           Annuler
         </button>
         <button type="button" (click)="submitNewType()"
-          class="px-4 py-2 text-sm font-medium text-white bg-[#01b894] rounded-md hover:bg-[#019c7d] transition-colors">
+          class="px-4 py-2 text-sm font-medium text-white bg-[#104382] rounded-md transition-colors">
           Créer
         </button>
       </div>

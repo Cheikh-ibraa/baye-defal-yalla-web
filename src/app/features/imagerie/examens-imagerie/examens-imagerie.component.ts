@@ -2,10 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-
-import { ImagerieService } from '../../../services/imagerie/imagerie.service';
+import { of, delay } from 'rxjs';
 import { Imagerie, ImagerieCreate, UrgencyLevel } from '../../../modele/imagerie.model';
-import { AuthService, User } from '../../../services/auth.service';
+import { User } from '../../../core/auth.types';
 
 @Component({
   selector: 'app-examens-imagerie',
@@ -77,10 +76,77 @@ export class ExamensImagerieComponent implements OnInit {
   // =============== FORM DATA ==================
   imagerieForm: ImagerieCreate = this.getEmptyForm();
 
-  constructor(
-    private imagerieService: ImagerieService,
-    private authService: AuthService   // 👈 AJOUTE ÇA
-  ) { }
+  constructor() { }
+
+  // Local mock current user (replaces AuthFacade)
+  private getMockCurrentUser(): User {
+    return { id: 1, nom: 'Demo', prenom: 'Lab' } as User;
+  }
+
+  // --- Local mocks / helpers for Imagerie ---
+  private mockTypes = [
+    { id: 1, label: 'Radiologie' },
+    { id: 2, label: 'Echographie' }
+  ];
+
+  private mockRegions = [
+    { id: 1, label: 'Thorax' },
+    { id: 2, label: 'Abdomen' }
+  ];
+
+  private mockImageriesStore: Imagerie[] = [
+    {
+      id: 1,
+      patientName: 'DIAW M',
+      doctorName: 'Dr Mock',
+      clinicalIndication: 'Douleur thoracique',
+      status: 'PENDING',
+      urgencyLevel: 'NORMAL',
+      typeId: null as any,
+      regionId: null as any,
+      imagingCenterId: null as any,
+      createdAt: new Date().toISOString(),
+      pictures: [],
+      accessionNumber: 'ACC-1'
+    } as any
+  ];
+
+  private localGetImagingTypes() {
+    return of(this.mockTypes).pipe(delay(80));
+  }
+
+  private localGetImagingRegions() {
+    return of(this.mockRegions).pipe(delay(80));
+  }
+
+  private localGetImageries(page = 0, size = 10, search?: string, status?: string, priority?: string, imagingCenterId?: number) {
+    let filtered = this.mockImageriesStore.slice();
+    if (search) filtered = filtered.filter(i => i.patientName?.toLowerCase().includes(search.toLowerCase()));
+    if (status) filtered = filtered.filter(i => i.status === status);
+    if (priority) filtered = filtered.filter(i => i.urgencyLevel === priority);
+
+    const start = page * size;
+    const content = filtered.slice(start, start + size);
+    const response = { content, totalElements: filtered.length, totalPages: Math.ceil(filtered.length / size) };
+    return of(response).pipe(delay(120));
+  }
+
+  private localCreateImagerie(payload: ImagerieCreate) {
+    const newId = (this.mockImageriesStore.reduce((m, x) => Math.max(m, x.id || 0), 0) || 0) + 1;
+    const newItem: any = { ...payload, id: newId, patientName: payload.patientId || 'Patient', doctorName: payload.doctorId || 'Médecin', status: 'PENDING', urgencyLevel: payload.urgencyLevel || 'NORMAL', createdAt: new Date().toISOString(), pictures: [], accessionNumber: `ACC-${newId}` };
+    this.mockImageriesStore.unshift(newItem);
+    return of('OK').pipe(delay(150));
+  }
+
+  private localAcceptImagerie(payload: { requestId: number; date: string; time: string; amount?: number; }) {
+    const item = this.mockImageriesStore.find(i => i.id === payload.requestId);
+    if (item) {
+      item.status = 'ACCEPTED';
+      item.appointmentDate = payload.date;
+      item.appointmentTime = payload.time;
+    }
+    return of('OK').pipe(delay(120));
+  }
 
   currentUser: User | null = null;
 
@@ -90,13 +156,12 @@ export class ExamensImagerieComponent implements OnInit {
     this.loadTypes();
     this.loadRegions();
 
-    this.authService.currentUser$.subscribe(user => {
-      this.currentUser = user;
-      console.log("👤 User depuis AuthService :", user);
-      if (user?.id) {
-        this.loadAllImageries();
-      }
-    });
+    const user = this.getMockCurrentUser();
+    this.currentUser = user;
+    console.log("👤 User (mock) :", user);
+    if (user?.id) {
+      this.loadAllImageries();
+    }
   }
 
 
@@ -104,14 +169,14 @@ export class ExamensImagerieComponent implements OnInit {
 
   // ================== API CALLS ===============
   loadTypes(): void {
-    this.imagerieService.getImagingTypes().subscribe({
+    this.localGetImagingTypes().subscribe({
       next: res => this.imagingTypes = res,
       error: err => console.error('Erreur types:', err)
     });
   }
 
   loadRegions(): void {
-    this.imagerieService.getImagingRegions().subscribe({
+    this.localGetImagingRegions().subscribe({
       next: res => this.imagingRegions = res,
       error: err => console.error('Erreur régions:', err)
     });
@@ -120,12 +185,12 @@ export class ExamensImagerieComponent implements OnInit {
   loadAllImageries(): void {
     if (!this.currentUser?.id) return;
 
-    this.imagerieService.getImageries(0, 1000, undefined, undefined, undefined, this.currentUser.id).subscribe({
+    this.localGetImageries(0, 1000, undefined, undefined, undefined, this.currentUser.id).subscribe({
       next: res => {
         this.allImageries = res.content;
         this.applyFilters();
       },
-      error: err => console.error('Erreur imageries:', err)
+      error: (err: any) => console.error('Erreur imageries:', err)
     });
   }
 
@@ -142,13 +207,13 @@ export class ExamensImagerieComponent implements OnInit {
 
     console.log("PAYLOAD FINAL ENVOYÉ :", payload);
 
-    this.imagerieService.createImagerie(payload).subscribe({
+    this.localCreateImagerie(payload).subscribe({
       next: () => {
         this.closeAddImagerie();
         this.showAddImagerieSuccess = true;
         this.loadAllImageries();
       },
-      error: err => console.error('Erreur création:', err)
+      error: (err: any) => console.error('Erreur création:', err)
     });
   }
 
@@ -338,7 +403,7 @@ export class ExamensImagerieComponent implements OnInit {
       amount: this.validationDemandeForm.montant
     };
 
-    this.imagerieService.acceptImagerie(payload).subscribe({
+    this.localAcceptImagerie(payload).subscribe({
       next: (res) => {
         console.log(res); // "Demande acceptée et rendez-vous programmé"
 

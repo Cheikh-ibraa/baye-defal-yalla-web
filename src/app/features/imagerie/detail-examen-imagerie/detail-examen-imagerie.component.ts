@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { ImagerieService } from '../../../services/imagerie/imagerie.service';
+import { of, delay } from 'rxjs';
 import { Examen } from '../../../modele/imagerie.model';
 import { Location } from '@angular/common';
 import { StandalonePacsViewerComponent } from '../../../core/utils/standalone-pacs-viewer.component';
@@ -187,9 +187,67 @@ export class DetailExamenImagerieComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private imagerieService: ImagerieService,
+    
     private location: Location,
   ) { }
+
+  // --- Local imagerie mocks/helpers ---
+  private mockExamenStore: any[] = [
+    {
+      id: 1,
+      type: 'Radiologie',
+      urgencyLevel: 'NORMAL',
+      status: 'PENDING',
+      patientName: 'DIAW M',
+      doctorName: 'Dr Mock',
+      clinicalIndication: 'Douleur thoracique',
+      createdAt: new Date().toISOString(),
+      pictures: ['img1.jpg','img2.jpg'],
+      accessionNumber: 'ACC-1',
+      appointmentDate: null,
+      appointmentTime: null
+    }
+  ];
+
+  private localGetImagerieById(id: number) {
+    const found = this.mockExamenStore.find(e => e.id === id) || null;
+    return of(found).pipe(delay(120));
+  }
+
+  private localAcceptImagerie(payload: any) {
+    // find and update status
+    const item = this.mockExamenStore.find(e => e.id === payload.requestId);
+    if (item) { item.status = 'ACCEPTED'; item.appointmentDate = payload.date; item.appointmentTime = payload.time; }
+    return of('OK').pipe(delay(120));
+  }
+
+  private localUploadMultiplePictures(requestId: number, formData: FormData) {
+    // simulate adding picture names
+    const item = this.mockExamenStore.find(e => e.id === requestId);
+    if (item) {
+      item.pictures = item.pictures.concat(['new1.jpg']);
+    }
+    return of('OK').pipe(delay(200));
+  }
+
+  private localDeleteImagingPicture(requestId: number, pictureName: string) {
+    const item = this.mockExamenStore.find(e => e.id === requestId);
+    if (item) {
+      item.pictures = (item.pictures || []).filter((p: string) => p !== pictureName);
+    }
+    return of('OK').pipe(delay(120));
+  }
+
+  private localSubmitImagingReport(payload: any) {
+    const item = this.mockExamenStore.find(e => e.id === payload.requestId);
+    if (item) item.status = 'COMPLETED';
+    return of('OK').pipe(delay(150));
+  }
+
+  private localUploadDicomFile(accessionNumber: string, file: File) {
+    // pretend success
+    return of('OK').pipe(delay(300));
+  }
 
   // ======================
   // INIT
@@ -228,7 +286,7 @@ export class DetailExamenImagerieComponent implements OnInit {
   loadExamen(id: number): void {
     this.loading = true;
 
-    this.imagerieService.getImagerieById(id).subscribe({
+    this.localGetImagerieById(id).subscribe({
       next: (data) => {
         this.examApi = data;
 
@@ -240,7 +298,7 @@ export class DetailExamenImagerieComponent implements OnInit {
         };
 
         this.patient = {
-          initials: data.patientName.split(' ').map(n => n[0]).join(''),
+          initials: data.patientName.split(' ').map((n: string) => n[0]).join(''),
           name: data.patientName,
           role: 'Patient'
         };
@@ -391,7 +449,7 @@ export class DetailExamenImagerieComponent implements OnInit {
       time: this.validationDemandeForm.heure
     };
 
-    this.imagerieService.acceptImagerie(payload).subscribe({
+    this.localAcceptImagerie(payload).subscribe({
       next: (res) => {
         console.log('✅ Demande validée:', res);
 
@@ -442,7 +500,7 @@ export class DetailExamenImagerieComponent implements OnInit {
       formData.append('files', file);
     });
 
-    this.imagerieService.uploadMultiplePictures(this.examApi.id, formData)
+    this.localUploadMultiplePictures(this.examApi.id, formData)
       .subscribe({
         next: () => {
           this.showImportImageModal = false;
@@ -507,8 +565,7 @@ export class DetailExamenImagerieComponent implements OnInit {
       return;
     }
 
-    this.imagerieService
-      .deleteImagingPicture(this.examApi.id, this.selectedImage.name)
+    this.localDeleteImagingPicture(this.examApi.id, this.selectedImage.name)
       .subscribe({
         next: () => {
           this.showDeleteImageModal = false;
@@ -611,7 +668,7 @@ export class DetailExamenImagerieComponent implements OnInit {
 
     console.log('📤 Envoi du compte rendu...');
 
-    this.imagerieService.submitImagingReport({
+    this.localSubmitImagingReport({
       requestId: this.examApi.id,
       report: this.compteRenduForm.description,
       reportFile: this.compteRenduFile || undefined
@@ -716,7 +773,7 @@ export class DetailExamenImagerieComponent implements OnInit {
     this.dicomUploading = true;
     this.dicomUploadError = '';
 
-    this.imagerieService.uploadDicomFile(this.accessionNumber, this.dicomFile).subscribe({
+    this.localUploadDicomFile(this.accessionNumber, this.dicomFile).subscribe({
       next: () => {
         this.dicomUploading = false;
         this.showDicomUploadModal = false;

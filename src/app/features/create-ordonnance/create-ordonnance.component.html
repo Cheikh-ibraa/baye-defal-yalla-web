@@ -81,7 +81,7 @@
             Adresse de livraison
           </label>
           <input type="text" formControlName="address" placeholder="Ex: 12 Rue Carnot, Dakar"
-            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none transition" />
+            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none transition" />
         </div>
 
         <!-- Pharmacie -->
@@ -98,7 +98,7 @@
             </div>
             <input type="text" [(ngModel)]="pharmacySearch" [ngModelOptions]="{standalone: true}"
               (ngModelChange)="onPharmacySearchInput($event)" placeholder="Rechercher une pharmacie par nom..."
-              class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none transition" />
+              class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none transition" />
             <div *ngIf="pharmacySearching" class="absolute inset-y-0 right-0 pr-3 flex items-center">
               <svg class="animate-spin h-4 w-4 text-[#01b894]" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -146,7 +146,7 @@
           </label>
           <textarea formControlName="diagnostic" rows="2" placeholder="Motif de prescription, éléments cliniques..."
             [class.border-red-500]="hasError('diagnostic')"
-            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none transition resize-none"></textarea>
+            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none transition resize-none"></textarea>
           <p *ngIf="hasError('diagnostic')" class="mt-1 text-sm text-red-500">
             Le diagnostic est obligatoire
           </p>
@@ -156,7 +156,7 @@
         <div class="mt-6">
           <label class="flex items-center gap-3 cursor-pointer">
             <input type="checkbox" formControlName="needsHelp"
-              class="w-5 h-5 text-[#01b894] border-gray-300 rounded focus:ring-2 focus:ring-[#01b894]" />
+              class="w-5 h-5 text-[#01b894] border-gray-300 rounded focus:ring-2 focus:ring-[#104382]" />
             <span class="text-sm font-medium text-gray-700">
               Le patient a besoin d'aide pour payer les médicaments
             </span>
@@ -175,9 +175,9 @@
         <!-- Onglets : Saisie manuelle / Upload image -->
         <div class="flex gap-4 mb-6">
           <button type="button" (click)="switchPrescriptionTab('manual')"
-            [class.bg-[#00B89414]]="activePrescriptionTab === 'manual'"
-            [class.border-[#00B894]]="activePrescriptionTab === 'manual'"
-            [class.text-[#00B894]]="activePrescriptionTab === 'manual'"
+            [class.bg-[#10438214]]="activePrescriptionTab === 'manual'"
+            [class.border-[#104382]]="activePrescriptionTab === 'manual'"
+            [class.text-[#104382]]="activePrescriptionTab === 'manual'"
             [class.bg-white]="activePrescriptionTab !== 'manual'"
             [class.border-transparent]="activePrescriptionTab !== 'manual'"
             [class.text-gray-600]="activePrescriptionTab !== 'manual'"
@@ -185,9 +185,9 @@
             Saisie par médicament
           </button>
           <button type="button" (click)="switchPrescriptionTab('upload')"
-            [class.bg-[#00B89414]]="activePrescriptionTab === 'upload'"
-            [class.border-[#00B894]]="activePrescriptionTab === 'upload'"
-            [class.text-[#00B894]]="activePrescriptionTab === 'upload'"
+            [class.bg-[#10438214]]="activePrescriptionTab === 'upload'"
+            [class.border-[#104382]]="activePrescriptionTab === 'upload'"
+            [class.text-[#104382]]="activePrescriptionTab === 'upload'"
             [class.bg-white]="activePrescriptionTab !== 'upload'"
             [class.border-transparent]="activePrescriptionTab !== 'upload'"
             [class.text-gray-600]="activePrescriptionTab !== 'upload'"
@@ -221,7 +221,7 @@
                   </label>
                   <input type="text" formControlName="name" placeholder="Ex: Paracétamol"
                     [class.border-red-500]="hasErrorMed(i, 'name')"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none text-sm" />
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none text-sm" />
                 </div>
 
                 <!-- Dosage -->
@@ -231,7 +231,7 @@
                   </label>
                   <input type="text" formControlName="dosage" placeholder="Ex: 1000mg"
                     [class.border-red-500]="hasErrorMed(i, 'dosage')"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none text-sm" />
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none text-sm" />
                 </div>
 
                 <!-- Quantité -->
@@ -241,7 +241,7 @@
                   </label>
                   <input type="number" formControlName="quantity" placeholder="1" min="1"
                     [class.border-red-500]="hasErrorMed(i, 'quantity')"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none text-sm" />
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none text-sm" />
                 </div>
 
                 <!-- Prix unitaire -->
@@ -251,7 +251,7 @@
                   </label>
                   <input type="number" formControlName="price" placeholder="2500" min="0" step="0.01"
                     [class.border-red-500]="hasErrorMed(i, 'price')"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#01b894] focus:border-transparent outline-none text-sm" />
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none text-sm" />
                 </div>
 
                 <!-- Sous-total -->
@@ -281,7 +281,7 @@
           <!-- Bouton ajouter médicament -->
           <div class="mt-4">
             <button type="button" (click)="ajouterMedicament()"
-              class="flex items-center gap-2 px-4 py-2 text-[#01b894] hover:bg-[#01b894] hover:bg-opacity-10 rounded-lg transition font-medium">
+              class="flex items-center gap-2 px-4 py-2 text-[#104382] hover:bg-[#104382] hover:bg-opacity-10 rounded-lg transition font-medium">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
               </svg>
@@ -302,7 +302,7 @@
               </svg>
               <p class="mt-4 text-sm text-gray-600">Glissez-déposez une image ici ou</p>
               <label
-                class="mt-2 inline-flex items-center gap-2 px-4 py-2 bg-[#01b894] text-white rounded-lg cursor-pointer hover:bg-[#019d7f] transition">
+                class="mt-2 inline-flex items-center gap-2 px-4 py-2 bg-[#104382] text-white rounded-lg cursor-pointer transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -345,7 +345,7 @@
         <!-- Boutons d'action -->
         <div class="flex flex-col sm:flex-row gap-4 mt-4">
           <button type="button" (click)="validerEtGenerer()" [disabled]="loading || !patientData"
-            class="px-8 py-3 bg-[#01b894] text-white font-semibold rounded-lg hover:bg-[#019d7f] transition shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            class="px-8 py-3 bg-[#104382] text-white font-semibold rounded-lg transition shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             <svg *ngIf="loading" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor"

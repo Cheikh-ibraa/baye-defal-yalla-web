@@ -1,0 +1,238 @@
+<div class="min-h-screen bg-[#F4F6F9] ">
+  <div class="mx-auto max-w-[1200px]">
+
+    <!-- Header -->
+    <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div class="flex items-start gap-4">
+        <button (click)="back()"
+          class="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white ring-1 ring-slate-200 transition hover:bg-slate-50">
+          <svg class="h-4 w-4 text-[#475569]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight text-[#0F172A] sm:text-[28px]">
+            {{ devis?.fournisseurNom ?? '—' }}
+          </h1>
+          <p class="mt-1 text-sm text-[#64748B]">{{ devis?.fournisseurDescription }}</p>
+        </div>
+      </div>
+
+      <div class="flex shrink-0 gap-3">
+        <button class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-[#475569] transition hover:bg-slate-50">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <polyline stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" points="6 9 6 2 18 2 18 9"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+              d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+            <rect x="6" y="14" width="12" height="8" stroke-width="1.8"/>
+          </svg>
+          Imprimer
+        </button>
+        <button class="inline-flex items-center gap-2 rounded-xl bg-[#124A92] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0F3E79]">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline stroke-linecap="round" stroke-linejoin="round" stroke-width="2" points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3" stroke-linecap="round" stroke-width="2"/>
+          </svg>
+          Télécharger PDF
+        </button>
+      </div>
+    </div>
+
+    <!-- LIGNE 1 : Contact | Historique | Collaboration — 3 colonnes égales -->
+    <div class="mb-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+
+          <!-- Contact fournisseur -->
+          <div class="rounded-2xl bg-white p-5 ring-1 ring-slate-100">
+            <!-- Avatar -->
+            <div class="flex items-center gap-3">
+              <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#F1F5F9] text-[#94A3B8]">
+                <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <circle cx="12" cy="8" r="3.5" stroke-width="1.8"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 19a7 7 0 0 1 14 0"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm font-bold text-[#0F172A]">{{ devis?.contact?.nom }}</p>
+                <p class="text-xs text-[#64748B]">{{ devis?.contact?.poste }}</p>
+              </div>
+            </div>
+
+            <div class="mt-4 space-y-2.5">
+              <div class="flex items-center gap-2.5 rounded-xl bg-[#F8FAFC] px-3 py-2.5 text-xs text-[#475569]">
+                <svg class="h-4 w-4 shrink-0 text-[#94A3B8]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                    d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" points="22,6 12,13 2,6"/>
+                </svg>
+                <span class="truncate">{{ devis?.contact?.email }}</span>
+              </div>
+              <div class="flex items-center gap-2.5 rounded-xl bg-[#F8FAFC] px-3 py-2.5 text-xs text-[#475569]">
+                <svg class="h-4 w-4 shrink-0 text-[#94A3B8]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                    d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.18 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
+                <span>{{ devis?.contact?.telephone }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Historique (timeline) -->
+          <div class="rounded-2xl bg-white p-5 ring-1 ring-slate-100">
+            <p class="mb-4 text-[10px] font-bold uppercase tracking-widest text-[#94A3B8]">Historique</p>
+            <div class="relative">
+              <div class="absolute bottom-0 left-[13px] top-0 w-px bg-[#E2E8F0]" aria-hidden="true"></div>
+              <div *ngFor="let step of devis?.historique; let last = last"
+                class="relative flex gap-3" [ngClass]="last ? '' : 'pb-5'">
+                <div class="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
+                  [ngClass]="stepIconBg(step.status)">
+                  <svg *ngIf="step.icon === 'check'" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m5 13 4 4L19 7"/>
+                  </svg>
+                  <svg *ngIf="step.icon === 'user'" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="8" r="3" stroke-width="1.8"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 19a7 7 0 0 1 14 0"/>
+                  </svg>
+                  <svg *ngIf="step.icon === 'doc'" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                      d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" points="14 2 14 8 20 8"/>
+                  </svg>
+                </div>
+                <div class="min-w-0 flex-1 pt-0.5">
+                  <p class="text-sm font-semibold text-[#0F172A]">{{ step.label }}</p>
+                  <p *ngIf="step.date" class="mt-0.5 text-xs text-[#94A3B8]">{{ step.date }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Historique collaboration -->
+          <div class="rounded-2xl bg-white p-5 ring-1 ring-slate-100">
+            <p class="mb-4 text-[10px] font-bold uppercase tracking-widest text-[#94A3B8]">Historique de collaboration</p>
+            <div class="space-y-4">
+              <div class="border-l-2 border-[#E2E8F0] pl-3">
+                <p class="text-sm font-semibold text-[#0F172A]">Dernière Commande</p>
+                <p class="mt-0.5 text-xs text-[#64748B]">{{ devis?.collaboration?.derniereCommande }}</p>
+              </div>
+              <div class="border-l-2 border-[#E2E8F0] pl-3">
+                <p class="text-sm font-semibold text-[#0F172A]">Taux de Livraison On-Time</p>
+                <p class="mt-0.5 text-sm font-bold text-[#16A34A]">{{ devis?.collaboration?.tauxLivraison }}</p>
+              </div>
+              <div class="border-l-2 border-[#E2E8F0] pl-3">
+                <p class="text-sm font-semibold text-[#0F172A]">Évaluation Qualité</p>
+                <div class="mt-1 flex gap-0.5">
+                  <ng-container *ngFor="let filled of stars(devis?.collaboration?.evaluation ?? 0)">
+                    <svg class="h-4 w-4" [ngClass]="filled ? 'text-[#F59E0B]' : 'text-[#E2E8F0]'"
+                      viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                  </ng-container>
+                </div>
+              </div>
+            </div>
+          </div>
+
+    </div>
+    <!-- FIN LIGNE 1 -->
+
+    <!-- LIGNE 2 : Tableau produits (2 col) + Sidebar droite (1 col) -->
+    <div class="grid gap-6 lg:grid-cols-3">
+
+      <!-- Tableau produits : 2 colonnes gauche -->
+      <div class="lg:col-span-2">
+
+        <!-- Tableau produits -->
+        <div class="rounded-2xl bg-white ring-1 ring-slate-100">
+          <div class="flex items-center gap-3 px-6 py-5">
+            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#EFF6FF] text-[#2563EB]">
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                  d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+                <rect x="9" y="3" width="6" height="4" rx="1" stroke-width="1.8"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6M9 16h4"/>
+              </svg>
+            </span>
+            <h2 class="text-base font-semibold text-[#2563EB]">Détail des Produits</h2>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[500px] text-sm">
+              <thead>
+                <tr class="border-y border-slate-100 bg-[#F8FAFC]">
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-[#64748B]">Désignation</th>
+                  <th class="px-4 py-3 text-center text-xs font-semibold text-[#64748B]">Qté</th>
+                  <th class="px-4 py-3 text-right text-xs font-semibold text-[#64748B]">Prix Unitaire</th>
+                  <th class="px-6 py-3 text-right text-xs font-semibold text-[#64748B]">Total HT</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr *ngFor="let p of devis?.produits" class="hover:bg-[#F8FAFC]">
+                  <td class="px-6 py-4">
+                    <p class="font-semibold text-[#2563EB]">{{ p.designation }}</p>
+                    <p class="mt-0.5 text-xs text-[#94A3B8]">{{ p.sousDetail }}</p>
+                  </td>
+                  <td class="px-4 py-4 text-center text-[#475569]">{{ p.qte }}</td>
+                  <td class="px-4 py-4 text-right text-[#475569]">{{ p.prixUnitaire }}</td>
+                  <td class="px-6 py-4 text-right font-semibold text-[#0F172A]">{{ p.totalHT }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Totaux -->
+          <div class="border-t border-slate-100 px-6 py-5">
+            <div class="ml-auto max-w-xs space-y-2 text-sm">
+              <div class="flex items-center justify-between text-[#475569]">
+                <span>Sous-total HT</span>
+                <span>{{ devis?.sousTotal }}</span>
+              </div>
+              <div class="flex items-center justify-between text-[#475569]">
+                <span>TTC</span>
+                <span>{{ devis?.ttc }}</span>
+              </div>
+              <div class="flex items-center justify-between border-t border-slate-200 pt-2">
+                <span class="text-base font-bold text-[#2563EB]">Total TTC</span>
+                <span class="text-base font-bold text-[#2563EB]">{{ devis?.totalTTC }}</span>
+              </div>
+            </div>
+          </div>
+      </div>
+      </div>
+      <!-- FIN tableau produits -->
+
+      <!-- Sidebar droite : 1 colonne -->
+      <aside class="flex flex-col gap-5 lg:col-span-1">
+
+        <!-- Délais livraison -->
+        <div class="rounded-2xl bg-white p-6 ring-1 ring-slate-100">
+          <div class="mb-3 flex items-center gap-3">
+            <svg class="h-5 w-5 text-[#16A34A]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                d="M14.75 12.26V2.75c0-.55-.21-1.06-.59-1.44A2 2 0 0 0 12.75.75H2.75a2 2 0 0 0-2 2V11.75c0 .27.11.52.29.71.18.18.43.29.71.29h.71"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                d="M14.75 12.26c.26-.35.61-.63 1.01-.8.4-.18.84-.25 1.28-.2.44.05.86.22 1.22.49.36.27.63.63.8 1.04H20.75V9.86c0-.73-.2-1.44-.57-2.06l-1.23-2.05-.91-1.51a1 1 0 0 0-.86-.49H14.75v8.51z"/>
+            </svg>
+            <h3 class="text-base font-semibold text-[#0F172A]">Délais de Livraison</h3>
+          </div>
+          <p class="text-sm leading-relaxed text-[#475569]" [innerHTML]="formatText(devis?.delaisLivraison)"></p>
+        </div>
+
+        <!-- Conditions paiement -->
+        <div class="rounded-2xl bg-white p-6 ring-1 ring-slate-100">
+          <div class="mb-3 flex items-center gap-3">
+            <svg class="h-5 w-5 text-[#DC2626]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <rect x="2" y="5" width="20" height="14" rx="2" stroke-width="1.8"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2 10h20"/>
+            </svg>
+            <h3 class="text-base font-semibold text-[#0F172A]">Conditions de Paiement</h3>
+          </div>
+          <p class="text-sm leading-relaxed text-[#475569]" [innerHTML]="formatText(devis?.conditionsPaiement)"></p>
+        </div>
+
+      </aside>
+
+    </div>
+  </div>
+</div>

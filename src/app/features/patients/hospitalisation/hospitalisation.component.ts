@@ -1,15 +1,94 @@
-import { AuthService } from './../../../services/auth.service';
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
-import {
-  HospitalisationService,
-  Facility,
-  Department,
-  CreateHospitalizationRequest
-} from '../../../services/hospitalisation.service';
+import { of } from 'rxjs';
+import { delay } from 'rxjs/operators';
+
+interface Authority {
+  authority: string;
+}
+
+interface User {
+  id: number;
+  reference: string | null;
+  lat: number;
+  lon: number;
+  nom: string;
+  prenom: string;
+  email: string;
+  password: string;
+  adress: string;
+  technicalSheet: string | null;
+  profil: string;
+  activated: boolean;
+  notifiable: boolean;
+  online: boolean;
+  telephone: string;
+  funds: number;
+  photo: string | null;
+  validated: boolean;
+  accountNonExpired: boolean;
+  credentialsNonExpired: boolean;
+  authorities: Authority[];
+  username: string;
+  accountNonLocked: boolean;
+  averageRating: number;
+  enabled: boolean;
+}
+
+interface FacilityType {
+  id: number;
+  name: string;
+}
+
+interface Facility {
+  id: number;
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+  type: FacilityType;
+}
+
+interface Department {
+  id: number;
+  name: string;
+  description: string;
+  facility: Facility;
+}
+
+interface Hospitalization {
+  id: number;
+  patient: User;
+  facility: Facility;
+  department: Department;
+  responsibleMedical: User;
+  hospitalizationReason: string;
+  initialDiagnosis: string;
+  observation: string;
+  entryDateTime: string;
+  exitDateTime: string | null;
+  room: string;
+  bedNumber: string;
+  priority: 'NORMAL' | 'URGENCE';
+}
+
+interface CreateHospitalizationRequest {
+  patientId: number;
+  facilityId: number;
+  departmentId: number;
+  responsibleMedicalId: number;
+  hospitalizationReason: string;
+  initialDiagnosis: string;
+  observation: string;
+  entryDateTime: string;
+  exitDateTime: string;
+  room: string;
+  bedNumber: string;
+  priority: string;
+}
 
 @Component({
   selector: 'app-hospitalisation',
@@ -20,8 +99,110 @@ import {
 })
 export class HospitalisationComponent implements OnInit {
   private router = inject(Router);
-  private hospitalisationService = inject(HospitalisationService);
-  private authService = inject(AuthService);
+
+  // Local auth mock
+  private mockCurrentUser: any = { id: 999, nom: 'Dr Mock', prenom: 'User', telephone: '+221700000000' };
+
+  private localGetCurrentUserById(id: number) {
+    return of({ ...this.mockCurrentUser, id }).pipe(delay(120));
+  }
+
+  private localGetUserByPhone(phone: string) {
+    return of({ ...this.mockCurrentUser, telephone: phone, id: Math.floor(Math.random() * 1000) }).pipe(delay(150));
+  }
+
+  private localGetUserByReference(reference: string) {
+    return of({ ...this.mockCurrentUser, reference, id: Math.floor(Math.random() * 1000) }).pipe(delay(150));
+  }
+
+  // Local mocks (sandbox)
+  private mockEtablissements: Facility[] = [
+    { id: 1, name: 'Hôpital Central', address: 'Rue Principale', phone: '000000000', email: 'contact@hopital.example', type: { id: 1, name: 'Hôpital' } }
+  ];
+
+  private mockDepartements: Department[] = [
+    { id: 10, name: 'Urgences', description: 'Service des urgences', facility: this.mockEtablissements[0] }
+  ];
+
+  private localGetEtablissements() {
+    return of(this.mockEtablissements).pipe(delay(120));
+  }
+
+  private localGetDepartements(facilityId: number) {
+    const deps = this.mockDepartements.filter(d => d.facility && d.facility.id === facilityId);
+    return of(deps.length ? deps : this.mockDepartements).pipe(delay(120));
+  }
+
+  private localCreateHospitalisation(request: CreateHospitalizationRequest) {
+    const created: Hospitalization = {
+      id: Math.floor(Math.random() * 100000),
+      patient: {
+        id: request.patientId,
+        reference: null,
+        lat: 0,
+        lon: 0,
+        nom: this.selectedPatient?.nom || 'Nom',
+        prenom: this.selectedPatient?.prenom || 'Prenom',
+        email: '',
+        password: '',
+        adress: '',
+        technicalSheet: null,
+        profil: 'PATIENT',
+        activated: true,
+        notifiable: false,
+        online: false,
+        telephone: this.selectedPatient?.telephone || '',
+        funds: 0,
+        photo: null,
+        validated: true,
+        accountNonExpired: true,
+        credentialsNonExpired: true,
+        authorities: [],
+        username: `${this.selectedPatient?.nom || 'user'}`,
+        accountNonLocked: true,
+        averageRating: 0,
+        enabled: true
+      },
+      facility: this.mockEtablissements.find(e => e.id === request.facilityId) || this.mockEtablissements[0],
+      department: this.mockDepartements.find(d => d.id === request.departmentId) || this.mockDepartements[0],
+      responsibleMedical: this.currentUser || {
+        id: request.responsibleMedicalId,
+        reference: null,
+        lat: 0,
+        lon: 0,
+        nom: 'Dr',
+        prenom: 'Responsable',
+        email: '',
+        password: '',
+        adress: '',
+        technicalSheet: null,
+        profil: 'DOCTOR',
+        activated: true,
+        notifiable: false,
+        online: false,
+        telephone: '',
+        funds: 0,
+        photo: null,
+        validated: true,
+        accountNonExpired: true,
+        credentialsNonExpired: true,
+        authorities: [],
+        username: 'dr',
+        accountNonLocked: true,
+        averageRating: 0,
+        enabled: true
+      },
+      hospitalizationReason: request.hospitalizationReason,
+      initialDiagnosis: request.initialDiagnosis,
+      observation: request.observation,
+      entryDateTime: request.entryDateTime,
+      exitDateTime: request.exitDateTime || null,
+      room: request.room,
+      bedNumber: request.bedNumber,
+      priority: (request.priority as any) || 'NORMAL'
+    } as Hospitalization;
+    return of(created).pipe(delay(200));
+  }
 
   // Sections collapse state
   patientInfoExpanded = true;
@@ -62,33 +243,11 @@ export class HospitalisationComponent implements OnInit {
   };
 
   ngOnInit(): void {
-    this.currentUser = this.authService.getCurrentUser();
-
+    // Local current user
+    this.currentUser = this.mockCurrentUser;
     if (this.currentUser) {
       this.formData.responsibleMedicalId = this.currentUser.id;
-      console.log('Médecin responsable (token):', this.currentUser);
-
-      // Charger le profil complet du médecin pour obtenir nom et prenom
-      this.authService.getCurrentUserById(this.currentUser.id).subscribe({
-        next: (fullUser) => {
-          this.currentUser = { ...this.currentUser, ...fullUser };
-          console.log('✅ Profil médecin complet chargé:', this.currentUser);
-        },
-        error: (error) => {
-          console.error('Erreur lors du chargement du profil médecin:', error);
-        }
-      });
     }
-
-    // S'abonner aux mises à jour du currentUser
-    this.authService.currentUser$.subscribe({
-      next: (user) => {
-        if (user && user.nom) {
-          this.currentUser = user;
-          console.log('✅ currentUser mis à jour via subscription:', this.currentUser);
-        }
-      }
-    });
 
     // Récupérer le patient sélectionné depuis localStorage
     const storedPatient = localStorage.getItem('selectedPatient');
@@ -100,23 +259,19 @@ export class HospitalisationComponent implements OnInit {
       this.loadPatientIdFromApi();
     }
 
-    // Charger les établissements
+    // Charger les établissements (mock)
     this.loadEtablissements();
   }
 
   loadEtablissements(): void {
-    this.hospitalisationService.getEtablissements().subscribe({
+    this.localGetEtablissements().subscribe({
       next: (data) => {
         this.etablissements = data;
-        console.log('Établissements chargés:', this.etablissements);
+        console.log('Établissements mock chargés:', this.etablissements);
       },
       error: (error) => {
-        console.error('Erreur lors du chargement des établissements:', error);
-        if (error.status === 403) {
-          alert('Accès refusé. Veuillez vous reconnecter.');
-        } else {
-          alert('Erreur lors du chargement des établissements');
-        }
+        console.error('Erreur lors du chargement des établissements (mock):', error);
+        this.etablissements = [];
       }
     });
   }
@@ -168,13 +323,12 @@ export class HospitalisationComponent implements OnInit {
   private fetchPatientByPhone(phone: string): void {
     console.log('🔍 Recherche patient par téléphone:', phone);
 
-    this.authService.getUserByPhone(phone).subscribe({
+    this.localGetUserByPhone(phone).subscribe({
       next: (user) => {
         this.handlePatientFound(user);
       },
       error: (error) => {
-        console.warn('⚠️ Patient non trouvé par téléphone, essai par référence...');
-        // Fallback: essayer par référence si disponible
+        console.warn('⚠️ Patient non trouvé par téléphone (mock), essai par référence...');
         const reference = this.selectedPatient.reference || this.selectedPatient.id;
         if (reference) {
           this.fetchPatientByReference(reference.toString());
@@ -191,7 +345,7 @@ export class HospitalisationComponent implements OnInit {
   private fetchPatientByReference(reference: string): void {
     console.log('🔍 Recherche patient par référence:', reference);
 
-    this.authService.getUserByReference(reference).subscribe({
+    this.localGetUserByReference(reference).subscribe({
       next: (user) => {
         this.handlePatientFound(user);
       },
@@ -248,20 +402,15 @@ export class HospitalisationComponent implements OnInit {
       // Réinitialiser le département sélectionné
       this.formData.departmentId = 0;
       this.departementsFiltered = [];
-
-      // Charger les départements de l'établissement sélectionné
-      this.hospitalisationService.getDepartements(this.formData.facilityId).subscribe({
+      // Charger les départements (mock)
+      this.localGetDepartements(this.formData.facilityId).subscribe({
         next: (data) => {
           this.departementsFiltered = data;
-          console.log('Départements chargés:', this.departementsFiltered);
+          console.log('Départements mock chargés:', this.departementsFiltered);
         },
         error: (error) => {
-          console.error('Erreur lors du chargement des départements:', error);
-          if (error.status === 403) {
-            alert('Accès refusé. Veuillez vous reconnecter.');
-          } else {
-            alert('Erreur lors du chargement des départements');
-          }
+          console.error('Erreur lors du chargement des départements (mock):', error);
+          this.departementsFiltered = [];
         }
       });
     } else {
@@ -421,13 +570,13 @@ export class HospitalisationComponent implements OnInit {
 
     console.log('📤 Données envoyées à l\'API:', requestData);
 
-    // Appel API
-    this.hospitalisationService.createHospitalisation(requestData).subscribe({
+    // Mock create
+    this.localCreateHospitalisation(requestData).subscribe({
       next: (response) => {
-        console.log('✅ Hospitalisation créée:', response);
+        console.log('✅ Hospitalisation mock créée:', response);
         Swal.fire({
           title: 'Succès!',
-          text: 'Hospitalisation enregistrée avec succès',
+          text: 'Hospitalisation enregistrée (mock)',
           icon: 'success',
           confirmButtonColor: '#01b894',
           confirmButtonText: 'OK',
@@ -437,11 +586,10 @@ export class HospitalisationComponent implements OnInit {
         });
       },
       error: (error) => {
-        console.error('❌ Erreur lors de la création:', error);
-        const errorMessage = error.error?.message || error.message || 'Une erreur est survenue lors de l\'enregistrement';
+        console.error('❌ Erreur lors de la création (mock):', error);
         Swal.fire({
           title: 'Erreur!',
-          text: errorMessage,
+          text: 'Une erreur est survenue lors de l\'enregistrement (mock)',
           icon: 'error',
           confirmButtonColor: '#01b894',
           confirmButtonText: 'OK',

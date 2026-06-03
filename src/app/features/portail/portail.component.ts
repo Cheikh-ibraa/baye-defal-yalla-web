@@ -1,10 +1,40 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { ContributionService, HelpNeededItem } from '../../services/contribution.service';
+
+interface HelpNeededItem {
+  id: number;
+  type: 'ANALYSIS' | 'IMAGING' | 'PRESCRIPTION' | string;
+  reference: string | null;
+  patientName: string;
+  patientAvatar: string | null;
+  patientId: string | null;
+  doctorName: string;
+  doctorspeciality: string | null;
+  doctorAvatar: string | null;
+  facilityName: string;
+  itemType: string | null;
+  description: string | null;
+  amount: number;
+  amountContributed: number;
+  remainingAmount: number;
+  contributionPercentage: number;
+  urgencyLevel: 'NORMAL' | 'URGENT' | 'CRITICAL' | null;
+  youngPatient: boolean;
+  createdAt: string | null;
+  appointmentDate: string | null;
+  status: string;
+  prescriptionFile: string | null;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  reportFile: string | null;
+  report: string | null;
+}
 
 interface UserProfile {
   id: string;
+  icon: string;
   name: string;
   description: string;
   imagePath: string;
@@ -42,6 +72,105 @@ interface DonationItem {
   donors: Donor[];
 }
 
+interface FeatureCard {
+  icon: 'prescription' | 'tracking' | 'payment' | 'search' | 'notifications' | 'dashboard';
+  title: string;
+  description: string;
+}
+
+const STATIC_HELP_NEEDED_ITEMS: HelpNeededItem[] = [
+  {
+    id: 1,
+    type: 'PRESCRIPTION',
+    reference: 'PR-2026-001',
+    patientName: 'Mamadou Sow',
+    patientAvatar: null,
+    patientId: 'P-0001',
+    doctorName: 'Awa Diop',
+    doctorspeciality: 'Généraliste',
+    doctorAvatar: null,
+    facilityName: 'Centre de santé de Fann',
+    itemType: 'Ordonnance',
+    description:
+      'Cette ordonnance médicale a été délivrée afin de financer des médicaments essentiels liés à une hypertension sévère.',
+    amount: 25000,
+    amountContributed: 17789,
+    remainingAmount: 7211,
+    contributionPercentage: 72,
+    urgencyLevel: 'URGENT',
+    youngPatient: false,
+    createdAt: '2026-02-06T10:20:00Z',
+    appointmentDate: '2026-02-15T09:00:00Z',
+    status: 'PENDING',
+    prescriptionFile: 'ordonnance.jpg',
+    address: 'Fann, Dakar',
+    latitude: 14.6937,
+    longitude: -17.4664,
+    reportFile: null,
+    report: null
+  },
+  {
+    id: 2,
+    type: 'ANALYSIS',
+    reference: 'AN-2026-011',
+    patientName: 'Seydou Diop',
+    patientAvatar: null,
+    patientId: 'P-0002',
+    doctorName: 'Mamadou Sarr',
+    doctorspeciality: 'Généraliste',
+    doctorAvatar: null,
+    facilityName: 'Laboratoire Pasteur',
+    itemType: 'Analyse sanguine',
+    description:
+      'Demande de soutien pour des analyses biologiques urgentes afin de confirmer un diagnostic et démarrer le traitement.',
+    amount: 50000,
+    amountContributed: 16500,
+    remainingAmount: 33500,
+    contributionPercentage: 33,
+    urgencyLevel: 'NORMAL',
+    youngPatient: false,
+    createdAt: '2026-02-09T12:30:00Z',
+    appointmentDate: '2026-02-18T08:30:00Z',
+    status: 'PENDING',
+    prescriptionFile: null,
+    address: 'Point E, Dakar',
+    latitude: 14.6928,
+    longitude: -17.4633,
+    reportFile: 'prescription_radio.pdf',
+    report: 'Analyses complémentaires recommandées par le médecin traitant.'
+  },
+  {
+    id: 3,
+    type: 'IMAGING',
+    reference: 'IM-2026-008',
+    patientName: 'Awa Cisse',
+    patientAvatar: null,
+    patientId: 'P-0003',
+    doctorName: 'Demba Thioune',
+    doctorspeciality: 'Cardiologue',
+    doctorAvatar: null,
+    facilityName: 'Imagerie Médicale Liberté',
+    itemType: 'Radiographie pulmonaire',
+    description:
+      'Soutien demandé pour financer un examen d’imagerie indispensable à l’évaluation clinique et au suivi.',
+    amount: 75000,
+    amountContributed: 49890,
+    remainingAmount: 25110,
+    contributionPercentage: 66,
+    urgencyLevel: 'CRITICAL',
+    youngPatient: false,
+    createdAt: '2026-02-10T09:10:00Z',
+    appointmentDate: '2026-02-20T11:00:00Z',
+    status: 'PENDING',
+    prescriptionFile: null,
+    address: 'Mermoz, Dakar',
+    latitude: 14.7065,
+    longitude: -17.4758,
+    reportFile: 'prescription_radio.pdf',
+    report: 'Examen d’imagerie prioritaire validé par le spécialiste.'
+  }
+];
+
 @Component({
   selector: 'app-portail',
   standalone: true,
@@ -54,12 +183,13 @@ export class PortailComponent implements OnInit {
 
   // API data
   helpNeededItems: HelpNeededItem[] = [];
-  isLoadingDons = true;
+  isLoadingDons = false;
   donsError: string | null = null;
 
   profiles: UserProfile[] = [
     {
       id: 'patient',
+      icon: 'patient',
       name: 'Patient',
       description:
         'Envoyez votre ordonnance, comparez les pharmacies proches, suivez votre livraison et payez en toute sécurité.',
@@ -76,6 +206,7 @@ export class PortailComponent implements OnInit {
     },
     {
       id: 'medecin',
+      icon: 'medecin',
       name: 'Médecin',
       description:
         'Prescrivez des ordonnances numériques, suivez vos patients et accédez à leur historique médical en temps réel.',
@@ -92,6 +223,7 @@ export class PortailComponent implements OnInit {
     },
     {
       id: 'pharmacien',
+      icon: 'pharmacien',
       name: 'Pharmacien',
       description:
         'Recevez et traitez les ordonnances, gérez votre stock et communiquez avec les patients et médecins.',
@@ -108,6 +240,7 @@ export class PortailComponent implements OnInit {
     },
     {
       id: 'livreur',
+      icon: 'livreur',
       name: 'Livreur',
       description:
         'Recevez les commandes, optimisez vos itinéraires et assurez une livraison rapide et sécurisée.',
@@ -124,6 +257,7 @@ export class PortailComponent implements OnInit {
     },
     {
       id: 'donateur',
+      icon: 'donateur',
       name: 'Donateur',
       description:
         "Soutenez des patients dans le besoin, suivez l'impact de vos dons et participez à des campagnes solidaires.",
@@ -160,6 +294,39 @@ export class PortailComponent implements OnInit {
       icon: 'check',
       title: 'Assistance client',
       description: 'Un support dédié pour toutes vos questions'
+    }
+  ];
+
+  featureCards: FeatureCard[] = [
+    {
+      icon: 'prescription',
+      title: 'Gestion d\'ordonnances',
+      description: 'Scan, upload et validation par la pharmacie en quelques minutes.'
+    },
+    {
+      icon: 'tracking',
+      title: 'Espace de dons',
+      description: 'Gestion des besoins, des dons et mise en relation en temps réel.'
+    },
+    {
+      icon: 'payment',
+      title: 'Paiement sécurisé',
+      description: 'Cartes et wallet, reçus automatiques et historique liste.'
+    },
+    {
+      icon: 'search',
+      title: 'Suivi en temps réel',
+      description: 'Tracking précis de la préparation au dernier kilomètre.'
+    },
+    {
+      icon: 'notifications',
+      title: 'Notifications',
+      description: 'Alerte de validation, départ livreur et arrivée prévue.'
+    },
+    {
+      icon: 'dashboard',
+      title: 'Tableau de bord',
+      description: 'Indicateurs clés : délais, satisfaction, chiffre généré.'
     }
   ];
 
@@ -251,7 +418,7 @@ export class PortailComponent implements OnInit {
     }
   ];
 
-  constructor(private router: Router, private contributionService: ContributionService) {
+  constructor(private router: Router) {
     this.selectedProfile = this.profiles[0];
   }
 
@@ -260,18 +427,9 @@ export class PortailComponent implements OnInit {
   }
 
   loadHelpNeeded(): void {
-    this.isLoadingDons = true;
+    this.isLoadingDons = false;
     this.donsError = null;
-    this.contributionService.getHelpNeeded(0, 10).subscribe({
-      next: (response) => {
-        this.helpNeededItems = response.content;
-        this.isLoadingDons = false;
-      },
-      error: (err) => {
-        this.donsError = 'Impossible de charger les besoins médicaux.';
-        this.isLoadingDons = false;
-      }
-    });
+    this.helpNeededItems = [...STATIC_HELP_NEEDED_ITEMS];
   }
 
   getUrgencyLabel(level: string): string {
@@ -343,21 +501,21 @@ export class PortailComponent implements OnInit {
 
   /** 🔹 Ouvre le modal détails don (appel API) */
   openDonationDetail(donationId: number, type: string): void {
-    this.detailLoading = true;
+    this.detailLoading = false;
     this.detailError = null;
     this.selectedHelpItem = null;
     this.showDetailModal = true;
 
-    this.contributionService.getHelpNeededDetail(type, donationId).subscribe({
-      next: (item) => {
-        this.selectedHelpItem = item;
-        this.detailLoading = false;
-      },
-      error: () => {
-        this.detailError = 'Impossible de charger les détails de cette contribution.';
-        this.detailLoading = false;
-      }
-    });
+    const item = this.helpNeededItems.find((don) => don.id === donationId && don.type === type)
+      ?? this.helpNeededItems.find((don) => don.id === donationId)
+      ?? null;
+
+    if (!item) {
+      this.detailError = 'Impossible de charger les détails de cette contribution.';
+      return;
+    }
+
+    this.selectedHelpItem = item;
   }
 
   /** 🔹 Ferme le modal détails */

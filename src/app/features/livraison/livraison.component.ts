@@ -2,10 +2,120 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { delay, takeUntil } from 'rxjs/operators';
 import Swal from 'sweetalert2';
-import { DeliveryService, DeliveryResponse, Delivery } from '../../services/delivery.service';
-import { AuthService, User } from '../../services/auth.service';
+import { User } from '../../core/auth.types';
+
+interface Doctor {
+  id: number;
+  nom: string;
+  prenom: string;
+}
+
+interface Patient {
+  id: number;
+  nom: string;
+  prenom: string;
+}
+
+interface Pharmacist {
+  id: number;
+  nom: string;
+  prenom: string;
+}
+
+interface Medication {
+  id: number;
+  name: string;
+  quantity: number;
+  dosage: string;
+  price: number;
+}
+
+interface Pharmacy {
+  id: number;
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+  latitude: number | null;
+  longitude: number | null;
+  logo: string;
+  hourly: string;
+  pharmacist: Pharmacist;
+}
+
+interface Prescription {
+  id: number;
+  reference: string;
+  doctor: Doctor;
+  patient: Patient;
+  createdAt: string;
+  status: string;
+  qrCodeUrl: string;
+  fullyPaidByDonor: boolean;
+  partiallyPaidByDonor: boolean;
+  pharmacy: Pharmacy;
+  amount: number;
+  amountContributed: number;
+  needsHelp: boolean;
+  address: string;
+  latitude: number | null;
+  longitude: number | null;
+  prescriptionFile: string | null;
+  medications: Medication[];
+  contributionPercentage: number;
+}
+
+interface DeliveryPerson {
+  id: number;
+  nom: string;
+  prenom: string;
+}
+
+interface Delivery {
+  id: number;
+  prescription: Prescription;
+  deliveryPerson: DeliveryPerson;
+  deliveryAddress: string;
+  deliveryTime: string;
+  status: string;
+  patientOrRepresentativePickup: boolean;
+  pharmacyLat: number;
+  pharmacyLon: number;
+  patientLat: number;
+  patientLon: number;
+  price: number;
+  deliveredAt: string | null;
+  cancelledAt: string | null;
+}
+
+interface DeliveryItem {
+  delivery: Delivery;
+  price: number;
+}
+
+interface DeliveryResponse {
+  content: DeliveryItem[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: { sorted: boolean; unsorted: boolean; empty: boolean };
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  numberOfElements: number;
+  size: number;
+  number: number;
+  sort: { sorted: boolean; unsorted: boolean; empty: boolean };
+  first: boolean;
+  empty: boolean;
+}
 
 @Component({
   selector: 'app-livraison',
@@ -39,11 +149,145 @@ export class LivraisonComponent implements OnInit, OnDestroy {
   private userId: number = 0;
   private pharmacyId: number = 0;
   private destroy$ = new Subject<void>();
+  private mockDeliveries: Delivery[] = [];
+  private mockCurrentUser: User = {
+    id: 1,
+    nom: 'Demo',
+    prenom: 'Livreur',
+    email: 'demo@pharmacie.local',
+    profil: 'PHARMACIEN',
+    pharmacyId: 1,
+    telephone: '',
+    adress: '',
+    lat: 0,
+    lon: 0
+  } as User;
 
-  constructor(
-    private deliveryService: DeliveryService,
-    private authService: AuthService
-  ) { }
+  constructor() { }
+
+  private getMockCurrentUser(): User {
+    return this.mockCurrentUser;
+  }
+
+  private initMockDeliveries(): void {
+    if (this.mockDeliveries.length > 0) return;
+
+    const pharmacy = {
+      id: 1,
+      name: 'Pharmacie Demo',
+      address: 'Adresse de démonstration',
+      phone: '000000000',
+      email: 'demo@pharmacie.local',
+      latitude: 0,
+      longitude: 0,
+      logo: '',
+      hourly: '08:00-18:00',
+      pharmacist: { id: 1, nom: 'Demo', prenom: 'Pharmacien' }
+    };
+
+    const prescriptionBase: Prescription = {
+      id: 1,
+      reference: 'CMD-0001',
+      doctor: { id: 10, nom: 'Dupont', prenom: 'Jean' },
+      patient: { id: 20, nom: 'Martin', prenom: 'Alice' },
+      createdAt: new Date().toISOString(),
+      status: 'CREATED',
+      qrCodeUrl: '',
+      fullyPaidByDonor: false,
+      partiallyPaidByDonor: false,
+      pharmacy,
+      amount: 3500,
+      amountContributed: 0,
+      needsHelp: false,
+      address: 'Quartier Centre',
+      latitude: null,
+      longitude: null,
+      prescriptionFile: null,
+      medications: [
+        { id: 1, name: 'Paracétamol', quantity: 2, dosage: '500mg', price: 1200 }
+      ],
+      contributionPercentage: 0
+    };
+
+    this.mockDeliveries = [
+      {
+        id: 1,
+        prescription: prescriptionBase,
+        deliveryPerson: { id: 1, nom: 'Diallo', prenom: 'Ibrahima' },
+        deliveryAddress: 'Quartier Centre',
+        deliveryTime: '12:30',
+        status: 'CREATED',
+        patientOrRepresentativePickup: false,
+        pharmacyLat: 0,
+        pharmacyLon: 0,
+        patientLat: 0,
+        patientLon: 0,
+        price: 500,
+        deliveredAt: null,
+        cancelledAt: null
+      },
+      {
+        id: 2,
+        prescription: {
+          ...prescriptionBase,
+          id: 2,
+          reference: 'CMD-0002',
+          status: 'ACCEPTED',
+          amount: 5400,
+          medications: [
+            { id: 2, name: 'Amoxicilline', quantity: 1, dosage: '1g', price: 5400 }
+          ]
+        },
+        deliveryPerson: { id: 2, nom: 'Sy', prenom: 'Moussa' },
+        deliveryAddress: 'Quartier Nord',
+        deliveryTime: '15:00',
+        status: 'PENDING',
+        patientOrRepresentativePickup: true,
+        pharmacyLat: 0,
+        pharmacyLon: 0,
+        patientLat: 0,
+        patientLon: 0,
+        price: 700,
+        deliveredAt: null,
+        cancelledAt: null
+      }
+    ];
+  }
+
+  private localGetDeliveries(
+    pharmacyId: number,
+    status: string = 'CREATED',
+    page: number = 0,
+    size: number = 10
+  ) {
+    this.initMockDeliveries();
+    const filtered = this.mockDeliveries.filter(delivery => delivery.status === status);
+    const start = page * size;
+    const content = filtered.slice(start, start + size).map(delivery => ({ delivery, price: delivery.price }));
+
+    const response: DeliveryResponse = {
+      content,
+      pageable: {
+        pageNumber: page,
+        pageSize: size,
+        sort: { sorted: false, unsorted: true, empty: true },
+        offset: start,
+        paged: true,
+        unpaged: false
+      },
+      totalElements: filtered.length,
+      totalPages: Math.max(1, Math.ceil(filtered.length / size)),
+      last: start + content.length >= filtered.length,
+      numberOfElements: content.length,
+      size,
+      number: page,
+      sort: { sorted: false, unsorted: true, empty: true },
+      first: page === 0,
+      empty: content.length === 0
+    };
+
+    return of(response).pipe(delay(220));
+  }
 
   ngOnInit(): void {
     this.initializeUserData();
@@ -58,33 +302,15 @@ export class LivraisonComponent implements OnInit, OnDestroy {
    * Initialiser les données utilisateur à partir de l'AuthService
    */
   private initializeUserData(): void {
-    // Vérifier si l'utilisateur est connecté
-    if (!this.authService.isLoggedIn()) {
-      console.error('Utilisateur non connecté');
-      this.showAuthenticationError();
-      return;
-    }
-
-    // Récupérer l'utilisateur actuel depuis l'AuthService
-    const currentUser = this.authService.getCurrentUser();
+    const currentUser = this.getMockCurrentUser();
 
     if (currentUser && currentUser.id) {
       this.userId = currentUser.id;
       console.log('ID utilisateur récupéré:', this.userId);
 
-      // Charger les données une fois l'ID récupéré
       this.loadUserDataAndDeliveries();
     } else {
-      // Si pas d'utilisateur en cache, écouter les changements
-      this.authService.currentUser$
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(user => {
-          if (user && user.id) {
-            this.userId = user.id;
-            console.log('ID utilisateur récupéré via observable:', this.userId);
-            this.loadUserDataAndDeliveries();
-          }
-        });
+      this.showAuthenticationError();
     }
   }
 
@@ -99,27 +325,25 @@ export class LivraisonComponent implements OnInit, OnDestroy {
 
     this.loading = true;
 
-    // Récupérer les informations complètes de l'utilisateur pour obtenir le pharmacyId
-    this.authService.getCurrentUserById(this.userId).subscribe({
-      next: (user: User) => {
-        if (user.pharmacyId) {
-          this.pharmacyId = user.pharmacyId;
-          console.log('ID pharmacie récupéré:', this.pharmacyId);
+    const currentUser = this.getMockCurrentUser();
+    const user = currentUser && currentUser.id === this.userId ? currentUser : null;
 
-          // Maintenant charger les livraisons
-          this.loadDeliveries();
-        } else {
-          console.error('Aucun ID de pharmacie trouvé pour l\'utilisateur connecté');
-          this.loading = false;
-          this.showNoPharmacyError();
-        }
-      },
-      error: (error) => {
-        console.error('Erreur lors du chargement des données utilisateur:', error);
-        this.loading = false;
-        this.showUserDataError();
-      }
-    });
+    if (!user) {
+      this.loading = false;
+      this.showUserDataError();
+      return;
+    }
+
+    if (user.pharmacyId) {
+      this.pharmacyId = user.pharmacyId;
+      console.log('ID pharmacie récupéré:', this.pharmacyId);
+
+      this.loadDeliveries();
+    } else {
+      console.error('Aucun ID de pharmacie trouvé pour l\'utilisateur connecté');
+      this.loading = false;
+      this.showNoPharmacyError();
+    }
   }
 
   /**
@@ -135,7 +359,7 @@ export class LivraisonComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.error = '';
 
-    this.deliveryService.getDeliveries(
+    this.localGetDeliveries(
       this.pharmacyId, // Utilisation de l'ID de pharmacie dynamique
       this.selectedStatus,
       this.currentPage,
@@ -153,7 +377,7 @@ export class LivraisonComponent implements OnInit, OnDestroy {
           this.selectedDelivery = this.deliveries[0];
         }
       },
-      error: (error) => {
+      error: (error: any) => {
         this.error = 'Erreur lors du chargement des livraisons';
         this.loading = false;
         console.error('Erreur:', error);
@@ -366,11 +590,11 @@ export class LivraisonComponent implements OnInit, OnDestroy {
 
   // Utility methods for component state
   isUserLoggedIn(): boolean {
-    return this.authService.isLoggedIn();
+    return !!this.getMockCurrentUser();
   }
 
   getCurrentUserProfile(): string {
-    const user = this.authService.getCurrentUser();
+    const user = this.getMockCurrentUser();
     return user?.profil || '';
   }
 

@@ -1,10 +1,12 @@
 <!-- Container principal avec fond clair -->
 <div class="min-h-screen">
     <!-- Message d'erreur -->
-    <div *ngIf="showError" class="fixed top-4 right-4 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg z-50 max-w-md animate-fade-in">
+    <div *ngIf="showError"
+        class="fixed top-4 right-4 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg z-50 max-w-md animate-fade-in">
         <div class="flex items-center gap-3">
             <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <span>{{ errorMessage }}</span>
         </div>
@@ -43,12 +45,15 @@
 
             <!-- Bouton Exporter -->
             <button (click)="exportData()" [disabled]="isExporting"
-                class="flex items-center gap-2 px-4 py-3 bg-[#2C7BE5] text-white rounded-md hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors text-sm font-medium shadow-sm">
+                class="flex items-center gap-2 px-4 py-3 bg-[#2C7BE5j] text-white rounded-md hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors text-sm font-medium shadow-sm">
                 <ng-container *ngIf="isExporting; else exportIcon">
                     <!-- Spinner pendant l'export -->
-                    <svg class="animate-spin w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    <svg class="animate-spin w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z">
+                        </path>
                     </svg>
                     Exportation...
                 </ng-container>
@@ -78,9 +83,10 @@
             <!-- Header de la carte avec icône -->
             <div class="flex items-center justify-between">
                 <div class="flex-1">
-                    <p class="text-sm font-medium text-[#64748B] mb-2">{{ card.title }}</p>
-                    <h2 class="text-3xl font-semibold mb-2" [ngClass]="i === 0 ? 'text-[#00B894]' : 'text-[#343A40]'">{{ card.value }}</h2>
-                    <p class="text-xs text-[#64748B]">{{ card.subtitle }}</p>
+                    <p class="text-sm font-medium text-[#6B7280] mb-2">{{ card.title }}</p>
+                    <h2 class="text-3xl font-semibold mb-2" [ngClass]="i === 0 ? 'text-[#00B894]' : 'text-[#343A40]'">{{
+                        card.value }}</h2>
+                    <p class="text-xs text-[#6B7280]">{{ card.subtitle }}</p>
                 </div>
 
                 <!-- Icône -->
@@ -209,15 +215,13 @@
         <!-- Pagination -->
         <div *ngIf="totalPages > 1" class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="text-sm text-gray-700">
-                Affichage de <span class="font-semibold">{{ (currentPage * pageSize) + 1 }}</span> à 
-                <span class="font-semibold">{{ Math.min((currentPage + 1) * pageSize, totalElements) }}</span> 
+                Affichage de <span class="font-semibold">{{ (currentPage * pageSize) + 1 }}</span> à
+                <span class="font-semibold">{{ Math.min((currentPage + 1) * pageSize, totalElements) }}</span>
                 sur <span class="font-semibold">{{ totalElements }}</span> transactions
             </div>
 
             <div class="flex items-center gap-2">
-                <button (click)="previousPage()" 
-                    [disabled]="currentPage === 0"
-                    [class.opacity-50]="currentPage === 0"
+                <button (click)="previousPage()" [disabled]="currentPage === 0" [class.opacity-50]="currentPage === 0"
                     [class.cursor-not-allowed]="currentPage === 0"
                     class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:hover:bg-white transition-colors">
                     Précédent
@@ -225,18 +229,15 @@
 
                 <div class="flex items-center gap-1">
                     <button *ngFor="let page of [].constructor(Math.min(totalPages, 5)); let i = index"
-                        (click)="goToPage(i)"
-                        [class.bg-blue-600]="i === currentPage"
-                        [class.text-white]="i === currentPage"
-                        [class.text-gray-700]="i !== currentPage"
+                        (click)="goToPage(i)" [class.bg-blue-600]="i === currentPage"
+                        [class.text-white]="i === currentPage" [class.text-gray-700]="i !== currentPage"
                         [class.hover:bg-gray-100]="i !== currentPage"
                         class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium transition-colors">
                         {{ i + 1 }}
                     </button>
                 </div>
 
-                <button (click)="nextPage()" 
-                    [disabled]="currentPage === totalPages - 1"
+                <button (click)="nextPage()" [disabled]="currentPage === totalPages - 1"
                     [class.opacity-50]="currentPage === totalPages - 1"
                     [class.cursor-not-allowed]="currentPage === totalPages - 1"
                     class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:hover:bg-white transition-colors">

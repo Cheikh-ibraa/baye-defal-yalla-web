@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { LaboratoireService } from '../../../services/laboratoire/laboratoire.service';
+import { of } from 'rxjs';
+import { delay } from 'rxjs/operators';
 import { Laboratoire } from '../../../modele/laboratoir';
 import { Location } from '@angular/common';
 
@@ -113,7 +114,6 @@ export class DetailLaboratoireComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private laboratoireService: LaboratoireService,
     private location: Location
   ) { }
 
@@ -154,47 +154,47 @@ export class DetailLaboratoireComponent implements OnInit {
   loadExamen(id: number): void {
     this.loading = true;
 
-    this.laboratoireService.getLaboratoireById(id).subscribe({
-      next: (data) => {
-        this.examApi = data;
-        console.log('Détail examen laboratoire', this.examApi);
+    localGetLaboratoireById(id).subscribe({
+      next: (data: Laboratoire | null) => {
+        this.examApi = data as any;
+        console.log('Détail examen laboratoire (mock)', this.examApi);
 
         this.examen = {
-          code: `LAB-${data.id}`,
-          type: data.type,
-          urgence: data.urgencyLevel === 'URGENT',
-          statut: data.status
+          code: `LAB-${data?.id || ''}`,
+          type: data?.type || '',
+          urgence: data?.urgencyLevel === 'URGENT',
+          statut: data?.status || ''
         };
 
         this.patient = {
-          initials: data.patientName.split(' ').map(n => n[0]).join(''),
-          name: data.patientName,
+          initials: (data?.patientName || '').split(' ').map((n: string) => n[0]).join(''),
+          name: data?.patientName || '',
           role: 'Patient'
         };
 
         this.prescripteur = {
-          name: data.doctorName,
+          name: data?.doctorName || '',
           specialite: 'Médecin prescripteur'
         };
 
         this.prescription = {
-          typeExamen: data.type,
-          indications: data.clinicalIndication ? [data.clinicalIndication] : [],
-          dateReception: new Date(data.createdAt).toLocaleString()
+          typeExamen: data?.type || '',
+          indications: data?.clinicalIndication ? [data.clinicalIndication] : [],
+          dateReception: data?.createdAt ? new Date(data.createdAt).toLocaleString() : ''
         };
 
         this.rendezVous = {
-          date: data.appointmentDate || '—',
-          heure: data.appointmentTime || '—'
+          date: data?.appointmentDate || '—',
+          heure: data?.appointmentTime || '—'
         };
 
         this.loading = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         this.error = 'Erreur lors du chargement du détail';
         this.loading = false;
         this.showErrorToast('Impossible de charger les détails de l\'examen');
-        console.error('Erreur chargement examen:', err);
+        console.error('Erreur chargement examen (mock):', err);
       }
     });
   }
@@ -306,9 +306,9 @@ export class DetailLaboratoireComponent implements OnInit {
       time: this.validationDemandeForm.heure
     };
 
-    this.laboratoireService.acceptLaboratoire(payload).subscribe({
-      next: (res) => {
-        console.log('✅ Demande validée:', res);
+    localAcceptLaboratoire(payload).subscribe({
+      next: (res: any) => {
+        console.log('✅ Demande validée (mock):', res);
 
         this.showValidationDemandeModal = false;
         this.showValidationDemandeSuccess = true;
@@ -321,8 +321,8 @@ export class DetailLaboratoireComponent implements OnInit {
           }
         }, 2000);
       },
-      error: (err) => {
-        console.error('❌ Erreur validation demande:', err);
+      error: (err: any) => {
+        console.error('❌ Erreur validation demande (mock):', err);
         this.showErrorToast('Erreur lors de la validation de la demande');
       }
     });
@@ -423,14 +423,14 @@ export class DetailLaboratoireComponent implements OnInit {
 
     const pdfPwd = this.compteRenduForm.pdfPassword;
 
-    this.laboratoireService.submitAnalysisReport({
-      requestId: this.examApi.id,
+    localSubmitAnalysisReport({
+      requestId: this.examApi?.id || 0,
       report: this.compteRenduForm.description,
       reportFile: this.compteRenduFile || undefined,
       pdfPassword: pdfPwd || undefined
     }).subscribe({
-      next: (response) => {
-        console.log('✅ Compte rendu publié:', response);
+      next: (response: any) => {
+        console.log('✅ Compte rendu publié (mock):', response);
 
         // Conserver le mot de passe pour affichage dans l'aperçu
         this.lastSubmittedPdfPassword = this.compteRenduForm.pdfPassword;
@@ -449,8 +449,8 @@ export class DetailLaboratoireComponent implements OnInit {
           }
         }, 2000);
       },
-      error: (err) => {
-        console.error('❌ Erreur publication compte rendu:', err);
+      error: (err: any) => {
+        console.error('❌ Erreur publication compte rendu (mock):', err);
         this.showErrorToast('Erreur lors de la publication du compte rendu');
       }
     });
@@ -539,4 +539,39 @@ export class DetailLaboratoireComponent implements OnInit {
       .join('');
   }
 
+}
+
+// ===== Local mocks used by this component =====
+function noop() {}
+
+/* Add mock implementations as top-level functions to avoid touching class fields too much */
+
+// Simulates fetching a Laboratoire by id
+function localGetLaboratoireById(id: number) {
+  const mock: Laboratoire = {
+    id,
+    patientName: 'Alice Mock',
+    doctorName: 'Dr Mock',
+    laboratoryName: 'Lab Mock',
+    type: 'Blood Test',
+    clinicalIndication: '',
+    youngPatient: false,
+    urgencyLevel: 'NORMAL',
+    status: 'PENDING',
+    createdAt: new Date().toISOString(),
+    appointmentDate: '',
+    appointmentTime: '',
+    pictures: [],
+    report: '',
+    reportFile: ''
+  };
+  return of(mock).pipe(delay(150));
+}
+
+function localAcceptLaboratoire(payload: any) {
+  return of({ message: 'Accepted' }).pipe(delay(120));
+}
+
+function localSubmitAnalysisReport(payload: any) {
+  return of({ message: 'Report submitted' }).pipe(delay(180));
 }

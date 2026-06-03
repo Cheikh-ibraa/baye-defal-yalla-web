@@ -155,7 +155,7 @@
   width: 20px;
   height: 20px;
   cursor: pointer;
-  accent-color: #00d4aa;
+  accent-color: #104382;
 }
 
 .radio-text {
@@ -199,13 +199,13 @@
 }
 
 .btn-primary {
-  background: #00d4aa;
+  background: #104382;
   color: white;
   min-width: 140px;
 }
 
 .btn-primary:hover {
-  background: #00c29d;
+  background: #104382;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 212, 170, 0.3);
 }

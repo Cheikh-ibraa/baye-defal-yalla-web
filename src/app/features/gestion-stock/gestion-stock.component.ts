@@ -1,17 +1,73 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
+import { Observable, of, throwError } from 'rxjs';
+import { delay } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import Swal from 'sweetalert2';
-import { StockService, Stock, CreateStockRequest, StockPageResponse, PaginationParams } from '../../services/stock.service';
-import { AuthService, User } from '../../services/auth.service';
+// Inlined types from src/app/services/stock.service.ts
+interface Stock {
+  id?: number;
+  name: string;
+  description: string;
+  quantity: number;
+  criticalThreshold: number;
+  pharmacyId: number;
+  unitPrice: number;
+  stockLevel?: string;
+}
+
+interface CreateStockRequest {
+  name: string;
+  description: string;
+  quantity: number;
+  criticalThreshold: number;
+  pharmacyId: number;
+  unitPrice: number;
+}
+
+interface Sort {
+  unsorted: boolean;
+  sorted: boolean;
+  empty: boolean;
+}
+
+interface Pageable {
+  pageNumber: number;
+  pageSize: number;
+  sort: Sort;
+  offset: number;
+  paged: boolean;
+  unpaged: boolean;
+}
+
+interface StockPageResponse {
+  content: Stock[];
+  pageable: Pageable;
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  numberOfElements: number;
+  size: number;
+  number: number;
+  sort: Sort;
+  first: boolean;
+  empty: boolean;
+}
+
+interface PaginationParams {
+  page?: number;
+  size?: number;
+  sortBy?: string;
+  direction?: 'asc' | 'desc';
+}
+// AuthFacade removed — using local mock current user for static UI
 
 @Component({
   selector: 'app-gestion-stock',
   standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './gestion-stock.component.html',
   styleUrls: ['./gestion-stock.component.css']
 })
@@ -60,12 +116,132 @@ export class GestionStockComponent implements OnInit, OnDestroy {
   // User and pharmacy IDs - dynamically retrieved from AuthService
   private userId: number = 0;
   private pharmacyId: number = 0;
+  // Local in-component state to simulate backend
+  private mockData: Stock[] = [];
+  private nextId = 1;
   private destroy$ = new Subject<void>();
 
-  constructor(
-    private stockService: StockService,
-    private authService: AuthService
-  ) {}
+  constructor() {
+    this.initLocalStockData();
+  }
+
+  private initLocalStockData(): void {
+    for (let i = 1; i <= 42; i++) {
+      const qty = Math.floor(Math.random() * 50);
+      const critical = Math.floor(Math.random() * 10);
+      this.mockData.push({
+        id: i,
+        name: `Produit ${i}`,
+        description: `Description du produit ${i}`,
+        quantity: qty,
+        criticalThreshold: critical,
+        pharmacyId: 1,
+        unitPrice: Math.floor(Math.random() * 5000) + 100,
+        stockLevel: qty === 0 ? 'Rupture' : (qty <= critical ? 'Stock faible' : 'En stock')
+      });
+      this.nextId = i + 1;
+    }
+  }
+
+    // Local mock for current user
+    private getMockCurrentUser() {
+      return { id: 7, prenom: 'Pharmacien', nom: 'Diallo', profil: 'PHARMACIE', pharmacyId: 1 };
+    }
+
+    // Local replacement for getCurrentUserById
+    private localGetCurrentUserById(id: number) {
+      const mock = { id, prenom: 'Pharmacien', nom: 'Diallo', profil: 'PHARMACIE', pharmacyId: 1 };
+      return of(mock).pipe(delay(120));
+    }
+
+  // Local implementations replacing StockService methods
+  private localSaveStock(stock: CreateStockRequest): Observable<Stock> {
+    const created: Stock = {
+      ...stock,
+      id: this.nextId++,
+      stockLevel: stock.quantity === 0 ? 'Rupture' : (stock.quantity <= stock.criticalThreshold ? 'Stock faible' : 'En stock')
+    };
+    this.mockData.unshift(created);
+    return of(created).pipe(delay(300));
+  }
+
+  private localGetStock(pharmacyId: number, params?: PaginationParams): Observable<StockPageResponse> {
+    const page = params?.page ?? 0;
+    const size = params?.size ?? 10;
+    const sortBy = params?.sortBy ?? 'id';
+    const direction = params?.direction ?? 'asc';
+
+    let filtered = this.mockData.filter(d => d.pharmacyId === pharmacyId);
+    if (filtered.length === 0) filtered = [...this.mockData];
+
+    const sorted = filtered.sort((a, b) => {
+      let aVal: any = (a as any)[sortBy];
+      let bVal: any = (b as any)[sortBy];
+      if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+      if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+      if (aVal < bVal) return direction === 'asc' ? -1 : 1;
+      if (aVal > bVal) return direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    const totalElements = sorted.length;
+    const totalPages = Math.max(1, Math.ceil(totalElements / size));
+    const start = page * size;
+    const content = sorted.slice(start, start + size).map(s => ({ ...s }));
+
+    const response: StockPageResponse = {
+      content,
+      pageable: {
+        pageNumber: page,
+        pageSize: size,
+        sort: { unsorted: false, sorted: true, empty: false },
+        offset: start,
+        paged: true,
+        unpaged: false
+      },
+      totalElements,
+      totalPages,
+      last: page >= totalPages - 1,
+      numberOfElements: content.length,
+      size,
+      number: page,
+      sort: { unsorted: false, sorted: true, empty: false } as any,
+      first: page === 0,
+      empty: content.length === 0
+    };
+
+    return of(response).pipe(delay(250));
+  }
+
+  private localUpdateStock(id: number, stock: CreateStockRequest): Observable<Stock> {
+    const idx = this.mockData.findIndex(s => s.id === id);
+    if (idx === -1) return throwError(() => new Error('Stock non trouvé'));
+    const updated: Stock = { ...this.mockData[idx], ...stock, id };
+    updated.stockLevel = updated.quantity === 0 ? 'Rupture' : (updated.quantity <= updated.criticalThreshold ? 'Stock faible' : 'En stock');
+    this.mockData[idx] = updated;
+    return of(updated).pipe(delay(300));
+  }
+
+  private localDeleteStock(id: number): Observable<any> {
+    this.mockData = this.mockData.filter(s => s.id !== id);
+    return of(null).pipe(delay(200));
+  }
+
+  private localAddStock(id: number, quantity: number): Observable<Stock> {
+    const idx = this.mockData.findIndex(s => s.id === id);
+    if (idx === -1) return throwError(() => new Error('Stock non trouvé'));
+    this.mockData[idx].quantity += quantity;
+    this.mockData[idx].stockLevel = this.mockData[idx].quantity === 0 ? 'Rupture' : (this.mockData[idx].quantity <= this.mockData[idx].criticalThreshold ? 'Stock faible' : 'En stock');
+    return of({ ...this.mockData[idx] }).pipe(delay(200));
+  }
+
+  private localRemoveStock(id: number, quantity: number): Observable<Stock> {
+    const idx = this.mockData.findIndex(s => s.id === id);
+    if (idx === -1) return throwError(() => new Error('Stock non trouvé'));
+    this.mockData[idx].quantity = Math.max(0, this.mockData[idx].quantity - quantity);
+    this.mockData[idx].stockLevel = this.mockData[idx].quantity === 0 ? 'Rupture' : (this.mockData[idx].quantity <= this.mockData[idx].criticalThreshold ? 'Stock faible' : 'En stock');
+    return of({ ...this.mockData[idx] }).pipe(delay(200));
+  }
 
   ngOnInit(): void {
     this.initializeUserData();
@@ -80,33 +256,12 @@ export class GestionStockComponent implements OnInit, OnDestroy {
    * Initialiser les données utilisateur à partir de l'AuthService
    */
   private initializeUserData(): void {
-    // Vérifier si l'utilisateur est connecté
-    if (!this.authService.isLoggedIn()) {
-      console.error('Utilisateur non connecté');
-      this.showAuthenticationError();
-      return;
-    }
-
-    // Récupérer l'utilisateur actuel depuis l'AuthService
-    const currentUser = this.authService.getCurrentUser();
-    
+    // Use local mock current user for static UI
+    const currentUser = this.getMockCurrentUser();
     if (currentUser && currentUser.id) {
       this.userId = currentUser.id;
-      console.log('ID utilisateur récupéré:', this.userId);
-      
-      // Charger les données une fois l'ID récupéré
+      console.log('ID utilisateur (mock) récupéré:', this.userId);
       this.loadUserDataAndStocks();
-    } else {
-      // Si pas d'utilisateur en cache, écouter les changements
-      this.authService.currentUser$
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(user => {
-          if (user && user.id) {
-            this.userId = user.id;
-            console.log('ID utilisateur récupéré via observable:', this.userId);
-            this.loadUserDataAndStocks();
-          }
-        });
     }
   }
 
@@ -121,26 +276,21 @@ export class GestionStockComponent implements OnInit, OnDestroy {
 
     this.isLoading = true;
     
-    // Récupérer les informations complètes de l'utilisateur pour obtenir le pharmacyId
-    this.authService.getCurrentUserById(this.userId).subscribe({
-      next: (user: User) => {
+    // Use local mock to get user details including pharmacyId
+    this.localGetCurrentUserById(this.userId).subscribe({
+      next: (user: any) => {
         if (user.pharmacyId) {
           this.pharmacyId = user.pharmacyId;
-          console.log('ID pharmacie récupéré:', this.pharmacyId);
-          
-          // Mettre à jour le formulaire avec l'ID de pharmacie
           this.stockForm.pharmacyId = this.pharmacyId;
-          
-          // Maintenant charger les stocks
           this.loadStocks();
         } else {
-          console.error('Aucun ID de pharmacie trouvé pour l\'utilisateur connecté');
+          console.error('Aucun ID de pharmacie trouvé pour l\'utilisateur (mock)');
           this.isLoading = false;
           this.showNoPharmacyError();
         }
       },
-      error: (error) => {
-        console.error('Erreur lors du chargement des données utilisateur:', error);
+      error: (error: any) => {
+        console.error('Erreur lors du chargement des données utilisateur (mock):', error);
         this.isLoading = false;
         this.showUserDataError();
       }
@@ -163,7 +313,7 @@ export class GestionStockComponent implements OnInit, OnDestroy {
       direction: 'asc'
     };
 
-    this.stockService.getStock(this.pharmacyId, params).subscribe({
+    this.localGetStock(this.pharmacyId, params).subscribe({
       next: (response: StockPageResponse) => {
         this.stocks = response.content.map(stock => ({
           ...stock,
@@ -279,7 +429,7 @@ export class GestionStockComponent implements OnInit, OnDestroy {
   // CRUD operations
   addProduct(): void {
     if (this.isFormValid()) {
-      this.stockService.saveStock(this.stockForm).subscribe({
+      this.localSaveStock(this.stockForm).subscribe({
         next: (newStock: Stock) => {
           console.log('Produit ajouté avec succès:', newStock);
           
@@ -316,7 +466,7 @@ export class GestionStockComponent implements OnInit, OnDestroy {
 
   updateProduct(): void {
     if (this.editingStock && this.isFormValid()) {
-      this.stockService.updateStock(this.editingStock.id!, this.stockForm).subscribe({
+      this.localUpdateStock(this.editingStock.id!, this.stockForm).subscribe({
         next: (updatedStock: Stock) => {
           console.log('Produit modifié avec succès:', updatedStock);
           
@@ -367,7 +517,7 @@ export class GestionStockComponent implements OnInit, OnDestroy {
         cancelButtonText: 'Annuler'
       }).then((result) => {
         if (result.isConfirmed) {
-          this.stockService.deleteStock(this.deletingStockId!).subscribe({
+          this.localDeleteStock(this.deletingStockId!).subscribe({
             next: () => {
               console.log('Produit supprimé avec succès');
               
@@ -451,7 +601,7 @@ export class GestionStockComponent implements OnInit, OnDestroy {
   submitAddStock(): void {
     if (!this.stockActionTarget?.id || this.stockActionQuantity <= 0) return;
     this.stockActionLoading = true;
-    this.stockService.addStock(this.stockActionTarget.id, this.stockActionQuantity).subscribe({
+    this.localAddStock(this.stockActionTarget.id, this.stockActionQuantity).subscribe({
       next: () => {
         this.stockActionLoading = false;
         this.closeAddStockModal();
@@ -468,7 +618,7 @@ export class GestionStockComponent implements OnInit, OnDestroy {
   submitRemoveStock(): void {
     if (!this.stockActionTarget?.id || this.stockActionQuantity <= 0) return;
     this.stockActionLoading = true;
-    this.stockService.removeStock(this.stockActionTarget.id, this.stockActionQuantity).subscribe({
+    this.localRemoveStock(this.stockActionTarget.id, this.stockActionQuantity).subscribe({
       next: () => {
         this.stockActionLoading = false;
         this.closeRemoveStockModal();
@@ -618,11 +768,11 @@ export class GestionStockComponent implements OnInit, OnDestroy {
 
   // Utility methods for component state
   isUserLoggedIn(): boolean {
-    return this.authService.isLoggedIn();
+    return !!this.getMockCurrentUser();
   }
 
   getCurrentUserProfile(): string {
-    const user = this.authService.getCurrentUser();
+    const user = this.getMockCurrentUser();
     return user?.profil || '';
   }
 

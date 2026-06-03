@@ -1,10 +1,74 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PharmacieService, AmountStats, WithdrawalHistoryResponse, WithdrawalItem, BankParameterResponse, CreateWithdrawalRequest } from '../../services/pharmacie.service';
-import { AuthService } from '../../services/auth.service';
+// Local types inlined from pharmacie.service
+interface AmountStats {
+  totalPaidAmount: number;
+  totalPendingAmount: number;
+  totalPaidCount: number;
+}
+
+interface WithdrawalItem {
+  id: number;
+  reference: string;
+  amount: number;
+  bankName: string;
+  accountNumber: string;
+  accountHolder: string;
+  status: string;
+  comment: string | null;
+  createdAt: string;
+  processedAt: string | null;
+}
+
+interface WithdrawalHistoryResponse {
+  content: WithdrawalItem[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      sorted: boolean;
+      unsorted: boolean;
+      empty: boolean;
+    };
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  numberOfElements: number;
+  size: number;
+  number: number;
+  sort: {
+    sorted: boolean;
+    unsorted: boolean;
+    empty: boolean;
+  };
+  first: boolean;
+  empty: boolean;
+}
+
+interface BankParameterResponse {
+  id: number;
+  bankName: string;
+  rib: string;
+  phone: string;
+  fullName: string;
+}
+
+interface CreateWithdrawalRequest {
+  pharmacyId: number;
+  amount: number;
+  bankName: string;
+  accountNumber: string;
+  accountHolder: string;
+}
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { delay } from 'rxjs/operators';
 
 interface StatCard {
   title: string;
@@ -105,12 +169,120 @@ export class FinanceRetraitsComponent implements OnInit, OnDestroy {
   errorMessage = '';
   showError = false;
 
-  constructor(
-    private pharmacieService: PharmacieService,
-    private authService: AuthService
-  ) {
+  constructor() {
     console.log('💳 FinanceRetraitsComponent initialisé');
     this.initializeStatsCards();
+  }
+
+  // Local mock current user + fetcher (replaces AuthFacade)
+  private getMockCurrentUser(): User {
+    return {
+      id: 7,
+      pharmacyId: 1,
+      nom: 'Pharmacie Centrale',
+      prenom: 'Admin',
+      telephone: '+221770000000'
+    };
+  }
+
+  private localGetCurrentUserById(userId: number): Observable<User> {
+    const mock: User = {
+      id: userId,
+      pharmacyId: 1,
+      nom: 'Pharmacie Centrale',
+      prenom: 'Admin',
+      telephone: '+221770000000'
+    };
+    return of(mock).pipe(delay(120));
+  }
+
+  // Local mock/state for sandbox
+  private mockSolde = 78250;
+  private mockBankInfo: BankParameterResponse = {
+    id: 1,
+    bankName: 'Banque Demo',
+    rib: 'FR76 1234 5678 9012 3456 7890 123',
+    phone: '+221770000000',
+    fullName: 'Pharmacie Centrale SARL'
+  };
+  private mockAmountStats: AmountStats = { totalPaidAmount: 1523000, totalPendingAmount: 42000, totalPaidCount: 125 };
+  private mockWithdrawals: WithdrawalItem[] = [];
+
+  private initMockWithdrawals(): void {
+    if (this.mockWithdrawals.length) return;
+    for (let i = 1; i <= 47; i++) {
+      const status = i % 6 === 0 ? 'REJECTED' : (i % 4 === 0 ? 'PAID' : (i % 3 === 0 ? 'APPROVED' : 'PENDING'));
+      this.mockWithdrawals.push({
+        id: i,
+        reference: `RET-${1000 + i}`,
+        amount: Math.floor(Math.random() * 150000) + 5000,
+        bankName: this.mockBankInfo.bankName,
+        accountNumber: this.mockBankInfo.rib,
+        accountHolder: this.mockBankInfo.fullName,
+        status,
+        comment: status === 'REJECTED' ? 'Montant invalide' : null,
+        createdAt: new Date(Date.now() - i * 86400000).toISOString(),
+        processedAt: status === 'PAID' ? new Date(Date.now() - (i - 1) * 86400000).toISOString() : null
+      });
+    }
+  }
+
+  private localGetSoldeDashboard(pharmacyId: number): Observable<number> {
+    return of(this.mockSolde).pipe(delay(180));
+  }
+
+  private localGetBankParameterByPharmacyId(pharmacyId: number): Observable<BankParameterResponse> {
+    return of(this.mockBankInfo).pipe(delay(160));
+  }
+
+  private localGetAmount(pharmacyId: number, year: number): Observable<AmountStats> {
+    return of(this.mockAmountStats).pipe(delay(200));
+  }
+
+  private localGetHistoriques(pharmacyId: number, status?: string, page: number = 0, size: number = 10): Observable<WithdrawalHistoryResponse> {
+    this.initMockWithdrawals();
+    let items = this.mockWithdrawals.slice();
+    if (status) {
+      items = items.filter(w => w.status === status);
+    }
+    const totalElements = items.length;
+    const totalPages = Math.max(1, Math.ceil(totalElements / size));
+    const start = page * size;
+    const content = items.slice(start, start + size);
+    const response: WithdrawalHistoryResponse = {
+      content,
+      pageable: { pageNumber: page, pageSize: size, sort: { sorted: false, unsorted: true, empty: false }, offset: start, paged: true, unpaged: false },
+      totalElements,
+      totalPages,
+      last: page >= totalPages - 1,
+      numberOfElements: content.length,
+      size,
+      number: page,
+      sort: { sorted: false, unsorted: true, empty: false },
+      first: page === 0,
+      empty: content.length === 0
+    };
+    return of(response).pipe(delay(220));
+  }
+
+  private localCreateWithdrawal(payload: CreateWithdrawalRequest): Observable<any> {
+    // Simulate creation and append to mock list
+    const id = this.mockWithdrawals.length + 1;
+    const item: WithdrawalItem = {
+      id,
+      reference: `RET-${1000 + id}`,
+      amount: payload.amount,
+      bankName: payload.bankName,
+      accountNumber: payload.accountNumber,
+      accountHolder: payload.accountHolder,
+      status: 'PENDING',
+      comment: null,
+      createdAt: new Date().toISOString(),
+      processedAt: null
+    };
+    this.mockWithdrawals.unshift(item);
+    this.mockSolde -= payload.amount;
+    return of({ success: true }).pipe(delay(260));
   }
 
   ngOnInit(): void {
@@ -166,15 +338,9 @@ export class FinanceRetraitsComponent implements OnInit, OnDestroy {
   private initializeDashboard(): void {
     console.log('[INIT] 🚀 Démarrage initialisation retraits');
 
-    if (!this.authService.isLoggedIn()) {
-      console.error('❌ Utilisateur non connecté');
-      this.showErrorMessage('Vous devez être connecté pour accéder à cette page');
-      return;
-    }
-
     this.isLoading = true;
 
-    const currentUser = this.authService.getCurrentUser();
+    const currentUser = this.getMockCurrentUser();
 
     if (!currentUser || !currentUser.id) {
       console.error('❌ Aucun utilisateur connecté trouvé');
@@ -186,7 +352,7 @@ export class FinanceRetraitsComponent implements OnInit, OnDestroy {
     this.userId = currentUser.id;
     console.log('✅ User ID récupéré:', this.userId);
 
-    this.authService.getCurrentUserById(this.userId)
+    this.localGetCurrentUserById(this.userId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (user: User) => {
@@ -241,7 +407,7 @@ export class FinanceRetraitsComponent implements OnInit, OnDestroy {
 
     console.log('[API] 💰 Chargement du solde disponible...');
 
-    this.pharmacieService.getSoldeDashboard(this.pharmacyId)
+    this.localGetSoldeDashboard(this.pharmacyId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (solde: number) => {
@@ -262,7 +428,7 @@ export class FinanceRetraitsComponent implements OnInit, OnDestroy {
   private loadBankInformation(): void {
     if (!this.pharmacyId) return;
 
-    this.pharmacieService.getBankParameterByPharmacyId(this.pharmacyId)
+    this.localGetBankParameterByPharmacyId(this.pharmacyId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (bankInfo: BankParameterResponse) => {
@@ -289,7 +455,7 @@ export class FinanceRetraitsComponent implements OnInit, OnDestroy {
 
     const currentYear = new Date().getFullYear();
 
-    this.pharmacieService.getAmount(this.pharmacyId, currentYear)
+    this.localGetAmount(this.pharmacyId, currentYear)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (stats: AmountStats) => {
@@ -324,7 +490,7 @@ export class FinanceRetraitsComponent implements OnInit, OnDestroy {
 
     this.isLoading = true;
 
-    this.pharmacieService.getHistoriques(
+    this.localGetHistoriques(
       this.pharmacyId,
       status,
       this.currentPage,
@@ -478,7 +644,7 @@ export class FinanceRetraitsComponent implements OnInit, OnDestroy {
 
     this.isLoading = true;
 
-    this.pharmacieService.createWithdrawal(payload)
+    this.localCreateWithdrawal(payload)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {

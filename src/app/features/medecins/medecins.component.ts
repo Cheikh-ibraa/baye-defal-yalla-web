@@ -229,7 +229,7 @@ export class MedecinsComponent implements OnInit, AfterViewInit {
           datasets: [{
             label: 'Ordonnances',
             data: this.topMedecins.map(m => m.ordonnances),
-            backgroundColor: '#10B981',
+            backgroundColor: '#5DADE2',
             borderRadius: 4
           }]
         },
