@@ -135,8 +135,8 @@ export class ChirurgieComponent {
 
   paiementClass(p: PaiementStatus): string {
     switch (p) {
-      case 'Financé':        return 'text-[#16A34A]';
-      case 'En attente':     return 'text-[#DC2626]';
+      case 'Financé':        return 'text-[#006E2A]';
+      case 'En attente':     return 'text-[#791C00]';
       case 'Partiellement':  return 'text-[#D97706]';
     }
   }

@@ -26,6 +26,18 @@ export class HospitalisationComponent {
   searchQuery = '';
   activeFilter = 'all';
 
+  // Modal form states
+  showModal = false;
+  patientSearchQuery = 'Jean-Marc';
+  admissionDate = '22/05/2026';
+  admissionService = 'Chirurgie';
+  chambreLit = '';
+  medecinResponsable = 'Dr. Sarah Lemoine';
+  motifAdmission = '';
+  urgencyLevel = 'Urgent';
+  montantEstime = '200 000';
+  statutPaiement = 'Non payé';
+
   filters = [
     { id: 'all', label: 'Tous' },
     { id: 'active', label: 'En cours' },
@@ -150,5 +162,37 @@ export class HospitalisationComponent {
   openDossier(patient: PatientHospital, event: Event): void {
     event.stopPropagation();
     this.router.navigate(['/hospitalisations', patient.patientId]);
+  }
+  openModal(): void {
+    this.patientSearchQuery = 'Jean-Marc';
+    this.admissionDate = '22/05/2026';
+    this.admissionService = 'Chirurgie';
+    this.chambreLit = '';
+    this.medecinResponsable = 'Dr. Sarah Lemoine';
+    this.motifAdmission = '';
+    this.urgencyLevel = 'Urgent';
+    this.montantEstime = '200 000';
+    this.statutPaiement = 'Non payé';
+    this.showModal = true;
+  }
+
+  closeModal(): void {
+    this.showModal = false;
+  }
+
+  submitHospitalisation(): void {
+    const isJeanMarc = this.patientSearchQuery.toLowerCase().includes('jean-marc');
+    this.patients.unshift({
+      fullname: isJeanMarc ? 'Jean-Marc Bernard' : (this.patientSearchQuery || 'Nouveau Patient'),
+      patientId: isJeanMarc ? '88421' : Math.floor(10000 + Math.random() * 90000).toString(),
+      age: isJeanMarc ? 54 : 35,
+      status: this.urgencyLevel.toUpperCase(),
+      admission: this.admissionDate,
+      chambre: this.chambreLit || '402-A',
+      service: this.admissionService,
+      duree: '1 Jour',
+      progress: 0
+    });
+    this.closeModal();
   }
 }

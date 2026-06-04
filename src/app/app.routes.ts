@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 
 export const routes: Routes = [
-
+  { path: '', redirectTo: 'portail', pathMatch: 'full' },
   { path: 'portail', loadComponent: () => import('./features/portail/portail.component').then(m => m.PortailComponent) },
   { path: 'dons', loadComponent: () => import('./features/dons/dons.component').then(m => m.DonsComponent) },
   { path: 'register', loadComponent: () => import('./features/auth/register/register.component').then(m => m.RegisterComponent) },
@@ -19,8 +19,6 @@ export const routes: Routes = [
       import('./features/mobile-dicom-viewer/mobile-dicom-viewer.component')
         .then(m => m.MobileDicomViewerComponent)
   },
-
-  { path: '', redirectTo: '/portail', pathMatch: 'full' },
 
   {
     path: '',

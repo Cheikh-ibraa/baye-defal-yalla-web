@@ -7,7 +7,7 @@
         <h1 class="text-2xl font-semibold tracking-tight text-[#0F172A] sm:text-[28px]">Hospitalisation</h1>
         <p class="mt-1 text-sm text-[#94A3B8]">Gérez et suivez l'hospitalisations des patients</p>
       </div>
-      <button type="button"
+      <button type="button" (click)="openModal()"
         class="inline-flex items-center justify-center gap-2 rounded-lg bg-[#104382] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#0c2249]">
         <span>+ Hospitalisation</span>
       </button>
@@ -107,6 +107,227 @@
         class="col-span-full rounded-2xl bg-white py-12 text-center text-sm text-[#94A3B8] ring-1 ring-slate-100">
         Aucun patient hospitalisé ne correspond à votre recherche.
       </p>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal d'ajout d'hospitalisation -->
+<div *ngIf="showModal" class="fixed inset-0 bg-[#0F172A]/20 z-50 flex items-center justify-center p-4 overflow-y-auto">
+  <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden transform transition-all flex flex-col my-8">
+    
+    <!-- Header -->
+    <div class="px-6 py-5 flex items-center justify-between border-b border-slate-100 shrink-0">
+      <div class="flex items-center gap-4">
+        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#104382] text-white">
+         <svg width="20" height="14" viewBox="0 0 20 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 14V8C0 7.55 0.0916667 7.14167 0.275 6.775C0.458333 6.40833 0.7 6.08333 1 5.8V3C1 2.16667 1.29167 1.45833 1.875 0.875C2.45833 0.291667 3.16667 0 4 0H8C8.38333 0 8.74167 0.0708333 9.075 0.2125C9.40833 0.354167 9.71667 0.55 10 0.8C10.2833 0.55 10.5917 0.354167 10.925 0.2125C11.2583 0.0708333 11.6167 0 12 0H16C16.8333 0 17.5417 0.291667 18.125 0.875C18.7083 1.45833 19 2.16667 19 3V5.8C19.3 6.08333 19.5417 6.40833 19.725 6.775C19.9083 7.14167 20 7.55 20 8V14H18V12H2V14H0ZM11 5H17V3C17 2.71667 16.9042 2.47917 16.7125 2.2875C16.5208 2.09583 16.2833 2 16 2H12C11.7167 2 11.4792 2.09583 11.2875 2.2875C11.0958 2.47917 11 2.71667 11 3V5ZM3 5H9V3C9 2.71667 8.90417 2.47917 8.7125 2.2875C8.52083 2.09583 8.28333 2 8 2H4C3.71667 2 3.47917 2.09583 3.2875 2.2875C3.09583 2.47917 3 2.71667 3 3V5ZM2 10H18V8C18 7.71667 17.9042 7.47917 17.7125 7.2875C17.5208 7.09583 17.2833 7 17 7H3C2.71667 7 2.47917 7.09583 2.2875 7.2875C2.09583 7.47917 2 7.71667 2 8V10ZM18 10H2C2 10 2.09583 10 2.2875 10C2.47917 10 2.71667 10 3 10H17C17.2833 10 17.5208 10 17.7125 10C17.9042 10 18 10 18 10Z" fill="white"/>
+</svg>
+        </div>
+        <div>
+          <h2 class="text-sm sm:text-base font-semibold text-[#104382]">Nouvelle hospitalisation</h2>
+          <p class="text-sm text-[#64748B]">Admettre un patient dans un service</p>
+        </div>
+      </div>
+      <button type="button" (click)="closeModal()" class="text-[#94A3B8] hover:text-[#475569] transition p-1.5 rounded-lg hover:bg-slate-50">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="p-6 space-y-6 overflow-y-auto max-h-[calc(85vh-8rem)]">
+      
+      <!-- Section Patient -->
+      <div class="space-y-4">
+        <span class="inline-flex items-center gap-2 text-xssm sm:text-base font-medium uppercase tracking-wider text-[#104382]">
+         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M4.66667 4.66667C4.025 4.66667 3.47569 4.43819 3.01875 3.98125C2.56181 3.52431 2.33333 2.975 2.33333 2.33333C2.33333 1.69167 2.56181 1.14236 3.01875 0.685417C3.47569 0.228472 4.025 0 4.66667 0C5.30833 0 5.85764 0.228472 6.31458 0.685417C6.77153 1.14236 7 1.69167 7 2.33333C7 2.975 6.77153 3.52431 6.31458 3.98125C5.85764 4.43819 5.30833 4.66667 4.66667 4.66667ZM4.66667 3.5C4.9875 3.5 5.26215 3.38576 5.49062 3.15729C5.7191 2.92882 5.83333 2.65417 5.83333 2.33333C5.83333 2.0125 5.7191 1.73785 5.49062 1.50937C5.26215 1.2809 4.9875 1.16667 4.66667 1.16667C4.34583 1.16667 4.07118 1.2809 3.84271 1.50937C3.61424 1.73785 3.5 2.0125 3.5 2.33333C3.5 2.65417 3.61424 2.92882 3.84271 3.15729C4.07118 3.38576 4.34583 3.5 4.66667 3.5ZM11.1417 11.375L9.275 9.50833C9.07083 9.625 8.85208 9.72222 8.61875 9.8C8.38542 9.87778 8.1375 9.91667 7.875 9.91667C7.14583 9.91667 6.52604 9.66146 6.01562 9.15104C5.50521 8.64062 5.25 8.02083 5.25 7.29167C5.25 6.5625 5.50521 5.94271 6.01562 5.43229C6.52604 4.92188 7.14583 4.66667 7.875 4.66667C8.60417 4.66667 9.22396 4.92188 9.73438 5.43229C10.2448 5.94271 10.5 6.5625 10.5 7.29167C10.5 7.55417 10.4611 7.80208 10.3833 8.03542C10.3056 8.26875 10.2083 8.4875 10.0917 8.69167L11.9583 10.5583L11.1417 11.375ZM7.875 8.75C8.28333 8.75 8.62847 8.60903 8.91042 8.32708C9.19236 8.04514 9.33333 7.7 9.33333 7.29167C9.33333 6.88333 9.19236 6.53819 8.91042 6.25625C8.62847 5.97431 8.28333 5.83333 7.875 5.83333C7.46667 5.83333 7.12153 5.97431 6.83958 6.25625C6.55764 6.53819 6.41667 6.88333 6.41667 7.29167C6.41667 7.7 6.55764 8.04514 6.83958 8.32708C7.12153 8.60903 7.46667 8.75 7.875 8.75ZM0 9.33333V7.71458C0 7.38403 0.0826389 7.07778 0.247917 6.79583C0.413194 6.51389 0.641667 6.3 0.933333 6.15417C1.42917 5.90139 1.98819 5.6875 2.61042 5.5125C3.23264 5.3375 3.92292 5.25 4.68125 5.25C4.56458 5.425 4.46493 5.61215 4.38229 5.81146C4.29965 6.01076 4.23403 6.21736 4.18542 6.43125C3.60208 6.47986 3.08194 6.57951 2.625 6.73021C2.16806 6.8809 1.78403 7.03889 1.47292 7.20417C1.37569 7.25278 1.30035 7.32326 1.24688 7.41563C1.1934 7.50799 1.16667 7.60764 1.16667 7.71458V8.16667H4.18542C4.23403 8.38056 4.29965 8.58472 4.38229 8.77917C4.46493 8.97361 4.56458 9.15833 4.68125 9.33333H0Z" fill="#104382"/>
+</svg>
+          SECTION PATIENT
+        </span>
+        
+        <div>
+          <label class="text-xs font-semibold text-[#475569] mb-1.5 block">Rechercher patient</label>
+          <div class="relative">
+            <svg class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94A3B8]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" [(ngModel)]="patientSearchQuery"
+              class="w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-[14px] text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#00339E]/20 focus:border-[#00339E]" />
+          </div>
+        </div>
+
+        <!-- Result Card -->
+        <div *ngIf="patientSearchQuery.toLowerCase().includes('jean-marc')" class="rounded-xl bg-[#EFF6FF] border border-[#BFDBFE] p-4 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="flex h-11 w-11 items-center justify-center rounded-full bg-[#BFDBFE] text-[#00339E] font-bold text-sm">
+              JB
+            </div>
+            <div>
+              <h4 class="text-sm font-bold text-[#0F172A]">Jean-Marc Bernard</h4>
+              <p class="text-xs text-[#64748B]">#BDY-88421 &bull; 54 ans &bull; Groupe A+</p>
+            </div>
+          </div>
+          <div class="h-6 w-6 rounded-full bg-[#00339E] flex items-center justify-center text-white">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Informations du Séjour -->
+      <div class="space-y-4">
+        <span class="inline-flex items-center gap-2 text-xssm sm:text-base font-medium uppercase tracking-wider text-[#104382]">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="16" x2="12" y2="12" />
+            <line x1="12" y1="8" x2="12.01" y2="8" />
+          </svg>
+          INFORMATIONS DU SÉJOUR
+        </span>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="text-xs font-semibold text-[#475569] mb-1.5 block">Date d'admission</label>
+            <input type="text" [(ngModel)]="admissionDate"
+              class="w-full rounded-xl border border-slate-200 bg-[#F8FAFC] px-4 py-3 text-[14px] text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#00339E]/20 focus:border-[#00339E]" />
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-[#475569] mb-1.5 block">Service</label>
+            <div class="relative">
+              <select [(ngModel)]="admissionService" class="w-full appearance-none rounded-xl border border-slate-200 bg-[#F8FAFC] pl-4 pr-10 py-3 text-[14px] text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#00339E]/20 focus:border-[#00339E]">
+                <option value="Chirurgie">Chirurgie</option>
+                <option value="Cardiologie">Cardiologie</option>
+                <option value="Maternité">Maternité</option>
+                <option value="Orthopédie">Orthopédie</option>
+              </select>
+              <div class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-[#475569] mb-1.5 block">Chambre / Lit</label>
+            <input type="text" [(ngModel)]="chambreLit" placeholder="ex: 402-A"
+              class="w-full rounded-xl border border-slate-200 bg-[#F8FAFC] px-4 py-3 text-[14px] text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#00339E]/20 focus:border-[#00339E]" />
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-[#475569] mb-1.5 block">Médecin responsable</label>
+            <div class="relative">
+              <select [(ngModel)]="medecinResponsable" class="w-full appearance-none rounded-xl border border-slate-200 bg-[#F8FAFC] pl-4 pr-10 py-3 text-[14px] text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#00339E]/20 focus:border-[#00339E]">
+                <option value="Dr. Sarah Lemoine">Dr. Sarah Lemoine</option>
+                <option value="Dr. Awa Diop">Dr. Dr. Awa Diop</option>
+                <option value="Dr. Mamadou Sarr">Dr. Mamadou Sarr</option>
+                <option value="Dr. Demba Thioune">Dr. Demba Thioune</option>
+              </select>
+              <div class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
+
+      <!-- Détails Médicaux -->
+      <div class="space-y-4">
+        <span class="inline-flex items-center gap-2 text-xssm sm:text-base font-medium uppercase tracking-wider text-[#104382]">
+         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M2.91667 9.33333H4.08333V8.16667H5.25V7H4.08333V5.83333H2.91667V7H1.75V8.16667H2.91667V9.33333ZM6.41667 7.29167H9.91667V6.41667H6.41667V7.29167ZM6.41667 9.04167H8.75V8.16667H6.41667V9.04167ZM1.16667 11.6667C0.845833 11.6667 0.571181 11.5524 0.342708 11.324C0.114236 11.0955 0 10.8208 0 10.5V4.08333C0 3.7625 0.114236 3.48785 0.342708 3.25938C0.571181 3.0309 0.845833 2.91667 1.16667 2.91667H4.08333V1.16667C4.08333 0.845833 4.19757 0.571181 4.42604 0.342708C4.65451 0.114236 4.92917 0 5.25 0H6.41667C6.7375 0 7.01215 0.114236 7.24062 0.342708C7.4691 0.571181 7.58333 0.845833 7.58333 1.16667V2.91667H10.5C10.8208 2.91667 11.0955 3.0309 11.324 3.25938C11.5524 3.48785 11.6667 3.7625 11.6667 4.08333V10.5C11.6667 10.8208 11.5524 11.0955 11.324 11.324C11.0955 11.5524 10.8208 11.6667 10.5 11.6667H1.16667ZM1.16667 10.5H10.5V4.08333H7.58333C7.58333 4.40417 7.4691 4.67882 7.24062 4.90729C7.01215 5.13576 6.7375 5.25 6.41667 5.25H5.25C4.92917 5.25 4.65451 5.13576 4.42604 4.90729C4.19757 4.67882 4.08333 4.40417 4.08333 4.08333H1.16667V10.5ZM5.25 4.08333H6.41667V1.16667H5.25V4.08333Z" fill="#104382"/>
+</svg>
+
+          DÉTAILS MÉDICAUX
+        </span>
+
+        <div>
+          <label class="text-xs font-semibold text-[#475569] mb-1.5 block">Motif de l'admission</label>
+          <textarea rows="3" [(ngModel)]="motifAdmission" placeholder="Description clinique du motif..."
+            class="w-full rounded-xl border border-slate-200 bg-[#F8FAFC] px-4 py-3 text-[14px] text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#00339E]/20 focus:border-[#00339E] resize-none"></textarea>
+        </div>
+
+        <div>
+          <label class="text-xs font-semibold text-[#475569] mb-2.5 block">Niveau d'urgence</label>
+          <div class="grid grid-cols-3 gap-3">
+            <button type="button" (click)="urgencyLevel = 'Normal'"
+              class="py-3 px-4 rounded-xl text-sm font-semibold transition border text-center"
+              [ngClass]="urgencyLevel === 'Normal'
+                ? 'bg-blue-50 border-[#00339E] text-[#00339E]'
+                : 'bg-[#F8FAFC] border-slate-200 text-[#64748B] hover:bg-slate-50'">
+              Normal
+            </button>
+            <button type="button" (click)="urgencyLevel = 'Urgent'"
+              class="py-3 px-4 rounded-xl text-sm font-semibold transition border text-center"
+              [ngClass]="urgencyLevel === 'Urgent'
+                ? 'bg-[#FFF0E6] border-[#F97316] text-[#EA580C]'
+                : 'bg-[#F8FAFC] border-slate-200 text-[#64748B] hover:bg-slate-50'">
+              Urgent
+            </button>
+            <button type="button" (click)="urgencyLevel = 'Critique'"
+              class="py-3 px-4 rounded-xl text-sm font-semibold transition border text-center"
+              [ngClass]="urgencyLevel === 'Critique'
+                ? 'bg-red-50 border-red-500 text-red-600'
+                : 'bg-[#F8FAFC] border-slate-200 text-[#64748B] hover:bg-slate-50'">
+              Critique
+            </button>
+          </div>
+        </div>
+      </div>
+
+<!-- Aspect Financier -->
+      <div class="space-y-4">
+        <span class="inline-flex items-center gap-2 text-sm sm:text-base font-medium uppercase tracking-wider text-[#104382]">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="5" width="20" height="14" rx="2" stroke-width="2"/>
+            <line x1="2" y1="10" x2="22" y2="10"/>
+          </svg>
+          ASPECT FINANCIER
+        </span>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="text-xs font-semibold text-[#475569] mb-1.5 block">Montant estimé (FCFA)</label>
+            <input type="text" [(ngModel)]="montantEstime"
+              class="w-full rounded-xl border border-slate-200 bg-[#F8FAFC] px-4 py-3 text-[14px] text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#00339E]/20 focus:border-[#00339E]" />
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-[#475569] mb-1.5 block">Statut de paiement</label>
+            <div class="relative">
+              <select [(ngModel)]="statutPaiement" class="w-full appearance-none rounded-xl border border-slate-200 bg-[#F8FAFC] pl-4 pr-10 py-3 text-[14px] text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#00339E]/20 focus:border-[#00339E]">
+                <option value="Non payé">Non payé</option>
+                <option value="Payé">Payé</option>
+                <option value="Partiellement payé">Partiellement payé</option>
+              </select>
+              <div class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="px-6 py-5 border-t border-slate-100 flex items-center justify-end gap-3 shrink-0">
+      <button type="button" (click)="closeModal()"
+        class="px-6 py-3 text-sm font-semibold rounded-lg border border-slate-200 bg-white text-[#475569]">
+        Annuler
+      </button>
+      <button type="button" (click)="submitHospitalisation()"
+        class="px-6 py-3 text-sm rounded-lg bg-[#104382] text-white">
+        Admettre le patient
+      </button>
     </div>
 
   </div>
