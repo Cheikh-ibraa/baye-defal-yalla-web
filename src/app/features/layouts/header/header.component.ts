@@ -140,7 +140,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
       LABORATOIRE: 'Laboratoire',
       HOSPITAL: 'Hôpital',
       HOPITAL: 'Hôpital',
-      EMERGENCY: 'Service d’urgence'
+      EMERGENCY: 'Service d’urgence',
+      FOURNISSEUR: 'Fournisseur',
+      SUPPLIER: 'Fournisseur'
     };
 
     return roleMap[cleanProfil] || profil;
@@ -282,14 +284,23 @@ formatRole(role: string | null | undefined): string {
   const rolesMap: Record<string, string> = {
     ADMIN: 'Administrateur',
     DOCTOR: 'Médecin',
+    MEDECIN: 'Médecin',
     PHARMACIST: 'Pharmacien',
+    PHARMACIE: 'Pharmacien',
     PATIENT: 'Patient',
     REPRESENTATIVE: 'Représentant',
     DONOR: 'Donneur',
     DELIVERY_PERSON: 'Livreur',
     IMAGING_CENTER: 'Centre d’Imagerie',
+    IMAGERIE: 'Centre d’Imagerie',
     LABORATORY: 'Laboratoire',
-    EMERGENCY: 'Urgence'
+    LAB: 'Laboratoire',
+    LABORATOIRE: 'Laboratoire',
+    HOSPITAL: 'Hôpital',
+    HOPITAL: 'Hôpital',
+    EMERGENCY: 'Urgence',
+    FOURNISSEUR: 'Fournisseur',
+    SUPPLIER: 'Fournisseur'
   };
 
   return rolesMap[role.toUpperCase()] || this.capitalizeWords(role);
@@ -343,6 +354,12 @@ private capitalizeWords(text: string): string {
     if (url.startsWith('/dashboard-imagerie') || 
         url.startsWith('/examens-imagerie')) {
       return 'IMAGING_CENTER';
+    }
+    // ⚠️ FOURNISSEUR must be checked BEFORE HOSPITAL to avoid /demandes matching /demandes-fournisseur
+    if (url.startsWith('/dashboard-fournisseur') || 
+        url.startsWith('/demandes-fournisseur') || 
+        url.startsWith('/devis-fournisseur')) {
+      return 'FOURNISSEUR';
     }
     if (url.startsWith('/dashboard-hospital') || 
         url.startsWith('/demandes') || 

@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
 type ChirurgieStatus = 'URGENT' | 'EN PRÉPARATION' | 'PLANIFIÉ' | 'TERMINÉ';
-type PaiementStatus = 'Financé' | 'En attente' | 'Partiellement';
+type PaiementStatus = 'Financé' | 'En attente' ;
 
 interface ChirurgieCard {
   id: string;
@@ -79,36 +79,16 @@ export class ChirurgieComponent {
       chirurgien: 'Dr. Marcus Thorne',
       paiement: 'Financé'
     },
-    {
-      id: 'PX-3305',
-      fullname: 'Sophie Durand',
-      age: 44,
-      status: 'PLANIFIÉ',
-      intervention: 'Thyroïdectomie',
-      service: 'Chirurgie endocrinienne',
-      planificationDate: '26 oct.',
-      planificationTime: '10:00',
-      chirurgien: 'Dr. Sarah Jenkins',
-      paiement: 'Partiellement'
-    },
-    {
-      id: 'PX-1190',
-      fullname: 'Omar Diallo',
-      age: 60,
-      status: 'URGENT',
-      intervention: 'Laparotomie exploratrice',
-      service: 'Chirurgie viscérale',
-      planificationDate: "Aujourd'hui, 24 oct.",
-      planificationTime: '11:45',
-      chirurgien: 'Dr. Henri Lavoie',
-      paiement: 'En attente'
-    }
   ];
 
   constructor(private router: Router) {}
 
   openDetail(id: string): void {
     this.router.navigate(['/chirurgie', id]);
+  }
+
+  openForm(): void {
+    this.router.navigate(['/chirurgie/nouvelle']);
   }
 
   get filtered(): ChirurgieCard[] {
@@ -137,7 +117,6 @@ export class ChirurgieComponent {
     switch (p) {
       case 'Financé':        return 'text-[#006E2A]';
       case 'En attente':     return 'text-[#791C00]';
-      case 'Partiellement':  return 'text-[#D97706]';
     }
   }
 

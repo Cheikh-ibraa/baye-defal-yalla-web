@@ -1,0 +1,306 @@
+<div class="min-h-screen bg-[#F4F6F9]">
+  <div class="mx-auto max-w-[1240px]">
+
+    <!-- En-tête -->
+    <div class="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+      <div class="flex items-center gap-4">
+        <button type="button" (click)="back()"
+          class="flex h-12 w-12 items-center justify-center rounded-lg bg-white text-[#4E5166] transition hover:bg-slate-50">
+          <svg width="18" height="14" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16.75 6.75H0.75M6.75 12.75L0.75 6.75L6.75 0.75" stroke="#2B3674" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+        <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight text-[#191B23]">Nouvelle chirurgie</h1>
+      </div>
+      <div class="flex items-center gap-3">
+        <button type="button" (click)="back()"
+          class="rounded-lg border border-[#104382] px-7 py-3 text-sm font-semibold text-[#104382] transition hover:bg-slate-50">
+          Annuler
+        </button>
+        <button type="button" (click)="submit()"
+          class="rounded-lg bg-[#104382] px-7 py-3 text-sm font-semibold text-white transition hover:bg-[#0c2249]">
+          Enregistrer
+        </button>
+      </div>
+    </div>
+
+    <!-- Contenu Principal -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- Colonne Gauche (lg:7) -->
+      <div class="lg:col-span-7 space-y-6">
+
+        <!-- Card Patient -->
+        <div class="rounded-2xl bg-white p-6 border border-slate-100 shadow-sm">
+          <span class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#434655] mb-4">
+            <img src="assets/icones/avatar.svg" alt="Patient Icon" class="h-4 w-4">
+            Patient
+          </span>
+
+          <div class="relative">
+            <input type="text" [(ngModel)]="patientSearchQuery" placeholder="Rechercher un patient..."
+              class="w-full rounded-xl border border-slate-200 bg-[#F4F6F9]/60 py-3.5 pl-4 pr-12 text-sm text-[#191B23] placeholder:text-[#6B7280] focus:border-[#104382] focus:outline-none focus:ring-1 focus:ring-[#104382]" />
+            <div class="absolute right-4 top-1/2 -translate-y-1/2 text-[#747686]">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Carte Patient Sélectionné -->
+          <div *ngIf="showPatientCard"
+            class="mt-4 rounded-xl bg-[#F0F5FD]/60 border border-[#D9E6FA] p-5 flex items-center justify-between">
+            <div>
+              <h4 class="text-lg sm:text-xl font-bold text-[#191B23]">Jean-Pierre Lambert</h4>
+              <p class="text-base text-[#747686] mt-1">72 ans • Homme • Groupe O+</p>
+            </div>
+            <span class="rounded-full bg-[#D9E6FA] text-[#104382] text-[11px] font-bold px-3 py-1">
+              #PX-8821
+            </span>
+          </div>
+        </div>
+
+        <!-- Card Demande Associée -->
+        <div class="rounded-2xl bg-white p-6 border border-slate-100 shadow-sm">
+          <span class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#434655] mb-4">
+            <svg width="11" height="14" viewBox="0 0 11 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M2.66667 10.6667H8V9.33333H2.66667V10.6667ZM2.66667 8H8V6.66667H2.66667V8ZM1.33333 13.3333C0.966667 13.3333 0.652778 13.2028 0.391667 12.9417C0.130556 12.6806 0 12.3667 0 12V1.33333C0 0.966667 0.130556 0.652778 0.391667 0.391667C0.652778 0.130556 0.966667 0 1.33333 0H6.66667L10.6667 4V12C10.6667 12.3667 10.5361 12.6806 10.275 12.9417C10.0139 13.2028 9.7 13.3333 9.33333 13.3333H1.33333ZM6 4.66667V1.33333H1.33333V12H9.33333V4.66667H6ZM1.33333 1.33333V4.66667V1.33333V4.66667V12V1.33333Z"
+                fill="#434655" />
+            </svg>
+            Demande associée
+          </span>
+
+          <div class="rounded-xl bg-[#F8FAFC] border border-slate-100 p-4 flex items-center justify-between">
+            <div class="flex items-center gap-3.5">
+              <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#006E2A1A] text-[#137333]">
+                <!-- ECG Icon -->
+                <svg width="22" height="19" viewBox="0 0 22 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M6.5 0C7.36667 0 8.19167 0.183333 8.975 0.55C9.75833 0.916667 10.4333 1.43333 11 2.1C11.5667 1.43333 12.2417 0.916667 13.025 0.55C13.8083 0.183333 14.6333 0 15.5 0C17.0667 0 18.375 0.525 19.425 1.575C20.475 2.625 21 3.93333 21 5.5C21 5.58333 20.9958 5.66667 20.9875 5.75C20.9792 5.83333 20.975 5.91667 20.975 6H18.975C18.9917 5.91667 19 5.83333 19 5.75C19 5.66667 19 5.58333 19 5.5C19 4.5 18.6667 3.66667 18 3C17.3333 2.33333 16.5 2 15.5 2C14.7167 2 13.9917 2.22083 13.325 2.6625C12.6583 3.10417 12.2 3.66667 11.95 4.35H10.05C9.8 3.66667 9.34167 3.10417 8.675 2.6625C8.00833 2.22083 7.28333 2 6.5 2C5.5 2 4.66667 2.33333 4 3C3.33333 3.66667 3 4.5 3 5.5C3 5.58333 3 5.66667 3 5.75C3 5.83333 3.00833 5.91667 3.025 6H1.025C1.025 5.91667 1.02083 5.83333 1.0125 5.75C1.00417 5.66667 1 5.58333 1 5.5C1 3.93333 1.525 2.625 2.575 1.575C3.625 0.525 4.93333 0 6.5 0ZM4.3 12H7.1C7.63333 12.5167 8.21667 13.075 8.85 13.675C9.48333 14.275 10.2 14.9333 11 15.65C11.8 14.9333 12.5167 14.275 13.15 13.675C13.7833 13.075 14.3667 12.5167 14.9 12H17.725C17.0917 12.7 16.3417 13.4583 15.475 14.275C14.6083 15.0917 13.6 16.0167 12.45 17.05L11 18.35L9.55 17.05C8.4 16.0167 7.39583 15.0917 6.5375 14.275C5.67917 13.4583 4.93333 12.7 4.3 12ZM10.05 13C10.2667 13 10.4542 12.9375 10.6125 12.8125C10.7708 12.6875 10.8833 12.525 10.95 12.325L12.3 8.25L13.175 9.55C13.2583 9.68333 13.375 9.79167 13.525 9.875C13.675 9.95833 13.8333 10 14 10H22V8H14.575L12.85 5.45C12.75 5.3 12.6208 5.1875 12.4625 5.1125C12.3042 5.0375 12.1333 5 11.95 5C11.7333 5 11.5458 5.0625 11.3875 5.1875C11.2292 5.3125 11.1167 5.475 11.05 5.675L9.7 9.725L8.85 8.45C8.76667 8.31667 8.65 8.20833 8.5 8.125C8.35 8.04167 8.19167 8 8.025 8H0V10H7.425L9.15 12.55C9.25 12.7 9.37917 12.8125 9.5375 12.8875C9.69583 12.9625 9.86667 13 10.05 13Z"
+                    fill="#006E2A" />
+                </svg>
+              </div>
+              <div>
+                <h4 class="text-sm sm:text-base font-bold text-[#191B23]">Chirurgie Cardiaque</h4>
+                <p class="text-xs text-[#6B7280] mt-0.5">Réf: REQ-9920</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="rounded-full bg-[#5CFD804D] text-[#137333] text-xs font-bold px-3 py-1">
+                Financé
+              </span>
+              <div class="h-6 w-6 rounded-full bg-[#E6F4EA] text-[#137333] flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M8.6 14.6L15.65 7.55L14.25 6.15L8.6 11.8L5.75 8.95L4.35 10.35L8.6 14.6ZM10 20C8.61667 20 7.31667 19.7375 6.1 19.2125C4.88333 18.6875 3.825 17.975 2.925 17.075C2.025 16.175 1.3125 15.1167 0.7875 13.9C0.2625 12.6833 0 11.3833 0 10C0 8.61667 0.2625 7.31667 0.7875 6.1C1.3125 4.88333 2.025 3.825 2.925 2.925C3.825 2.025 4.88333 1.3125 6.1 0.7875C7.31667 0.2625 8.61667 0 10 0C11.3833 0 12.6833 0.2625 13.9 0.7875C15.1167 1.3125 16.175 2.025 17.075 2.925C17.975 3.825 18.6875 4.88333 19.2125 6.1C19.7375 7.31667 20 8.61667 20 10C20 11.3833 19.7375 12.6833 19.2125 13.9C18.6875 15.1167 17.975 16.175 17.075 17.075C16.175 17.975 15.1167 18.6875 13.9 19.2125C12.6833 19.7375 11.3833 20 10 20ZM10 18C12.2333 18 14.125 17.225 15.675 15.675C17.225 14.125 18 12.2333 18 10C18 7.76667 17.225 5.875 15.675 4.325C14.125 2.775 12.2333 2 10 2C7.76667 2 5.875 2.775 4.325 4.325C2.775 5.875 2 7.76667 2 10C2 12.2333 2.775 14.125 4.325 15.675C5.875 17.225 7.76667 18 10 18Z"
+                    fill="#747686" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Détails Médicaux -->
+        <div class="rounded-2xl bg-white p-6 border border-slate-100 space-y-5">
+          <span class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#434655]">
+            <svg width="11" height="14" viewBox="0 0 11 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M2.66667 10.6667H8V9.33333H2.66667V10.6667ZM2.66667 8H8V6.66667H2.66667V8ZM1.33333 13.3333C0.966667 13.3333 0.652778 13.2028 0.391667 12.9417C0.130556 12.6806 0 12.3667 0 12V1.33333C0 0.966667 0.130556 0.652778 0.391667 0.391667C0.652778 0.130556 0.966667 0 1.33333 0H6.66667L10.6667 4V12C10.6667 12.3667 10.5361 12.6806 10.275 12.9417C10.0139 13.2028 9.7 13.3333 9.33333 13.3333H1.33333ZM6 4.66667V1.33333H1.33333V12H9.33333V4.66667H6ZM1.33333 1.33333V4.66667V1.33333V4.66667V12V1.33333Z"
+                fill="#434655" />
+            </svg>
+            Détails médicaux
+          </span>
+
+          <div>
+            <label class="text-[10px] font-bold uppercase tracking-wider text-[#6B7280] block mb-2">Diagnostic</label>
+            <textarea rows="3" [(ngModel)]="diagnostic" placeholder="Saisir le diagnostic..."
+              class="w-full rounded-xl border border-slate-200 bg-[#F8FAFC] p-4 text-sm text-[#191B23] placeholder:text-[#6B7280] focus:border-[#104382] focus:outline-none focus:ring-1 focus:ring-[#104382] resize-none h-24"></textarea>
+          </div>
+
+          <div>
+            <label class="text-[10px] font-bold uppercase tracking-wider text-[#6B7280] block mb-2">Description de
+              l'intervention</label>
+            <textarea rows="4" [(ngModel)]="descriptionIntervention"
+              placeholder="Détails techniques, matériel spécifique, notes pre-op..."
+              class="w-full rounded-xl border border-slate-200 bg-[#F8FAFC] p-4 text-sm text-[#191B23] placeholder:text-[#6B7280] focus:border-[#104382] focus:outline-none focus:ring-1 focus:ring-[#104382] resize-none h-32"></textarea>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Colonne Droite (lg:5) -->
+      <div class="lg:col-span-5 space-y-6">
+
+        <!-- Card Informations Chirurgie -->
+        <div class="rounded-2xl bg-white p-6 border border-slate-100 space-y-4">
+          <span class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#434655]">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M6 10H7.33333V6H6V10ZM6.66667 4.66667C6.85556 4.66667 7.01389 4.60278 7.14167 4.475C7.26944 4.34722 7.33333 4.18889 7.33333 4C7.33333 3.81111 7.26944 3.65278 7.14167 3.525C7.01389 3.39722 6.85556 3.33333 6.66667 3.33333C6.47778 3.33333 6.31944 3.39722 6.19167 3.525C6.06389 3.65278 6 3.81111 6 4C6 4.18889 6.06389 4.34722 6.19167 4.475C6.31944 4.60278 6.47778 4.66667 6.66667 4.66667ZM6.66667 13.3333C5.74444 13.3333 4.87778 13.1583 4.06667 12.8083C3.25556 12.4583 2.55 11.9833 1.95 11.3833C1.35 10.7833 0.875 10.0778 0.525 9.26667C0.175 8.45555 0 7.58889 0 6.66667C0 5.74444 0.175 4.87778 0.525 4.06667C0.875 3.25556 1.35 2.55 1.95 1.95C2.55 1.35 3.25556 0.875 4.06667 0.525C4.87778 0.175 5.74444 0 6.66667 0C7.58889 0 8.45555 0.175 9.26667 0.525C10.0778 0.875 10.7833 1.35 11.3833 1.95C11.9833 2.55 12.4583 3.25556 12.8083 4.06667C13.1583 4.87778 13.3333 5.74444 13.3333 6.66667C13.3333 7.58889 13.1583 8.45555 12.8083 9.26667C12.4583 10.0778 11.9833 10.7833 11.3833 11.3833C10.7833 11.9833 10.0778 12.4583 9.26667 12.8083C8.45555 13.1583 7.58889 13.3333 6.66667 13.3333ZM6.66667 12C8.15556 12 9.41667 11.4833 10.45 10.45C11.4833 9.41667 12 8.15556 12 6.66667C12 5.17778 11.4833 3.91667 10.45 2.88333C9.41667 1.85 8.15556 1.33333 6.66667 1.33333C5.17778 1.33333 3.91667 1.85 2.88333 2.88333C1.85 3.91667 1.33333 5.17778 1.33333 6.66667C1.33333 8.15556 1.85 9.41667 2.88333 10.45C3.91667 11.4833 5.17778 12 6.66667 12Z"
+                fill="#434655" />
+            </svg>
+            Informations chirurgie
+          </span>
+
+          <div>
+            <label class="text-[11px] uppercase tracking-wider text-[#747686] block mb-1.5">Type de chirurgie</label>
+            <div class="relative">
+              <select [(ngModel)]="typeChirurgie"
+                class="w-full appearance-none rounded-xl border border-slate-100 bg-[#F1F5F9]/60 px-4 py-3 text-sm text-[#191B23] focus:outline-none focus:ring-2 focus:ring-[#104382]/20 pr-10">
+                <option value="Pontage Coronarien">Pontage Coronarien</option>
+                <option value="Appendicectomie">Appendicectomie</option>
+                <option value="Arthroscopie du genou">Arthroscopie du genou</option>
+                <option value="Cholecystectomie">Cholecystectomie</option>
+              </select>
+              <div class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-[11px] uppercase tracking-wider text-[#747686] block mb-1.5">Service</label>
+            <div class="relative">
+              <select [(ngModel)]="service"
+                class="w-full appearance-none rounded-xl border border-slate-100 bg-[#F1F5F9]/60 px-4 py-3 text-sm text-[#191B23] focus:outline-none focus:ring-2 focus:ring-[#104382]/20 pr-10">
+                <option value="Cardiologie Interventionnelle">Cardiologie Interventionnelle</option>
+                <option value="Chirurgie viscérale">Chirurgie viscérale</option>
+                <option value="Orthopédie">Orthopédie</option>
+              </select>
+              <div class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-[11px] uppercase tracking-wider text-[#747686] block mb-1.5">Chirurgien
+              responsable</label>
+            <div class="relative">
+              <select [(ngModel)]="chirurgienResponsable"
+                class="w-full appearance-none rounded-xl border border-slate-100 bg-[#F1F5F9]/60 px-4 py-3 text-sm text-[#191B23] focus:outline-none focus:ring-2 focus:ring-[#104382]/20 pr-10">
+                <option value="Dr. Sarah Kouassi">Dr. Sarah Kouassi</option>
+                <option value="Dr. Marcus Thorne">Dr. Marcus Thorne</option>
+                <option value="Dr. Sarah Jenkins">Dr. Sarah Jenkins</option>
+              </select>
+              <div class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Planification -->
+        <div class="rounded-2xl bg-white p-6 border border-slate-100 space-y-4">
+          <span class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#434655]">
+            <svg width="12" height="14" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M1.33333 13.3333C0.966667 13.3333 0.652778 13.2028 0.391667 12.9417C0.130556 12.6806 0 12.3667 0 12V2.66667C0 2.3 0.130556 1.98611 0.391667 1.725C0.652778 1.46389 0.966667 1.33333 1.33333 1.33333H2V0H3.33333V1.33333H8.66667V0H10V1.33333H10.6667C11.0333 1.33333 11.3472 1.46389 11.6083 1.725C11.8694 1.98611 12 2.3 12 2.66667V12C12 12.3667 11.8694 12.6806 11.6083 12.9417C11.3472 13.2028 11.0333 13.3333 10.6667 13.3333H1.33333ZM1.33333 12H10.6667V5.33333H1.33333V12ZM1.33333 4H10.6667V2.66667H1.33333V4ZM1.33333 4V2.66667V4Z"
+                fill="#434655" />
+            </svg>
+            Planification
+          </span>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="text-[11px] uppercase tracking-wider text-[#747686] block mb-1.5">Date</label>
+              <input type="date" [(ngModel)]="dateIntervention" placeholder="mm/dd/yyyy"
+                class="w-full rounded-xl border border-slate-100 bg-[#F1F5F9]/60 px-4 py-3 text-sm text-[#191B23] focus:outline-none focus:ring-2 focus:ring-[#104382]/20" />
+            </div>
+            <div>
+              <label class="text-[11px] uppercase tracking-wider text-[#747686] block mb-1.5">Heure</label>
+              <input type="time" [(ngModel)]="heureIntervention" placeholder="--:--"
+                class="w-full rounded-xl border border-slate-100 bg-[#F1F5F9]/60 px-4 py-3 text-sm text-[#191B23] focus:outline-none focus:ring-2 focus:ring-[#104382]/20" />
+            </div>
+          </div>
+
+          <div>
+            <label class="text-[11px] uppercase tracking-wider text-[#747686] block mb-1.5">Salle d'opération</label>
+            <div class="relative">
+              <select [(ngModel)]="salleOperation"
+                class="w-full appearance-none rounded-xl border border-slate-100 bg-[#F1F5F9]/60 px-4 py-3 text-sm text-[#191B23] focus:outline-none focus:ring-2 focus:ring-[#104382]/20 pr-10">
+                <option value="Bloc A - Salle 04 (Équipée Cardio)">Bloc A - Salle 04 (Équipée Cardio)</option>
+                <option value="Bloc B - Salle 02">Bloc B - Salle 02</option>
+                <option value="Bloc A - Salle 01">Bloc A - Salle 01</option>
+              </select>
+              <div class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Niveau d'urgence (segmented control styled exactly like image) -->
+        <div class="space-y-2">
+          <span class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#191B23]">
+            <span class="text-sm">
+              <svg width="3" height="12" viewBox="0 0 3 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M1.33333 12C0.966667 12 0.652778 11.8694 0.391667 11.6083C0.130556 11.3472 0 11.0333 0 10.6667C0 10.3 0.130556 9.98611 0.391667 9.725C0.652778 9.46389 0.966667 9.33333 1.33333 9.33333C1.7 9.33333 2.01389 9.46389 2.275 9.725C2.53611 9.98611 2.66667 10.3 2.66667 10.6667C2.66667 11.0333 2.53611 11.3472 2.275 11.6083C2.01389 11.8694 1.7 12 1.33333 12ZM0 8V0H2.66667V8H0Z"
+                  fill="#434655" />
+              </svg>
+            </span>
+            Niveau d'urgence
+          </span>
+
+          <div class="flex rounded-xl bg-[#E6E9EE] p-1">
+            <button type="button" (click)="urgencyLevel = 'Normal'"
+              class="flex-1 text-center py-2.5 text-xs font-semibold rounded-lg transition-all"
+              [ngClass]="urgencyLevel === 'Normal' ? 'bg-white text-[#191B23] shadow-sm' : 'text-[#64748B] hover:text-[#191B23]'">
+              Normal
+            </button>
+            <button type="button" (click)="urgencyLevel = 'Urgent'"
+              class="flex-1 text-center py-2.5 text-xs font-semibold rounded-lg transition-all"
+              [ngClass]="urgencyLevel === 'Urgent' ? 'bg-white text-[#191B23] shadow-sm' : 'text-[#64748B] hover:text-[#191B23]'">
+              Urgent
+            </button>
+            <button type="button" (click)="urgencyLevel = 'Critique'"
+              class="flex-1 text-center py-2.5 text-xs font-semibold rounded-lg transition-all"
+              [ngClass]="urgencyLevel === 'Critique' ? 'bg-white text-[#191B23] shadow-sm' : 'text-[#64748B] hover:text-[#191B23]'">
+              Critique
+            </button>
+          </div>
+        </div>
+
+        <!-- Card Paiement -->
+        <div class="rounded-2xl bg-white p-6 border border-[#00339E33] relative">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-[#0651B6]">
+              Paiement
+            </span>
+            <span class="rounded-full bg-[#137333] text-white text-[10px] font-medium px-2.5 py-0.5">
+              FINANCÉ
+            </span>
+          </div>
+
+          <div class="flex items-baseline gap-1 text-[#00339E]">
+            <span class="text-3xl font-black tracking-tight">{{ montantChirurgie }}</span>
+            <span class="text-sm font-bold">FCFA</span>
+          </div>
+
+          <p class="text-xs text-[#6B7280] mt-2 font-medium">
+            {{ paymentSubtext }}
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>

@@ -53,6 +53,36 @@ export const routes: Routes = [
             .then(m => m.DashboardHospitalComponent)
       },
       {
+        path: 'dashboard-fournisseur',
+        loadComponent: () =>
+          import('./features/fournisseur/dashboard-fournisseur/dashboard-fournisseur.component')
+            .then(m => m.DashboardFournisseurComponent)
+      },
+      {
+        path: 'demandes-fournisseur',
+        loadComponent: () =>
+          import('./features/fournisseur/demandes-fournisseur/demandes-fournisseur.component')
+            .then(m => m.DemandesFournisseurComponent)
+      },
+      {
+        path: 'demandes-fournisseur/:id',
+        loadComponent: () =>
+          import('./features/fournisseur/demandes-fournisseur/detail-demande-fournisseur.component')
+            .then(m => m.DetailDemandeFournisseurComponent)
+      },
+      {
+        path: 'devis-fournisseur',
+        loadComponent: () =>
+          import('./features/fournisseur/devis-fournisseur/devis-fournisseur.component')
+            .then(m => m.DevisFournisseurComponent)
+      },
+      {
+        path: 'devis-fournisseur/:id',
+        loadComponent: () =>
+          import('./features/fournisseur/devis-fournisseur/detail-devis-fournisseur.component')
+            .then(m => m.DetailDevisFournisseurComponent)
+      },
+      {
         path: 'demandes',
         loadComponent: () =>
           import('./features/demandes-medicales/demandes-medicales.component')
@@ -93,6 +123,12 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/chirurgie/chirurgie.component')
             .then(m => m.ChirurgieComponent)
+      },
+      {
+        path: 'chirurgie/nouvelle',
+        loadComponent: () =>
+          import('./features/chirurgie/nouvelle-chirurgie.component')
+            .then(m => m.NouvelleChirurgieComponent)
       },
       {
         path: 'chirurgie/:id',

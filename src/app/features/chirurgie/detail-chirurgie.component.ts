@@ -43,6 +43,8 @@ interface ChirurgieDetail {
 export class DetailChirurgieComponent implements OnInit {
   id: string | null = null;
   detail: ChirurgieDetail | undefined;
+  stayInfo: { icon: string; label: string; value: string; isBlue?: boolean }[] = [];
+  isStartModalOpen: boolean = false;
 
   private readonly data: ChirurgieDetail[] = [
     {
@@ -169,68 +171,6 @@ export class DetailChirurgieComponent implements OnInit {
         { label: 'Terminé', status: 'active', icon: 'flag', subtitle: 'Sorti' }
       ]
     },
-    {
-      id: 'PX-3305',
-      fullname: 'Sophie Durand',
-      statusLabel: 'Planifié',
-      statusClass: 'bg-[#F1F5F9] text-[#475569]',
-      typeIntervention: 'Thyroïdectomie',
-      dateAdmission: '26 oct., 10:00',
-      blocOperatoire: 'Salle 02 (Aile Est)',
-      chirurgienPrincipal: 'Dr. Sarah Jenkins',
-      anesthesiste: 'Dr. Smith Meyer',
-      allergies: ['Pénicilline'],
-      antecedents: ['Goitre multinodulaire', 'Hypothyroïdie'],
-      diagnostic: 'Goitre multinodulaire avec nodules suspects à la cytologie. Thyroïdectomie totale indiquée.',
-      descriptionClinique: 'Thyroïdectomie totale avec monitorage du nerf récurrent laryngé en continu.',
-      technicalDetails: [
-        'Abord cervical antérieur',
-        'Monitorage nerf récurrent',
-        'Durée estimée:'
-      ],
-      dureEstimee: '120 minutes',
-      totalAmount: '1 500 000',
-      fundingStatus: 'Prise en charge partielle — dossier en cours',
-      resteACharge: '375 000 FCFA',
-      timeline: [
-        { label: 'Planification', status: 'completed', icon: 'check', subtitle: '24 Oct, 11:00' },
-        { label: 'Préparation', status: 'upcoming', icon: 'clock' },
-        { label: 'Intervention', status: 'upcoming', icon: 'case' },
-        { label: 'Post-opératoire', status: 'upcoming', icon: 'monitor' },
-        { label: 'Terminé', status: 'upcoming', icon: 'flag' }
-      ]
-    },
-    {
-      id: 'PX-1190',
-      fullname: 'Omar Diallo',
-      statusLabel: 'Urgent',
-      statusClass: 'bg-[#FEE2E2] text-[#DC2626]',
-      typeIntervention: 'Laparotomie exploratrice',
-      dateAdmission: "Aujourd'hui, 24 oct., 11:45",
-      blocOperatoire: 'Salle 01 (Urgences)',
-      chirurgienPrincipal: 'Dr. Henri Lavoie',
-      anesthesiste: 'Dr. Anne Morel',
-      allergies: ['Latex', 'AINS'],
-      antecedents: ['Occlusion intestinale antérieure'],
-      diagnostic: 'Syndrome occlusif aigu avec suspicion de strangulation. Laparotomie en urgence.',
-      descriptionClinique: 'Laparotomie exploratrice en urgence absolue. Bilan lésionnel et geste thérapeutique selon découverte.',
-      technicalDetails: [
-        'Laparotomie médiane totale',
-        'Exploration complète cavité abdominale',
-        'Durée estimée:'
-      ],
-      dureEstimee: '150 minutes',
-      totalAmount: '2 000 000',
-      fundingStatus: 'Urgence — prise en charge provisoire',
-      resteACharge: '300 000 FCFA',
-      timeline: [
-        { label: 'Planification', status: 'completed', icon: 'check', subtitle: "Aujourd'hui, 09:00" },
-        { label: 'Préparation', status: 'active', icon: 'clock', subtitle: 'En cours' },
-        { label: 'Intervention', status: 'upcoming', icon: 'case' },
-        { label: 'Post-opératoire', status: 'upcoming', icon: 'monitor' },
-        { label: 'Terminé', status: 'upcoming', icon: 'flag' }
-      ]
-    }
   ];
 
   constructor(private route: ActivatedRoute, private router: Router) {}
@@ -238,6 +178,14 @@ export class DetailChirurgieComponent implements OnInit {
   ngOnInit(): void {
     this.id = this.route.snapshot.paramMap.get('id');
     this.detail = this.data.find(d => d.id === this.id);
+    if (this.detail) {
+      this.stayInfo = [
+        { icon: 'calendar', label: "Date d'admission", value: this.detail.dateAdmission },
+        { icon: 'room', label: 'Bloc Opératoire', value: this.detail.blocOperatoire },
+        { icon: 'doctor', label: 'Chirurgien principal', value: this.detail.chirurgienPrincipal, isBlue: true },
+        { icon: 'doctor', label: 'Anesthésiste', value: this.detail.anesthesiste }
+      ];
+    }
   }
 
   back(): void {
@@ -262,5 +210,35 @@ export class DetailChirurgieComponent implements OnInit {
 
   stepLineClass(status: StepStatus): string {
     return status === 'completed' ? 'bg-[#2563EB]' : 'bg-[#E2E8F0]';
+  }
+
+  openStartModal(): void {
+    this.isStartModalOpen = true;
+  }
+
+  closeStartModal(): void {
+    this.isStartModalOpen = false;
+  }
+
+  confirmStart(): void {
+    if (this.detail) {
+      const updatedTimeline = this.detail.timeline.map(step => {
+        if (step.label === 'Préparation') {
+          return { ...step, status: 'completed' as StepStatus, subtitle: 'Terminé' };
+        }
+        if (step.label === 'Intervention') {
+          return { ...step, status: 'active' as StepStatus, subtitle: 'En cours' };
+        }
+        return step;
+      });
+
+      this.detail = {
+        ...this.detail,
+        statusLabel: 'En cours',
+        statusClass: 'bg-[#FEF3C7] text-[#D97706]',
+        timeline: updatedTimeline
+      };
+    }
+    this.closeStartModal();
   }
 }

@@ -1,0 +1,241 @@
+<div class="min-h-[calc(100vh-4rem)] bg-[#F4F6F9]">
+  <div class="mx-auto max-w-[1280px]" *ngIf="devisDetail">
+
+    <!-- En-tête -->
+    <div class="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+      <div class="flex items-center gap-4">
+        <button type="button" (click)="back()"
+          class="flex h-12 w-12 items-center justify-center rounded-lg bg-white text-[#4E5166] shadow-sm transition hover:bg-slate-50">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </button>
+        <div>
+          <h1 class="text-2xl font-semibold leading-tight tracking-[-0.03em] text-[#263238] sm:text-3xl">
+            {{ devisDetail.hopitalName }}
+          </h1>
+          <p class="mt-1 text-xs text-[#475569] sm:text-sm">
+            {{ devisDetail.categorie }}
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <!-- Imprimer -->
+        <button type="button"
+          class="inline-flex items-center gap-2 rounded-lg border border-[#0F4C81] px-5 py-3 text-sm font-semibold text-[#0F4C81] transition hover:bg-slate-50">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect x="6" y="14" width="12" height="8"></rect>
+          </svg>
+          Imprimer
+        </button>
+
+        <!-- Télécharger PDF -->
+        <button type="button"
+          class="inline-flex items-center gap-2 rounded-lg bg-[#0F4C81] px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#0c3e6a] transition-colors">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Télécharger PDF
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Colonne gauche : Infos, Synthèse, Produits (lg:8) -->
+      <div class="lg:col-span-8 space-y-6">
+        
+        <!-- Première ligne d'informations (Hospital + synthèse) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- Infos Hôpital -->
+          <div class="rounded-xl bg-white p-6 border border-slate-100 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-bold uppercase tracking-wider text-[#747686]">Informations de l'hôpital</span>
+              <span class="rounded-full text-xs font-bold px-2 py-0.5" [ngClass]="statusBadgeClass(devisDetail.status)">{{ devisDetail.status }}</span>
+            </div>
+
+            <div class="flex items-start gap-4">
+              <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#EEF4FF] text-[#1D4ED8]">
+                <!-- Hospital Icon SVG placeholder -->
+               <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M7.5 14H10.5V10.5H14V7.5H10.5V4H7.5V7.5H4V10.5H7.5V14ZM2 18C1.45 18 0.979167 17.8042 0.5875 17.4125C0.195833 17.0208 0 16.55 0 16V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H16C16.55 0 17.0208 0.195833 17.4125 0.5875C17.8042 0.979167 18 1.45 18 2V16C18 16.55 17.8042 17.0208 17.4125 17.4125C17.0208 17.0208 16.55 18 16 18H2ZM2 16H16V2H2V16ZM2 2V16V2Z" fill="#00339E"/>
+</svg>
+              </div>
+              <div>
+                <h4 class="text-sm sm:text-base font-bold text-[#191B23]">{{ devisDetail.hopitalName }}</h4>
+                <p class="text-sm text-[#747686] mt-1 leading-normal">
+                  {{ devisDetail.departement }}<br>
+                  {{ devisDetail.location }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Synthèse Devis -->
+          <div class="rounded-xl bg-white p-6 border border-slate-100 shadow-sm">
+            <span class="text-xs font-bold uppercase tracking-wider text-[#747686] block mb-4">Synthèse du devis</span>
+
+            <div class="grid grid-cols-2 gap-y-4 gap-x-6 text-sm">
+              <div>
+                <p class="text-xs text-[#94A3B8]">Valable jusqu'au</p>
+                <p class="font-bold text-[#191B23] mt-0.5">{{ devisDetail.valableJusquAu }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-[#94A3B8]">Conditions de paiement</p>
+                <p class="font-bold text-[#191B23] mt-0.5">{{ devisDetail.conditionsPaiement }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-[#94A3B8]">Gestionnaire de compte</p>
+                <p class="font-bold text-[#191B23] mt-0.5">{{ devisDetail.gestionnaire }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-[#94A3B8]">Devise</p>
+                <p class="font-bold text-[#191B23] mt-0.5">{{ devisDetail.devise }}</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Produits -->
+        <div class="rounded-xl bg-white border border-slate-100 shadow-sm overflow-hidden flex flex-col justify-between">
+          <div>
+            <!-- Header -->
+            <div class="border-b border-slate-100 px-6 py-6 flex items-center justify-between">
+              <h2 class="text-base sm:text-lg font-semibold tracking-[-0.03em] text-[#0F172A]">Produits & Équipements Proposés</h2>
+              <span class="rounded bg-[#DCE1FF] text-[#00339E] text-xs font-bold px-2 py-0.5">{{ devisDetail.products.length }} Articles</span>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm text-[#191B23] table-fixed">
+                <thead>
+                  <tr class="bg-[#F8FAFC] border-b border-slate-100">
+                    <th class="px-6 py-3.5 text-left text-xs font-bold uppercase tracking-wider text-[#747686] w-2/5">Produit</th>
+                    <th class="px-6 py-3.5 text-center text-xs font-bold uppercase tracking-wider text-[#747686]">Unité</th>
+                    <th class="px-6 py-3.5 text-center text-xs font-bold uppercase tracking-wider text-[#747686]">Qté</th>
+                    <th class="px-6 py-3.5 text-right text-xs font-bold uppercase tracking-wider text-[#747686] w-[110px]">Prix unitaire</th>
+                    <th class="px-6 py-3.5 text-right text-xs font-bold uppercase tracking-wider text-[#747686] w-[130px]">Total</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  <tr *ngFor="let p of devisDetail.products">
+                    <td class="px-4 py-6 font-semibold text-[#191B23] leading-snug whitespace-break-spaces">{{ p.name }}</td>
+                    <td class="px-4 py-6 text-center text-xs text-[#747686]">{{ p.unit }}</td>
+                    <td class="px-4 py-6 text-center text-[#191B23] font-medium">{{ p.qty }}</td>
+                    <td class="px-4 py-6 text-right text-xs text-[#747686] whitespace-nowrap">{{ p.unitPrice }} {{ devisDetail.devise }}</td>
+                    <td class="px-4 py-6 text-right font-bold text-[#191B23] whitespace-nowrap">{{ p.total }} {{ devisDetail.devise }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Synthesis Calculations Footer -->
+          <div class="border-t border-slate-100 bg-[#F8FAFC]/50 p-4 flex flex-col items-end space-y-6">
+            <div class="w-full max-w-[280px] space-y-2.5 text-sm">
+              <div class="flex justify-between">
+                <span class="text-[#747686]">Sous-total</span>
+                <span class="font-medium text-[#191B23]">{{ devisDetail.sousTotal }} {{ devisDetail.devise }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-[#747686]">{{ devisDetail.remise.label }}</span>
+                <span class="font-bold text-[#137333]">{{ devisDetail.remise.amount }} {{ devisDetail.devise }}</span>
+              </div>
+              <div class="flex justify-between border-b border-slate-200 pb-2">
+                <span class="text-[#747686]">TVA</span>
+                <span class="font-medium text-[#191B23]">{{ devisDetail.tva }} {{ devisDetail.devise }}</span>
+              </div>
+              <div class="flex justify-between items-baseline pt-2">
+                <span class="text-sm font-bold text-[#191B23]">Montant Total</span>
+                <span class="text-lg font-black text-[#00339E]">{{ devisDetail.montantTotal }} {{ devisDetail.devise }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Colonne droite : Historique + Notes (lg:4) -->
+      <div class="lg:col-span-4 space-y-6">
+
+        <!-- Card Historique -->
+        <section class="rounded-xl bg-white ring-1 ring-slate-100 overflow-hidden">
+          <div class="border-b border-slate-100 px-6 py-6 flex items-center gap-2.5">
+           <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M7.5 15C5.58333 15 3.91319 14.3646 2.48958 13.0938C1.06597 11.8229 0.25 10.2361 0.0416667 8.33333H1.75C1.94444 9.77778 2.58681 10.9722 3.67708 11.9167C4.76736 12.8611 6.04167 13.3333 7.5 13.3333C9.125 13.3333 10.5035 12.7674 11.6354 11.6354C12.7674 10.5035 13.3333 9.125 13.3333 7.5C13.3333 5.875 12.7674 4.49653 11.6354 3.36458C10.5035 2.23264 9.125 1.66667 7.5 1.66667C6.54167 1.66667 5.64583 1.88889 4.8125 2.33333C3.97917 2.77778 3.27778 3.38889 2.70833 4.16667H5V5.83333H0V0.833333H1.66667V2.79167C2.375 1.90278 3.23958 1.21528 4.26042 0.729167C5.28125 0.243056 6.36111 0 7.5 0C8.54167 0 9.51736 0.197917 10.4271 0.59375C11.3368 0.989583 12.1285 1.52431 12.8021 2.19792C13.4757 2.87153 14.0104 3.66319 14.4062 4.57292C14.8021 5.48264 15 6.45833 15 7.5C15 8.54167 14.8021 9.51736 14.4062 10.4271C14.0104 11.3368 13.4757 12.1285 12.8021 12.8021C12.1285 13.4757 11.3368 14.0104 10.4271 14.4062C9.51736 14.8021 8.54167 15 7.5 15ZM9.83333 11L6.66667 7.83333V3.33333H8.33333V7.16667L11 9.83333L9.83333 11Z" fill="#00339E"/>
+</svg>
+            <h2 class="text-sm sm:text-base font-semibold tracking-[-0.03em] text-[#0F172A]">Historique & Statut</h2>
+          </div>
+
+          <div class="p-6 relative">
+            
+            <!-- Timeline elements -->
+            <div class="space-y-7 relative pl-10 border-l border-slate-100 ml-3">
+              
+              <div *ngFor="let t of devisDetail.timeline" class="relative">
+                
+                <!-- Circle Icons absolute positioned -->
+                <div class="absolute -left-[53px] top-0.5 flex h-8 w-8 items-center justify-center rounded-full ring-4 ring-white"
+                  [ngClass]="t.iconType === 'success' ? 'bg-[#00339E] text-[#137333]' : 'bg-[#00339E] text-[#1D4ED8]'">
+                  
+                  <!-- Check Icon -->
+                  <svg *ngIf="t.iconType === 'check' || t.iconType === 'success'" width="9" height="7" viewBox="0 0 9 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M2.85 6.0125L0 3.1625L0.7125 2.45L2.85 4.5875L7.4375 0L8.15 0.7125L2.85 6.0125Z" fill="white"/>
+</svg>
+            
+                  <!-- Plane Icon -->
+                  <svg *ngIf="t.iconType === 'plane'" width="10" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 8V0L9.5 4L0 8ZM1 6.5L6.925 4L1 1.5V3.25L4 4L1 4.75V6.5ZM1 6.5V4V1.5V3.25V4.75V6.5Z" fill="white"/>
+</svg>
+               
+                  <!-- Eye Icon -->
+                  <svg *ngIf="t.iconType === 'eye'" width="11" height="8" viewBox="0 0 11 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M5.5 6C6.125 6 6.65625 5.78125 7.09375 5.34375C7.53125 4.90625 7.75 4.375 7.75 3.75C7.75 3.125 7.53125 2.59375 7.09375 2.15625C6.65625 1.71875 6.125 1.5 5.5 1.5C4.875 1.5 4.34375 1.71875 3.90625 2.15625C3.46875 2.59375 3.25 3.125 3.25 3.75C3.25 4.375 3.46875 4.90625 3.90625 5.34375C4.34375 5.78125 4.875 6 5.5 6ZM5.5 5.1C5.125 5.1 4.80625 4.96875 4.54375 4.70625C4.28125 4.44375 4.15 4.125 4.15 3.75C4.15 3.375 4.28125 3.05625 4.54375 2.79375C4.80625 2.53125 5.125 2.4 5.5 2.4C5.875 2.4 6.19375 2.53125 6.45625 2.79375C6.71875 3.05625 6.85 3.375 6.85 3.75C6.85 4.125 6.71875 4.44375 6.45625 4.70625C6.19375 4.96875 5.875 5.1 5.5 5.1ZM5.5 7.5C4.28333 7.5 3.175 7.16042 2.175 6.48125C1.175 5.80208 0.45 4.89167 0 3.75C0.45 2.60833 1.175 1.69792 2.175 1.01875C3.175 0.339583 4.28333 0 5.5 0C6.71667 0 7.825 0.339583 8.825 1.01875C9.825 1.69792 10.55 2.60833 11 3.75C10.55 4.89167 9.825 5.80208 8.825 6.48125C7.825 7.16042 6.71667 7.5 5.5 7.5ZM5.5 6.5C6.44167 6.5 7.30625 6.25208 8.09375 5.75625C8.88125 5.26042 9.48333 4.59167 9.9 3.75C9.48333 2.90833 8.88125 2.23958 8.09375 1.74375C7.30625 1.24792 6.44167 1 5.5 1C4.55833 1 3.69375 1.24792 2.90625 1.74375C2.11875 2.23958 1.51667 2.90833 1.1 3.75C1.51667 4.59167 2.11875 5.26042 2.90625 5.75625C3.69375 6.25208 4.55833 6.5 5.5 6.5Z" fill="white"/>
+</svg>
+
+                </div>
+
+                <!-- Content text -->
+                <div>
+                  <h4 class="text-[14px] font-bold text-[#191B23] leading-none">{{ t.title }}</h4>
+                  <p class="text-xs text-[#94A3B8] mt-1">{{ t.time }}</p>
+                  <p *ngIf="t.description" class="text-xs text-[#747686] mt-1.5 leading-normal whitespace-pre-wrap">{{ t.description }}</p>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+        </section>
+
+        <!-- Card Notes Internes -->
+        <section class="rounded-xl bg-white ring-1 ring-slate-100 overflow-hidden" *ngIf="devisDetail.notesInternes">
+          <div class="border-b border-slate-100 px-6 py-6">
+            <h2 class="text-base sm:text-lg font-semibold tracking-[-0.03em] text-[#0F172A]">Notes Internes</h2>
+          </div>
+
+          <div class="p-6">
+            <div class="bg-[#FAF8FF] border-l-[4px] border-[#00339E] p-4 rounded-l-lg">
+              <p class="text-xs sm:text-sm text-[#5C6F84] leading-relaxed italic">
+                {{ devisDetail.notesInternes }}
+              </p>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>

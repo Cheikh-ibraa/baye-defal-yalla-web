@@ -253,7 +253,7 @@ export class DetailDemandeMaterielComponent implements OnInit {
     switch (s) {
       case 'Validé Technique':   return 'text-[#16A34A]';
       case 'En révision':        return 'text-[#475569]';
-      case 'Attente Signature':  return 'text-[#DC2626]';
+      case 'Attente Signature':  return 'text-[#791C00]';
       case 'Rejeté':             return 'text-[#DC2626]';
     }
   }

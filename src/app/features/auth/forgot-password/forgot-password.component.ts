@@ -39,7 +39,7 @@ export class ForgotPasswordComponent implements OnInit {
     this.selectMethod('email');
   }
   goToLogin(): void {
-    this.router.navigate(['/portail']);
+    this.router.navigate(['/login']);
   }
   /**
    * Creates the reactive form for password reset

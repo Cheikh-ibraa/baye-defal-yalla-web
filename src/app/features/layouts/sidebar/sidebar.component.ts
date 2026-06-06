@@ -37,6 +37,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   isLab = false;        // LABORATORY
   isImagerie = false;  // IMAGING_CENTER
   isHospital = false;  // HOSPITAL
+  isFournisseur = false; // FOURNISSEUR
 
   financeOpen: boolean = false;
 
@@ -127,6 +128,14 @@ export class SidebarComponent implements OnInit, OnDestroy {
     { id: 'comptes', label: 'Mon compte', route: '/compte' }
   ];
 
+  // Menus FOURNISSEUR
+  fournisseurMenuItems: MenuItem[] = [
+    { id: 'dashboard-fournisseur', label: 'Tableau de bord', route: '/dashboard-fournisseur' },
+    { id: 'demandes-fournisseur', label: 'Demandes', route: '/demandes-fournisseur' },
+    { id: 'devis-fournisseur', label: 'Devis', route: '/devis-fournisseur' },
+    { id: 'comptes', label: 'Mon compte', route: '/compte' }
+  ];
+
   menuItems: MenuItem[] = [];
   // Mode sandbox: on expose tous les groupes pour garder la navigation libre.
   // À rebrancher plus tard si on réintroduit une logique de rôle.
@@ -136,7 +145,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
     ...this.pharmacyMenuItems,
     ...this.labMenuItems,
     ...this.imagerieMenuItems,
-    ...this.hospitalMenuItems
+    ...this.hospitalMenuItems,
+    ...this.fournisseurMenuItems
   ];
 
   constructor(
@@ -175,6 +185,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.isLab = profile === 'LABORATORY' || profile === 'LAB' || profile === 'LABORATOIRE';
     this.isImagerie = profile === 'IMAGING_CENTER' || profile === 'IMAGERIE';
     this.isHospital = profile === 'HOSPITAL' || profile === 'HOPITAL';
+    this.isFournisseur = profile === 'FOURNISSEUR' || profile === 'SUPPLIER';
 
     if (this.isAdmin) {
       this.menuItems = [...this.adminMenuItems];
@@ -188,6 +199,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.menuItems = [...this.imagerieMenuItems];
     } else if (this.isHospital) {
       this.menuItems = [...this.hospitalMenuItems];
+    } else if (this.isFournisseur) {
+      this.menuItems = [...this.fournisseurMenuItems];
     } else {
       this.menuItems = [...this.pharmacyMenuItems]; // fallback
     }
@@ -221,6 +234,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
     if (url.startsWith('/dashboard-imagerie') || 
         url.startsWith('/examens-imagerie')) {
       return 'IMAGING_CENTER';
+    }
+    // ⚠️ FOURNISSEUR doit être vérifié AVANT HOSPITAL car /demandes matcherait /demandes-fournisseur
+    if (url.startsWith('/dashboard-fournisseur') || 
+        url.startsWith('/demandes-fournisseur') || 
+        url.startsWith('/devis-fournisseur')) {
+      return 'FOURNISSEUR';
     }
     if (url.startsWith('/dashboard-hospital') || 
         url.startsWith('/demandes') || 
@@ -269,6 +288,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     else if (this.isLab) this.activeItem = 'dashboard-lab';
     else if (this.isImagerie) this.activeItem = 'dashboard-imagerie';
     else if (this.isHospital) this.activeItem = 'dashboard-hospital';
+    else if (this.isFournisseur) this.activeItem = 'dashboard-fournisseur';
     else this.activeItem = '';
   }
 

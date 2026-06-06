@@ -7,26 +7,14 @@
   class="fixed inset-y-0 left-0 z-50 w-[270px] bg-white flex flex-col transition-transform duration-300 lg:translate-x-0">
 
   <!-- HEADER -->
-  <div class="p-1 rounded-lg bg-white flex items-center justify-center w-[255px] gap-[12px]">
-    <div class="flex items-center flex-col justify-center">
-      <img src="assets/images/logo.png" alt="Logo Medical Link" class="
+  <div class="flex items-center flex-col justify-center mb-2">
+    <img src="assets/images/logo.png" alt="Logo Medical Link" class="
     h-20
     max-w-[260px]
     object-contain
     mx-auto
-    mt-8
+    mt-6
   " />
-
-      <div class="flex flex-col items-center entete">
-        <!-- <h1
-          class="font-semibold text-xl leading-[100%] tracking-normal text-center font-work text-[#2C7BE5] mt-3 m-2 whitespace-nowrap">
-          PHARMACIE DELIVERY
-        </h1> -->
-        <!-- <p class="text-sm font-work text-[#343A40] font-medium text-[12px] leading-[100%] tracking-normal text-center">
-          Votre santé, notre priorité
-        </p> -->
-      </div>
-    </div>
   </div>
 
   <!-- MENU -->
@@ -596,6 +584,63 @@
 
         </div>
         <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Paiements</span>
+      </a>
+
+    </ng-container>
+
+    <!-- FOURNISSEUR -->
+    <ng-container *ngIf="isFournisseur">
+
+      <!-- Tableau de bord -->
+      <a routerLink="/dashboard-fournisseur"
+        routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
+        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        <div class="flex items-center justify-center w-8 h-8">
+          <svg *ngIf="activeItem === 'dashboard-fournisseur'" width="20" height="20" viewBox="0 0 20 20" fill="none"
+            xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" clip-rule="evenodd"
+              d="M0.52 5.823C0 6.77 0 7.915 0 10.203V11.725C0 15.625 -1.19209e-07 17.576 1.172 18.788C2.344 20 4.229 20 8 20H12C15.771 20 17.657 20 18.828 18.788C19.999 17.576 20 15.626 20 11.725V10.204C20 7.915 20 6.771 19.48 5.823C18.962 4.874 18.013 4.286 16.116 3.108L14.116 1.867C12.111 0.622 11.108 0 10 0C8.892 0 7.89 0.622 5.884 1.867L3.884 3.108C1.987 4.286 1.039 4.874 0.52 5.823ZM9.25 16C9.25 16.1989 9.32902 16.3897 9.46967 16.5303C9.61032 16.671 9.80109 16.75 10 16.75C10.1989 16.75 10.3897 16.671 10.5303 16.5303C10.671 16.3897 10.75 16.1989 10.75 16V13C10.75 12.8011 10.671 12.6103 10.5303 12.4697C10.3897 12.329 10.1989 12.25 10 12.25C9.80109 12.25 9.61032 12.329 9.46967 12.4697C9.32902 12.6103 9.25 12.8011 9.25 13V16Z"
+              fill="#234078" />
+          </svg>
+          <svg *ngIf="activeItem !== 'dashboard-fournisseur'" width="20" height="20" viewBox="0 0 20 20" fill="none"
+            xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" clip-rule="evenodd"
+              d="M0.52 5.823C0 6.77 0 7.915 0 10.203V11.725C0 15.625 -1.19209e-07 17.576 1.172 18.788C2.344 20 4.229 20 8 20H12C15.771 20 17.657 20 18.828 18.788C19.999 17.576 20 15.626 20 11.725V10.204C20 7.915 20 6.771 19.48 5.823C18.962 4.874 18.013 4.286 16.116 3.108L14.116 1.867C12.111 0.622 11.108 0 10 0C8.892 0 7.89 0.622 5.884 1.867L3.884 3.108C1.987 4.286 1.039 4.874 0.52 5.823ZM9.25 16C9.25 16.1989 9.32902 16.3897 9.46967 16.5303C9.61032 16.671 9.80109 16.75 10 16.75C10.1989 16.75 10.3897 16.671 10.5303 16.5303C10.671 16.3897 10.75 16.1989 10.75 16V13C10.75 12.8011 10.671 12.6103 10.5303 12.4697C10.3897 12.329 10.1989 12.25 10 12.25C9.80109 12.25 9.61032 12.329 9.46967 12.4697C9.32902 12.6103 9.25 12.8011 9.25 13V16Z"
+              fill="#343A40" />
+          </svg>
+
+        </div>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Tableau de bord</span>
+      </a>
+
+      <!-- Demandes -->
+      <a routerLink="/demandes-fournisseur"
+        routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
+        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        <div class="flex items-center justify-center w-8 h-8">
+          <svg width="16" height="20" viewBox="0 0 16 20" fill="none" stroke="currentColor" stroke-width="0.1"
+            xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M4 16H12V14H4V16ZM4 12H12V10H4V12ZM2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H10L16 6V18C16 18.55 15.8042 19.0208 15.4125 19.4125C15.0208 19.8042 14.55 20 14 20H2ZM9 7V2H2V18H14V7H9ZM2 2V7V2V7V18V2Z"
+              fill="#434655" />
+          </svg>
+        </div>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Demandes</span>
+      </a>
+
+      <!-- Devis -->
+      <a routerLink="/devis-fournisseur"
+        routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
+        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        <div class="flex items-center justify-center w-8 h-8">
+          <svg width="16" height="20" viewBox="0 0 16 20" fill="none" stroke="currentColor" stroke-width="0.1"
+            xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M7 17H9V16H10C10.2833 16 10.5208 15.9042 10.7125 15.7125C10.9042 15.5208 11 15.2833 11 15V12C11 11.7167 10.9042 11.4792 10.7125 11.2875C10.5208 11.0958 10.2833 11 10 11H7V10H11V8H9V7H7V8H6C5.71667 8 5.47917 8.09583 5.2875 8.2875C5.09583 8.47917 5 8.71667 5 9V12C5 12.2833 5.09583 12.5208 5.2875 12.7125C5.47917 12.9042 5.71667 13 6 13H9V14H5V16H7V17ZM2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H10L16 6V18C16 18.55 15.8042 19.0208 15.4125 19.4125C15.0208 19.8042 14.55 20 14 20H2ZM9 6V2H2V18H14V6H9ZM2 2V6V2V6V18V2Z"
+              fill="#434655" />
+          </svg>
+        </div>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Devis</span>
       </a>
 
     </ng-container>

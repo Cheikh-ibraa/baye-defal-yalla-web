@@ -41,7 +41,7 @@ export class PaiementsHospitalComponent {
 
   readonly kpis: KpiItem[] = [
     { id: 'recu',     label: 'Total reçu',            value: '145 750 000 FCFA', badge: '+12.5%',        badgeClass: 'bg-[#ECFDF5] text-[#16A34A]' },
-    { id: 'attente',  label: 'Paiements en attente',  value: '12',               badge: 'Action requise', badgeClass: 'bg-[#FFF7ED] text-[#D97706]' },
+    { id: 'attente',  label: 'Paiements en attente',  value: '12',               badge: 'Action requise', badgeClass: 'bg-[#FFDBD1] text-[#791C00]' },
     { id: 'valides',  label: 'Paiements validés',      value: '156',              badge: 'Validés',        badgeClass: 'bg-[#ECFDF5] text-[#16A34A]' },
     { id: 'factures', label: 'Factures générées',      value: '168',              badge: undefined,        badgeClass: '' }
   ];
@@ -128,16 +128,16 @@ export class PaiementsHospitalComponent {
 
   statutBadgeClass(s: PaiementStatut): string {
     switch (s) {
-      case 'Payé':     return 'bg-[#ECFDF5] text-[#16A34A]';
-      case 'Partiel':  return 'bg-[#FFF7ED] text-[#D97706]';
+      case 'Payé':     return 'bg-[#5CFD8033] text-[#00B894]';
+      case 'Partiel':  return 'bg-[#F39C1233] text-[#F39C12]';
       case 'Non payé': return 'bg-[#FEF2F2] text-[#DC2626]';
     }
   }
 
   montantPayeClass(s: PaiementStatut): string {
     switch (s) {
-      case 'Payé':     return 'text-[#16A34A]';
-      case 'Partiel':  return 'text-[#2563EB]';
+      case 'Payé':     return 'text-[#00B894]';
+      case 'Partiel':  return 'text-[#0651B6]';
       case 'Non payé': return 'text-[#94A3B8]';
     }
   }

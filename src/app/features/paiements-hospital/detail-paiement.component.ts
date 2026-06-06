@@ -51,6 +51,25 @@ interface DetailPaiement {
   fluxPaiement?: FluxPaiement[];
 }
 
+const SHARED_FLUX: FluxPaiement[] = [
+  {
+    source: 'Donateur\nAnonyme',
+    date: '14 Oct. 2023',
+    montant: '250 000 FCFA',
+    iconBg: 'bg-[#EEF1FD]',
+    iconColor: 'text-[#0651B6]',
+    iconType: 'don'
+  },
+  {
+    source: 'Assurance\nAXA',
+    date: '14 Oct. 2023',
+    montant: '100 000 FCFA',
+    iconBg: 'bg-[#002D8B]',
+    iconColor: 'text-white',
+    iconType: 'assurance'
+  }
+];
+
 @Component({
   selector: 'app-detail-paiement',
   standalone: true,
@@ -90,16 +109,7 @@ export class DetailPaiementComponent implements OnInit {
         assuranceLabel: 'Assurance',
         resteAPayer:    '0 FCFA'
       },
-      fluxPaiement: [
-        {
-          source: 'Versement Cash',
-          date: '14 Oct. 2023 • 15:42',
-          montant: '1 250 000 FCFA',
-          iconBg: 'bg-[#EAF8F1]',
-          iconColor: 'text-[#2FA373]',
-          iconType: 'paiement'
-        }
-      ]
+      fluxPaiement: SHARED_FLUX
     },
     {
       id: 'PX-4429',
@@ -128,32 +138,7 @@ export class DetailPaiementComponent implements OnInit {
         assuranceLabel: 'Assurance AXA (10%)',
         resteAPayer:    '50 000 FCFA'
       },
-      fluxPaiement: [
-        {
-          source: 'Donation Portée',
-          date: '14 Oct. 2023 • 15:42',
-          montant: '250 000 FCFA',
-          iconBg: 'bg-[#EAF2FF]',
-          iconColor: 'text-[#2563EB]',
-          iconType: 'don'
-        },
-        {
-          source: 'Assurance AXA',
-          date: '14 Oct. 2023 • 10:15',
-          montant: '100 000 FCFA',
-          iconBg: 'bg-[#F3EDFF]',
-          iconColor: 'text-[#7C3AED]',
-          iconType: 'assurance'
-        },
-        {
-          source: 'Paiement Patient',
-          date: '14 Oct. 2023 • 11:00',
-          montant: '50 000 FCFA',
-          iconBg: 'bg-[#EAF8F1]',
-          iconColor: 'text-[#2FA373]',
-          iconType: 'paiement'
-        }
-      ]
+      fluxPaiement: SHARED_FLUX
     },
     {
       id: 'PX-9102',
@@ -179,7 +164,7 @@ export class DetailPaiementComponent implements OnInit {
         financement: '0 FCFA',
         resteAPayer: '85 000 FCFA'
       },
-      fluxPaiement: []
+      fluxPaiement: SHARED_FLUX
     },
     {
       id: 'PX-3301',
@@ -205,16 +190,7 @@ export class DetailPaiementComponent implements OnInit {
         financement: '35 000 FCFA',
         resteAPayer: '0 FCFA'
       },
-      fluxPaiement: [
-        {
-          source: 'Prise en charge Sociale',
-          date: '16 Oct. 2023 • 14:00',
-          montant: '35 000 FCFA',
-          iconBg: 'bg-[#EAF2FF]',
-          iconColor: 'text-[#2563EB]',
-          iconType: 'don'
-        }
-      ]
+      fluxPaiement: SHARED_FLUX
     },
     {
       id: 'PX-5522',
@@ -241,16 +217,7 @@ export class DetailPaiementComponent implements OnInit {
         financement: '160 000 FCFA',
         resteAPayer: '160 000 FCFA'
       },
-      fluxPaiement: [
-        {
-          source: 'Subvention Hôpital',
-          date: '17 Oct. 2023 • 12:00',
-          montant: '160 000 FCFA',
-          iconBg: 'bg-[#EAF2FF]',
-          iconColor: 'text-[#2563EB]',
-          iconType: 'don'
-        }
-      ]
+      fluxPaiement: SHARED_FLUX
     },
     {
       id: 'PX-7741',
@@ -277,7 +244,7 @@ export class DetailPaiementComponent implements OnInit {
         financement: '0 FCFA',
         resteAPayer: '780 000 FCFA'
       },
-      fluxPaiement: []
+      fluxPaiement: SHARED_FLUX
     }
   ];
 

@@ -1,0 +1,436 @@
+<div class="min-h-screen bg-[#F4F6F9]" *ngIf="detail">
+
+  <!-- ── En-tête ─────────────────────────────────────────────────────────── -->
+  <div class="sticky top-0 z-10 bg-[#F4F6F9] border-b border-slate-100">
+    <div class="flex items-center justify-between">
+      <div class="mb-6 flex items-center gap-4">
+        <!-- Bouton retour -->
+        <button type="button" (click)="back()"
+          class="flex h-12 w-12 items-center justify-center rounded-lg bg-white transition hover:bg-slate-50">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </button>
+        <!-- Titre -->
+        <div>
+          <h1 class="text-xl font-bold tracking-tight text-[#191B23] sm:text-2xl">
+            {{ detail.hopital }}
+          </h1>
+          <p class="mt-0.5 text-sm text-[#747686]">{{ detail.categorie }}</p>
+        </div>
+      </div>
+
+      <!-- CTA/Actions -->
+      <div class="flex items-center gap-3">
+        <!-- Details Mode CTA -->
+        <button type="button" *ngIf="!isEmettreDevisMode" (click)="toggleEmettreDevisMode(true)"
+          class="inline-flex items-center gap-2 rounded-lg text-white bg-[#104382] px-5 py-3 transition hover:bg-[#0c3469]">
+          Émettre un devis
+        </button>
+        
+        <!-- Quotation Mode Actions -->
+        <ng-container *ngIf="isEmettreDevisMode">
+          <button type="button" (click)="saveBrouillon()"
+            class="rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+            Enregistrer brouillon
+          </button>
+          <button type="button" (click)="sendDevis()"
+            class="inline-flex items-center gap-2 rounded-lg bg-[#10B981] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#059669]">
+            Envoyer le devis
+           <svg width="12" height="10" viewBox="0 0 12 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 9.33333V0L11.0833 4.66667L0 9.33333ZM1.16667 7.58333L8.07917 4.66667L1.16667 1.75V3.79167L4.66667 4.66667L1.16667 5.54167V7.58333ZM1.16667 7.58333V4.66667V1.75V3.79167V5.54167V7.58333Z" fill="white"/>
+</svg>
+          </button>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Corps ────────────────────────────────────────────────────────────── -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6" *ngIf="!isEmettreDevisMode">
+
+    <!-- ═══ Colonne gauche (8/12) ═══════════════════════════════════════════ -->
+    <div class="lg:col-span-8 space-y-5">
+
+      <!-- Card : Informations Générales -->
+      <section class="rounded-2xl bg-white p-6">
+        <div class="flex items-center gap-2 mb-5">
+          <!-- Info icon -->
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M9 15H11V9H9V15ZM10 7C10.2833 7 10.5208 6.90417 10.7125 6.7125C10.9042 6.52083 11 6.28333 11 6C11 5.71667 10.9042 5.47917 10.7125 5.2875C10.5208 5.09583 10.2833 5 10 5C9.71667 5 9.47917 5.09583 9.2875 5.2875C9.09583 5.47917 9 5.71667 9 6C9 6.28333 9.09583 6.52083 9.2875 6.7125C9.47917 6.90417 9.71667 7 10 7ZM10 20C8.61667 20 7.31667 19.7375 6.1 19.2125C4.88333 18.6875 3.825 17.975 2.925 17.075C2.025 16.175 1.3125 15.1167 0.7875 13.9C0.2625 12.6833 0 11.3833 0 10C0 8.61667 0.2625 7.31667 0.7875 6.1C1.3125 4.88333 2.025 3.825 2.925 2.925C3.825 2.025 4.88333 1.3125 6.1 0.7875C7.31667 0.2625 8.61667 0 10 0C11.3833 0 12.6833 0.2625 13.9 0.7875C15.1167 1.3125 16.175 2.025 17.075 2.925C17.975 3.825 18.6875 4.88333 19.2125 6.1C19.7375 7.31667 20 8.61667 20 10C20 11.3833 19.7375 12.6833 19.2125 13.9C18.6875 15.1167 17.975 16.175 17.075 17.075C16.175 17.975 15.1167 18.6875 13.9 19.2125C12.6833 19.7375 11.3833 20 10 20ZM10 18C12.2333 18 14.125 17.225 15.675 15.675C17.225 14.125 18 12.2333 18 10C18 7.76667 17.225 5.875 15.675 4.325C14.125 2.775 12.2333 2 10 2C7.76667 2 5.875 2.775 4.325 4.325C2.775 5.875 2 7.76667 2 10C2 12.2333 2.775 14.125 4.325 15.675C5.875 17.225 7.76667 18 10 18Z"
+              fill="#00339E" />
+          </svg>
+          <h2 class="text-lg sm:text-xl font-semibold text-[#191B23]">Informations Générales</h2>
+        </div>
+
+        <!-- Grille d'infos -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-y-5 gap-x-6 text-sm">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-[#434655]">Hôpital</p>
+            <p class="mt-1 font-bold text-[#191B23]">{{ detail.hopital }}</p>
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-[#434655]">Département</p>
+            <p class="mt-1 font-bold text-[#191B23]">{{ detail.departement }}</p>
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-[#434655]">Date de demande</p>
+            <p class="mt-1 font-bold text-[#191B23]">{{ detail.dateDemandeLabel }}</p>
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-[#434655]">Niveau d'urgence</p>
+            <span class="mt-1.5 inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold"
+              [ngClass]="urgenceBadgeClass(detail.niveauUrgence)">
+              {{ detail.niveauUrgence }}
+            </span>
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-[#94A3B8]">Budget estimé</p>
+            <p class="mt-1 text-lg sm:text-xl font-bold text-[#00339E]">{{ detail.budgetEstime }}</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Card : Produits Demandés -->
+      <section class="rounded-2xl bg-white overflow-hidden">
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M3 20C2.45 20 1.97917 19.8042 1.5875 19.4125C1.19583 19.0208 1 18.55 1 18V6.725C0.7 6.54167 0.458333 6.30417 0.275 6.0125C0.0916667 5.72083 0 5.38333 0 5V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H18C18.55 0 19.0208 0.195833 19.4125 0.5875C19.8042 0.979167 20 1.45 20 2V5C20 5.38333 19.9083 5.72083 19.725 6.0125C19.5417 6.30417 19.3 6.54167 19 6.725V18C19 18.55 18.8042 19.0208 18.4125 19.4125C18.0208 19.8042 17.55 20 17 20H3ZM3 7V18H17V7H3ZM2 5H18V2H2V5ZM7 12H13V10H7V12Z"
+                fill="#00339E" />
+            </svg>
+            <h2 class="text-lg sm:text-xl font-semibold text-[#191B23]">Produits Demandés</h2>
+          </div>
+          <span class="text-[#434655] text-sm sm:tex-base px-3 py-0.5">
+            {{ detail.produits.length }} articles
+          </span>
+        </div>
+
+        <!-- Table -->
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-[#F8FAFC] border-b border-slate-100">
+              <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-[#434655]">
+                Article
+              </th>
+              <th class="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider text-[#434655]">
+                Quantité
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr *ngFor="let p of detail.produits" class="hover:bg-[#F8FAFC] transition-colors">
+              <td class="px-6 py-4">
+                <p class="font-bold text-base text-[#191B23]">{{ p.nom }}</p>
+                <p class="text-xs text-[#434655] mt-0.5">Ref: {{ p.ref }}</p>
+              </td>
+              <td class="px-6 py-4 text-right font-medium text-[#191B23]">
+                {{ p.quantite }} {{ p.unite }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Card : Description du Projet -->
+      <section class="rounded-2xl bg-white p-6">
+        <div class="flex items-center gap-2 mb-4">
+          <svg width="16" height="20" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M4 16H12V14H4V16ZM4 12H12V10H4V12ZM2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H10L16 6V18C16 18.55 15.8042 19.0208 15.4125 19.4125C15.0208 19.8042 14.55 20 14 20H2ZM9 7V2H2V18H14V7H9ZM2 2V7V2V7V18V2Z"
+              fill="#00339E" />
+          </svg>
+          <h2 class="text-lg sm:text-xl font-semibold text-[#191B23]">Description du Projet</h2>
+        </div>
+        <p class="text-sm sm:text-base text-[#4E5166] leading-relaxed text-justify">
+          {{ detail.description }}
+        </p>
+        <p class="mt-4 text-sm sm:text-base text-[#191B23] font-semibold leading-relaxed text-justify">
+          {{ detail.exigencesTechniques }}
+        </p>
+      </section>
+
+    </div>
+
+    <!-- ═══ Colonne droite (4/12) ════════════════════════════════════════════ -->
+    <div class="lg:col-span-4 space-y-5">
+
+      <!-- Card : Budget estimé -->
+      <section class="rounded-2xl bg-white p-6">
+        <div class="flex items-center gap-2 mb-3">
+          <svg width="19" height="18" viewBox="0 0 19 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M2 16V2C2 2 2 2.37083 2 3.1125C2 3.85417 2 4.81667 2 6V12C2 13.1833 2 14.1458 2 14.8875C2 15.6292 2 16 2 16ZM2 18C1.45 18 0.979167 17.8042 0.5875 17.4125C0.195833 17.0208 0 16.55 0 16V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H16C16.55 0 17.0208 0.195833 17.4125 0.5875C17.8042 0.979167 18 1.45 18 2V4.5H16V2H2V16H16V13.5H18V16C18 16.55 17.8042 17.0208 17.4125 17.4125C17.0208 17.8042 16.55 18 16 18H2ZM10 14C9.45 14 8.97917 13.8042 8.5875 13.4125C8.19583 13.0208 8 12.55 8 12V6C8 5.45 8.19583 4.97917 8.5875 4.5875C8.97917 4.19583 9.45 4 10 4H17C17.55 4 18.0208 4.19583 18.4125 4.5875C18.8042 4.97917 19 5.45 19 6V12C19 12.55 18.8042 13.0208 18.4125 13.4125C18.0208 13.8042 17.55 14 17 14H10ZM17 12V6H10V12H17ZM13 10.5C13.4167 10.5 13.7708 10.3542 14.0625 10.0625C14.3542 9.77083 14.5 9.41667 14.5 9C14.5 8.58333 14.3542 8.22917 14.0625 7.9375C13.7708 7.64583 13.4167 7.5 13 7.5C12.5833 7.5 12.2292 7.64583 11.9375 7.9375C11.6458 8.22917 11.5 8.58333 11.5 9C11.5 9.41667 11.6458 9.77083 11.9375 10.0625C12.2292 10.3542 12.5833 10.5 13 10.5Z"
+              fill="#00339E" />
+          </svg>
+          <h2 class="text-lg sm:text-xl font-semibold text-[#191B23]">Budget estimé</h2>
+        </div>
+        <p class="text-2xl sm:text-3xl font-bold text-[#00339E] leading-none my-8">
+          {{ detail.budgetEstimeReel }}
+        </p>
+        <p class="mt-4 text-xs text-[#94A3B8]">{{ detail.budgetNote }}</p>
+      </section>
+
+      <!-- Card : Information du client -->
+      <section class="rounded-2xl bg-white p-6">
+        <div class="flex items-center gap-2 mb-8">
+          <svg width="20" height="18" viewBox="0 0 20 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M0 18V0H10V4H20V18H0ZM2 16H4V14H2V16ZM2 12H4V10H2V12ZM2 8H4V6H2V8ZM2 4H4V2H2V4ZM6 16H8V14H6V16ZM6 12H8V10H6V12ZM6 8H8V6H6V8ZM6 4H8V2H6V4ZM10 16H18V6H10V8H12V10H10V12H12V14H10V16ZM14 10V8H16V10H14ZM14 14V12H16V14H14Z"
+              fill="#00339E" />
+          </svg>
+          <h2 class="text-lg sm:text-xl font-semibold text-[#191B23]">Information du client</h2>
+        </div>
+
+        <p class="font-bold text-[#191B23] text-sm sm:text-base">{{ detail.client.nomClient }}</p>
+        <p class="text-sm text-[#434655] mt-0.5">{{ detail.client.certification }}</p>
+
+        <div class="mt-4 space-y-2.5">
+          <div class="flex items-center gap-2 text-sm text-[#434655]">
+            <svg width="12" height="15" viewBox="0 0 12 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M5.2125 10.1625L9.45 5.925L8.38125 4.85625L5.2125 8.025L3.6375 6.45L2.56875 7.51875L5.2125 10.1625ZM6 15C4.2625 14.5625 2.82812 13.5656 1.69687 12.0094C0.565625 10.4531 0 8.725 0 6.825V2.25L6 0L12 2.25V6.825C12 8.725 11.4344 10.4531 10.3031 12.0094C9.17188 13.5656 7.7375 14.5625 6 15ZM6 13.425C7.3 13.0125 8.375 12.1875 9.225 10.95C10.075 9.7125 10.5 8.3375 10.5 6.825V3.28125L6 1.59375L1.5 3.28125V6.825C1.5 8.3375 1.925 9.7125 2.775 10.95C3.625 12.1875 4.7 13.0125 6 13.425Z"
+                fill="#434655" />
+            </svg>
+            <span>{{ detail.client.tauxPaiement }}</span>
+          </div>
+          <div class="flex items-center gap-2 text-sm text-[#434655]">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M6.75 13.5C5.025 13.5 3.52187 12.9281 2.24062 11.7844C0.959375 10.6406 0.225 9.2125 0.0375 7.5H1.575C1.75 8.8 2.32812 9.875 3.30938 10.725C4.29063 11.575 5.4375 12 6.75 12C8.2125 12 9.45312 11.4906 10.4719 10.4719C11.4906 9.45312 12 8.2125 12 6.75C12 5.2875 11.4906 4.04688 10.4719 3.02813C9.45312 2.00938 8.2125 1.5 6.75 1.5C5.8875 1.5 5.08125 1.7 4.33125 2.1C3.58125 2.5 2.95 3.05 2.4375 3.75H4.5V5.25H0V0.75H1.5V2.5125C2.1375 1.7125 2.91562 1.09375 3.83437 0.65625C4.75312 0.21875 5.725 0 6.75 0C7.6875 0 8.56562 0.178125 9.38437 0.534375C10.2031 0.890625 10.9156 1.37188 11.5219 1.97812C12.1281 2.58437 12.6094 3.29688 12.9656 4.11562C13.3219 4.93437 13.5 5.8125 13.5 6.75C13.5 7.6875 13.3219 8.56562 12.9656 9.38437C12.6094 10.2031 12.1281 10.9156 11.5219 11.5219C10.9156 12.1281 10.2031 12.6094 9.38437 12.9656C8.56562 13.3219 7.6875 13.5 6.75 13.5ZM8.85 9.9L6 7.05V3H7.5V6.45L9.9 8.85L8.85 9.9Z"
+                fill="#434655" />
+            </svg>
+            <span>{{ detail.client.demandesCompletees }}</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Card : Lieu de livraison -->
+      <section class="rounded-2xl bg-white overflow-hidden">
+        <div class="flex items-center gap-2 px-5 py-4 border-b border-slate-100">
+          <svg width="12" height="15" viewBox="0 0 12 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M6 7.5C6.4125 7.5 6.76562 7.35312 7.05937 7.05937C7.35312 6.76562 7.5 6.4125 7.5 6C7.5 5.5875 7.35312 5.23438 7.05937 4.94063C6.76562 4.64688 6.4125 4.5 6 4.5C5.5875 4.5 5.23438 4.64688 4.94063 4.94063C4.64688 5.23438 4.5 5.5875 4.5 6C4.5 6.4125 4.64688 6.76562 4.94063 7.05937C5.23438 7.35312 5.5875 7.5 6 7.5ZM6 13.0125C7.525 11.6125 8.65625 10.3406 9.39375 9.19687C10.1313 8.05312 10.5 7.0375 10.5 6.15C10.5 4.7875 10.0656 3.67188 9.19687 2.80312C8.32812 1.93437 7.2625 1.5 6 1.5C4.7375 1.5 3.67188 1.93437 2.80312 2.80312C1.93437 3.67188 1.5 4.7875 1.5 6.15C1.5 7.0375 1.86875 8.05312 2.60625 9.19687C3.34375 10.3406 4.475 11.6125 6 13.0125ZM6 15C3.9875 13.2875 2.48438 11.6969 1.49063 10.2281C0.496875 8.75937 0 7.4 0 6.15C0 4.275 0.603125 2.78125 1.80938 1.66875C3.01562 0.55625 4.4125 0 6 0C7.5875 0 8.98438 0.55625 10.1906 1.66875C11.3969 2.78125 12 4.275 12 6.15C12 7.4 11.5031 8.75937 10.5094 10.2281C9.51562 11.6969 8.0125 13.2875 6 15Z"
+              fill="#104382" />
+          </svg>
+          <h2 class="text-lg sm:text-xl font-semibold text-[#191B23]">Lieu de livraison</h2>
+        </div>
+
+        <!-- Interactive Leaflet Map -->
+        <div class="relative w-full h-44 bg-[#E8F0F8] overflow-hidden">
+          <div id="map" class="w-full h-full z-0"></div>
+        </div>
+
+        <div class="px-5 py-3">
+          <p class="text-xs text-[#4E5166] font-medium">
+            {{ detail.lieu.adresse }}, {{ detail.lieu.codePostal }} {{ detail.lieu.ville }}, France
+          </p>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- ═══ Mode Émettre un Devis ════════════════════════════════════════════ -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6" *ngIf="isEmettreDevisMode">
+    
+    <!-- Colonne gauche (8/12) -->
+    <div class="lg:col-span-8 space-y-5">
+      
+      <!-- Card : Informations de la Clinique -->
+      <section class="rounded-2xl bg-white p-6">
+        <div class="flex items-center gap-2 mb-5">
+          <h2 class="text-lg sm:text-xl font-bold text-[#191B23]">Informations de la Clinique</h2>
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-[#434655]">Destinataire</p>
+            <input type="text" [(ngModel)]="devisDestinataire" 
+              class="mt-2 w-full rounded-xl bg-[#F2F2F2] border border-slate-200 focus:border-[#104382] focus:bg-white px-4 py-3 text-[#191B23] text-sm outline-none transition-all" />
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-[#434655]">Date d'émission</p>
+            <input type="text" [(ngModel)]="devisDateEmission"
+              class="mt-2 w-full rounded-xl bg-[#F2F2F2] border border-slate-200 focus:border-[#104382] focus:bg-white px-4 py-3 text-[#191B23] text-sm outline-none transition-all" />
+          </div>
+        </div>
+      </section>
+
+      <!-- Card : Produits & Équipements -->
+      <section class="rounded-2xl bg-white overflow-hidden p-6 space-y-5">
+        <div class="flex items-center justify-between">
+          <h2 class="text-base sm:text-lg font-semibold text-[#191B23]">Produits & Équipements</h2>
+          <button type="button" (click)="addDevisProduit()" 
+            class="inline-flex items-center gap-1.5 text-sm font-semibold text-[#00339E] hover:underline hover:bg-slate-100/80 px-3.5 py-2 rounded-xl transition-all">
+           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M6 10H7.33333V7.33333H10V6H7.33333V3.33333H6V6H3.33333V7.33333H6V10ZM6.66667 13.3333C5.74444 13.3333 4.87778 13.1583 4.06667 12.8083C3.25556 12.4583 2.55 11.9833 1.95 11.3833C1.35 10.7833 0.875 10.0778 0.525 9.26667C0.175 8.45555 0 7.58889 0 6.66667C0 5.74444 0.175 4.87778 0.525 4.06667C0.875 3.25556 1.35 2.55 1.95 1.95C2.55 1.35 3.25556 0.875 4.06667 0.525C4.87778 0.175 5.74444 0 6.66667 0C7.58889 0 8.45555 0.175 9.26667 0.525C10.0778 0.875 10.7833 1.35 11.3833 1.95C11.9833 2.55 12.4583 3.25556 12.8083 4.06667C13.1583 4.87778 13.3333 5.74444 13.3333 6.66667C13.3333 7.58889 13.1583 8.45555 12.8083 9.26667C12.4583 10.0778 11.9833 10.7833 11.3833 11.3833C10.7833 11.9833 10.0778 12.4583 9.26667 12.8083C8.45555 13.1583 7.58889 13.3333 6.66667 13.3333ZM6.66667 12C8.15556 12 9.41667 11.4833 10.45 10.45C11.4833 9.41667 12 8.15556 12 6.66667C12 5.17778 11.4833 3.91667 10.45 2.88333C9.41667 1.85 8.15556 1.33333 6.66667 1.33333C5.17778 1.33333 3.91667 1.85 2.88333 2.88333C1.85 3.91667 1.33333 5.17778 1.33333 6.66667C1.33333 8.15556 1.85 9.41667 2.88333 10.45C3.91667 11.4833 5.17778 12 6.66667 12Z" fill="#00339E"/>
+</svg>
+            Ajouter un produit
+          </button>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-[#F2F2F2] border-b border-slate-100 text-left gap-4">
+                <th class="px-4 py-2 text-xs font-bold uppercase tracking-wider text-[#747686]">Nom du produit</th>
+                <th class="px-4 py-2 text-xs font-bold uppercase tracking-wider text-[#747686] text-center">Qté</th>
+                <th class="px-4 py-2 text-xs font-bold uppercase tracking-wider text-[#747686] text-right">Prix Unitaire</th>
+                <th class="px-4 py-2 text-xs font-bold uppercase tracking-wider text-[#747686] text-right">Total</th>
+                <th class="px-4 py-2 text-center"></th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr *ngFor="let p of devisProduits; let i = index" class="hover:bg-slate-50/50 transition-colors">
+                <!-- Nom et Ref -->
+                <td class="py-4 pr-3">
+                  <input type="text" [(ngModel)]="p.nom" placeholder="Nom de l'article"
+                    class="w-full font-bold text-base text-[#191B23] bg-transparent outline-none focus:bg-white focus:border focus:border-slate-200 rounded px-1" />
+                  <input type="text" [(ngModel)]="p.ref" placeholder="Référence / Modèle"
+                    class="w-full text-xs text-[#747686] bg-transparent outline-none focus:bg-white focus:border focus:border-slate-200 rounded px-1 mt-0.5" />
+                </td>
+                <!-- Quantité -->
+                <td class="py-4 text-center">
+                  <input type="number" [(ngModel)]="p.quantite" min="1"
+                    class="w-14 bg-[#F2F2F2] rounded-xl px-2 py-1.5 text-center text-[#191B23] outline-none border border-transparent focus:border-slate-300" />
+                </td>
+                <!-- Prix Unitaire -->
+                <td class="py-4 text-right">
+                  <div class="relative inline-flex items-center w-full">
+                    <input type="number" [(ngModel)]="p.prixUnitaire" min="0" step="50000"
+                      class="w-full bg-[#F2F2F2] rounded-xl px-3 py-1.5 text-right text-[#191B23] outline-none border border-transparent focus:border-slate-300 pr-14" />
+                    <span class="absolute right-3 text-[10px] text-[#747686]">FCFA</span>
+                  </div>
+                </td>
+                <!-- Total -->
+                <td class="py-4 text-right font-semibold text-[#191B23] text-base">
+                  {{ ((p.quantite || 0) * (p.prixUnitaire || 0)) | number:'1.0-0' }} FCFA
+                </td>
+                <!-- Actions (Delete) -->
+                <td class="py-4 text-center">
+                  <button type="button" (click)="removeDevisProduit(i)" 
+                    class="text-red-500 hover:text-red-700 transition-colors p-1.5 rounded-lg hover:bg-red-50">
+                   <svg width="12" height="14" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M2.25 13.5C1.8375 13.5 1.48438 13.3531 1.19062 13.0594C0.896875 12.7656 0.75 12.4125 0.75 12V2.25H0V0.75H3.75V0H8.25V0.75H12V2.25H11.25V12C11.25 12.4125 11.1031 12.7656 10.8094 13.0594C10.5156 13.3531 10.1625 13.5 9.75 13.5H2.25ZM9.75 2.25H2.25V12H9.75V2.25ZM3.75 10.5H5.25V3.75H3.75V10.5ZM6.75 10.5H8.25V3.75H6.75V10.5ZM2.25 2.25V12V2.25Z" fill="#BA1A1A"/>
+</svg>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Card : Conditions Logistiques & Garantie -->
+      <section class="rounded-2xl bg-white p-6 space-y-6">
+        <h2 class="text-base sm:text-lg font-semibold text-[#191B23]">Conditions Logistiques & Garantie</h2>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-[#434655]">Délai de livraison estimé</p>
+            <div class="relative mt-2">
+              <span class="absolute left-4 top-3.5 text-slate-400">
+                <svg width="17" height="12" viewBox="0 0 17 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M3.75 12C3.125 12 2.59375 11.7812 2.15625 11.3438C1.71875 10.9062 1.5 10.375 1.5 9.75H0V1.5C0 1.0875 0.146875 0.734375 0.440625 0.440625C0.734375 0.146875 1.0875 0 1.5 0H12V3H14.25L16.5 6V9.75H15C15 10.375 14.7812 10.9062 14.3438 11.3438C13.9062 11.7812 13.375 12 12.75 12C12.125 12 11.5938 11.7812 11.1562 11.3438C10.7188 10.9062 10.5 10.375 10.5 9.75H6C6 10.375 5.78125 10.9062 5.34375 11.3438C4.90625 11.7812 4.375 12 3.75 12ZM3.75 10.5C3.9625 10.5 4.14062 10.4281 4.28438 10.2844C4.42813 10.1406 4.5 9.9625 4.5 9.75C4.5 9.5375 4.42813 9.35938 4.28438 9.21562C4.14062 9.07187 3.9625 9 3.75 9C3.5375 9 3.35938 9.07187 3.21563 9.21562C3.07188 9.35938 3 9.5375 3 9.75C3 9.9625 3.07188 10.1406 3.21563 10.2844C3.35938 10.4281 3.5375 10.5 3.75 10.5ZM1.5 8.25H2.1C2.3125 8.025 2.55625 7.84375 2.83125 7.70625C3.10625 7.56875 3.4125 7.5 3.75 7.5C4.0875 7.5 4.39375 7.56875 4.66875 7.70625C4.94375 7.84375 5.1875 8.025 5.4 8.25H10.5V1.5H1.5V8.25ZM12.75 10.5C12.9625 10.5 13.1406 10.4281 13.2844 10.2844C13.4281 10.1406 13.5 9.9625 13.5 9.75C13.5 9.5375 13.4281 9.35938 13.2844 9.21562C13.1406 9.07187 12.9625 9 12.75 9C12.5375 9 12.3594 9.07187 12.2156 9.21562C12.0719 9.35938 12 9.5375 12 9.75C12 9.9625 12.0719 10.1406 12.2156 10.2844C12.3594 10.4281 12.5375 10.5 12.75 10.5ZM12 6.75H15.1875L13.5 4.5H12V6.75Z" fill="#747686"/>
+</svg>
+              </span>
+              <select [(ngModel)]="devisDelaiLivraison"
+                class="w-full rounded-xl bg-[#F2F2F2] pl-11 pr-10 py-3 text-[#191B23] outline-none border border-transparent focus:border-slate-300 transition-colors appearance-none">
+                <option value="1 à 2 semaines">1 à 2 semaines</option>
+                <option value="2 à 4 semaines">2 à 4 semaines</option>
+                <option value="4 à 6 semaines">4 à 6 semaines</option>
+              </select>
+              <span class="absolute right-4 top-4.5 pointer-events-none text-slate-400">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </span>
+            </div>
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-[#434655]">Garantie</p>
+            <div class="relative mt-2">
+              <span class="absolute left-4 top-3.5 text-slate-400">
+               <svg width="12" height="15" viewBox="0 0 12 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M5.2125 10.1625L9.45 5.925L8.38125 4.85625L5.2125 8.025L3.6375 6.45L2.56875 7.51875L5.2125 10.1625ZM6 15C4.2625 14.5625 2.82812 13.5656 1.69687 12.0094C0.565625 10.4531 0 8.725 0 6.825V2.25L6 0L12 2.25V6.825C12 8.725 11.4344 10.4531 10.3031 12.0094C9.17188 13.5656 7.7375 14.5625 6 15ZM6 13.425C7.3 13.0125 8.375 12.1875 9.225 10.95C10.075 9.7125 10.5 8.3375 10.5 6.825V3.28125L6 1.59375L1.5 3.28125V6.825C1.5 8.3375 1.925 9.7125 2.775 10.95C3.625 12.1875 4.7 13.0125 6 13.425Z" fill="#747686"/>
+</svg>
+              </span>
+              <select [(ngModel)]="devisGarantie"
+                class="w-full rounded-xl bg-[#F2F2F2] pl-11 pr-10 py-3 text-[#191B23] outline-none border border-transparent focus:border-slate-300 transition-colors appearance-none">
+                <option value="12 mois">12 mois</option>
+                <option value="24 mois (Standard)">24 mois (Standard)</option>
+                <option value="36 mois">36 mois</option>
+              </select>
+              <span class="absolute right-4 top-4.5 pointer-events-none text-slate-400">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wider text-[#434655]">Notes additionnelles</p>
+          <textarea [(ngModel)]="devisNotes" rows="4" placeholder="Précisez ici les conditions de paiement, les spécifications techniques particulières ou tout autre détail important..."
+            class="mt-2 w-full rounded-xl bg-[#F2F2F2] px-4 py-3 font-medium text-[#191B23] outline-none border border-transparent focus:border-slate-300 transition-colors placeholder-[#747686] text-sm resize-none"></textarea>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Colonne droite (4/12) -->
+    <div class="lg:col-span-4 space-y-5">
+      
+      <!-- Card : Résumé du Devis -->
+      <section class="rounded-2xl bg-[#104382] p-6 text-white space-y-6 flex flex-col justify-between h-fit">
+        <div>
+          <h2 class="text-xl font-semibold mb-6">Résumé du Devis</h2>
+          
+          <div class="space-y-4 text-sm font-semibold opacity-90">
+            <div class="flex items-center justify-between">
+              <span class="opacity-80">Sous-total HT</span>
+              <span>{{ subtotalHT | number:'1.0-0' }} FCFA</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="opacity-80">TTC</span>
+              <span>{{ devisTTC | number:'1.0-0' }} FCFA</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="opacity-80">Frais de livraison</span>
+              <span class="text-white">Gracieux</span>
+            </div>
+          </div>
+          
+          <div class="border-t border-white/20 my-6"></div>
+          
+          <div class="flex items-end justify-between">
+            <span class="text-sm font-bold opacity-80">TOTAL TTC</span>
+            <span class="text-2xl font-bold leading-none">{{ totalTTC | number:'1.0-0' }} FCFA</span>
+          </div>
+        </div>
+
+        <!-- Info alert block -->
+        <div class="rounded-xl bg-[#003AB133] p-4 flex gap-3 text-xs leading-relaxed opacity-95">
+          <span class="text-blue-400 mt-0.5 flex-shrink-0">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M9 15H11V9H9V15ZM10 7C10.2833 7 10.5208 6.90417 10.7125 6.7125C10.9042 6.52083 11 6.28333 11 6C11 5.71667 10.9042 5.47917 10.7125 5.2875C10.5208 5.09583 10.2833 5 10 5C9.71667 5 9.47917 5.09583 9.2875 5.2875C9.09583 5.47917 9 5.71667 9 6C9 6.28333 9.09583 6.52083 9.2875 6.7125C9.47917 6.90417 9.71667 7 10 7ZM10 20C8.61667 20 7.31667 19.7375 6.1 19.2125C4.88333 18.6875 3.825 17.975 2.925 17.075C2.025 16.175 1.3125 15.1167 0.7875 13.9C0.2625 12.6833 0 11.3833 0 10C0 8.61667 0.2625 7.31667 0.7875 6.1C1.3125 4.88333 2.025 3.825 2.925 2.925C3.825 2.025 4.88333 1.3125 6.1 0.7875C7.31667 0.2625 8.61667 0 10 0C11.3833 0 12.6833 0.2625 13.9 0.7875C15.1167 1.3125 16.175 2.025 17.075 2.925C17.975 3.825 18.6875 4.88333 19.2125 6.1C19.7375 7.31667 20 8.61667 20 10C20 11.3833 19.7375 12.6833 19.2125 13.9C18.6875 15.1167 17.975 16.175 17.075 17.075C16.175 17.975 15.1167 18.6875 13.9 19.2125C12.6833 19.7375 11.3833 20 10 20ZM10 18C12.2333 18 14.125 17.225 15.675 15.675C17.225 14.125 18 12.2333 18 10C18 7.76667 17.225 5.875 15.675 4.325C14.125 2.775 12.2333 2 10 2C7.76667 2 5.875 2.775 4.325 4.325C2.775 5.875 2 7.76667 2 10C2 12.2333 2.775 14.125 4.325 15.675C5.875 17.225 7.76667 18 10 18Z" fill="#FFB5A0"/>
+</svg>
+          </span>
+          <p class="text-white">
+            Ce devis est valable pendant une période de 30 jours à compter de la date d'émission.
+          </p>
+        </div>
+      </section>
+
+    </div>
+
+  </div>
+</div>

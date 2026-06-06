@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 
 type DemandeStatus = 'En attente' | 'Devis reçus';
 
@@ -25,11 +26,20 @@ interface DemandeMateriel {
 @Component({
   selector: 'app-demande-materiels',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './demande-materiels.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DemandeMaterielComponent {
+
+  showModal = false;
+  nomDemande = 'Commande médicaux';
+  nomProduit = 'Gants';
+  quantite = 50;
+  unite = 'Boites';
+  description = '';
+  urgencyLevel = 'Urgent';
+  selectedFournisseurs: string[] = ['medtech', 'santelogix'];
 
   readonly kpis: KpiItem[] = [
     {
@@ -54,11 +64,11 @@ export class DemandeMaterielComponent {
       value: '16',
       dark: false,
       sub: 'Prêt pour décision',
-      subClass: 'text-[#2563EB]'
+      subClass: 'text-[#00339E]'
     }
   ];
 
-  readonly demandes: DemandeMateriel[] = [
+  demandes: DemandeMateriel[] = [
     {
       ref: 'REQ-2024-001',
       titre: 'Gants stériles en latex',
@@ -100,7 +110,7 @@ export class DemandeMaterielComponent {
     }
   ];
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private cdr: ChangeDetectorRef) {}
 
   openDetail(ref: string): void {
     this.router.navigate(['/demande-materiels', ref]);
@@ -108,11 +118,44 @@ export class DemandeMaterielComponent {
 
   statusClass(status: DemandeStatus): string {
     return status === 'En attente'
-      ? 'bg-[#FFF7ED] text-[#D97706]'
-      : 'bg-[#ECFDF5] text-[#0D9488]';
+      ? 'bg-[#F39C121A] text-[#F39C12]'
+      : 'bg-[#00B8941A] text-[#00B894]';
   }
 
   statusLabel(d: DemandeMateriel): string {
     return d.status === 'Devis reçus' ? `Devis reçus (${d.devisCount})` : d.status;
+  }
+
+  openModal(): void {
+    this.showModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeModal(): void {
+    this.showModal = false;
+    this.cdr.markForCheck();
+  }
+
+  toggleFournisseur(id: string): void {
+    if (this.selectedFournisseurs.includes(id)) {
+      this.selectedFournisseurs = this.selectedFournisseurs.filter(f => f !== id);
+    } else {
+      this.selectedFournisseurs = [...this.selectedFournisseurs, id];
+    }
+    this.cdr.markForCheck();
+  }
+
+  submitDemande(): void {
+    const nextRef = `REQ-2024-0${this.demandes.length + 1}`;
+    const newDemande: DemandeMateriel = {
+      ref: nextRef,
+      titre: this.nomDemande || 'Demande sans nom',
+      dateEmission: '05 Juin 2026',
+      fournisseurs: this.selectedFournisseurs.length,
+      status: 'En attente',
+      devisCount: 0
+    };
+    this.demandes = [newDemande, ...this.demandes];
+    this.closeModal();
   }
 }
