@@ -645,6 +645,35 @@
 
     </ng-container>
 
+    <!-- SIDEBAR DONOR / DONATEUR -->
+    <ng-container *ngIf="isDonor">
+      <!-- Dons -->
+      <a routerLink="/dons"
+        routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
+        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        <div class="flex items-center justify-center w-8 h-8">
+         <svg width="20" height="19" viewBox="0 0 20 19" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+<path d="M17.513 9.58341L10.013 17.0114L2.513 9.58341C2.0183 9.10202 1.62864 8.52342 1.36854 7.88404C1.10845 7.24466 0.983558 6.55836 1.00173 5.86834C1.01991 5.17832 1.18076 4.49954 1.47415 3.87474C1.76755 3.24994 2.18713 2.69266 2.70648 2.23799C3.22583 1.78331 3.8337 1.4411 4.49181 1.23289C5.14991 1.02468 5.844 0.954991 6.53036 1.02821C7.21673 1.10143 7.8805 1.31596 8.47987 1.65831C9.07925 2.00066 9.60124 2.46341 10.013 3.01741C10.4265 2.46743 10.9491 2.00873 11.5481 1.67001C12.1471 1.3313 12.8095 1.11986 13.4939 1.04893C14.1784 0.977998 14.8701 1.04911 15.5258 1.2578C16.1815 1.46649 16.787 1.80828 17.3045 2.26177C17.8221 2.71526 18.2404 3.27069 18.5334 3.8933C18.8264 4.51591 18.9877 5.19229 19.0073 5.88012C19.0269 6.56794 18.9043 7.2524 18.6471 7.89066C18.39 8.52891 18.0039 9.10723 17.513 9.58941" stroke="#343A40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M10.0116 3.01172L6.71857 6.30472C6.5311 6.49225 6.42578 6.74655 6.42578 7.01172C6.42578 7.27688 6.5311 7.53119 6.71857 7.71872L7.26157 8.26172C7.95157 8.95172 9.07157 8.95172 9.76157 8.26172L10.7616 7.26172C11.0569 6.96601 11.4076 6.73142 11.7937 6.57136C12.1798 6.4113 12.5936 6.32892 13.0116 6.32892C13.4295 6.32892 13.8433 6.4113 14.2294 6.57136C14.6155 6.73142 14.9662 6.96601 15.2616 7.26172L17.5116 9.51172M10.5116 12.5117L12.5116 14.5117M13.0116 10.0117L15.0116 12.0117" stroke="#343A40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+        </div>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Dons</span>
+      </a>
+
+      <!-- Historique -->
+      <a routerLink="/dons-historique"
+        routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
+        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        <div class="flex items-center justify-center w-8 h-8">
+         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+        </div>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Historique</span>
+      </a>
+    </ng-container>
+
     <!-- MON COMPTE (commun) -->
     <a routerLink="/compte"
       routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"

@@ -1,0 +1,238 @@
+<div class="min-h-screen bg-[#F4F6F9]">
+  <div class="mx-auto space-y-6" *ngIf="donation">
+
+    <!-- HEADER BLOCK -->
+    <div class="flex items-center gap-4">
+      <button 
+        type="button" 
+        (click)="goBack()" 
+        class="w-12 h-12 rounded-lg bg-white flex items-center justify-center hover:bg-gray-50 transition duration-150 cursor-pointer">
+        <svg class="w-5 h-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+      </button>
+      <h1 class="text-xl sm:text-2xl font-bold text-[#0F172A]">
+        Détail du don
+      </h1>
+    </div>
+
+    <!-- SUMMARY TOP CARD -->
+    <div class="bg-white rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div class="flex items-center gap-4">
+        <!-- Patient image circle -->
+        <img 
+          [src]="donation.patientPhoto || 'assets/images/patient.png'" 
+          alt="Patient Image" 
+          class="w-14 h-14 rounded-full object-cover border border-gray-100 flex-shrink-0" />
+        
+        <div class="space-y-1">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 class="text-lg font-bold text-gray-900 leading-tight">
+              {{ donation.patientName }}
+            </h3>
+            <span class="px-2 py-0.5 text-[10px] font-bold tracking-wider bg-[#8BBAE2] text-white rounded uppercase">
+              {{ donation.typeTag }}
+            </span>
+          </div>
+          <div class="flex items-center gap-3 text-xs text-gray-500 font-medium">
+            <span>{{ donation.dateString }}</span>
+            <div class="flex items-center gap-1 text-[#11458B]">
+              <svg class="w-3.5 h-3.5 text-[#11458B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span>{{ donation.location }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-left sm:text-right flex flex-col items-start sm:items-end gap-1.5 self-stretch sm:self-auto pt-3 sm:pt-0 border-t border-gray-50 sm:border-t-0">
+        <span class="text-2xl sm:text-3xl font-semibold text-[#0037B0]">
+          +{{ formatAmount(donation.amount) }} FCFA
+        </span>
+        <div 
+          [class]="donation.status === 'SUCCESS' ? 'bg-[#e6fcf5] text-[#16A34A] border-[#16A34A22]' : 'bg-[#fff9db] text-[#d97706] border-[#d9770622]'"
+          class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border flex items-center gap-1 inline-flex">
+          <svg *ngIf="donation.status === 'SUCCESS'" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M5.01667 8.51667L9.12917 4.40417L8.3125 3.5875L5.01667 6.88333L3.35417 5.22083L2.5375 6.0375L5.01667 8.51667ZM5.83333 11.6667C5.02639 11.6667 4.26806 11.5135 3.55833 11.2073C2.84861 10.901 2.23125 10.4854 1.70625 9.96042C1.18125 9.43542 0.765625 8.81806 0.459375 8.10833C0.153125 7.39861 0 6.64028 0 5.83333C0 5.02639 0.153125 4.26806 0.459375 3.55833C0.765625 2.84861 1.18125 2.23125 1.70625 1.70625C2.23125 1.18125 2.84861 0.765625 3.55833 0.459375C4.26806 0.153125 5.02639 0 5.83333 0C6.64028 0 7.39861 0.153125 8.10833 0.459375C8.81806 0.765625 9.43542 1.18125 9.96042 1.70625C10.4854 2.23125 10.901 2.84861 11.2073 3.55833C11.5135 4.26806 11.6667 5.02639 11.6667 5.83333C11.6667 6.64028 11.5135 7.39861 11.2073 8.10833C10.901 8.81806 10.4854 9.43542 9.96042 9.96042C9.43542 10.4854 8.81806 10.901 8.10833 11.2073C7.39861 11.5135 6.64028 11.6667 5.83333 11.6667Z" fill="#16A34A"/>
+</svg>
+          <svg *ngIf="donation.status !== 'SUCCESS'" class="w-3 h-3 text-[#d97706]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span class="uppercase">
+            {{ donation.status === 'SUCCESS' ? 'Complété' : 'En traitement' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- DETAILS LIST CARD -->
+    <div class="bg-white rounded-2xl p-5 sm:p-6 space-y-5">
+      <div class="flex items-center gap-2 border-b border-gray-100 pb-3">
+       <svg width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M3 20C2.16667 20 1.45833 19.7083 0.875 19.125C0.291667 18.5417 0 17.8333 0 17V14H3V0L4.5 1.5L6 0L7.5 1.5L9 0L10.5 1.5L12 0L13.5 1.5L15 0L16.5 1.5L18 0V17C18 17.8333 17.7083 18.5417 17.125 19.125C16.5417 19.7083 15.8333 20 15 20H3ZM15 18C15.2833 18 15.5208 17.9042 15.7125 17.7125C15.9042 17.5208 16 17.2833 16 17V3H5V14H14V17C14 17.2833 14.0958 17.5208 14.2875 17.7125C14.4792 17.9042 14.7167 18 15 18ZM6 7V5H12V7H6ZM6 10V8H12V10H6ZM14 7C13.7167 7 13.4792 6.90417 13.2875 6.7125C13.0958 6.52083 13 6.28333 13 6C13 5.71667 13.0958 5.47917 13.2875 5.2875C13.4792 5.09583 13.7167 5 14 5C14.2833 5 14.5208 5.09583 14.7125 5.2875C14.9042 5.47917 15 5.71667 15 6C15 6.28333 14.9042 6.52083 14.7125 6.7125C14.5208 6.90417 14.2833 7 14 7ZM14 10C13.7167 10 13.4792 9.90417 13.2875 9.7125C13.0958 9.52083 13 9.28333 13 9C13 8.71667 13.0958 8.47917 13.2875 8.2875C13.4792 8.09583 13.7167 8 14 8C14.2833 8 14.5208 8.09583 14.7125 8.2875C14.9042 8.47917 15 8.71667 15 9C15 9.28333 14.9042 9.52083 14.7125 9.7125C14.5208 9.90417 14.2833 10 14 10ZM3 18H12V16H2V17C2 17.2833 2.09583 17.5208 2.2875 17.7125C2.47917 17.9042 2.71667 18 3 18ZM2 18C2 18 2 17.9042 2 17.7125C2 17.5208 2 17.2833 2 17V16V18Z" fill="#0037B0"/>
+</svg>
+        <h2 class="text-lg sm:text-xl font-bold text-[#1A1B23]">
+          Détails du don
+        </h2>
+      </div>
+
+      <div class="divide-y space-y-4 divide-gray-100/80">
+        <!-- Row 1: Montant -->
+        <div class="flex items-center justify-between py-3.5">
+          <div class="flex items-center gap-2.5 text-sm font-medium text-[#434655]">
+           <svg width="22" height="16" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 9C12.1667 9 11.4583 8.70833 10.875 8.125C10.2917 7.54167 10 6.83333 10 6C10 5.16667 10.2917 4.45833 10.875 3.875C11.4583 3.29167 12.1667 3 13 3C13.8333 3 14.5417 3.29167 15.125 3.875C15.7083 4.45833 16 5.16667 16 6C16 6.83333 15.7083 7.54167 15.125 8.125C14.5417 8.70833 13.8333 9 13 9ZM6 12C5.45 12 4.97917 11.8042 4.5875 11.4125C4.19583 11.0208 4 10.55 4 10V2C4 1.45 4.19583 0.979167 4.5875 0.5875C4.97917 0.195833 5.45 0 6 0H20C20.55 0 21.0208 0.195833 21.4125 0.5875C21.8042 0.979167 22 1.45 22 2V10C22 10.55 21.8042 11.0208 21.4125 11.4125C21.0208 11.8042 20.55 12 20 12H6ZM8 10H18C18 9.45 18.1958 8.97917 18.5875 8.5875C18.9792 8.19583 19.45 8 20 8V4C19.45 4 18.9792 3.80417 18.5875 3.4125C18.1958 3.02083 18 2.55 18 2H8C8 2.55 7.80417 3.02083 7.4125 3.4125C7.02083 3.80417 6.55 4 6 4V8C6.55 8 7.02083 8.19583 7.4125 8.5875C7.80417 8.97917 8 9.45 8 10ZM19 16H2C1.45 16 0.979167 15.8042 0.5875 15.4125C0.195833 15.0208 0 14.55 0 14V3H2V14H19V16ZM6 10V2V10Z" fill="#0037B0"/>
+</svg>
+            <span>Montant</span>
+          </div>
+          <span class="text-sm sm:text-base font-smibold text-[#0037B0]">
+            {{ formatAmount(donation.amount) }} FCFA
+          </span>
+        </div>
+
+        <!-- Row 2: Date du don -->
+        <div class="flex items-center justify-between py-3.5">
+          <div class="flex items-center gap-2.5 text-sm font-medium text-[#434655]">
+           <svg width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V4C0 3.45 0.195833 2.97917 0.5875 2.5875C0.979167 2.19583 1.45 2 2 2H3V0H5V2H13V0H15V2H16C16.55 2 17.0208 2.19583 17.4125 2.5875C17.8042 2.97917 18 3.45 18 4V18C18 18.55 17.8042 19.0208 17.4125 19.4125C17.0208 19.8042 16.55 20 16 20H2ZM2 18H16V8H2V18ZM2 6H16V4H2V6ZM2 6V4V6Z" fill="#0037B0"/>
+</svg>
+            <span>Date du don</span>
+          </div>
+          <span class="text-sm font-bold text-gray-900">
+            {{ donation.dateString }} • {{ donation.timeString }}
+          </span>
+        </div>
+
+        <!-- Row 3: Type de don -->
+        <div class="flex items-center justify-between py-3.5">
+          <div class="flex items-center gap-2.5 text-sm font-medium text-[#434655]">
+           <svg width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V4C0 3.45 0.195833 2.97917 0.5875 2.5875C0.979167 2.19583 1.45 2 2 2H6.2C6.41667 1.4 6.77917 0.916667 7.2875 0.55C7.79583 0.183333 8.36667 0 9 0C9.63333 0 10.2042 0.183333 10.7125 0.55C11.2208 0.916667 11.5833 1.4 11.8 2H16C16.55 2 17.0208 2.19583 17.4125 2.5875C17.8042 2.97917 18 3.45 18 4V18C18 18.55 17.8042 19.0208 17.4125 19.4125C17.0208 19.8042 16.55 20 16 20H2ZM2 18H16V4H2V18ZM4 16H11V14H4V16ZM4 12H14V10H4V12ZM4 8H14V6H4V8ZM9 3.25C9.21667 3.25 9.39583 3.17917 9.5375 3.0375C9.67917 2.89583 9.75 2.71667 9.75 2.5C9.75 2.28333 9.67917 2.10417 9.5375 1.9625C9.39583 1.82083 9.21667 1.75 9 1.75C8.78333 1.75 8.60417 1.82083 8.4625 1.9625C8.32083 2.10417 8.25 2.28333 8.25 2.5C8.25 2.71667 8.32083 2.89583 8.4625 3.0375C8.60417 3.17917 8.78333 3.25 9 3.25ZM2 18V4V18Z" fill="#0037B0"/>
+</svg>
+            <span>Type de don</span>
+          </div>
+          <span class="text-sm font-bold text-gray-900">
+            {{ donation.type }}
+          </span>
+        </div>
+
+        <!-- Row 4: Traitement -->
+        <div class="flex items-center justify-between py-3.5">
+          <div class="flex items-center gap-2.5 text-sm font-medium text-[#434655]">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V6C0 5.45 0.195833 4.97917 0.5875 4.5875C0.979167 4.19583 1.45 4 2 4H6V2C6 1.45 6.19583 0.979167 6.5875 0.5875C6.97917 0.195833 7.45 0 8 0H12C12.55 0 13.0208 0.195833 13.4125 0.5875C13.8042 0.979167 14 1.45 14 2V4H18C18.55 4 19.0208 4.19583 19.4125 4.5875C19.8042 4.97917 20 5.45 20 6V18C20 18.55 19.8042 19.0208 19.4125 19.4125C19.0208 19.8042 18.55 20 18 20H2ZM2 18H18V6H2V18ZM8 4H12V2H8V4ZM2 18V6V18ZM9 13V16H11V13H14V11H11V8H9V11H6V13H9Z" fill="#0037B0"/>
+</svg>
+            <span>Traitement</span>
+          </div>
+          <span class="text-sm font-bold text-gray-900">
+            {{ donation.treatment }}
+          </span>
+        </div>
+
+        <!-- Row 5: étatut -->
+        <div class="flex items-center justify-between py-3.5">
+          <div class="flex items-center gap-2.5 text-sm font-medium text-[#434655]">
+           <svg width="22" height="21" viewBox="0 0 22 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M7.6 21L5.7 17.8L2.1 17L2.45 13.3L0 10.5L2.45 7.7L2.1 4L5.7 3.2L7.6 0L11 1.45L14.4 0L16.3 3.2L19.9 4L19.55 7.7L22 10.5L19.55 13.3L19.9 17L16.3 17.8L14.4 21L11 19.55L7.6 21ZM8.45 18.45L11 17.35L13.6 18.45L15 16.05L17.75 15.4L17.5 12.6L19.35 10.5L17.5 8.35L17.75 5.55L15 4.95L13.55 2.55L11 3.65L8.4 2.55L7 4.95L4.25 5.55L4.5 8.35L2.65 10.5L4.5 12.6L4.25 15.45L7 16.05L8.45 18.45ZM9.95 14.05L15.6 8.4L14.2 6.95L9.95 11.2L7.8 9.1L6.4 10.5L9.95 14.05Z" fill="#0037B0"/>
+</svg>
+            <span>statut</span>
+          </div>
+          <div class="flex items-center gap-1 text-sm font-bold text-[#16A34A]">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M5.01667 8.51667L9.12917 4.40417L8.3125 3.5875L5.01667 6.88333L3.35417 5.22083L2.5375 6.0375L5.01667 8.51667ZM5.83333 11.6667C5.02639 11.6667 4.26806 11.5135 3.55833 11.2073C2.84861 10.901 2.23125 10.4854 1.70625 9.96042C1.18125 9.43542 0.765625 8.81806 0.459375 8.10833C0.153125 7.39861 0 6.64028 0 5.83333C0 5.02639 0.153125 4.26806 0.459375 3.55833C0.765625 2.84861 1.18125 2.23125 1.70625 1.70625C2.23125 1.18125 2.84861 0.765625 3.55833 0.459375C4.26806 0.153125 5.02639 0 5.83333 0C6.64028 0 7.39861 0.153125 8.10833 0.459375C8.81806 0.765625 9.43542 1.18125 9.96042 1.70625C10.4854 2.23125 10.901 2.84861 11.2073 3.55833C11.5135 4.26806 11.6667 5.02639 11.6667 5.83333C11.6667 6.64028 11.5135 7.39861 11.2073 8.10833C10.901 8.81806 10.4854 9.43542 9.96042 9.96042C9.43542 10.4854 8.81806 10.901 8.10833 11.2073C7.39861 11.5135 6.64028 11.6667 5.83333 11.6667Z" fill="#16A34A"/>
+</svg>
+            <span>Complété</span>
+          </div>
+        </div>
+
+        <!-- Row 6: Référence -->
+        <div class="flex items-center justify-between py-3.5">
+          <div class="flex items-center gap-2.5 text-sm font-medium text-[#434655]">
+            <svg width="18" height="16" viewBox="0 0 18 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M3 16L4 12H0L0.5 10H4.5L5.5 6H1.5L2 4H6L7 0H9L8 4H12L13 0H15L14 4H18L17.5 6H13.5L12.5 10H16.5L16 12H12L11 16H9L10 12H6L5 16H3ZM6.5 10H10.5L11.5 6H7.5L6.5 10Z" fill="#0037B0"/>
+</svg>
+            <span>Référence</span>
+          </div>
+          <span class="text-sm font-semibold text-gray-400">
+            {{ donation.reference }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- IMPACT BANNER -->
+    <div class="bg-[#11458B] rounded-2xl p-5 sm:p-6 flex items-start gap-4 text-white shadow-sm">
+      <div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0 border border-white/10">
+        <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+        </svg>
+      </div>
+      <div class="space-y-1">
+        <h4 class="text-base font-bold">Votre impact est réel</h4>
+        <p class="text-xs text-blue-100 font-medium leading-relaxed">
+          Ce don a couvert {{ donation.impactCoveredPercentage }}% des frais d'hospitalisation et de médicaments pour {{ donation.patientName }}. Votre soutien direct lui permet de reprendre une vie normale.
+        </p>
+      </div>
+    </div>
+
+    <!-- ACKNOWLEDGEMENTS CARD (REMERCIEMENTS) -->
+    <div class="bg-white rounded-2xl p-5 sm:p-6 space-y-5">
+      <div class="flex items-center gap-2 border-b border-gray-100 pb-3">
+        <svg class="w-5 h-5 text-[#11458B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+        </svg>
+        <h2 class="text-base sm:text-lg font-bold text-gray-900">
+          Remerciements
+        </h2>
+      </div>
+
+      <div class="space-y-4">
+        <!-- Audio player box -->
+        <div class="bg-[#F8F9FA] rounded-2xl p-3 flex items-center justify-between gap-4 border border-gray-100">
+          <!-- Play button -->
+          <button 
+            type="button" 
+            class="w-10 h-10 rounded-full bg-[#11458B] hover:bg-[#1a5bb3] flex items-center justify-center text-white transition duration-150 flex-shrink-0 cursor-pointer shadow-sm">
+            <svg class="w-3.5 h-3.5 fill-current ml-0.5" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </button>
+          
+          <!-- Audio track line / description -->
+          <div class="flex-1 space-y-1">
+            <span class="text-xs font-bold text-[#11458B] leading-none">Message vocal du patient</span>
+            <!-- Progress Line -->
+            <div class="h-1 bg-gray-200 rounded-full overflow-hidden w-full mt-1.5">
+              <div class="h-full bg-[#11458B] rounded-full" style="width: 33%"></div>
+            </div>
+          </div>
+          
+          <!-- Duration & download action -->
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-semibold text-gray-500">00:45</span>
+            <button 
+              type="button" 
+              class="w-8 h-8 rounded-full hover:bg-gray-200/50 flex items-center justify-center transition cursor-pointer">
+              <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- soft blue alert block -->
+        <div class="bg-[#E8F0FE] border-none p-4 rounded-2xl flex items-start gap-3 text-blue-900">
+          <svg class="w-4 h-4 text-[#11458B] flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+          </svg>
+          <p class="text-xs font-semibold leading-relaxed">
+            Ce message vous est adressé en signe de gratitude. Merci pour votre générosité !
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

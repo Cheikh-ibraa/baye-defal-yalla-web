@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, Inject, PLATFORM_ID, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, inject, PLATFORM_ID, OnDestroy } from '@angular/core';
 import { CommonModule, CurrencyPipe, isPlatformBrowser } from '@angular/common';
 import { Subject, of } from 'rxjs';
 import { takeUntil, delay } from 'rxjs/operators';
@@ -117,10 +117,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   };
 
-  constructor(
-    @Inject(PLATFORM_ID) private platformId: Object,
-    
-  ) {
+  private platformId = inject(PLATFORM_ID);
+
+  constructor() {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 

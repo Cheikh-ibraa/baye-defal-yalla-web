@@ -38,6 +38,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   isImagerie = false;  // IMAGING_CENTER
   isHospital = false;  // HOSPITAL
   isFournisseur = false; // FOURNISSEUR
+  isDonor = false;       // DONOR / DONATEUR
 
   financeOpen: boolean = false;
 
@@ -136,6 +137,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
     { id: 'comptes', label: 'Mon compte', route: '/compte' }
   ];
 
+  // Menus DONATEUR
+  donateurMenuItems: MenuItem[] = [
+    { id: 'dons', label: 'Dons', route: '/dons' },
+    { id: 'dons-historique', label: 'Historique', route: '/dons-historique' },
+    { id: 'comptes', label: 'Mon compte', route: '/compte' }
+  ];
+
   menuItems: MenuItem[] = [];
   // Mode sandbox: on expose tous les groupes pour garder la navigation libre.
   // À rebrancher plus tard si on réintroduit une logique de rôle.
@@ -146,7 +154,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
     ...this.labMenuItems,
     ...this.imagerieMenuItems,
     ...this.hospitalMenuItems,
-    ...this.fournisseurMenuItems
+    ...this.fournisseurMenuItems,
+    ...this.donateurMenuItems
   ];
 
   constructor(
@@ -186,6 +195,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.isImagerie = profile === 'IMAGING_CENTER' || profile === 'IMAGERIE';
     this.isHospital = profile === 'HOSPITAL' || profile === 'HOPITAL';
     this.isFournisseur = profile === 'FOURNISSEUR' || profile === 'SUPPLIER';
+    this.isDonor = profile === 'DONOR' || profile === 'DONATEUR';
 
     if (this.isAdmin) {
       this.menuItems = [...this.adminMenuItems];
@@ -201,6 +211,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.menuItems = [...this.hospitalMenuItems];
     } else if (this.isFournisseur) {
       this.menuItems = [...this.fournisseurMenuItems];
+    } else if (this.isDonor) {
+      this.menuItems = [...this.donateurMenuItems];
     } else {
       this.menuItems = [...this.pharmacyMenuItems]; // fallback
     }
@@ -249,6 +261,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
         url.startsWith('/demande-materiels') || 
         url.startsWith('/paiements-hospital')) {
       return 'HOSPITAL';
+    }
+    if (url.startsWith('/dons') || url.startsWith('/dons-historique')) {
+      return 'DONATEUR';
     }
     if (url.startsWith('/dashboard') || 
         url.startsWith('/commande') || 

@@ -25,6 +25,12 @@ interface DonationItem {
   percentage: number;
   progressColor: string;
   donors: Donor[];
+  patientPhoto?: string;
+  doctorPhoto?: string;
+  docType?: 'photo' | 'pdf';
+  docName?: string;
+  docUrl?: string;
+  choicesOption?: '100' | '100_50';
 }
 
 const STATIC_DONATIONS: DonationItem[] = [
@@ -36,28 +42,28 @@ const STATIC_DONATIONS: DonationItem[] = [
     urgencyBg: 'bg-[#E74C3C]',
     patientName: 'Mamadou Sow',
     patientAge: 65,
-    indication: 'Hypertension',
-    doctorName: 'Dr. Awa Diop',
+    indication: 'Traitement hypertension',
+    doctorName: 'Dr. Awa Cisse',
     doctorSpecialty: 'Généraliste',
     description:
-      'Cette ordonnance médicale a été délivrée pour financer des médicaments nécessaires à la prise en charge du patient.',
-    objectif: 25000,
-    collected: 17789,
-    percentage: 72,
+      'Ordonnance pour hypertension nécessitant traitement continu.',
+    objectif: 300000,
+    collected: 0,
+    percentage: 0,
     progressColor: 'bg-[#2AB396]',
-    donors: [
-      { name: 'Moussa Ndiaye', date: '06 février 2026', amount: '+2 000 F' },
-      { name: 'Anonyme', date: '09 février 2026', amount: '+5 000 F' },
-      { name: 'Fatou Diallo', date: '12 février 2026', amount: '+3 500 F' },
-      { name: 'Ibrahima Ba', date: '14 février 2026', amount: '+1 000 F' }
-    ]
+    patientPhoto: 'assets/images/patient.png',
+    doctorPhoto: 'assets/images/medecin.png',
+    docType: 'photo',
+    docUrl: 'assets/images/img-ordinance.png',
+    choicesOption: '100',
+    donors: []
   },
   {
     id: 2,
     type: 'Analyse médicale',
-    urgency: 'Normal',
+    urgency: 'Moyen',
     urgencyColor: 'text-white',
-    urgencyBg: 'bg-[#58D68D]',
+    urgencyBg: 'bg-[#F29900]',
     patientName: 'Seydou Diop',
     patientAge: 35,
     indication: 'Analyse sanguine',
@@ -69,6 +75,11 @@ const STATIC_DONATIONS: DonationItem[] = [
     collected: 16500,
     percentage: 33,
     progressColor: 'bg-[#2AB396]',
+    patientPhoto: 'assets/images/persona.jpg',
+    doctorPhoto: 'assets/images/med-pro.jpg',
+    docType: 'pdf',
+    docName: 'bilan_sanguin.pdf',
+    choicesOption: '100_50',
     donors: [
       { name: 'Aminata Fall', date: '10 février 2026', amount: '+4 000 F' },
       { name: 'Anonyme', date: '11 février 2026', amount: '+3 000 F' }
@@ -76,24 +87,108 @@ const STATIC_DONATIONS: DonationItem[] = [
   },
   {
     id: 3,
-    type: 'Imagerie médicale',
-    urgency: 'Prioritaire',
+    type: 'Ordonnance',
+    urgency: 'Urgent',
     urgencyColor: 'text-white',
     urgencyBg: 'bg-[#E74C3C]',
     patientName: 'Awa Cisse',
     patientAge: 43,
     indication: 'Radiographie pulmonaire',
+    doctorName: 'Dr. Mamadou Sarr',
+    doctorSpecialty: 'Généraliste',
+    description:
+      'Analyse sanguine pour diagnostic chez une enfant présentant une forte fièvre.',
+    objectif: 800000,
+    collected: 200000,
+    percentage: 20,
+    progressColor: 'bg-[#2AB396]',
+    patientPhoto: 'assets/images/medecin.png',
+    doctorPhoto: 'assets/images/patient.png',
+    docType: 'pdf',
+    docName: 'prescription Radio.pdf',
+    choicesOption: '100_50',
+    donors: [
+      { name: 'Moussa Ndiaye', date: '06 février 2026', amount: '+200 000 F' }
+    ]
+  },
+  {
+    id: 4,
+    type: 'Ordonnance',
+    urgency: 'Urgent',
+    urgencyColor: 'text-white',
+    urgencyBg: 'bg-[#E74C3C]',
+    patientName: 'Maimouna Fall',
+    patientAge: 28,
+    indication: 'Paludisme grave',
+    doctorName: 'Dr. Awa Diop',
+    doctorSpecialty: 'Généraliste',
+    description:
+      'Traitement d’urgence requis contre le paludisme grave.',
+    objectif: 150000,
+    collected: 100000,
+    percentage: 67,
+    progressColor: 'bg-[#2AB396]',
+    patientPhoto: 'assets/images/medecin.png',
+    doctorPhoto: 'assets/images/patient.png',
+    docType: 'photo',
+    docUrl: 'assets/images/img-ordinance.png',
+    choicesOption: '100',
+    donors: [
+      { name: 'Ousmane Sow', date: '15 février 2026', amount: '+50 000 F' },
+      { name: 'Anonyme', date: '16 février 2026', amount: '+50 000 F' }
+    ]
+  },
+  {
+    id: 5,
+    type: 'Analyse médicale',
+    urgency: 'Moyen',
+    urgencyColor: 'text-white',
+    urgencyBg: 'bg-[#F29900]',
+    patientName: 'Abdoulaye Ndiaye',
+    patientAge: 45,
+    indication: 'Bilan lipidique',
+    doctorName: 'Dr. Mamadou Sarr',
+    doctorSpecialty: 'Généraliste',
+    description:
+      'Bilan lipidique complet recommandé pour le suivi cardiovasculaire.',
+    objectif: 30000,
+    collected: 15000,
+    percentage: 50,
+    progressColor: 'bg-[#2AB396]',
+    patientPhoto: 'assets/images/persona.jpg',
+    doctorPhoto: 'assets/images/med-pro.jpg',
+    docType: 'pdf',
+    docName: 'bilan_lipidique.pdf',
+    choicesOption: '100_50',
+    donors: [
+      { name: 'Mariama Ba', date: '18 février 2026', amount: '+10 000 F' },
+      { name: 'Anonyme', date: '19 février 2026', amount: '+5 000 F' }
+    ]
+  },
+  {
+    id: 6,
+    type: 'Imagerie médicale',
+    urgency: 'Faible',
+    urgencyColor: 'text-white',
+    urgencyBg: 'bg-[#58D68D]',
+    patientName: 'Khady Diagne',
+    patientAge: 52,
+    indication: 'Échographie abdominale',
     doctorName: 'Dr. Demba Thioune',
     doctorSpecialty: 'Cardiologue',
     description:
-      'Un examen d’imagerie est requis en urgence pour évaluer la situation clinique du patient.',
-    objectif: 75000,
-    collected: 49890,
-    percentage: 66,
+      'Échographie abdominale pour explorer des douleurs récurrentes.',
+    objectif: 45000,
+    collected: 15000,
+    percentage: 33,
     progressColor: 'bg-[#2AB396]',
+    patientPhoto: 'assets/images/medecin.png',
+    doctorPhoto: 'assets/images/patient.png',
+    docType: 'pdf',
+    docName: 'echographie.pdf',
+    choicesOption: '100_50',
     donors: [
-      { name: 'Moussa Ndiaye', date: '06 février 2026', amount: '+2 000 F' },
-      { name: 'Anonyme', date: '09 février 2026', amount: '+5 000 F' }
+      { name: 'Cheikh Diallo', date: '20 février 2026', amount: '+15 000 F' }
     ]
   }
 ];
@@ -122,6 +217,10 @@ export class DonsComponent implements OnInit, OnDestroy, AfterViewInit {
   showDonationModal = false;
   isLoadingDons = true;
   donsError: string | null = null;
+
+  // Selected contribution logic
+  selectedContribution: '100' | '50' = '100';
+  showDonorsList = true;
 
   // Donate modal
   showDonateModal = false;
@@ -206,12 +305,52 @@ export class DonsComponent implements OnInit, OnDestroy, AfterViewInit {
 
   openDonationDetail(donationId: number): void {
     this.selectedDonation = this.donations.find(d => d.id === donationId) || null;
+    this.selectedContribution = '100';
+    this.showDonorsList = true;
     this.showDonationModal = true;
   }
 
   closeDonationDetail(): void {
     this.showDonationModal = false;
-    setTimeout(() => this.selectedDonation = null, 300);
+    setTimeout(() => {
+      this.selectedDonation = null;
+    }, 300);
+  }
+
+  selectContributionOption(option: '100' | '50'): void {
+    this.selectedContribution = option;
+  }
+
+  toggleDonorsList(): void {
+    this.showDonorsList = !this.showDonorsList;
+  }
+
+  confirmDonation(): void {
+    if (!this.selectedDonation) return;
+
+    const amount = this.selectedContribution === '100'
+      ? this.selectedDonation.objectif
+      : this.selectedDonation.objectif / 2;
+
+    this.selectedDonation.collected += amount;
+    if (this.selectedDonation.collected > this.selectedDonation.objectif) {
+      this.selectedDonation.collected = this.selectedDonation.objectif;
+    }
+    this.selectedDonation.percentage = Math.round((this.selectedDonation.collected / this.selectedDonation.objectif) * 100);
+
+    const currentDate = new Date().toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+
+    this.selectedDonation.donors.unshift({
+      name: 'Vous (Donateur)',
+      date: currentDate,
+      amount: `+${this.formatAmount(amount)} F`
+    });
+
+    this.closeDonationDetail();
   }
 
   openDonateModal(donationId: number): void {

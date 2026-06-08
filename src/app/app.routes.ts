@@ -3,7 +3,6 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
   { path: '', redirectTo: 'portail', pathMatch: 'full' },
   { path: 'portail', loadComponent: () => import('./features/portail/portail.component').then(m => m.PortailComponent) },
-  { path: 'dons', loadComponent: () => import('./features/dons/dons.component').then(m => m.DonsComponent) },
   { path: 'register', loadComponent: () => import('./features/auth/register/register.component').then(m => m.RegisterComponent) },
   {
     path: '',
@@ -393,8 +392,24 @@ export const routes: Routes = [
           import('./features/laboratoire/detail-laboratoire/detail-laboratoire.component')
             .then(m => m.DetailLaboratoireComponent)
       },
-
-
+      {
+        path: 'dons',
+        loadComponent: () =>
+          import('./features/dons/dons.component')
+            .then(m => m.DonsComponent)
+      },
+      {
+        path: 'dons-historique',
+        loadComponent: () =>
+          import('./features/dons/dons-historique.component')
+            .then(m => m.DonsHistoriqueComponent)
+      },
+      {
+        path: 'detail-don/:id',
+        loadComponent: () =>
+          import('./features/dons/dons-detail.component')
+            .then(m => m.DonsDetailComponent)
+      }
     ]
   },
 

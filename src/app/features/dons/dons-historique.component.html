@@ -1,0 +1,142 @@
+<div class="min-h-screen bg-[#F8F9FA]">
+  <div class="max-w-6xl mx-auto space-y-8">
+
+    <!-- HEADER -->
+    <div class="space-y-1">
+      <h1 class="text-2xl sm:text-3xl font-bold text-[#0F172A] tracking-tight">
+        Historiques des mes contributions
+      </h1>
+      <p class="text-sm text-gray-500 font-medium">
+        Consultez l'ensemble de mes contribution
+      </p>
+    </div>
+
+    <!-- IMPACT BANNER -->
+    <div
+      class="bg-gradient-to-r from-[#11458B] to-[#5DADE2] rounded-2xl p-6 md:p-8 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-white relative overflow-hidden">
+      <!-- Watermark shape -->
+      <div
+        class="absolute right-10 bottom-10 opacity-10 pointer-events-none transform translate-y-1/4 translate-x-1/4 scale-150">
+        <svg width="100" height="97" viewBox="0 0 100 97" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M100 73.3333L72.3333 46.3333C68.8889 43 65.9722 39.3056 63.5833 35.25C61.1944 31.1944 60 26.7778 60 22C60 15.8889 62.1389 10.6944 66.4167 6.41667C70.6944 2.13889 75.8889 0 82 0C85.5556 0 88.8889 0.75 92 2.25C95.1111 3.75 97.7778 5.77778 100 8.33333C102.222 5.77778 104.889 3.75 108 2.25C111.111 0.75 114.444 0 118 0C124.111 0 129.306 2.13889 133.583 6.41667C137.861 10.6944 140 15.8889 140 22C140 26.7778 138.833 31.1944 136.5 35.25C134.167 39.3056 131.278 43 127.833 46.3333L100 73.3333ZM100 54.6667L118.167 36.8333C120.278 34.7222 122.222 32.4722 124 30.0833C125.778 27.6944 126.667 25 126.667 22C126.667 19.5556 125.833 17.5 124.167 15.8333C122.5 14.1667 120.444 13.3333 118 13.3333C116.444 13.3333 114.972 13.6389 113.583 14.25C112.194 14.8611 111 15.7778 110 17L100 29L90 17C89 15.7778 87.8055 14.8611 86.4167 14.25C85.0278 13.6389 83.5556 13.3333 82 13.3333C79.5556 13.3333 77.5 14.1667 75.8333 15.8333C74.1667 17.5 73.3333 19.5556 73.3333 22C73.3333 25 74.2222 27.6944 76 30.0833C77.7778 32.4722 79.7222 34.7222 81.8333 36.8333L100 54.6667ZM40 110L86.3333 122.667L126 110.333C125.444 109.333 124.639 108.472 123.583 107.75C122.528 107.028 121.333 106.667 120 106.667H86.3333C83.3333 106.667 80.9444 106.556 79.1667 106.333C77.3889 106.111 75.5555 105.667 73.6667 105L58.1667 99.8333L61.8333 86.8333L75.3333 91.3333C77.2222 91.8889 79.4444 92.3333 82 92.6667C84.5556 93 88.3333 93.2222 93.3333 93.3333C93.3333 92.1111 92.9722 90.9445 92.25 89.8333C91.5278 88.7222 90.6667 88 89.6667 87.6667L50.6667 73.3333H40V110ZM0 133.333V60H50.6667C51.4444 60 52.2222 60.0833 53 60.25C53.7778 60.4167 54.5 60.6111 55.1667 60.8333L94.3333 75.3333C98 76.6667 100.972 79 103.25 82.3333C105.528 85.6667 106.667 89.3333 106.667 93.3333H120C125.556 93.3333 130.278 95.1667 134.167 98.8333C138.056 102.5 140 107.333 140 113.333V120L86.6667 136.667L40 123.667V133.333H0ZM13.3333 120H26.6667V73.3333H13.3333V120Z"
+            fill="#F0F0FF" />
+        </svg>
+      </div>
+
+      <div class="space-y-1 relative z-10">
+        <p class="text-sm font-semibold text-[#F0F0FFCC] uppercase tracking-wider">
+          Impact Total
+        </p>
+        <h2 class="text-3xl sm:text-4xl text-[#F0F0FF] font-bold tracking-tight">
+          {{ formatAmount(totalDonated) }} FCFA
+        </h2>
+      </div>
+
+      <div
+        class="bg-white/15 backdrop-blur-md border border-white/20 px-4 py-2 rounded-full flex items-center gap-2 relative z-10 self-start md:self-auto">
+        <!-- Shield icon -->
+        <svg class="w-4 h-4 text-blue-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+        <span class="text-xs font-medium tracking-wide">
+          {{ viesImpactees }} vies impactées
+        </span>
+      </div>
+    </div>
+
+    <!-- FILTER BUTTONS -->
+    <div class="flex items-center gap-3">
+      <button (click)="applyFilter('TOUS')"
+        [class]="activeFilter === 'TOUS' ? 'bg-[#11458B] text-white' : 'bg-[#F4F8FE] border border-[#8BBAE21A] text-[#11458B]'"
+        class="px-5 py-2 rounded-lg text-xs font-bold shadow-sm transition duration-150 cursor-pointer">
+        Tous
+      </button>
+      <button (click)="applyFilter('MOIS')"
+        [class]="activeFilter === 'MOIS' ? 'bg-[#11458B] text-white' : 'bg-[#F4F8FE] border border-[#8BBAE21A] text-[#11458B]'"
+        class="px-5 py-2 rounded-lg text-xs font-bold shadow-sm transition duration-150 cursor-pointer">
+        Mois
+      </button>
+      <button (click)="applyFilter('SEMAINE')"
+        [class]="activeFilter === 'SEMAINE' ? 'bg-[#11458B] text-white' : 'bg-[#F4F8FE] border border-[#8BBAE21A] text-[#11458B]'"
+        class="px-5 py-2 rounded-lg text-xs font-bold shadow-sm transition duration-150 cursor-pointer">
+        Semaine
+      </button>
+    </div>
+
+    <!-- CARDS GRID -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+      <div *ngFor="let don of filteredDonations"
+        [routerLink]="['/detail-don', don.id]"
+        class="bg-white rounded-2xl p-6 border border-gray-100/90 shadow-sm hover:shadow-md hover:border-[#11458B22] transition-all duration-200 flex flex-col justify-between h-[180px] cursor-pointer">
+
+        <!-- CARD TOP ROW -->
+        <div class="flex justify-between items-start gap-4">
+          <div class="flex items-start gap-2.5">
+            <h3 class="text-base font-semibold text-[#171C1F]leading-tight">
+              {{ getFirstName(don.patientName) }}<br>{{ getLastName(don.patientName) }}
+            </h3>
+            <span class="px-2 py-0.5 mt-2.5 text-[10px] font-bold tracking-wider rounded bg-[#8BBAE2] text-white">
+              {{ don.type }}
+            </span>
+          </div>
+          <div class="text-right">
+            <span class="text-base font-bold text-[#11458B]">
+              +{{ formatAmount(don.amount) }} FCFA
+            </span>
+          </div>
+        </div>
+
+        <!-- CARD MIDDLE ROW -->
+        <div class="flex justify-between items-center">
+          <span class="text-sm text-[#434656]">
+            {{ don.dateString }}
+          </span>
+
+          <!-- STATUS BADGE -->
+          <div [class]="don.status === 'SUCCESS' ? 'bg-[#e6fcf5] text-[#0ca678]' : 'bg-[#FFFBEB] text-[#D97706]'"
+            class="px-3 py-1 rounded-full text-xs font-medium tracking-wide inline-flex items-center gap-1.5">
+            <!-- SVG Status Placeholders -->
+            <svg *ngIf="don.status === 'SUCCESS'" width="12" height="12" viewBox="0 0 12 12" fill="none"
+              xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M5.01667 8.51667L9.12917 4.40417L8.3125 3.5875L5.01667 6.88333L3.35417 5.22083L2.5375 6.0375L5.01667 8.51667ZM5.83333 11.6667C5.02639 11.6667 4.26806 11.5135 3.55833 11.2073C2.84861 10.901 2.23125 10.4854 1.70625 9.96042C1.18125 9.43542 0.765625 8.81806 0.459375 8.10833C0.153125 7.39861 0 6.64028 0 5.83333C0 5.02639 0.153125 4.26806 0.459375 3.55833C0.765625 2.84861 1.18125 2.23125 1.70625 1.70625C2.23125 1.18125 2.84861 0.765625 3.55833 0.459375C4.26806 0.153125 5.02639 0 5.83333 0C6.64028 0 7.39861 0.153125 8.10833 0.459375C8.81806 0.765625 9.43542 1.18125 9.96042 1.70625C10.4854 2.23125 10.901 2.84861 11.2073 3.55833C11.5135 4.26806 11.6667 5.02639 11.6667 5.83333C11.6667 6.64028 11.5135 7.39861 11.2073 8.10833C10.901 8.81806 10.4854 9.43542 9.96042 9.96042C9.43542 10.4854 8.81806 10.901 8.10833 11.2073C7.39861 11.5135 6.64028 11.6667 5.83333 11.6667ZM5.83333 10.5C7.13611 10.5 8.23958 10.0479 9.14375 9.14375C10.0479 8.23958 10.5 7.13611 10.5 5.83333C10.5 4.53056 10.0479 3.42708 9.14375 2.52292C8.23958 1.61875 7.13611 1.16667 5.83333 1.16667C4.53056 1.16667 3.42708 1.61875 2.52292 2.52292C1.61875 3.42708 1.16667 4.53056 1.16667 5.83333C1.16667 7.13611 1.61875 8.23958 2.52292 9.14375C3.42708 10.0479 4.53056 10.5 5.83333 10.5Z"
+                fill="#059669" />
+            </svg>
+            <svg *ngIf="don.status !== 'SUCCESS'" width="12" height="12" viewBox="0 0 12 12" fill="none"
+              xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M7.75833 8.575L8.575 7.75833L6.41667 5.6V2.91667H5.25V6.06667L7.75833 8.575ZM5.83333 11.6667C5.02639 11.6667 4.26806 11.5135 3.55833 11.2073C2.84861 10.901 2.23125 10.4854 1.70625 9.96042C1.18125 9.43542 0.765625 8.81806 0.459375 8.10833C0.153125 7.39861 0 6.64028 0 5.83333C0 5.02639 0.153125 4.26806 0.459375 3.55833C0.765625 2.84861 1.18125 2.23125 1.70625 1.70625C2.23125 1.18125 2.84861 0.765625 3.55833 0.459375C4.26806 0.153125 5.02639 0 5.83333 0C6.64028 0 7.39861 0.153125 8.10833 0.459375C8.81806 0.765625 9.43542 1.18125 9.96042 1.70625C10.4854 2.23125 10.901 2.84861 11.2073 3.55833C11.5135 4.26806 11.6667 5.02639 11.6667 5.83333C11.6667 6.64028 11.5135 7.39861 11.2073 8.10833C10.901 8.81806 10.4854 9.43542 9.96042 9.96042C9.43542 10.4854 8.81806 10.901 8.10833 11.2073C7.39861 11.5135 6.64028 11.6667 5.83333 11.6667ZM5.83333 10.5C7.12639 10.5 8.22743 10.0455 9.13646 9.13646C10.0455 8.22743 10.5 7.12639 10.5 5.83333C10.5 4.54028 10.0455 3.43924 9.13646 2.53021C8.22743 1.62118 7.12639 1.16667 5.83333 1.16667C4.54028 1.16667 3.43924 1.62118 2.53021 2.53021C1.62118 3.43924 1.16667 4.54028 1.16667 5.83333C1.16667 7.12639 1.62118 8.22743 2.53021 9.13646C3.43924 10.0455 4.54028 10.5 5.83333 10.5Z"
+                fill="#D97706" />
+            </svg>
+            <span>
+              {{ don.status === 'SUCCESS' ? 'Complété' : 'En traitement' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- CARD BOTTOM ROW -->
+        <div class="text-xs font-medium text-[#11458B] tracking-wide">
+          Traitement: {{ don.treatment }}
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- EMPTY STATE -->
+    <div *ngIf="filteredDonations.length === 0"
+      class="bg-white rounded-2xl border border-gray-100 py-16 text-center text-gray-400 shadow-sm">
+      <div class="flex flex-col items-center justify-center space-y-3">
+        <svg class="w-12 h-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <span class="text-sm font-semibold">Aucune contribution trouvée pour cette période.</span>
+      </div>
+    </div>
+
+  </div>
+</div>
