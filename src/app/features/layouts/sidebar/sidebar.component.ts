@@ -39,6 +39,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
   isHospital = false;  // HOSPITAL
   isFournisseur = false; // FOURNISSEUR
   isDonor = false;       // DONOR / DONATEUR
+  isOrganisation = false; // ORGANISATION
+
 
   financeOpen: boolean = false;
 
@@ -94,7 +96,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     { id: 'dashboard', label: 'Tableau de bord', route: '/dashboard' },
     { id: 'commande', label: 'Commandes reçues', route: '/commande' },
     { id: 'gestion-stock', label: 'Gestion stock', route: '/gestion-stock' },
-    { id: 'livraison', label: 'Livraisons', route: '/livraison' },
+    { id: 'demande-complement', label: 'Demande complément', route: '/demande-complement' },
     { id: 'finance-parent', label: 'Gestion financière' },
     { id: 'finance-dashboardpharmacie', label: 'Tableau de bord', route: '/finance-dashboardpharmacie' },
     { id: 'finance-transactions', label: 'Pharmacies', route: '/finance-transactions' },
@@ -120,7 +122,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   // Menus HOSPITAL
   hospitalMenuItems: MenuItem[] = [
     { id: 'dashboard-hospital', label: 'Tableau de bord', route: '/dashboard-hospital' },
-    { id: 'demandes', label: 'Demandes médicales', route: '/demandes' },
+    { id: 'demandes', label: 'Demandes médicales', route: '/demandes-medicales' },
     { id: 'patients-hospital', label: 'Patients', route: '/patients-hospital' },
     { id: 'hospitalisations', label: 'Hospitalisations', route: '/hospitalisations' },
     { id: 'chirurgie', label: 'Chirurgie', route: '/chirurgie' },
@@ -144,6 +146,15 @@ export class SidebarComponent implements OnInit, OnDestroy {
     { id: 'comptes', label: 'Mon compte', route: '/compte' }
   ];
 
+  // Menus ORGANISATION
+  organisationMenuItems: MenuItem[] = [
+    { id: 'rapport', label: 'Rapport', route: '/rapport' },
+    { id: 'budget', label: 'Budget', route: '/budget' },
+    { id: 'demande', label: 'Demande', route: '/demande-organisation' },
+    { id: 'comptes', label: 'Mon compte', route: '/compte' }
+  ];
+
+
   menuItems: MenuItem[] = [];
   // Mode sandbox: on expose tous les groupes pour garder la navigation libre.
   // À rebrancher plus tard si on réintroduit une logique de rôle.
@@ -155,7 +166,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
     ...this.imagerieMenuItems,
     ...this.hospitalMenuItems,
     ...this.fournisseurMenuItems,
-    ...this.donateurMenuItems
+    ...this.donateurMenuItems,
+    ...this.organisationMenuItems
   ];
 
   constructor(
@@ -196,6 +208,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.isHospital = profile === 'HOSPITAL' || profile === 'HOPITAL';
     this.isFournisseur = profile === 'FOURNISSEUR' || profile === 'SUPPLIER';
     this.isDonor = profile === 'DONOR' || profile === 'DONATEUR';
+    this.isOrganisation = profile === 'ORGANISATION' || profile === 'ORGANIZATION';
 
     if (this.isAdmin) {
       this.menuItems = [...this.adminMenuItems];
@@ -213,6 +226,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.menuItems = [...this.fournisseurMenuItems];
     } else if (this.isDonor) {
       this.menuItems = [...this.donateurMenuItems];
+    } else if (this.isOrganisation) {
+      this.menuItems = [...this.organisationMenuItems];
     } else {
       this.menuItems = [...this.pharmacyMenuItems]; // fallback
     }
@@ -240,12 +255,21 @@ export class SidebarComponent implements OnInit, OnDestroy {
       return 'DOCTOR';
     }
     if (url.startsWith('/dashboard-lab') || 
-        url.startsWith('/examens-laboratoire')) {
+        url.startsWith('/examens-laboratoire') ||
+        url.startsWith('/detail-examen-laboratoire')) {
       return 'LABORATORY';
     }
     if (url.startsWith('/dashboard-imagerie') || 
-        url.startsWith('/examens-imagerie')) {
+        url.startsWith('/examens-imagerie') ||
+        url.startsWith('/detail-examen-imagerie')) {
       return 'IMAGING_CENTER';
+    }
+    if (url.startsWith('/organisation') || 
+        url.startsWith('/rapport') || 
+        url.startsWith('/detail-rapport') || 
+        url.startsWith('/budget') || 
+        url.startsWith('/demande-organisation')) {
+      return 'ORGANISATION';
     }
     // ⚠️ FOURNISSEUR doit être vérifié AVANT HOSPITAL car /demandes matcherait /demandes-fournisseur
     if (url.startsWith('/dashboard-fournisseur') || 
@@ -254,7 +278,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       return 'FOURNISSEUR';
     }
     if (url.startsWith('/dashboard-hospital') || 
-        url.startsWith('/demandes') || 
+        url.startsWith('/demandes-medicales') || 
         url.startsWith('/patients-hospital') || 
         url.startsWith('/hospitalisations') || 
         url.startsWith('/chirurgie') || 
@@ -262,13 +286,15 @@ export class SidebarComponent implements OnInit, OnDestroy {
         url.startsWith('/paiements-hospital')) {
       return 'HOSPITAL';
     }
-    if (url.startsWith('/dons') || url.startsWith('/dons-historique')) {
+    if (url.startsWith('/dons') || 
+        url.startsWith('/dons-historique') ||
+        url.startsWith('/detail-don')) {
       return 'DONATEUR';
     }
     if (url.startsWith('/dashboard') || 
         url.startsWith('/commande') || 
         url.startsWith('/gestion-stock') || 
-        url.startsWith('/livraison') || 
+        url.startsWith('/demande-complement') || 
         url.startsWith('/finance-dashboardpharmacie') || 
         url.startsWith('/finance-transactions') || 
         url.startsWith('/finance-retraits') || 
@@ -281,19 +307,39 @@ export class SidebarComponent implements OnInit, OnDestroy {
   private setActiveItemFromCurrentRoute(): void {
     const url = this.router.url;
 
+    this.currentUser = this.getMockCurrentUser();
+
     const detectedProfile = this.detectProfileFromUrl(url);
     if (detectedProfile) {
       if (!this.currentUser) {
         this.currentUser = { ...this.mockCurrentUser };
       }
       this.currentUser.profil = detectedProfile;
-      this.updateMenuBasedOnProfile();
     }
+    this.updateMenuBasedOnProfile();
 
     const item = this.menuItems.find(i => i.route && url.startsWith(i.route));
 
     if (item) {
       this.activeItem = item.id;
+      return;
+    }
+
+    // Custom mappings for detail pages to highlight their parent sidebar tab
+    if (url.startsWith('/detail-don')) {
+      this.activeItem = 'dons-historique';
+      return;
+    }
+    if (url.startsWith('/detail-rapport')) {
+      this.activeItem = 'rapport';
+      return;
+    }
+    if (url.startsWith('/detail-examen-laboratoire')) {
+      this.activeItem = 'examens-laboratoire';
+      return;
+    }
+    if (url.startsWith('/detail-examen-imagerie')) {
+      this.activeItem = 'examens-imagerie';
       return;
     }
 
@@ -304,6 +350,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     else if (this.isImagerie) this.activeItem = 'dashboard-imagerie';
     else if (this.isHospital) this.activeItem = 'dashboard-hospital';
     else if (this.isFournisseur) this.activeItem = 'dashboard-fournisseur';
+    else if (this.isOrganisation) this.activeItem = 'organisation';
     else this.activeItem = '';
   }
 

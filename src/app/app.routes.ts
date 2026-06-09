@@ -82,13 +82,13 @@ export const routes: Routes = [
             .then(m => m.DetailDevisFournisseurComponent)
       },
       {
-        path: 'demandes',
+        path: 'demandes-medicales',
         loadComponent: () =>
           import('./features/demandes-medicales/demandes-medicales.component')
             .then(m => m.DemandesMedicalesComponent)
       },
       {
-        path: 'demandes/:id',
+        path: 'demandes-medicales/:id',
         loadComponent: () =>
           import('./features/detail-demande-medicale/detail-demande-medicale.component')
             .then(m => m.DetailDemandeMedicaleComponent)
@@ -283,10 +283,10 @@ export const routes: Routes = [
             .then(m => m.GESTION_STOCK_ROUTES)
       },
       {
-        path: 'livraison',
+        path: 'demande-complement',
         loadChildren: () =>
-          import('./features/livraison/livraison.routes')
-            .then(m => m.LIVRAISON_ROUTES)
+          import('./features/demande-complement/demande-complement.routes')
+            .then(m => m.DEMANDE_COMPLEMENT_ROUTES)
       },
 
       // ================= COMPTE =================
@@ -409,9 +409,53 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/dons/dons-detail.component')
             .then(m => m.DonsDetailComponent)
+      },
+      {
+        path: 'organisation',
+        loadComponent: () =>
+          import('./features/dashboard/dashboard.component')
+            .then(m => m.DashboardComponent)
+      },
+      {
+        path: 'rapport',
+        loadComponent: () =>
+          import('./features/rapports/rapports.component')
+            .then(m => m.RapportsComponent)
+      },
+      {
+        path: 'detail-rapport/:id',
+        loadComponent: () =>
+          import('./features/rapports/detail-rapport.component')
+            .then(m => m.DetailRapportComponent)
+      },
+      {
+        path: 'budget',
+        loadComponent: () =>
+          import('./features/budget/budget.component')
+            .then(m => m.BudgetComponent)
+      },
+      {
+        path: 'demande-organisation',
+        loadComponent: () =>
+          import('./features/demande-organisation/demande-organisation.component')
+            .then(m => m.DemandeOrganisationComponent)
+      },
+      {
+        path: 'demande-organisation/:id',
+        loadComponent: () =>
+          import('./features/demande-organisation/detail-demande-organisation.component')
+            .then(m => m.DetailDemandeOrganisationComponent)
+      },
+      {
+        path: 'demande-organisation/:id/devis',
+        loadComponent: () =>
+          import('./features/demande-organisation/detail-devis-organisation.component')
+            .then(m => m.DetailDevisOrganisationComponent)
       }
+
     ]
   },
+
 
 
 

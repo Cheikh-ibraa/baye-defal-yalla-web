@@ -49,6 +49,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.currentUser = this.getMockCurrentUser();
+    const url = this.router.url;
+    const detectedProfile = this.detectProfileFromUrl(url);
+    if (detectedProfile && this.currentUser) {
+      this.currentUser.profil = detectedProfile;
+    }
     this.updateUserDisplay();
 
     this.userSubscription = this.router.events
@@ -87,31 +92,49 @@ export class HeaderComponent implements OnInit, OnDestroy {
    */
   private updateUserDisplay(): void {
     if (this.currentUser) {
-      // Construire le nom complet
-      const prenom = this.currentUser.prenom || '';
-      const nom = this.currentUser.nom || '';
-
-      if (prenom && nom) {
-        this.userDisplayName = `${prenom} ${nom}`;
-      } else if (prenom) {
-        this.userDisplayName = prenom;
-      } else if (nom) {
-        this.userDisplayName = nom;
-      } else if (this.currentUser.email) {
-        this.userDisplayName = this.currentUser.email;
-      } else if (this.currentUser.telephone) {
-        this.userDisplayName = this.currentUser.telephone;
+      const profile = this.currentUser.profil.toUpperCase();
+      if (profile === 'ORGANISATION' || profile === 'ORGANIZATION') {
+        this.userDisplayName = 'GRET';
+        this.userRole = 'Organisation';
+        this.userAvatar = 'assets/images/gret.png';
+      } else if (profile === 'HOSPITAL' || profile === 'HOPITAL') {
+        this.userDisplayName = 'Hôpital Principal';
+        this.userRole = 'Hôpital';
+        this.userAvatar = 'assets/images/hospital1.png';
+      } else if (profile === 'FOURNISSEUR' || profile === 'SUPPLIER') {
+        this.userDisplayName = 'Fournisseur Médical';
+        this.userRole = 'Fournisseur';
+        this.userAvatar = 'assets/images/logoPharmacie.png';
+      } else if (profile === 'DONOR' || profile === 'DONATEUR') {
+        this.userDisplayName = 'Donateur';
+        this.userRole = 'Donateur';
+        this.userAvatar = 'assets/images/Donateur.png';
       } else {
-        this.userDisplayName = 'Utilisateur';
+        // Construire le nom complet
+        const prenom = this.currentUser.prenom || '';
+        const nom = this.currentUser.nom || '';
+
+        if (prenom && nom) {
+          this.userDisplayName = `${prenom} ${nom}`;
+        } else if (prenom) {
+          this.userDisplayName = prenom;
+        } else if (nom) {
+          this.userDisplayName = nom;
+        } else if (this.currentUser.email) {
+          this.userDisplayName = this.currentUser.email;
+        } else if (this.currentUser.telephone) {
+          this.userDisplayName = this.currentUser.telephone;
+        } else {
+          this.userDisplayName = 'Utilisateur';
+        }
+
+        this.userRole = this.getRoleDisplayName(this.currentUser.profil);
+        this.userAvatar = '';
       }
-
-      // Déterminer le rôle à afficher
-      this.userRole = this.getRoleDisplayName(this.currentUser.profil);
-
-
     } else {
       this.userDisplayName = 'Utilisateur';
       this.userRole = 'Invité';
+      this.userAvatar = '';
     }
   }
 
@@ -142,7 +165,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
       HOPITAL: 'Hôpital',
       EMERGENCY: 'Service d’urgence',
       FOURNISSEUR: 'Fournisseur',
-      SUPPLIER: 'Fournisseur'
+      SUPPLIER: 'Fournisseur',
+      ORGANISATION: 'Organisation',
+      ORGANIZATION: 'Organisation'
     };
 
     return roleMap[cleanProfil] || profil;
@@ -270,16 +295,22 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   formatName(name: string | null | undefined): string {
-  if (!name) return '';
-  return name
-    .toLowerCase()
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-}
+    if (!name) return '';
+    if (name === 'GRET') return 'GRET';
+    return name
+      .toLowerCase()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
 
 formatRole(role: string | null | undefined): string {
   if (!role) return '';
+  const cleanRole = role.toUpperCase();
+  if (cleanRole === 'ORGANISATION' || cleanRole === 'ORGANIZATION') return 'Organisation';
+  if (cleanRole === 'HOSPITAL' || cleanRole === 'HOPITAL') return 'Hôpital';
+  if (cleanRole === 'FOURNISSEUR' || cleanRole === 'SUPPLIER') return 'Fournisseur';
+  if (cleanRole === 'DONOR' || cleanRole === 'DONATEUR') return 'Donateur';
 
   const rolesMap: Record<string, string> = {
     ADMIN: 'Administrateur',
@@ -327,6 +358,13 @@ private capitalizeWords(text: string): string {
   }
 
   private detectProfileFromUrl(url: string): string | null {
+    if (url.startsWith('/organisation') || 
+        url.startsWith('/rapport') || 
+        url.startsWith('/detail-rapport') || 
+        url.startsWith('/budget') || 
+        url.startsWith('/demande-organisation')) {
+      return 'ORGANISATION';
+    }
     if (url.startsWith('/dashboard-admin') || 
         url.startsWith('/medecins') || 
         url.startsWith('/pharmacies') || 
@@ -348,11 +386,13 @@ private capitalizeWords(text: string): string {
       return 'DOCTOR';
     }
     if (url.startsWith('/dashboard-lab') || 
-        url.startsWith('/examens-laboratoire')) {
+        url.startsWith('/examens-laboratoire') ||
+        url.startsWith('/detail-examen-laboratoire')) {
       return 'LABORATORY';
     }
     if (url.startsWith('/dashboard-imagerie') || 
-        url.startsWith('/examens-imagerie')) {
+        url.startsWith('/examens-imagerie') ||
+        url.startsWith('/detail-examen-imagerie')) {
       return 'IMAGING_CENTER';
     }
     // ⚠️ FOURNISSEUR must be checked BEFORE HOSPITAL to avoid /demandes matching /demandes-fournisseur
@@ -362,7 +402,7 @@ private capitalizeWords(text: string): string {
       return 'FOURNISSEUR';
     }
     if (url.startsWith('/dashboard-hospital') || 
-        url.startsWith('/demandes') || 
+        url.startsWith('/demandes-medicales') || 
         url.startsWith('/patients-hospital') || 
         url.startsWith('/hospitalisations') || 
         url.startsWith('/chirurgie') || 
@@ -370,10 +410,15 @@ private capitalizeWords(text: string): string {
         url.startsWith('/paiements-hospital')) {
       return 'HOSPITAL';
     }
+    if (url.startsWith('/dons') || 
+        url.startsWith('/dons-historique') ||
+        url.startsWith('/detail-don')) {
+      return 'DONATEUR';
+    }
     if (url.startsWith('/dashboard') || 
         url.startsWith('/commande') || 
         url.startsWith('/gestion-stock') || 
-        url.startsWith('/livraison') || 
+        url.startsWith('/demande-complement') || 
         url.startsWith('/finance-dashboardpharmacie') || 
         url.startsWith('/finance-transactions') || 
         url.startsWith('/finance-retraits') || 

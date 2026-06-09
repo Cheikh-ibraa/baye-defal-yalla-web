@@ -1,9 +1,9 @@
 import { Routes } from '@angular/router';
 
-export const LIVRAISON_ROUTES: Routes = [
+export const DEMANDE_COMPLEMENT_ROUTES: Routes = [
   {
     path: '',
-    loadComponent: () => import('./livraison.component').then(m => m.LivraisonComponent)
+    loadComponent: () => import('./demande-complement.component').then(m => m.DemandeComplementComponent)
   },
 //   {
 //     path: 'planning',
