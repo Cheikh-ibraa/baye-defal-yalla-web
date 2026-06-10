@@ -2,7 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { User } from '../../../core/auth.types';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
+
+interface LoginResponse {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+}
 
 @Component({
   selector: 'app-login',
@@ -13,205 +20,135 @@ import { User } from '../../../core/auth.types';
 })
 export class LoginComponent implements OnInit {
   loginForm: FormGroup;
-  showPassword: boolean = false;
-  isLoading: boolean = false;
-  errorMessage: string = '';
+  showPassword = false;
+  isLoading = false;
+  errorMessage = '';
+  isMobileOnly = false; // true quand un patient se connecte (interface mobile uniquement)
 
-  private returnUrl: string = '';
+  private returnUrl = '';
+
+  // Keycloak realm roles → route (rôles en minuscules/tirets côté backend)
+  private readonly ROLE_ROUTES: Record<string, string> = {
+    'admin':              '/dashboard-admin',
+    'doctor':             '/dashboard-med',
+    'pharmacist':         '/dashboard',
+    'hospital':           '/dashboard-hospital',
+    'patient':            '/dashboard',
+    'donor-individual':   '/dons',
+    'donor-organization': '/dons',
+    'supplier':           '/dashboard-fournisseur',
+    'lab-technician':     '/dashboard-lab',
+    'radiologist':        '/dashboard-imagerie',
+  };
 
   constructor(
-    private formBuilder: FormBuilder,
+    private fb: FormBuilder,
+    private http: HttpClient,
     private router: Router,
     private route: ActivatedRoute
   ) {
-    this.loginForm = this.createLoginForm();
-  }
-
-  ngOnInit(): void {
-    // Récupérer l'URL de retour si elle existe
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '';
-  }
-
-  /**
-   * Creates the reactive form for login
-   */
-  private createLoginForm(): FormGroup {
-    return this.formBuilder.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required]],
+    this.loginForm = this.fb.group({
+      identifier: ['', [Validators.required]],
+      password:   ['', [Validators.required]],
       rememberMe: [false]
     });
   }
 
-  /**
-   * Toggles password visibility
-   */
-  togglePasswordVisibility(): void {
+  ngOnInit() {
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '';
+  }
+
+  togglePasswordVisibility() {
     this.showPassword = !this.showPassword;
   }
 
-  /**
-   * Redirige vers le dashboard approprié selon le profil de l'utilisateur
-   * Ou vers l'URL demandée (returnUrl) si elle existe
-   */
-  private redirectAfterLogin(): void {
-    // Si une URL de retour existe, l'utiliser
-    if (this.returnUrl && this.returnUrl !== '/login' && this.returnUrl !== '/portail') {
-      this.router.navigateByUrl(this.returnUrl);
+  onSubmit() {
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
       return;
     }
 
-    this.router.navigate(['/medecins']);
-  }
+    this.isLoading = true;
+    this.errorMessage = '';
 
-  // Alias pour compatibilité (utilisé dans d'autres méthodes)
-  private redirectToDefaultDashboard(): void {
-    this.redirectAfterLogin();
-  }
+    const { identifier, password, rememberMe } = this.loginForm.value;
 
-  onSubmit(): void {
-    if (this.loginForm.valid) {
-      this.isLoading = true;
-      this.errorMessage = '';
+    this.loginForm.disable();
 
-      const { email, password, rememberMe } = this.loginForm.value;
+    this.http.post<LoginResponse>(`${environment.baseUrl}/auth/login`, {
+      identifier: identifier.trim(),
+      password
+    }).subscribe({
+      next: (res) => {
+        localStorage.setItem('access_token', res.accessToken);
+        localStorage.setItem('refresh_token', res.refreshToken);
+        if (rememberMe) {
+          localStorage.setItem('remember_me', 'true');
+        }
 
-      if (rememberMe) {
-        localStorage.setItem('remember_me', 'true');
-      }
-
-      const mockUser: User = {
-        id: 1,
-        nom: 'Ndiaye',
-        prenom: 'Awa',
-        email: email.toLowerCase(),
-        telephone: '+221770000000',
-        profil: 'PHARMACIST',
-        pharmacyId: 1,
-        adress: 'Dakar',
-        lat: null,
-        lon: null
-      };
-
-      localStorage.setItem('user_data', JSON.stringify(mockUser));
-      localStorage.setItem('access_token', 'static-auth-token');
-
-      setTimeout(() => {
+        const role = this.getRoleFromToken(res.accessToken);
         this.isLoading = false;
-        this.showSuccessMessage('Connexion réussie !');
-        this.router.navigate(['/dashboard']);
-      }, 400);
-    } else {
-      this.markFormGroupTouched(this.loginForm);
-      console.warn('⚠️ Formulaire invalide');
-    }
-  }
 
-  /**
-   * Handles Google OAuth login
-   */
-  loginWithGoogle(): void {
-    this.isLoading = true;
-    this.errorMessage = 'Fonctionnalité Google OAuth en cours de développement';
+        // Le patient utilise uniquement l'application mobile
+        if (role === 'patient') {
+          this.isMobileOnly = true;
+          return;
+        }
 
-    setTimeout(() => {
-      this.isLoading = false;
-      this.showErrorMessage('Fonctionnalité Google OAuth non encore disponible');
-    }, 1500);
-  }
+        const target = this.returnUrl && this.returnUrl !== '/login'
+          ? this.returnUrl
+          : (this.ROLE_ROUTES[role] ?? '/dashboard');
 
-  /**
-   * Handles Apple ID login
-   */
-  loginWithApple(): void {
-    this.isLoading = true;
-    this.errorMessage = 'Fonctionnalité Apple Sign-In en cours de développement';
-
-    setTimeout(() => {
-      this.isLoading = false;
-      this.showErrorMessage('Fonctionnalité Apple Sign-In non encore disponible');
-    }, 1500);
-  }
-
-  /**
-   * Marks all form controls as touched to trigger validation display
-   */
-  private markFormGroupTouched(formGroup: FormGroup): void {
-    Object.keys(formGroup.controls).forEach(key => {
-      const control = formGroup.get(key);
-      control?.markAsTouched();
-
-      if (control instanceof FormGroup) {
-        this.markFormGroupTouched(control);
+        this.router.navigateByUrl(target);
+      },
+      error: (err) => {
+        this.loginForm.enable();
+        this.isLoading = false;
+        const msg = err?.error?.message;
+        this.errorMessage = Array.isArray(msg)
+          ? msg.join(', ')
+          : (msg ?? 'Identifiant ou mot de passe incorrect');
       }
     });
   }
 
-  /**
-   * Shows success message
-   */
-  private showSuccessMessage(message: string): void {
-    // TODO: Implémenter un service de notification/toast
+  private getRoleFromToken(token: string): string {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const roles: string[] = payload?.realm_access?.roles ?? [];
+      // Ordre de priorité : les rôles admin/pro en premier
+      const priority = [
+        'admin', 'doctor', 'pharmacist', 'hospital',
+        'lab-technician', 'radiologist', 'supplier',
+        'donor-individual', 'donor-organization', 'patient'
+      ];
+      for (const role of priority) {
+        if (roles.includes(role)) return role;
+      }
+    } catch { /* token malformé */ }
+    return 'patient';
   }
 
-  /**
-   * Shows error message
-   */
-  private showErrorMessage(message: string): void {
-    console.error('❌ ERROR:', message);
-    // TODO: Implémenter un service de notification/toast
+  hasError(field: string): boolean {
+    const c = this.loginForm.get(field);
+    return !!(c?.invalid && c?.touched);
   }
 
-  /**
-   * Clears error message
-   */
-  clearErrorMessage(): void {
-    this.errorMessage = '';
-  }
-
-  /**
-   * Getter for easy access to form controls in template
-   */
-  get f() {
-    return this.loginForm.controls;
-  }
-
-  /**
-   * Check if form field has error
-   */
-  hasError(fieldName: string): boolean {
-    const field = this.loginForm.get(fieldName);
-    return !!(field?.invalid && field?.touched);
-  }
-
-  /**
-   * Get error message for a specific field
-   */
-  getErrorMessage(fieldName: string): string {
-    const field = this.loginForm.get(fieldName);
-
-    if (field?.hasError('required')) {
-      return 'Ce champ est requis';
-    }
-
-    if (field?.hasError('email')) {
-      return 'Veuillez saisir un email valide';
-    }
-
-    if (field?.hasError('minlength')) {
-      const minLength = field.errors?.['minlength']?.requiredLength;
-      return `Minimum ${minLength} caractères requis`;
-    }
-
+  getErrorMessage(field: string): string {
+    const c = this.loginForm.get(field);
+    if (c?.hasError('required')) return 'Ce champ est requis';
     return '';
   }
 
-  /**
-   * Reset form and clear errors
-   */
-  resetForm(): void {
+  clearErrorMessage() {
+    this.errorMessage = '';
+  }
+
+  resetForm() {
     this.loginForm.reset();
     this.errorMessage = '';
     this.showPassword = false;
   }
+
+  get f() { return this.loginForm.controls; }
 }

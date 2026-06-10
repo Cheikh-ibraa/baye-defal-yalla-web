@@ -1,6 +1,7 @@
-// 📁 Fichier 1 : src/environments/environment.ts
 export const environment = {
-    production: false,
-    baseUrl: 'https://wakana.online/pharma-delivery/api',
-    filesUrl: 'https://wakana.online/repertoire_chantier'
-};  
+  production: false,
+  // Pour tester localement → http://localhost:3080/api
+  // Pour la prod           → https://api.bdy.innovimpactdev.cloud/api
+  baseUrl: 'https://api.bdy.innovimpactdev.cloud/api',
+  filesUrl: 'https://minio.innovimpactdev.cloud/baye-defal-yalla',
+};

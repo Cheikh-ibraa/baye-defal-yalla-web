@@ -17,9 +17,45 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          <input type="text" [(ngModel)]="rechercheTexte" placeholder="Téléphone du patient ou ID dossier"
-            class="w-full pl-10 pr-4 py-3 text-[#777777] border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none required" />
+          <input
+            type="text"
+            [(ngModel)]="rechercheTexte"
+            (input)="onSearchInput()"
+            (keydown.enter)="handleOpenDossier()"
+            (blur)="hideAutocompleteDelayed()"
+            placeholder="Téléphone du patient ou référence (ex: NDIAYE-G000025)"
+            class="w-full pl-10 pr-4 py-3 text-[#777777] border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none"
+            autocomplete="off" />
+
+          <!-- Dropdown autocomplete -->
+          <div *ngIf="showAutocomplete && autocompleteResults.length > 0"
+            class="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-xl z-50 mt-1 max-h-64 overflow-y-auto">
+            <div *ngFor="let s of autocompleteResults"
+              (mousedown)="selectFromAutocomplete(s)"
+              class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0">
+              <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0"
+                [ngClass]="getInitialesColor(s.initiales)">
+                {{ s.initiales }}
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-[#343A40] truncate">{{ s.nom }}</p>
+                <p class="text-xs text-[#777777] truncate">{{ s.telephone }} · {{ s.id }}</p>
+              </div>
+              <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Spinner de recherche -->
+          <div *ngIf="searchLoading" class="absolute right-3 top-1/2 -translate-y-1/2">
+            <svg class="animate-spin h-4 w-4 text-[#104382]" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+          </div>
         </div>
+
         <button (click)="handleOpenDossier()"
           class="bg-[#104382] text-sm text-white px-6 py-3 rounded-lg transition flex items-center gap-2">
           Ouvrir le dossier
@@ -28,198 +64,46 @@
           </svg>
         </button>
       </div>
-      <p class="text-xs text-[#343A40] mt-3">Exemple : 77 123 45 67 ou PT-000245</p>
+      <p class="text-xs text-[#343A40] mt-3">Exemple : 77 123 45 67 ou NDIAYE-G000025</p>
     </div>
-  </div>
-</div>
 
-<!-- Modal d'accès -->
-<div *ngIf="showAccessModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-  <div class="bg-white rounded-lg shadow-xl max-w-xl w-full">
-    <div class="p-6">
-      <!-- En-tête du modal -->
-      <div class="flex items-start gap-4 mb-6">
-        <div class="w-12 h-12 rounded-lg flex items-center justify-center font-bold text-lg flex-shrink-0"
-          [ngClass]="getInitialesColor(selectedPatient?.initiales || '')">
-          {{ selectedPatient?.initiales }}
-        </div>
-        <div class="flex-1">
-          <h3 class="text-xl font-semibold text-gray-900">{{ selectedPatient?.nom }}</h3>
-          <p class="text-sm text-gray-600">{{ selectedPatient?.telephone }}</p>
-        </div>
-        <button (click)="closeModal()" class="text-gray-400 hover:text-gray-600 transition">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-
-      <div class="text-right text-sm text-gray-600 mb-6">
-        Dernière consultation : {{ selectedPatient?.lastVisit }}
-      </div>
-
-      <!-- Options d'accès -->
-      <div class="space-y-3 mb-6">
-        <!-- Accès partiel -->
-        <div aria-disabled="true"
-          class="border border-gray-200 rounded-lg p-4 bg-gray-50 opacity-50 cursor-not-allowed pointer-events-none transition">
-          <div class="flex items-start gap-3">
-
-            <svg width="18" height="24" viewBox="0 0 18 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M5.25 10.5C5.05109 10.5 4.86032 10.579 4.71967 10.7197C4.57902 10.8603 4.5 11.0511 4.5 11.25C4.5 11.4489 4.57902 11.6397 4.71967 11.7803C4.86032 11.921 5.05109 12 5.25 12H12.75C12.9489 12 13.1397 11.921 13.2803 11.7803C13.421 11.6397 13.5 11.4489 13.5 11.25C13.5 11.0511 13.421 10.8603 13.2803 10.7197C13.1397 10.579 12.9489 10.5 12.75 10.5H5.25ZM4.5 14.25C4.5 14.0511 4.57902 13.8603 4.71967 13.7197C4.86032 13.579 5.05109 13.5 5.25 13.5H12.75C12.9489 13.5 13.1397 13.579 13.2803 13.7197C13.421 13.8603 13.5 14.0511 13.5 14.25C13.5 14.4489 13.421 14.6397 13.2803 14.7803C13.1397 14.921 12.9489 15 12.75 15H5.25C5.05109 15 4.86032 14.921 4.71967 14.7803C4.57902 14.6397 4.5 14.4489 4.5 14.25ZM4.5 17.25C4.5 17.0511 4.57902 16.8603 4.71967 16.7197C4.86032 16.579 5.05109 16.5 5.25 16.5H8.25C8.44891 16.5 8.63968 16.579 8.78033 16.7197C8.92098 16.8603 9 17.0511 9 17.25C9 17.4489 8.92098 17.6397 8.78033 17.7803C8.63968 17.921 8.44891 18 8.25 18H5.25C5.05109 18 4.86032 17.921 4.71967 17.7803C4.57902 17.6397 4.5 17.4489 4.5 17.25Z"
-                fill="black" />
-              <path
-                d="M11.25 0H3C2.20435 0 1.44129 0.316071 0.87868 0.87868C0.31607 1.44129 0 2.20435 0 3V21C0 21.7956 0.31607 22.5587 0.87868 23.1213C1.44129 23.6839 2.20435 24 3 24H15C15.7956 24 16.5587 23.6839 17.1213 23.1213C17.6839 22.5587 18 21.7956 18 21V6.75L11.25 0ZM11.25 1.5V4.5C11.25 5.09674 11.4871 5.66903 11.909 6.09099C12.331 6.51295 12.9033 6.75 13.5 6.75H16.5V21C16.5 21.3978 16.342 21.7794 16.0607 22.0607C15.7794 22.342 15.3978 22.5 15 22.5H3C2.60218 22.5 2.22064 22.342 1.93934 22.0607C1.65804 21.7794 1.5 21.3978 1.5 21V3C1.5 2.60218 1.65804 2.22064 1.93934 1.93934C2.22064 1.65804 2.60218 1.5 3 1.5H11.25Z"
-                fill="black" />
-            </svg>
-            <div class="flex-1">
-              <div class="font-semibold text-gray-700 mb-1">Accès partiel</div>
-              <div class="text-sm text-gray-600">Vous verrez uniquement les ordonnances que vous avez prescrites.</div>
-            </div>
-            <div class="flex-shrink-0">
-              <div class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center">
-              </div>
-            </div>
+    <!-- 3 derniers patients inscrits -->
+    <div *ngIf="!loadingRecents && patientsRecents.length > 0" class="mt-6">
+      <h2 class="text-base font-semibold text-[#343A40] mb-4">Derniers patients inscrits</h2>
+      <div class="space-y-3">
+        <div *ngFor="let p of patientsRecents"
+          class="bg-white rounded-lg shadow-sm p-4 flex items-center gap-4 cursor-pointer hover:shadow-md transition-shadow"
+          (click)="openPatientDossierFromRecent(p)">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold text-base flex-shrink-0"
+            [ngClass]="getInitialesColor(p.initiales)">
+            {{ p.initiales }}
           </div>
-        </div>
-
-        <!-- Accès complet (OTP) -->
-        <div (click)="selectAccessType('complet')" [class.ring-2]="accessType === 'complet'"
-          [class.ring-[#104382]]="accessType === 'complet'"
-          class="border border-gray-300 rounded-lg p-4 cursor-pointer hover:border-[#104382] transition">
-          <div class="flex items-start gap-3">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M16.5 7.5C16.5 8.69347 16.0259 9.83807 15.182 10.682C14.3381 11.5259 13.1935 12 12 12C10.8065 12 9.66193 11.5259 8.81802 10.682C7.97411 9.83807 7.5 8.69347 7.5 7.5C7.5 6.30653 7.97411 5.16193 8.81802 4.31802C9.66193 3.47411 10.8065 3 12 3C13.1935 3 14.3381 3.47411 15.182 4.31802C16.0259 5.16193 16.5 6.30653 16.5 7.5ZM12 10.5C12.7956 10.5 13.5587 10.1839 14.1213 9.62132C14.6839 9.05871 15 8.29565 15 7.5C15 6.70435 14.6839 5.94129 14.1213 5.37868C13.5587 4.81607 12.7956 4.5 12 4.5C11.2044 4.5 10.4413 4.81607 9.87868 5.37868C9.31607 5.94129 9 6.70435 9 7.5C9 8.29565 9.31607 9.05871 9.87868 9.62132C10.4413 10.1839 11.2044 10.5 12 10.5ZM12 19.494V21H4.5C4.5 21 3 21 3 19.5C3 18 4.5 13.5 12 13.5C12.845 13.502 13.617 13.5555 14.316 13.6605C13.8539 14.0627 13.4486 14.526 13.1115 15.0375C12.7415 15.0125 12.3708 15 12 15C8.565 15 6.726 16.02 5.748 16.998C4.731 18.015 4.503 19.125 4.5 19.494H12ZM13.5 19.5C13.5 19.1022 13.658 18.7206 13.9393 18.4393C14.2206 18.158 14.6022 18 15 18V16.5C15 15.7044 15.3161 14.9413 15.8787 14.3787C16.4413 13.8161 17.2044 13.5 18 13.5C18.7956 13.5 19.5587 13.8161 20.1213 14.3787C20.6839 14.9413 21 15.7044 21 16.5V18C21.3978 18 21.7794 18.158 22.0607 18.4393C22.342 18.7206 22.5 19.1022 22.5 19.5V22.5C22.5 22.8978 22.342 23.2794 22.0607 23.5607C21.7794 23.842 21.3978 24 21 24H15C14.6022 24 14.2206 23.842 13.9393 23.5607C13.658 23.2794 13.5 22.8978 13.5 22.5V19.5ZM18 15C17.6022 15 17.2206 15.158 16.9393 15.4393C16.658 15.7206 16.5 16.1022 16.5 16.5V18H19.5V16.5C19.5 16.1022 19.342 15.7206 19.0607 15.4393C18.7794 15.158 18.3978 15 18 15Z"
-                fill="black" />
-            </svg>
-
-            <div class="flex-1">
-              <div class="font-semibold text-gray-900 mb-1">Accès complet (OTP)</div>
-              <div class="text-sm text-gray-600">Nécessite l'autorisation du patient via code OTP.</div>
-            </div>
-            <div class="flex-shrink-0">
-              <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center"
-                [class.border-[#104382]]="accessType === 'complet'" [class.border-gray-300]="accessType !== 'complet'">
-                <div *ngIf="accessType === 'complet'" class="w-3 h-3 rounded-full bg-[#104382]"></div>
-              </div>
-            </div>
+          <div class="flex-1">
+            <p class="text-sm font-semibold text-[#343A40]">{{ p.nom }}</p>
+            <p class="text-xs text-[#777777] mt-0.5">{{ p.id }}</p>
           </div>
+          <div class="text-right flex-shrink-0">
+            <p class="text-xs text-[#777777]">{{ getRelativeDate(p.dateVisite) }}</p>
+          </div>
+          <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
         </div>
       </div>
+    </div>
 
-      <!-- Message d'erreur OTP -->
-      <p *ngIf="otpError" class="text-sm text-red-500 text-center -mb-2">{{ otpError }}</p>
-
-      <!-- Boutons -->
-      <div class="flex gap-3">
-        <button (click)="closeModal()" [disabled]="otpLoading"
-          class="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed">
-          Fermer
-        </button>
-
-        <button (click)="handleContinue()" [disabled]="!accessType || otpLoading"
-          class="flex-1 px-4 py-3 bg-[#104382] text-white rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-          <svg *ngIf="otpLoading" class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-          </svg>
-          {{ otpLoading ? 'Envoi en cours...' : 'Continuer' }}
-        </button>
+    <!-- Squelette de chargement -->
+    <div *ngIf="loadingRecents" class="mt-6 space-y-3">
+      <div *ngFor="let _ of [1,2,3]" class="bg-white rounded-lg shadow-sm p-4 flex items-center gap-4 animate-pulse">
+        <div class="w-12 h-12 rounded-full bg-gray-200 flex-shrink-0"></div>
+        <div class="flex-1 space-y-2">
+          <div class="h-3 bg-gray-200 rounded w-1/3"></div>
+          <div class="h-2 bg-gray-100 rounded w-1/4"></div>
+        </div>
       </div>
     </div>
   </div>
 </div>
-
-<!-- ===== POPUP : CODE ENVOYÉ ===== -->
-<div *ngIf="showOtpSentPopup" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/40"
-  (click)="cancelOtpSent()">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 flex flex-col items-center gap-4"
-    (click)="$event.stopPropagation()">
-
-    <!-- Icône succès -->
-    <div class="flex items-center justify-center">
-      <svg width="95" height="95" viewBox="0 0 95 95" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path
-          d="M70.2452 34.0264C70.9106 34.7294 71.27 35.6677 71.2443 36.6353C71.2186 37.6029 70.81 38.5208 70.1082 39.1875L43.3438 64.7644C42.6518 65.4153 41.736 65.7751 40.7861 65.7692C39.8501 65.7728 38.9494 65.4125 38.2741 64.7644L24.8918 51.976C24.5207 51.6521 24.2188 51.2566 24.0044 50.8131C23.79 50.3696 23.6675 49.8874 23.6442 49.3954C23.6209 48.9033 23.6973 48.4117 23.8689 47.9499C24.0405 47.4882 24.3037 47.0659 24.6426 46.7085C24.9816 46.3511 25.3893 46.0659 25.8413 45.87C26.2932 45.6742 26.7801 45.5718 27.2727 45.5689C27.7653 45.566 28.2534 45.6628 28.7076 45.8534C29.1618 46.044 29.5728 46.3244 29.9159 46.6779L40.7861 57.0457L65.0841 33.8894C65.7871 33.224 66.7254 32.8646 67.693 32.8903C68.6606 32.916 69.5785 33.3246 70.2452 34.0264ZM95 47.5C95 56.8946 92.2142 66.0782 86.9948 73.8896C81.7754 81.7009 74.357 87.7891 65.6775 91.3843C56.998 94.9794 47.4473 95.9201 38.2332 94.0873C29.0191 92.2545 20.5554 87.7305 13.9124 81.0876C7.26945 74.4446 2.74552 65.9809 0.91272 56.7668C-0.920077 47.5527 0.020581 38.002 3.61574 29.3225C7.2109 20.643 13.2991 13.2246 21.1104 8.00519C28.9218 2.78583 38.1054 0 47.5 0C60.0904 0.0241427 72.1582 5.03635 81.0609 13.9391C89.9637 22.8418 94.9759 34.9096 95 47.5ZM87.6923 47.5C87.6923 39.5507 85.3351 31.7799 80.9187 25.1703C76.5023 18.5608 70.2251 13.4092 62.8809 10.3671C55.5368 7.32509 47.4554 6.52915 39.6589 8.07997C31.8623 9.6308 24.7008 13.4587 19.0798 19.0797C13.4588 24.7007 9.63082 31.8623 8.08 39.6589C6.52917 47.4554 7.32511 55.5367 10.3672 62.8809C13.4092 70.2251 18.5608 76.5023 25.1704 80.9187C31.78 85.3351 39.5507 87.6923 47.5 87.6923C58.156 87.6802 68.372 83.4418 75.9069 75.9069C83.4418 68.372 87.6802 58.1559 87.6923 47.5Z"
-          fill="#00B894" />
-      </svg>
-
-    </div>
-
-    <!-- Titre -->
-    <h2 class="text-2xl font-mem text-[#231F20] mt-2">Code envoyé</h2>
-
-    <!-- Description -->
-    <p class="text-base text-[#231F20] text-center leading-relaxed">
-      Le patient a reçu un code (OTP).<br />
-      Il doit vous le communiquer pour autoriser l'accès complet.
-    </p>
-
-    <!-- Boutons -->
-    <div class="flex items-center gap-6 mt-2">
-      <button (click)="openOtpInput()"
-        class="px-6 py-3 bg-[#104382] hover:bg-[#00a07e] text-white text-base font-semibold rounded-md transition-colors">
-        Saisir le code
-      </button>
-      <button (click)="cancelOtpSent()"
-        class="text-base font-medium text-[#FF6B6B] hover:text-[#c0392b] transition-colors">
-        Annuler
-      </button>
-    </div>
-
-  </div>
-</div>
-
-<!-- ===== POPUP : SAISIE CODE OTP ===== -->
-<div *ngIf="showOtpPopup" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/40"
-  (click)="cancelOtpInput()">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 flex flex-col items-center gap-4"
-    (click)="$event.stopPropagation()">
-
-    <!-- Icône succès -->
-    <div class=" flex items-center justify-center">
-      <svg width="95" height="95" viewBox="0 0 95 95" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path
-          d="M70.2452 34.0264C70.9106 34.7294 71.27 35.6677 71.2443 36.6353C71.2186 37.6029 70.81 38.5208 70.1082 39.1875L43.3438 64.7644C42.6518 65.4153 41.736 65.7751 40.7861 65.7692C39.8501 65.7728 38.9494 65.4125 38.2741 64.7644L24.8918 51.976C24.5207 51.6521 24.2188 51.2566 24.0044 50.8131C23.79 50.3696 23.6675 49.8874 23.6442 49.3954C23.6209 48.9033 23.6973 48.4117 23.8689 47.9499C24.0405 47.4882 24.3037 47.0659 24.6426 46.7085C24.9816 46.3511 25.3893 46.0659 25.8413 45.87C26.2932 45.6742 26.7801 45.5718 27.2727 45.5689C27.7653 45.566 28.2534 45.6628 28.7076 45.8534C29.1618 46.044 29.5728 46.3244 29.9159 46.6779L40.7861 57.0457L65.0841 33.8894C65.7871 33.224 66.7254 32.8646 67.693 32.8903C68.6606 32.916 69.5785 33.3246 70.2452 34.0264ZM95 47.5C95 56.8946 92.2142 66.0782 86.9948 73.8896C81.7754 81.7009 74.357 87.7891 65.6775 91.3843C56.998 94.9794 47.4473 95.9201 38.2332 94.0873C29.0191 92.2545 20.5554 87.7305 13.9124 81.0876C7.26945 74.4446 2.74552 65.9809 0.91272 56.7668C-0.920077 47.5527 0.020581 38.002 3.61574 29.3225C7.2109 20.643 13.2991 13.2246 21.1104 8.00519C28.9218 2.78583 38.1054 0 47.5 0C60.0904 0.0241427 72.1582 5.03635 81.0609 13.9391C89.9637 22.8418 94.9759 34.9096 95 47.5ZM87.6923 47.5C87.6923 39.5507 85.3351 31.7799 80.9187 25.1703C76.5023 18.5608 70.2251 13.4092 62.8809 10.3671C55.5368 7.32509 47.4554 6.52915 39.6589 8.07997C31.8623 9.6308 24.7008 13.4587 19.0798 19.0797C13.4588 24.7007 9.63082 31.8623 8.08 39.6589C6.52917 47.4554 7.32511 55.5367 10.3672 62.8809C13.4092 70.2251 18.5608 76.5023 25.1704 80.9187C31.78 85.3351 39.5507 87.6923 47.5 87.6923C58.156 87.6802 68.372 83.4418 75.9069 75.9069C83.4418 68.372 87.6802 58.1559 87.6923 47.5Z"
-          fill="#00B894" />
-      </svg>
-
-    </div>
-
-    <!-- Titre -->
-    <h2 class="text-2xl font-medium text-[#231F20] mt-1">Saisir le code</h2>
-
-    <!-- Description -->
-    <p class="text-base text-[#231F20] text-center">Entrez le code communiqué par le patient.</p>
-
-    <!-- Inputs OTP (ng-otp-input) -->
-    <ng-otp-input (onInputChange)="onOtpChange($event)" [config]="otpConfig" [disabled]="otpValidating">
-    </ng-otp-input>
-
-    <!-- Erreur -->
-    <p *ngIf="otpError" class="text-sm text-red-500 text-center">{{ otpError }}</p>
-
-    <!-- Boutons -->
-    <div class="flex items-center gap-6 mt-1">
-      <button (click)="validateOtpCode()" [disabled]="otpValue.length < 4 || otpValidating"
-        class="px-6 py-3 bg-[#104382] hover:bg-[#00a07e] text-white text-sm font-semibold rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-        <svg *ngIf="otpValidating" class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-        </svg>
-        {{ otpValidating ? 'Validation...' : 'Valider le code' }}
-      </button>
-      <button (click)="cancelOtpInput()"
-        class="text-sm font-medium text-[#E74C3C] hover:text-[#c0392b] transition-colors">
-        Annuler
-      </button>
-    </div>
-
-  </div>
-</div>
-
 <!-- ==================== MODAL NOUVELLE DEMANDE ==================== -->
 <div *ngIf="showNouvelleDemandeModal" class="fixed inset-0 z-50 flex items-start justify-end pt-40 pr-8"
   (click)="closeNouvelleDemandeModal()">
@@ -239,13 +123,13 @@
         <!-- Header du modal -->
         <div class="space-y-2">
           <h2 class="text-xl font-bold text-[#231F20]">Nouvelle demande</h2>
-          <p class="text-sm text-[#6B7280]">Choisissez un document à générer pour le patient.</p>
+          <p class="text-sm text-[#6B7280]">Choisissez un document Ã  gÃ©nÃ©rer pour le patient.</p>
         </div>
 
         <!-- Liste des actions -->
         <div class="space-y-1">
 
-          <!-- Ordonnance médicale -->
+          <!-- Ordonnance mÃ©dicale -->
           <button type="button" (click)="goToOrdonnance()"
             class="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors duration-200 group">
             <div
@@ -257,8 +141,8 @@
               </svg>
             </div>
             <div class="flex-1 text-left">
-              <h3 class="text-base font-semibold text-[#111111]">Ordonnance médicale</h3>
-              <p class="text-sm text-[#6B7280] mt-0.5">Médicaments, soins</p>
+              <h3 class="text-base font-semibold text-[#111111]">Ordonnance mÃ©dicale</h3>
+              <p class="text-sm text-[#6B7280] mt-0.5">MÃ©dicaments, soins</p>
             </div>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
@@ -294,7 +178,7 @@
             </div>
             <div class="flex-1 text-left">
               <h3 class="text-base font-semibold text-[#111111]">Demande d'hospitalisation</h3>
-              <p class="text-sm text-[#6B7280] mt-0.5">Admission, prise en charge médicale...</p>
+              <p class="text-sm text-[#6B7280] mt-0.5">Admission, prise en charge mÃ©dicale...</p>
             </div>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
@@ -306,7 +190,7 @@
             </svg>
           </button>
 
-          <!-- Certificat médical -->
+          <!-- Certificat mÃ©dical -->
           <button type="button" (click)="goTocertificatmedical()"
             class="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors duration-200 group">
             <div
@@ -318,7 +202,7 @@
               </svg>
             </div>
             <div class="flex-1 text-left">
-              <h3 class="text-base font-semibold text-[#111111]">Certificat médical</h3>
+              <h3 class="text-base font-semibold text-[#111111]">Certificat mÃ©dical</h3>
               <p class="text-sm text-[#6B7280] mt-0.5">Consultation, soins</p>
             </div>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -332,7 +216,7 @@
 
           </button>
 
-          <!-- Imagerie médicale -->
+          <!-- Imagerie mÃ©dicale -->
           <button type="button" (click)="goToimageriemedical()"
             class="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors duration-200 group">
             <div
@@ -344,7 +228,7 @@
               </svg>
             </div>
             <div class="flex-1 text-left">
-              <h3 class="text-base font-semibold text-[#111111]">Imagerie médicale</h3>
+              <h3 class="text-base font-semibold text-[#111111]">Imagerie mÃ©dicale</h3>
               <p class="text-sm text-[#6B7280] mt-0.5">Radio, IRM, Scanner...</p>
             </div>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -358,7 +242,7 @@
 
           </button>
 
-          <!-- Analyses médicales -->
+          <!-- Analyses mÃ©dicales -->
           <button type="button" (click)="goToanalysesmedical()"
             class="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors duration-200 group">
             <div
@@ -370,7 +254,7 @@
               </svg>
             </div>
             <div class="flex-1 text-left">
-              <h3 class="text-base font-semibold text-[#111111]">Analyses médicales</h3>
+              <h3 class="text-base font-semibold text-[#111111]">Analyses mÃ©dicales</h3>
               <p class="text-sm text-[#6B7280] mt-0.5">Radio, IRM, Scanner, Biologie...</p>
             </div>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -390,7 +274,7 @@
   </div>
 </div>
 
-<!-- Vue détaillée du patient -->
+<!-- Vue dÃ©taillÃ©e du patient -->
 <div *ngIf="showPatientDetail && selectedPatient" class="min-h-screen bg-[#f4f6f9]">
   <!-- Patient Header -->
   <div class="">
@@ -422,9 +306,9 @@
 
               {{ selectedPatient.age }} ans
             </span>
-            <span>•</span>
-            <span>Né(e) le {{ selectedPatient.dateNaissance | date:'dd-MM-yyyy' }}</span>
-            <span>•</span>
+            <span>â€¢</span>
+            <span>NÃ©(e) le {{ selectedPatient.dateNaissance | date:'dd-MM-yyyy' }}</span>
+            <span>â€¢</span>
             <span class="flex items-center gap-1">
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -434,7 +318,7 @@
 
               Groupe {{ selectedPatient.groupe }}
             </span>
-            <span>•</span>
+            <span>â€¢</span>
             <span class="flex items-center gap-1">
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M1.5 6H3L4.5 1.5L7.5 10.5L9 6H10.5" stroke="#6B7280" stroke-width="0.75" stroke-linecap="round"
@@ -450,7 +334,7 @@
       <!-- Bouton Nouvelle demande -->
       <button (click)="openNouvelleDemandeModal()"
         class="flex items-center gap-2 bg-[#104382] text-white font-medium px-5 py-2 rounded-lg transition-colors duration-200 shadow-sm">
-        <!-- SVG Placeholder - Icône Plus -->
+        <!-- SVG Placeholder - IcÃ´ne Plus -->
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M8 15C6.14348 15 4.36301 14.2625 3.05025 12.9497C1.7375 11.637 1 9.85652 1 8C1 6.14348 1.7375 4.36301 3.05025 3.05025C4.36301 1.7375 6.14348 1 8 1C9.85652 1 11.637 1.7375 12.9497 3.05025C14.2625 4.36301 15 6.14348 15 8C15 9.85652 14.2625 11.637 12.9497 12.9497C11.637 14.2625 9.85652 15 8 15ZM8 16C10.1217 16 12.1566 15.1571 13.6569 13.6569C15.1571 12.1566 16 10.1217 16 8C16 5.87827 15.1571 3.84344 13.6569 2.34315C12.1566 0.842855 10.1217 0 8 0C5.87827 0 3.84344 0.842855 2.34315 2.34315C0.842855 3.84344 0 5.87827 0 8C0 10.1217 0.842855 12.1566 2.34315 13.6569C3.84344 15.1571 5.87827 16 8 16Z"
@@ -643,13 +527,13 @@
     <!-- Vue d'ensemble -->
     <div *ngIf="activeTab === 'vue-ensemble'" class=" grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-      <!-- PARTIE HTML 1: Vue d'ensemble - Données cliniques -->
+      <!-- PARTIE HTML 1: Vue d'ensemble - DonnÃ©es cliniques -->
       <!-- Colonne 1 -->
       <div class="lg:col-span-1 space-y-3">
-        <!-- Données cliniques -->
+        <!-- DonnÃ©es cliniques -->
         <div class="border border-gray-200 rounded-lg bg-white rounded-lg shadow-sm p-6">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-base font-semibold text-[#2C3E50]">Données cliniques</h3>
+            <h3 class="text-base font-semibold text-[#2C3E50]">DonnÃ©es cliniques</h3>
             <button (click)="openCliniqueDataModal()" class="text-[#104382] hover:text-[#019d7e]">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <g clip-path="url(#clip0_3622_14546)">
@@ -690,16 +574,16 @@
           </div>
 
           <div class="text-center py-4 text-gray-500" *ngIf="!cliniqueData">
-            Aucune donnée clinique disponible
+            Aucune donnÃ©e clinique disponible
           </div>
         </div>
-        <!-- Modal d'édition des données cliniques -->
+        <!-- Modal d'Ã©dition des donnÃ©es cliniques -->
         <div *ngIf="showCliniqueDataModal"
           class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6" (click)="$event.stopPropagation()">
             <div class="flex items-center justify-between mb-6">
-              <h3 class="text-lg font-semibold text-gray-800">Modifier les données cliniques</h3>
-              <button (click)="closeCliniqueDataModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+              <h3 class="text-lg font-semibold text-gray-800">Modifier les donnÃ©es cliniques</h3>
+              <button (click)="closeCliniqueDataModal()" class="text-gray-400 hover:text-gray-600">âœ•</button>
             </div>
 
             <div class="space-y-4">
@@ -708,7 +592,7 @@
                 <select [(ngModel)]="formCliniqueData.sex"
                   class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none">
                   <option value="Masculin">Masculin</option>
-                  <option value="Féminin">Féminin</option>
+                  <option value="FÃ©minin">FÃ©minin</option>
                 </select>
               </div>
 
@@ -799,7 +683,7 @@
             </div>
           </div>
           <div class="text-center py-4 text-gray-500" *ngIf="allergies.length === 0">
-            Aucune allergie enregistrée
+            Aucune allergie enregistrÃ©e
           </div>
         </div>
         <!-- Modal d'ajout d'une allergie -->
@@ -808,7 +692,7 @@
           <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6" (click)="$event.stopPropagation()">
             <div class="flex items-center justify-between mb-6">
               <h3 class="text-lg font-semibold text-gray-800">Ajouter une allergie</h3>
-              <button (click)="closeAllergieModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+              <button (click)="closeAllergieModal()" class="text-gray-400 hover:text-gray-600">âœ•</button>
             </div>
 
             <div class="space-y-4">
@@ -879,7 +763,7 @@
             </div>
           </div>
           <div class="text-center py-4 text-gray-500" *ngIf="maladiesChroniques.length === 0">
-            Aucune maladie chronique enregistrée
+            Aucune maladie chronique enregistrÃ©e
           </div>
         </div>
         <!-- Modal Ajout Maladie Chronique -->
@@ -888,13 +772,13 @@
           <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6" (click)="$event.stopPropagation()">
             <div class="flex items-center justify-between mb-6">
               <h3 class="text-lg font-semibold text-gray-800">Ajouter une maladie chronique</h3>
-              <button (click)="closeMaladieChroniqueModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+              <button (click)="closeMaladieChroniqueModal()" class="text-gray-400 hover:text-gray-600">âœ•</button>
             </div>
 
             <div class="space-y-4">
               <div>
                 <label class="block text-sm font-medium text-gray-900 mb-2">Nom de la maladie *</label>
-                <input type="text" [(ngModel)]="formMaladieCronique.name" placeholder="Ex: Hypertension artérielle"
+                <input type="text" [(ngModel)]="formMaladieCronique.name" placeholder="Ex: Hypertension artÃ©rielle"
                   class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none">
               </div>
             </div>
@@ -914,10 +798,10 @@
           </div>
         </div>
 
-        <!-- Antécédents chirurgicaux -->
+        <!-- AntÃ©cÃ©dents chirurgicaux -->
         <div class="border border-gray-200 rounded-lg bg-white rounded-lg shadow-sm p-6">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-base font-semibold text-[#2C3E50]">Antécédents chirurgicaux</h3>
+            <h3 class="text-base font-semibold text-[#2C3E50]">AntÃ©cÃ©dents chirurgicaux</h3>
             <button (click)="openAntecedentChirurgicalModal()" class="text-[#104382] hover:text-[#019d7e]">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -952,16 +836,16 @@
             </div>
           </div>
           <div class="text-center py-4 text-gray-500" *ngIf="antecedentsChirurgicaux.length === 0">
-            Aucun antécédent chirurgical enregistré
+            Aucun antÃ©cÃ©dent chirurgical enregistrÃ©
           </div>
         </div>
-        <!-- Modal Ajout Antécédent Chirurgical -->
+        <!-- Modal Ajout AntÃ©cÃ©dent Chirurgical -->
         <div *ngIf="showAntecedentChirurgicalModal"
           class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6" (click)="$event.stopPropagation()">
             <div class="flex items-center justify-between mb-6">
-              <h3 class="text-lg font-semibold text-gray-800">Ajouter un antécédent chirurgical</h3>
-              <button (click)="closeAntecedentChirurgicalModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+              <h3 class="text-lg font-semibold text-gray-800">Ajouter un antÃ©cÃ©dent chirurgical</h3>
+              <button (click)="closeAntecedentChirurgicalModal()" class="text-gray-400 hover:text-gray-600">âœ•</button>
             </div>
 
             <div class="space-y-4">
@@ -993,10 +877,10 @@
           </div>
         </div>
 
-        <!-- Intolérances médicamenteuses -->
+        <!-- IntolÃ©rances mÃ©dicamenteuses -->
         <div class="border border-gray-200 rounded-lg bg-white rounded-lg shadow-sm p-6">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-base font-semibold text-[#2C3E50]">Intolérances médicamenteuses</h3>
+            <h3 class="text-base font-semibold text-[#2C3E50]">IntolÃ©rances mÃ©dicamenteuses</h3>
             <button (click)="openIntoleranceModal()" class="text-[#104382] hover:text-[#019d7e]">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -1012,7 +896,7 @@
             <div *ngFor="let intolerance of intolerances"
               class="group bg-[#F39C120F] border border-orange-200 rounded-lg px-3 py-2 flex justify-between items-center">
 
-              <!-- Contenu de l'intolérance -->
+              <!-- Contenu de l'intolÃ©rance -->
               <div class="flex items-center gap-2">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
@@ -1037,20 +921,20 @@
             </div>
           </div>
         </div>
-        <!-- Modal Ajout Intolerance Médicamenteuse -->
+        <!-- Modal Ajout Intolerance MÃ©dicamenteuse -->
         <div *ngIf="showIntoleranceModal"
           class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6" (click)="$event.stopPropagation()">
             <div class="flex items-center justify-between mb-6">
-              <h3 class="text-lg font-semibold text-gray-800">Ajouter une intorlérance médicamenteuse</h3>
-              <button (click)="closeIntoleranceModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+              <h3 class="text-lg font-semibold text-gray-800">Ajouter une intorlÃ©rance mÃ©dicamenteuse</h3>
+              <button (click)="closeIntoleranceModal()" class="text-gray-400 hover:text-gray-600">âœ•</button>
             </div>
 
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-900 mb-2">Medication de l'intorlérance
+                <label class="block text-sm font-medium text-gray-900 mb-2">Medication de l'intorlÃ©rance
                   *</label>
-                <input type="text" [(ngModel)]="formIntolerance.medication" placeholder="Ex: Hypertension artérielle"
+                <input type="text" [(ngModel)]="formIntolerance.medication" placeholder="Ex: Hypertension artÃ©rielle"
                   class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none">
               </div>
             </div>
@@ -1074,10 +958,10 @@
 
       <!-- Colonne 3 -->
       <div class="lg:col-span-1 space-y-3">
-        <!-- Antécédents familiaux -->
+        <!-- AntÃ©cÃ©dents familiaux -->
         <div class="border border-gray-200 rounded-lg bg-white rounded-lg shadow-sm p-6">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-base font-semibold text-[#2C3E50]">Antécédents familiaux</h3>
+            <h3 class="text-base font-semibold text-[#2C3E50]">AntÃ©cÃ©dents familiaux</h3>
             <button (click)="openAntecedentFamilialModal()" class="text-[#104382] hover:text-[#019d7e]">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -1117,29 +1001,29 @@
             </div>
           </div>
           <div class="text-center py-4 text-gray-500" *ngIf="antecedentsFamiliaux.length === 0">
-            Aucun antécédent familial enregistré
+            Aucun antÃ©cÃ©dent familial enregistrÃ©
           </div>
         </div>
-        <!-- Modal Ajout Antécédent Familial -->
+        <!-- Modal Ajout AntÃ©cÃ©dent Familial -->
         <div *ngIf="showAntecedentFamilialModal"
           class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6" (click)="$event.stopPropagation()">
             <div class="flex items-center justify-between mb-6">
-              <h3 class="text-lg font-semibold text-gray-800">Ajouter un antécédent familial</h3>
-              <button (click)="closeAntecedentFamilialModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+              <h3 class="text-lg font-semibold text-gray-800">Ajouter un antÃ©cÃ©dent familial</h3>
+              <button (click)="closeAntecedentFamilialModal()" class="text-gray-400 hover:text-gray-600">âœ•</button>
             </div>
 
             <div class="space-y-4">
               <div>
                 <label class="block text-sm font-medium text-gray-900 mb-2">Maladie/Condition *</label>
-                <input type="text" [(ngModel)]="formAntecedentFamilial.label" placeholder="Ex: Diabète type 2"
+                <input type="text" [(ngModel)]="formAntecedentFamilial.label" placeholder="Ex: DiabÃ¨te type 2"
                   class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none">
               </div>
 
               <div>
                 <label class="block text-sm font-medium text-gray-900 mb-2">Membre de la famille *</label>
                 <input type="text" [(ngModel)]="formAntecedentFamilial.relatedPerson"
-                  placeholder="Ex: Père, Mère, Grand-père..."
+                  placeholder="Ex: PÃ¨re, MÃ¨re, Grand-pÃ¨re..."
                   class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none">
               </div>
             </div>
@@ -1179,12 +1063,12 @@
 
     <!-- PARTIE HTML 3: Signes vitaux -->
 
-    <!-- Remplacez la section complète des signes vitaux par ceci: -->
+    <!-- Remplacez la section complÃ¨te des signes vitaux par ceci: -->
     <div *ngIf="activeTab === 'signes-vitaux'">
       <!-- Cartes des signes vitaux -->
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-8 shadow-sm" *ngIf="signesVitaux">
 
-        <!-- Tension artérielle -->
+        <!-- Tension artÃ©rielle -->
         <div class="border border-gray-100 rounded-lg bg-white rounded-lg shadow-sm p-6 text-center">
           <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-red-50 flex items-center justify-center">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1193,14 +1077,14 @@
                 stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </div>
-          <div class="text-sm text-gray-600 mb-1">Tension artérielle</div>
+          <div class="text-sm text-gray-600 mb-1">Tension artÃ©rielle</div>
           <div class="flex items-baseline gap-1 text-center justify-center">
             <div class="text-2xl font-bold text-gray-900">{{ signesVitaux.bloodPressure }}</div>
             <div class="text-xs text-gray-500">mmHg</div>
           </div>
         </div>
 
-        <!-- Fréquence cardiaque -->
+        <!-- FrÃ©quence cardiaque -->
         <div class="border border-gray-100 rounded-lg bg-white rounded-lg shadow-sm p-6 text-center">
           <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-pink-50 flex items-center justify-center">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1209,14 +1093,14 @@
                 stroke="#DB2777" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </div>
-          <div class="text-sm text-gray-600 mb-1">Fréquence cardiaque</div>
+          <div class="text-sm text-gray-600 mb-1">FrÃ©quence cardiaque</div>
           <div class="flex items-baseline gap-1 text-center justify-center">
             <div class="text-2xl font-bold text-gray-900">{{ signesVitaux.heartRate }}</div>
             <div class="text-xs text-gray-500">bpm</div>
           </div>
         </div>
 
-        <!-- Fréquence respiratoire -->
+        <!-- FrÃ©quence respiratoire -->
         <div class="border border-gray-100 rounded-lg bg-white rounded-lg shadow-sm p-6 text-center">
           <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-blue-50 flex items-center justify-center">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1231,14 +1115,14 @@
                 stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </div>
-          <div class="text-sm text-gray-600 mb-1">Fréquence respiratoire</div>
+          <div class="text-sm text-gray-600 mb-1">FrÃ©quence respiratoire</div>
           <div class="flex items-baseline gap-1 text-center justify-center">
             <div class="text-2xl font-bold text-gray-900">{{ signesVitaux.respiratoryRate }}</div>
             <div class="text-xs text-gray-500">/min</div>
           </div>
         </div>
 
-        <!-- Température -->
+        <!-- TempÃ©rature -->
         <div class="border border-gray-100 rounded-lg bg-white rounded-lg shadow-sm p-6 text-center">
           <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-orange-50 flex items-center justify-center">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1247,10 +1131,10 @@
                 stroke="#EA580C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </div>
-          <div class="text-sm text-gray-600 mb-1">Température</div>
+          <div class="text-sm text-gray-600 mb-1">TempÃ©rature</div>
           <div class="flex items-baseline gap-1 text-center justify-center">
             <div class="text-2xl font-bold text-gray-900 text-center">{{ signesVitaux.temperature }}</div>
-            <div class="text-xs text-gray-500">°C</div>
+            <div class="text-xs text-gray-500">Â°C</div>
           </div>
         </div>
 
@@ -1263,7 +1147,7 @@
                 stroke="#0891B2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </div>
-          <div class="text-sm text-gray-600 mb-1">Saturation O₂</div>
+          <div class="text-sm text-gray-600 mb-1">Saturation Oâ‚‚</div>
           <div class="flex items-baseline gap-1 text-center justify-center">
             <div class="text-2xl font-bold text-gray-900">{{ signesVitaux.oxygenSaturation }}</div>
             <div class="text-xs text-gray-500">%</div>
@@ -1273,7 +1157,7 @@
 
       <!-- Message si pas de signes vitaux -->
       <div *ngIf="!signesVitaux" class="text-center py-8">
-        <p class="text-gray-500">Aucun signe vital enregistré</p>
+        <p class="text-gray-500">Aucun signe vital enregistrÃ©</p>
       </div>
 
       <!-- Historique des signes vitaux -->
@@ -1289,7 +1173,7 @@
                 <th class="px-4 py-2 text-left">FC</th>
                 <th class="px-4 py-2 text-left">FR</th>
                 <th class="px-4 py-2 text-left">Temp.</th>
-                <th class="px-4 py-2 text-left">SpO₂</th>
+                <th class="px-4 py-2 text-left">SpOâ‚‚</th>
               </tr>
             </thead>
             <tbody class="divide-y">
@@ -1298,7 +1182,7 @@
                 <td class="px-4 py-2">{{ h.bloodPressure }} mmHg</td>
                 <td class="px-4 py-2">{{ h.heartRate }} bpm</td>
                 <td class="px-4 py-2">{{ h.respiratoryRate }} /min</td>
-                <td class="px-4 py-2">{{ h.temperature }} °C</td>
+                <td class="px-4 py-2">{{ h.temperature }} Â°C</td>
                 <td class="px-4 py-2">{{ h.oxygenSaturation }}%</td>
               </tr>
             </tbody>
@@ -1319,7 +1203,7 @@
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#104382]"></div>
       </div>
 
-      <!-- Contenu si données chargées -->
+      <!-- Contenu si donnÃ©es chargÃ©es -->
       <div *ngIf="!loadingModeDeVie">
 
         <!-- Cards si mode de vie existe -->
@@ -1327,27 +1211,27 @@
 
           <div class="border border-gray-100 rounded-lg bg-white shadow-sm p-6">
             <h3 class="font-semibold text-gray-800 mb-1">Habitudes alimentaires</h3>
-            <p class="text-gray-600 text-sm">{{ modeDeVie.dietaryHabits || 'Non renseigné' }}</p>
+            <p class="text-gray-600 text-sm">{{ modeDeVie.dietaryHabits || 'Non renseignÃ©' }}</p>
           </div>
 
           <div class="border border-gray-100 rounded-lg bg-white shadow-sm p-6">
-            <h3 class="font-semibold text-gray-800 mb-1">Activité physique</h3>
-            <p class="text-gray-600 text-sm">{{ modeDeVie.physicalActivity || 'Non renseigné' }}</p>
+            <h3 class="font-semibold text-gray-800 mb-1">ActivitÃ© physique</h3>
+            <p class="text-gray-600 text-sm">{{ modeDeVie.physicalActivity || 'Non renseignÃ©' }}</p>
           </div>
 
           <div class="border border-gray-100 rounded-lg bg-white shadow-sm p-6">
             <h3 class="font-semibold text-gray-800 mb-1">Consommation d'alcool</h3>
-            <p class="text-gray-600 text-sm">{{ modeDeVie.alcoholConsumption || 'Non renseigné' }}</p>
+            <p class="text-gray-600 text-sm">{{ modeDeVie.alcoholConsumption || 'Non renseignÃ©' }}</p>
           </div>
 
           <div class="border border-gray-100 rounded-lg bg-white shadow-sm p-6">
             <h3 class="font-semibold text-gray-800 mb-1">Tabac</h3>
-            <p class="text-gray-600 text-sm">{{ modeDeVie.smoker || 'Non renseigné' }}</p>
+            <p class="text-gray-600 text-sm">{{ modeDeVie.smoker || 'Non renseignÃ©' }}</p>
           </div>
 
         </div>
 
-        <!-- État vide : aucun mode de vie -->
+        <!-- Ã‰tat vide : aucun mode de vie -->
         <div *ngIf="!modeDeVie" class="flex flex-col items-center justify-center py-16 px-6">
           <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
             <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1357,7 +1241,7 @@
           </div>
           <h4 class="text-base font-semibold text-gray-900 mb-1">Aucune information sur le mode de vie</h4>
           <p class="text-sm text-gray-500 text-center max-w-sm">
-            Les informations sur le mode de vie du patient n'ont pas encore été renseignées.
+            Les informations sur le mode de vie du patient n'ont pas encore Ã©tÃ© renseignÃ©es.
           </p>
         </div>
       </div>
@@ -1375,7 +1259,7 @@
           class="group bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
 
           <div class="flex">
-            <!-- Barre latérale colorée selon statut -->
+            <!-- Barre latÃ©rale colorÃ©e selon statut -->
             <div class="w-1 flex-shrink-0" [ngClass]="{
               'bg-[#00B894]': vaccination.status === 'DONE',
               'bg-amber-400': vaccination.status === 'PLANNED',
@@ -1386,7 +1270,7 @@
               <div class="flex items-start justify-between">
                 <!-- Contenu principal -->
                 <div class="flex gap-4">
-                  <!-- Icône seringue -->
+                  <!-- IcÃ´ne seringue -->
                   <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" [ngClass]="{
                     'bg-[#e3f9f4]': vaccination.status === 'DONE',
                     'bg-amber-50': vaccination.status === 'PLANNED',
@@ -1411,12 +1295,12 @@
                         'bg-amber-100 text-amber-600': vaccination.status === 'PLANNED',
                         'bg-red-100 text-red-600': vaccination.status === 'MISSED'
                       }">
-                        {{ vaccination.status === 'DONE' ? 'Terminé' : vaccination.status === 'PLANNED' ? 'Planifié' :
-                        'Manqué' }}
+                        {{ vaccination.status === 'DONE' ? 'TerminÃ©' : vaccination.status === 'PLANNED' ? 'PlanifiÃ©' :
+                        'ManquÃ©' }}
                       </span>
                     </div>
 
-                    <!-- Infos structurées -->
+                    <!-- Infos structurÃ©es -->
                     <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
                       <span class="flex items-center gap-1.5">
                         <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1472,23 +1356,23 @@
               d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
           </svg>
         </div>
-        <p class="text-sm font-medium text-gray-600">Aucune vaccination enregistrée</p>
-        <p class="text-xs text-gray-400 mt-1">Les vaccinations apparaîtront ici une fois ajoutées.</p>
+        <p class="text-sm font-medium text-gray-600">Aucune vaccination enregistrÃ©e</p>
+        <p class="text-xs text-gray-400 mt-1">Les vaccinations apparaÃ®tront ici une fois ajoutÃ©es.</p>
       </div>
     </div>
 
-    <!-- PARTIE HTML 6: Médicaments -->
-    <!-- Médicaments -->
+    <!-- PARTIE HTML 6: MÃ©dicaments -->
+    <!-- MÃ©dicaments -->
     <div *ngIf="activeTab === 'medicaments'">
       <div class="mb-6">
 
-        <!-- État de chargement -->
+        <!-- Ã‰tat de chargement -->
         <div *ngIf="loadingMedicaments" class="flex justify-center items-center py-12">
           <div class="text-center">
             <div
               class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[#104382] border-r-transparent">
             </div>
-            <p class="mt-3 text-gray-600">Chargement des médicaments...</p>
+            <p class="mt-3 text-gray-600">Chargement des mÃ©dicaments...</p>
           </div>
         </div>
 
@@ -1500,7 +1384,7 @@
               d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
           <p class="text-red-800 font-medium">{{ medicamentsError }}</p>
-          <button (click)="reloadMedicaments()" class="mt-4 text-sm text-[#104382] hover:underline">Réessayer</button>
+          <button (click)="reloadMedicaments()" class="mt-4 text-sm text-[#104382] hover:underline">RÃ©essayer</button>
         </div>
 
         <!-- Liste vide -->
@@ -1511,11 +1395,11 @@
               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
             </path>
           </svg>
-          <p class="text-gray-600 text-lg font-medium">Aucun médicament trouvé</p>
-          <p class="text-gray-500 text-sm mt-2">Ce patient n'a actuellement aucun traitement enregistré.</p>
+          <p class="text-gray-600 text-lg font-medium">Aucun mÃ©dicament trouvÃ©</p>
+          <p class="text-gray-500 text-sm mt-2">Ce patient n'a actuellement aucun traitement enregistrÃ©.</p>
         </div>
 
-        <!-- Liste des médicaments -->
+        <!-- Liste des mÃ©dicaments -->
         <div *ngIf="!loadingMedicaments && !medicamentsError && traitementActuel.length > 0">
           <h3 class="text-lg font-bold text-[#343A40] mb-5">Traitement actuel</h3>
           <div class="space-y-4">
@@ -1523,14 +1407,14 @@
               class="bg-white border border-gray-200 rounded-xl shadow-sm p-5 hover:shadow transition-shadow">
 
               <div class="grid grid-cols-[250px_1fr_auto] items-center gap-6">
-                <!-- Colonne 1 : Nom du médicament -->
+                <!-- Colonne 1 : Nom du mÃ©dicament -->
                 <h4 class="text-base font-bold text-[#2C3E50]">
                   {{ med.label }}
                 </h4>
 
                 <!-- Colonne 2 : Prescription et Description -->
                 <div class="flex gap-4">
-                  <!-- Texte de prescription (si médecin disponible) -->
+                  <!-- Texte de prescription (si mÃ©decin disponible) -->
                   <div *ngIf="currentUser?.nom" class="inline-flex items-center text-sm font-light text-[#6B7280]
                         px-5 py-2
                         ">
@@ -1588,7 +1472,7 @@
 
             <div class="flex-1">
               <h3 class="text-base font-semibold text-[#333333]">{{ hosp.facility.name }}</h3>
-              <p class="text-xs text-[#6B7280]">{{ hosp.department.name }} • Admission : {{
+              <p class="text-xs text-[#6B7280]">{{ hosp.department.name }} â€¢ Admission : {{
                 formatDateFr(hosp.entryDateTime) }}</p>
             </div>
 
@@ -1607,7 +1491,7 @@
           </div>
 
           <div class="flex items-center justify-between pt-4 border-t border-[#F2F2F2]">
-            <!-- Badge Priorité (Normal / Urgent) -->
+            <!-- Badge PrioritÃ© (Normal / Urgent) -->
             <span class="px-2 py-1 text-xs font-medium rounded-full" [ngClass]="{
           'bg-[#e3f9f4] text-[#00B894]': hosp.priority === 'NORMAL',
           'bg-[#FFE5E5] text-[#DC2626]': hosp.priority === 'URGENCE'
@@ -1616,33 +1500,124 @@
             </span>
             <button (click)="openHospitalisationDetailData(hosp.id)"
               class="text-xs text-[#343A40] font-medium border border-[#CBD5E1] rounded-full px-3 py-2 hover:bg-teal-50 transition-colors">
-              Voir détails →
+              Voir dÃ©tails â†’
             </button>
           </div>
         </div>
       </div>
 
-      <!-- État vide -->
+      <!-- Ã‰tat vide -->
       <div *ngIf="!loadingHospitalisations && hospitalisationsData.length === 0" class="text-center py-12">
         <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
         </svg>
-        <p class="text-gray-500 mb-4">Aucune hospitalisation enregistrée</p>
+        <p class="text-gray-500 mb-4">Aucune hospitalisation enregistrÃ©e</p>
         <button (click)="openHospitalisationPage()" class="text-[#104382] hover:text-[#019d7e] font-medium">
-          + Créer une hospitalisation
+          + CrÃ©er une hospitalisation
         </button>
       </div>
     </div>
 
     <!-- Examens et Analyses -->
-    <div *ngIf="activeTab === 'examens'">
-      <app-examens></app-examens>
-    </div>
+    <div *ngIf="activeTab === 'examens'" class="space-y-6">
 
-    <!-- Imagerie -->
-    <div *ngIf="activeTab === 'imagerie'">
-      <app-imagerie-list></app-imagerie-list>
+      <!-- Résultats biologiques -->
+      <div class="bg-white rounded-xl shadow-sm p-6">
+        <h2 class="text-lg font-semibold text-[#343A40] mb-4">Résultats biologiques</h2>
+
+        <div *ngIf="loadingLabResults" class="flex justify-center py-10">
+          <svg class="animate-spin h-6 w-6 text-[#104382]" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+        </div>
+
+        <div *ngIf="!loadingLabResults && labResults.length === 0"
+          class="text-center py-10 text-gray-400">
+          <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <p class="text-sm">Aucun résultat biologique disponible</p>
+        </div>
+
+        <div *ngIf="!loadingLabResults && labResults.length > 0" class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-gray-200">
+                <th class="text-left py-3 px-4 text-gray-500 font-medium">Date</th>
+                <th class="text-left py-3 px-4 text-gray-500 font-medium">Examen</th>
+                <th class="text-left py-3 px-4 text-gray-500 font-medium">Valeur</th>
+                <th class="text-left py-3 px-4 text-gray-500 font-medium">Référence</th>
+                <th class="text-left py-3 px-4 text-gray-500 font-medium">État</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of labResults" class="border-b border-gray-100 hover:bg-gray-50 transition">
+                <td class="py-3 px-4 text-gray-600">{{ r.date }}</td>
+                <td class="py-3 px-4 font-medium text-[#343A40]">{{ r.examen }}</td>
+                <td class="py-3 px-4 font-semibold text-[#343A40]">{{ r.valeur }}</td>
+                <td class="py-3 px-4 text-gray-500">{{ r.reference }}</td>
+                <td class="py-3 px-4">
+                  <span [ngClass]="{
+                    'text-[#00B894] font-medium': r.etat === 'Normal',
+                    'text-[#E74C3C] font-medium': r.etat === 'Anormal',
+                    'text-[#FF6B35] font-semibold': r.etat === 'Critique'
+                  }">{{ r.etat }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Imagerie médicale -->
+      <div class="bg-white rounded-xl shadow-sm p-6">
+        <h2 class="text-lg font-semibold text-[#343A40] mb-4">Imagerie médicale</h2>
+
+        <div *ngIf="loadingImaging" class="flex justify-center py-10">
+          <svg class="animate-spin h-6 w-6 text-[#104382]" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+        </div>
+
+        <div *ngIf="!loadingImaging && imagingOrders.length === 0"
+          class="text-center py-10 text-gray-400">
+          <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <p class="text-sm">Aucune imagerie médicale disponible</p>
+        </div>
+
+        <div class="space-y-4" *ngIf="!loadingImaging && imagingOrders.length > 0">
+          <div *ngFor="let img of imagingOrders"
+            class="border border-gray-200 rounded-xl p-5 flex items-start justify-between gap-4 hover:border-gray-300 transition">
+            <div class="flex-1 min-w-0">
+              <h3 class="font-semibold text-[#343A40] mb-1">
+                {{ (img.examTypes && img.examTypes.length ? img.examTypes.join(' + ') : img.reportTitle || 'Imagerie') }}
+                <span *ngIf="img.bodyRegions && img.bodyRegions.length"> - {{ img.bodyRegions.join(', ') }}</span>
+              </h3>
+              <p class="text-sm text-gray-600 mb-2 line-clamp-2">
+                {{ img.observations || img.clinicalIndication || 'Aucune observation' }}
+              </p>
+              <p class="text-xs text-gray-400">
+                {{ img.createdAt | date:'dd/MM/yyyy' }}
+              </p>
+            </div>
+            <a *ngIf="img.resultFileUrl" [href]="img.resultFileUrl" target="_blank"
+              class="flex-shrink-0 p-2 text-gray-400 hover:text-[#104382] transition-colors" title="Télécharger">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <!-- Consultations -->
@@ -1651,7 +1626,7 @@
         <h2 class="text-2xl font-bold text-gray-800">Notes de consultation</h2>
       </div>
 
-      <!-- État de chargement -->
+      <!-- Ã‰tat de chargement -->
       <div *ngIf="loadingConsultations" class="flex justify-center items-center py-12">
         <div class="text-center">
           <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#104382] mx-auto"></div>
@@ -1670,7 +1645,7 @@
         </div>
         <button (click)="reloadConsultations()"
           class="px-4 py-2 bg-[#104382] text-white rounded-lg hover:bg-[#019874] transition-colors">
-          Réessayer
+          RÃ©essayer
         </button>
       </div>
 
@@ -1680,7 +1655,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
-        <p class="text-gray-600">Aucune consultation trouvée</p>
+        <p class="text-gray-600">Aucune consultation trouvÃ©e</p>
       </div>
 
       <div *ngIf="!loadingConsultations && !consultationsError && consultations.length > 0"
@@ -1713,7 +1688,7 @@
                         d="M6 8C5.46957 8 4.96086 7.78929 4.58579 7.41421C4.21071 7.03914 4 6.53043 4 6C4 5.46957 4.21071 4.96086 4.58579 4.58579C4.96086 4.21071 5.46957 4 6 4C6.53043 4 7.03914 4.21071 7.41421 4.58579C7.78929 4.96086 8 5.46957 8 6C8 6.53043 7.78929 7.03914 7.41421 7.41421C7.03914 7.78929 6.53043 8 6 8ZM6 9C6.79565 9 7.55871 8.68393 8.12132 8.12132C8.68393 7.55871 9 6.79565 9 6C9 5.20435 8.68393 4.44129 8.12132 3.87868C7.55871 3.31607 6.79565 3 6 3C5.20435 3 4.44129 3.31607 3.87868 3.87868C3.31607 4.44129 3 5.20435 3 6C3 6.79565 3.31607 7.55871 3.87868 8.12132C4.44129 8.68393 5.20435 9 6 9Z"
                         fill="#00B894" />
                     </svg>
-                    Présentiel
+                    PrÃ©sentiel
                   </span>
                   <span *ngIf="consultation.type === 'TELECONSULTATION'" class="inline-flex items-center gap-1">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1721,7 +1696,7 @@
                         d="M2 10.5003V5.50033C2 5.1467 2.14048 4.80756 2.39052 4.55752C2.64057 4.30747 2.97971 4.16699 3.33333 4.16699H9C9.35362 4.16699 9.69276 4.30747 9.94281 4.55752C10.1929 4.80756 10.3333 5.1467 10.3333 5.50033V10.5003C10.3333 10.8539 10.1929 11.1931 9.94281 11.4431C9.69276 11.6932 9.35362 11.8337 9 11.8337H3.33333C2.97971 11.8337 2.64057 11.6932 2.39052 11.4431C2.14048 11.1931 2 10.8539 2 10.5003ZM13.4453 4.66099L10.7787 7.03633C10.7435 7.06753 10.7154 7.10582 10.6961 7.14868C10.6768 7.19154 10.6667 7.23799 10.6667 7.28499V8.47033C10.6667 8.51733 10.6768 8.56378 10.6961 8.60664C10.7154 8.64949 10.7435 8.68778 10.7787 8.71899L13.4453 11.0943C13.4934 11.137 13.5527 11.1649 13.6162 11.1746C13.6798 11.1843 13.7447 11.1755 13.8033 11.1491C13.8619 11.1228 13.9117 11.08 13.9466 11.0261C13.9815 10.9721 14 10.9092 14 10.845V4.91033C14 4.84607 13.9815 4.78318 13.9466 4.72923C13.9117 4.67527 13.8619 4.63255 13.8033 4.60621C13.7447 4.57986 13.6798 4.57102 13.6162 4.58074C13.5527 4.59046 13.4934 4.61833 13.4453 4.66099Z"
                         stroke="#2C7BE5" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
-                    Téléconsultation
+                    TÃ©lÃ©consultation
                   </span>
                 </span>
               </div>
@@ -1753,7 +1728,7 @@
       <div class="mb-6 flex items-center justify-between">
       </div>
 
-      <!-- État de chargement -->
+      <!-- Ã‰tat de chargement -->
       <div *ngIf="loadingOrdonnances" class="flex justify-center items-center py-12">
         <div class="text-center">
           <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#104382] mx-auto"></div>
@@ -1768,7 +1743,7 @@
             d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <p class="text-red-600 font-medium mb-2">{{ ordonnancesError }}</p>
-        <button (click)="reloadOrdonnances()" class="text-[#104382] hover:underline">Réessayer</button>
+        <button (click)="reloadOrdonnances()" class="text-[#104382] hover:underline">RÃ©essayer</button>
       </div>
 
       <!-- Vide -->
@@ -1777,8 +1752,8 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
-        <p class="text-gray-600 font-medium mb-1">Aucune ordonnance trouvée</p>
-        <p class="text-gray-500 text-sm">Ce patient n'a pas encore d'ordonnances enregistrées</p>
+        <p class="text-gray-600 font-medium mb-1">Aucune ordonnance trouvÃ©e</p>
+        <p class="text-gray-500 text-sm">Ce patient n'a pas encore d'ordonnances enregistrÃ©es</p>
       </div>
 
       <!-- Liste des ordonnances -->
@@ -1786,7 +1761,7 @@
         class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div *ngFor="let ordonnance of ordonnancesData"
           class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <!-- En-tête avec docteur et statut -->
+          <!-- En-tÃªte avec docteur et statut -->
           <div class="p-6 pb-4">
             <div class="flex items-start gap-4 mb-6">
               <!-- Avatar du docteur -->
@@ -1807,7 +1782,7 @@
                       Ordonnance du {{ formatDateOrdonnance(ordonnance.createdAt) }}
                     </h3>
                     <p class="text-sm text-gray-600">
-                      Dr {{ ordonnance.doctor.prenom }} {{ ordonnance.doctor.nom }} • {{
+                      Dr {{ ordonnance.doctor.prenom }} {{ ordonnance.doctor.nom }} â€¢ {{
                       getDoctorSpecialty(ordonnance.doctor.id) }}
                     </p>
                   </div>
@@ -1821,9 +1796,9 @@
               </div>
             </div>
 
-            <!-- Section Médicaments -->
+            <!-- Section MÃ©dicaments -->
             <div class="mb-4">
-              <h4 class="text-sm font-semibold text-gray-800 mb-3">Médicaments</h4>
+              <h4 class="text-sm font-semibold text-gray-800 mb-3">MÃ©dicaments</h4>
               <div *ngIf="getMedicationsCount(ordonnance) > 0" class="flex flex-wrap gap-2">
                 <span *ngFor="let med of ordonnance.medications"
                   class="px-3 py-1.5 bg-[#f5f5f7] text-gray-700 text-sm rounded-full font-medium">
@@ -1831,7 +1806,7 @@
                 </span>
               </div>
               <p *ngIf="getMedicationsCount(ordonnance) === 0" class="text-sm text-gray-500">
-                Aucun médicament listé
+                Aucun mÃ©dicament listÃ©
               </p>
             </div>
           </div>
@@ -1843,7 +1818,7 @@
             </span>
             <button
               class="flex items-center gap-2 px-4 py-2 text-sm text-[#2C7BE5] font-medium border border-[#2C7BE5] rounded-full hover:bg-blue-50 transition-colors">
-              Télécharger
+              TÃ©lÃ©charger
               <svg width="16" height="14" viewBox="0 0 16 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M0.5 8.90039C0.632608 8.90039 0.759785 8.95307 0.853553 9.04684C0.947322 9.14061 1 9.26778 1 9.40039V11.9004C1 12.1656 1.10536 12.42 1.29289 12.6075C1.48043 12.795 1.73478 12.9004 2 12.9004H14C14.2652 12.9004 14.5196 12.795 14.7071 12.6075C14.8946 12.42 15 12.1656 15 11.9004V9.40039C15 9.26778 15.0527 9.14061 15.1464 9.04684C15.2402 8.95307 15.3674 8.90039 15.5 8.90039C15.6326 8.90039 15.7598 8.95307 15.8536 9.04684C15.9473 9.14061 16 9.26778 16 9.40039V11.9004C16 12.4308 15.7893 12.9395 15.4142 13.3146C15.0391 13.6897 14.5304 13.9004 14 13.9004H2C1.46957 13.9004 0.960859 13.6897 0.585786 13.3146C0.210714 12.9395 0 12.4308 0 11.9004V9.40039C0 9.26778 0.0526784 9.14061 0.146447 9.04684C0.240215 8.95307 0.367392 8.90039 0.5 8.90039Z"
@@ -1863,7 +1838,7 @@
         class="mt-8 flex items-center justify-center gap-2">
         <button (click)="changePageOrdonnances(currentPageOrdonnances - 1)" [disabled]="currentPageOrdonnances === 0"
           class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
-          Précédent
+          PrÃ©cÃ©dent
         </button>
 
         <div class="flex items-center gap-1">
@@ -1899,14 +1874,14 @@
         class="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
         <p class="text-red-600">{{ certificatsError }}</p>
         <button (click)="reloadCertificates()" class="mt-2 text-sm text-red-700 underline hover:text-red-800">
-          Réessayer
+          RÃ©essayer
         </button>
       </div>
 
       <!-- Empty State -->
       <div *ngIf="!loadingCertificats && !certificatsError && certificats.length === 0"
         class="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
-        <p class="text-gray-500">Aucun certificat médical trouvé pour ce patient</p>
+        <p class="text-gray-500">Aucun certificat mÃ©dical trouvÃ© pour ce patient</p>
       </div>
 
       <!-- Certificats List -->
@@ -1925,13 +1900,13 @@
             <div class="flex-1">
               <h3 class="text-sm font-semibold text-[#2B3674] mb-2">{{ certificat.type }}</h3>
               <div class="space-y-1 text-xs text-gray-600">
-                <p><span class="font-medium">Période:</span> {{ certificat.startDate | date:'dd/MM/yyyy' }} - {{
+                <p><span class="font-medium">PÃ©riode:</span> {{ certificat.startDate | date:'dd/MM/yyyy' }} - {{
                   certificat.endDate | date:'dd/MM/yyyy' }}</p>
-                <p class="text-xs text-gray-500 mt-2">Émis le {{ certificat.issueDate | date:'dd/MM/yyyy' }}</p>
+                <p class="text-xs text-gray-500 mt-2">Ã‰mis le {{ certificat.issueDate | date:'dd/MM/yyyy' }}</p>
               </div>
             </div>
             <button (click)="downloadCertificatePdf(certificat.id)"
-              class="text-gray-400 hover:text-[#104382] transition-colors flex-shrink-0" title="Télécharger le PDF">
+              class="text-gray-400 hover:text-[#104382] transition-colors flex-shrink-0" title="TÃ©lÃ©charger le PDF">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M12 15.577L8.461 12.039L9.169 11.319L11.5 13.65V5H12.5V13.65L14.83 11.32L15.539 12.039L12 15.577ZM6.616 19C6.15533 19 5.771 18.846 5.463 18.538C5.155 18.23 5.00067 17.8453 5 17.384V14.961H6V17.384C6 17.538 6.064 17.6793 6.192 17.808C6.32 17.9367 6.461 18.0007 6.615 18H17.385C17.5383 18 17.6793 17.936 17.808 17.808C17.9367 17.68 18.0007 17.5387 18 17.384V14.961H19V17.384C19 17.8447 18.846 18.229 18.538 18.537C18.23 18.845 17.8453 18.9993 17.384 19H6.616Z"
@@ -1952,18 +1927,18 @@
         <h3 class="text-lg font-semibold text-gray-800">
           {{ isEditingModeDeVie ? 'Modifier le mode de vie' : 'Ajouter un mode de vie' }}
         </h3>
-        <button (click)="closeModeVieModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+        <button (click)="closeModeVieModal()" class="text-gray-400 hover:text-gray-600">âœ•</button>
       </div>
 
       <div class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-gray-900 mb-2">Habitudes alimentaires</label>
-          <textarea [(ngModel)]="formModeDeVie.dietaryHabits" rows="3" placeholder="Équilibrée, réduite en sucres..."
+          <textarea [(ngModel)]="formModeDeVie.dietaryHabits" rows="3" placeholder="Ã‰quilibrÃ©e, rÃ©duite en sucres..."
             class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none resize-none"></textarea>
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-900 mb-2">Activité physique</label>
+          <label class="block text-sm font-medium text-gray-900 mb-2">ActivitÃ© physique</label>
           <textarea [(ngModel)]="formModeDeVie.physicalActivity" rows="3"
             placeholder="Marche 30 min/jour, yoga 2x/semaine..."
             class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none resize-none"></textarea>
@@ -2019,7 +1994,7 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Numéro de dose</label>
+          <label class="block text-sm font-medium text-gray-700 mb-2">NumÃ©ro de dose</label>
           <input type="number" [(ngModel)]="newVaccination.doseNumber" placeholder="1"
             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#104382]">
         </div>
@@ -2040,9 +2015,9 @@
           <label class="block text-sm font-medium text-gray-700 mb-2">Statut</label>
           <select [(ngModel)]="newVaccination.status"
             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#104382]">
-            <option value="PLANNED">Planifié</option>
-            <option value="DONE">Terminé</option>
-            <option value="MISSED">Manqué</option>
+            <option value="PLANNED">PlanifiÃ©</option>
+            <option value="DONE">TerminÃ©</option>
+            <option value="MISSED">ManquÃ©</option>
           </select>
         </div>
 
@@ -2071,19 +2046,19 @@
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6" (click)="$event.stopPropagation()">
       <div class="flex items-center justify-between mb-6">
         <h3 class="text-lg font-semibold text-gray-800">Ajouter un traitement</h3>
-        <button (click)="closeTraitementModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+        <button (click)="closeTraitementModal()" class="text-gray-400 hover:text-gray-600">âœ•</button>
       </div>
 
       <div class="space-y-4">
         <div>
-          <label class="block text-sm font-medium text-gray-900 mb-2">Nom du médicament *</label>
-          <input type="text" [(ngModel)]="formTraitement.label" placeholder="Ex: Paracétamol 1000mg"
+          <label class="block text-sm font-medium text-gray-900 mb-2">Nom du mÃ©dicament *</label>
+          <input type="text" [(ngModel)]="formTraitement.label" placeholder="Ex: ParacÃ©tamol 1000mg"
             class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none">
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-900 mb-2">Posologie / Instructions *</label>
-          <textarea [(ngModel)]="formTraitement.description" placeholder="Ex: 1 comprimé matin et soir pendant 5 jours"
+          <textarea [(ngModel)]="formTraitement.description" placeholder="Ex: 1 comprimÃ© matin et soir pendant 5 jours"
             rows="3"
             class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none resize-none"></textarea>
         </div>
@@ -2131,22 +2106,22 @@
     <!-- Body -->
     <div class="px-6 py-6 space-y-5">
 
-      <!-- Première ligne: Tension artérielle et Fréquence cardiaque -->
+      <!-- PremiÃ¨re ligne: Tension artÃ©rielle et FrÃ©quence cardiaque -->
       <div class="grid grid-cols-2 gap-4">
-        <!-- Tension artérielle -->
+        <!-- Tension artÃ©rielle -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            Tension artérielle
+            Tension artÃ©rielle
           </label>
           <input type="text" [(ngModel)]="formData.tensionArterielle" placeholder="Ex: 12/8" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm
                         focus:outline-none focus:ring-2 focus:ring-[#104382] focus:border-transparent
                         placeholder-gray-400">
         </div>
 
-        <!-- Fréquence cardiaque -->
+        <!-- FrÃ©quence cardiaque -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            Fréquence cardiaque (bpm)
+            FrÃ©quence cardiaque (bpm)
           </label>
           <input type="text" [(ngModel)]="formData.frequenceCardiaque" placeholder="Ex: 72" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm
                         focus:outline-none focus:ring-2 focus:ring-[#104382] focus:border-transparent
@@ -2154,22 +2129,22 @@
         </div>
       </div>
 
-      <!-- Deuxième ligne: Fréquence respiratoire et Température -->
+      <!-- DeuxiÃ¨me ligne: FrÃ©quence respiratoire et TempÃ©rature -->
       <div class="grid grid-cols-2 gap-4">
-        <!-- Fréquence respiratoire -->
+        <!-- FrÃ©quence respiratoire -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            Fréquence respiratoire (/min)
+            FrÃ©quence respiratoire (/min)
           </label>
           <input type="text" [(ngModel)]="formData.frequenceRespiratoire" placeholder="Ex: 16" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm
                         focus:outline-none focus:ring-2 focus:ring-[#104382] focus:border-transparent
                         placeholder-gray-400">
         </div>
 
-        <!-- Température -->
+        <!-- TempÃ©rature -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            Température (°C)
+            TempÃ©rature (Â°C)
           </label>
           <input type="text" [(ngModel)]="formData.temperature" placeholder="Ex: 36.8" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm
                         focus:outline-none focus:ring-2 focus:ring-[#104382] focus:border-transparent
@@ -2177,10 +2152,10 @@
         </div>
       </div>
 
-      <!-- Saturation en oxygène -->
+      <!-- Saturation en oxygÃ¨ne -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">
-          Saturation en oxygène (%)
+          Saturation en oxygÃ¨ne (%)
         </label>
         <input type="text" [(ngModel)]="formData.saturationOxygene" placeholder="Ex: 98" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm
                       focus:outline-none focus:ring-2 focus:ring-[#104382] focus:border-transparent
@@ -2204,7 +2179,7 @@
   </div>
 
 </div>
-<!-- Modal Détail Hospitalisation -->
+<!-- Modal DÃ©tail Hospitalisation -->
 <div *ngIf="showHospitalisationDetail && selectedHospitalisationData"
   class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-20 p-4"
   (click)="closeHospitalisationDetailData()">
@@ -2216,7 +2191,7 @@
     <div class="p-6 border-b">
       <!-- Titre principal -->
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-xl font-bold text-gray-800">Détails de l'hospitalisation</h1>
+        <h1 class="text-xl font-bold text-gray-800">DÃ©tails de l'hospitalisation</h1>
         <button (click)="closeHospitalisationDetailData()" class="text-gray-400 hover:text-gray-600 transition-colors">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -2224,10 +2199,10 @@
         </button>
       </div>
 
-      <!-- Informations de l'établissement -->
+      <!-- Informations de l'Ã©tablissement -->
       <div class="flex items-start justify-between border-b pb-3">
         <div class="flex items-start gap-4">
-          <!-- Icône de l'établissement -->
+          <!-- IcÃ´ne de l'Ã©tablissement -->
           <div class="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
@@ -2244,16 +2219,16 @@
             <p class="text-xs text-[#6B7280] mt-1">
               Admission : {{ formatDateFr(selectedHospitalisationData.entryDateTime) }}
               <span *ngIf="selectedHospitalisationData.exitDateTime">
-                • Sortie : {{ formatDateFr(selectedHospitalisationData.exitDateTime) }}
+                â€¢ Sortie : {{ formatDateFr(selectedHospitalisationData.exitDateTime) }}
               </span>
               <span *ngIf="!selectedHospitalisationData.exitDateTime">
-                • En cours
+                â€¢ En cours
               </span>
             </p>
           </div>
         </div>
 
-        <!-- Badge statut (En cours / Sortie autorisée) -->
+        <!-- Badge statut (En cours / Sortie autorisÃ©e) -->
         <span class="px-3 py-1 text-xs font-medium rounded-full" [ngClass]="{
           'text-[#00B894]': getHospitalizationStatus(selectedHospitalisationData) === 'sortie-autorisee',
           'bg-blue-50 text-blue-600': getHospitalizationStatus(selectedHospitalisationData) === 'en-cours'
@@ -2277,16 +2252,16 @@
       <!-- Content - avec flex-1 et overflow -->
       <div class="flex-1 overflow-y-auto p-5">
 
-        <!-- ==================== ONGLET RÉSUMÉ ==================== -->
+        <!-- ==================== ONGLET RÃ‰SUMÃ‰ ==================== -->
         <div *ngIf="activeDetailTab === 'resume'">
           <div class="grid grid-cols-2 gap-6">
-            <!-- Informations générales -->
+            <!-- Informations gÃ©nÃ©rales -->
             <div class="space-y-4 border border-gray-200 rounded-xl shadow-sm p-4">
-              <h3 class="text-base font-semibold text-[#2C3E50] mb-4">Informations générales</h3>
+              <h3 class="text-base font-semibold text-[#2C3E50] mb-4">Informations gÃ©nÃ©rales</h3>
 
               <div class="space-y-3">
                 <div class="flex justify-between">
-                  <span class="text-sm text-[#6B7280]">Établissement</span>
+                  <span class="text-sm text-[#6B7280]">Ã‰tablissement</span>
                   <span class="text-sm font-medium text-[#333333]">{{ selectedHospitalisationData.facility.name
                     }}</span>
                 </div>
@@ -2299,7 +2274,7 @@
                 </div>
 
                 <div class="flex justify-between">
-                  <span class="text-sm text-[#6B7280]">Médecin référent</span>
+                  <span class="text-sm text-[#6B7280]">MÃ©decin rÃ©fÃ©rent</span>
                   <span class="text-sm font-medium text-[#333333]">
                     Dr. {{ selectedHospitalisationData.responsibleMedical.prenom }} {{
                     selectedHospitalisationData.responsibleMedical.nom }}
@@ -2314,7 +2289,7 @@
                 </div>
 
                 <div class="flex justify-between items-center">
-                  <span class="text-sm text-[#6B7280]">Priorité</span>
+                  <span class="text-sm text-[#6B7280]">PrioritÃ©</span>
                   <span class="px-2 py-1 text-xs font-medium rounded-full" [ngClass]="{
                   'bg-[#e3f9f4] text-[#00B894]': selectedHospitalisationData.priority === 'NORMAL',
                   'bg-[#FFE5E5] text-[#DC2626]': selectedHospitalisationData.priority === 'URGENCE'
@@ -2325,13 +2300,13 @@
               </div>
             </div>
 
-            <!-- Dates clés -->
+            <!-- Dates clÃ©s -->
             <div class="space-y-4 border border-gray-200 rounded-xl shadow-sm p-4">
-              <h3 class="text-base font-semibold text-[#2C3E50] mb-4">Dates clés</h3>
+              <h3 class="text-base font-semibold text-[#2C3E50] mb-4">Dates clÃ©s</h3>
 
               <div class="space-y-3">
                 <div class="flex justify-between">
-                  <span class="text-sm text-[#6B7280]">Date d'entrée</span>
+                  <span class="text-sm text-[#6B7280]">Date d'entrÃ©e</span>
                   <span class="text-sm font-medium text-[#333333]">{{
                     formatDateFr(selectedHospitalisationData.entryDateTime) }}</span>
                 </div>
@@ -2363,10 +2338,10 @@
             </div>
           </div>
 
-          <!-- Observations médicales -->
+          <!-- Observations mÃ©dicales -->
           <div class="border border-gray-200 rounded-xl shadow-sm p-4 mt-6"
             *ngIf="selectedHospitalisationData.observation">
-            <h3 class="text-base font-semibold text-[#2C3E50] mb-2">Observations médicales</h3>
+            <h3 class="text-base font-semibold text-[#2C3E50] mb-2">Observations mÃ©dicales</h3>
             <p class="text-sm text-[#6B7280]">{{ selectedHospitalisationData.observation }}</p>
           </div>
         </div>
@@ -2376,7 +2351,7 @@
           <div class="mb-4 flex items-center justify-between">
             <div>
               <h3 class="text-sm font-semibold text-gray-900">Journal infirmier</h3>
-              <p class="text-sm text-gray-500 mt-1">Suivi chronologique des actions réalisées</p>
+              <p class="text-sm text-gray-500 mt-1">Suivi chronologique des actions rÃ©alisÃ©es</p>
             </div>
 
             <!-- Bouton visible uniquement si des types existent -->
@@ -2389,7 +2364,7 @@
             </button>
           </div>
 
-          <!-- État vide : aucun type d'action défini -->
+          <!-- Ã‰tat vide : aucun type d'action dÃ©fini -->
           <div *ngIf="!loadingActions && !loadingTypesAction && typesActionData.length === 0"
             class="flex flex-col items-center justify-center py-16 px-6">
             <div class="w-16 h-16 rounded-full bg-orange-50 flex items-center justify-center mb-4">
@@ -2398,16 +2373,16 @@
                   d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h4 class="text-base font-semibold text-gray-900 mb-1">Aucun type d'action défini</h4>
+            <h4 class="text-base font-semibold text-gray-900 mb-1">Aucun type d'action dÃ©fini</h4>
             <p class="text-sm text-gray-500 text-center max-w-sm mb-6">
-              Pour ajouter des actions au journal infirmier, vous devez d'abord créer au moins un type d'action.
+              Pour ajouter des actions au journal infirmier, vous devez d'abord crÃ©er au moins un type d'action.
             </p>
             <button (click)="openCreateActionTypeModal()"
               class="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-[#104382] rounded-lg transition-colors">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
               </svg>
-              Créer un type d'action
+              CrÃ©er un type d'action
             </button>
           </div>
 
@@ -2467,19 +2442,19 @@
             </div>
           </div>
 
-          <!-- État vide -->
+          <!-- Ã‰tat vide -->
           <div *ngIf="!loadingActions && actionsJournalData.length === 0" class="text-center py-12">
             <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <p class="text-gray-500">Aucune action enregistrée</p>
+            <p class="text-gray-500">Aucune action enregistrÃ©e</p>
           </div>
         </div>
         <!-- ==================== ONGLET SORTIE ==================== -->
         <div *ngIf="activeDetailTab === 'sortie'">
 
-          <!-- CAS 1 : Sortie autorisée (ordre de sortie existe) -->
+          <!-- CAS 1 : Sortie autorisÃ©e (ordre de sortie existe) -->
           <div *ngIf="hasDischargeOrder() && ordreSortieData">
             <div class="bg-green-50 border border-green-200 rounded-lg p-6 mb-6 flex items-start gap-4">
               <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -2493,7 +2468,7 @@
               </svg>
 
               <div>
-                <h3 class="text-lg font-semibold text-[#00B894]">Sortie autorisée</h3>
+                <h3 class="text-lg font-semibold text-[#00B894]">Sortie autorisÃ©e</h3>
                 <p class="text-sm text-[#00B894] mt-1">
                   Le patient est sorti le {{ formatDateFr(ordreSortieData.dischargeDateTime) }}
                 </p>
@@ -2502,7 +2477,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div class="p-5 bg-gray-50 rounded-xl border border-gray-200">
-                <h4 class="text-sm font-semibold text-gray-900 mb-2">État du patient à la sortie</h4>
+                <h4 class="text-sm font-semibold text-gray-900 mb-2">Ã‰tat du patient Ã  la sortie</h4>
                 <p class="text-sm text-gray-700">{{ ordreSortieData.patientCondition }}</p>
               </div>
 
@@ -2514,12 +2489,12 @@
               </div>
 
               <div class="p-5 bg-gray-50 rounded-xl border border-gray-200">
-                <h4 class="text-sm font-semibold text-gray-900 mb-2">Traitement à domicile</h4>
+                <h4 class="text-sm font-semibold text-gray-900 mb-2">Traitement Ã  domicile</h4>
                 <p class="text-sm text-gray-700 whitespace-pre-line">{{ ordreSortieData.homeTreatment }}</p>
               </div>
 
               <div class="p-5 bg-gray-50 rounded-xl border border-gray-200">
-                <h4 class="text-sm font-semibold text-gray-900 mb-2">Commentaires médicaux</h4>
+                <h4 class="text-sm font-semibold text-gray-900 mb-2">Commentaires mÃ©dicaux</h4>
                 <p class="text-sm text-gray-700">{{ ordreSortieData.comment }}</p>
               </div>
             </div>
@@ -2532,7 +2507,7 @@
             <!-- Carte principale - Hospitalisation en cours -->
             <div class="bg-blue-50 border-2 border-blue-200 border-dashed rounded-xl p-8 mb-6">
               <div class="flex flex-col items-center justify-center text-center">
-                <!-- Icône info -->
+                <!-- IcÃ´ne info -->
                 <div class="mb-4">
                   <svg width="48" height="48" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
@@ -2547,7 +2522,7 @@
                 <!-- Texte -->
                 <h3 class="text-lg font-semibold text-gray-900 mb-1">Hospitalisation en cours</h3>
                 <p class="text-sm text-gray-500 mb-6">
-                  Le patient est actuellement hospitalisé depuis le {{
+                  Le patient est actuellement hospitalisÃ© depuis le {{
                   formatDateFr(selectedHospitalisationData.entryDateTime) }}
                 </p>
 
@@ -2563,7 +2538,7 @@
               </div>
             </div>
 
-            <!-- Sortie prévisionnelle -->
+            <!-- Sortie prÃ©visionnelle -->
             <div *ngIf="selectedHospitalisationData.exitDateTime"
               class="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-4">
               <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
@@ -2573,7 +2548,7 @@
                 </svg>
               </div>
               <div>
-                <h4 class="text-sm font-semibold text-gray-900">Sortie prévisionnelle</h4>
+                <h4 class="text-sm font-semibold text-gray-900">Sortie prÃ©visionnelle</h4>
                 <p class="text-sm text-gray-500">{{ formatDateFr(selectedHospitalisationData.exitDateTime) }}
                 </p>
               </div>
@@ -2583,22 +2558,22 @@
         </div>
       </div>
 
-      <!-- Footer unifié pour tous les onglets -->
+      <!-- Footer unifiÃ© pour tous les onglets -->
       <div class="border-t border-gray-100 p-4">
         <div class="flex items-center justify-between">
-          <!-- Bouton Télécharger à gauche -->
+          <!-- Bouton TÃ©lÃ©charger Ã  gauche -->
           <button
             class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-600 border border-gray-200 bg-white rounded-lg hover:bg-gray-50 transition-colors">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
-            Télécharger le dossier
+            TÃ©lÃ©charger le dossier
           </button>
 
-          <!-- Boutons à droite -->
+          <!-- Boutons Ã  droite -->
           <div class="flex items-center gap-3">
-            <!-- Bouton Autoriser la sortie (visible uniquement si aucune sortie n'a été autorisée) -->
+            <!-- Bouton Autoriser la sortie (visible uniquement si aucune sortie n'a Ã©tÃ© autorisÃ©e) -->
             <button *ngIf="canAuthorizeDischarge()" (click)="ouvrirFormulaireSortieData()"
               class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2667,17 +2642,17 @@
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00B894]"></div>
           </div>
 
-          <!-- État vide dans la modale -->
+          <!-- Ã‰tat vide dans la modale -->
           <div *ngIf="!loadingTypesAction && typesActionData.length === 0"
             class="flex flex-col items-center py-6 px-4 bg-gray-50 rounded-lg border border-dashed border-gray-300">
             <p class="text-sm text-gray-500 mb-3">Aucun type d'action disponible</p>
             <button (click)="openCreateActionTypeModal()" type="button"
               class="text-sm font-medium text-[#00B894] hover:text-[#00a884] underline">
-              + Créer un type d'action
+              + CrÃ©er un type d'action
             </button>
           </div>
 
-          <!-- Grille de sélection des types -->
+          <!-- Grille de sÃ©lection des types -->
           <div *ngIf="!loadingTypesAction && typesActionData.length > 0">
             <div class="grid grid-cols-2 gap-3">
               <button *ngFor="let type of typesActionData" (click)="selectTypeActionData(type.id)"
@@ -2719,15 +2694,15 @@
 
         <!-- Description -->
         <div class="mb-6">
-          <label class="block text-sm font-medium text-gray-700 mb-2">Description de l'action effectuée</label>
-          <textarea [(ngModel)]="nouvelleAction.description" placeholder="Décrivez l'action réalisée..." rows="3"
+          <label class="block text-sm font-medium text-gray-700 mb-2">Description de l'action effectuÃ©e</label>
+          <textarea [(ngModel)]="nouvelleAction.description" placeholder="DÃ©crivez l'action rÃ©alisÃ©e..." rows="3"
             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"></textarea>
         </div>
 
         <!-- Remarques -->
         <div class="mb-6">
           <label class="block text-sm font-medium text-gray-700 mb-2">Remarques / Observations</label>
-          <textarea [(ngModel)]="nouvelleAction.remarques" placeholder="Observations complémentaires..." rows="3"
+          <textarea [(ngModel)]="nouvelleAction.remarques" placeholder="Observations complÃ©mentaires..." rows="3"
             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"></textarea>
         </div>
       </div>
@@ -2748,7 +2723,7 @@
     </div>
   </div>
 
-  <!-- ==================== MODAL CRÉER UN TYPE D'ACTION ==================== -->
+  <!-- ==================== MODAL CRÃ‰ER UN TYPE D'ACTION ==================== -->
   <div *ngIf="showCreateActionTypeModal"
     class="fixed inset-0 z-[70] flex items-center justify-center bg-black bg-opacity-50 p-4"
     (click)="closeCreateActionTypeModal()">
@@ -2757,7 +2732,7 @@
 
       <!-- Header -->
       <div class="flex items-center justify-between p-6 border-b">
-        <h2 class="text-lg font-semibold text-gray-900">Créer un type d'action</h2>
+        <h2 class="text-lg font-semibold text-gray-900">CrÃ©er un type d'action</h2>
         <button (click)="closeCreateActionTypeModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -2778,14 +2753,14 @@
         <div class="mb-5">
           <label class="block text-sm font-medium text-gray-700 mb-2">Description <span
               class="text-gray-400">(optionnel)</span></label>
-          <textarea [(ngModel)]="newActionType.description" placeholder="Décrivez brièvement ce type d'action..."
+          <textarea [(ngModel)]="newActionType.description" placeholder="DÃ©crivez briÃ¨vement ce type d'action..."
             rows="3"
             class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B894] focus:border-[#00B894] resize-none text-sm"></textarea>
         </div>
 
-        <!-- Icône (obligatoire) -->
+        <!-- IcÃ´ne (obligatoire) -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Icône *</label>
+          <label class="block text-sm font-medium text-gray-700 mb-2">IcÃ´ne *</label>
           <div class="flex items-center gap-3">
             <label
               class="flex-1 flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-[#00B894] hover:bg-gray-50 transition-colors">
@@ -2800,7 +2775,7 @@
             </label>
             <div *ngIf="newActionType.icon"
               class="w-12 h-12 rounded-lg border border-gray-200 overflow-hidden flex-shrink-0">
-              <img [src]="newActionType.icon | fileToDataUrl | async" alt="Aperçu" class="w-full h-full object-cover">
+              <img [src]="newActionType.icon | fileToDataUrl | async" alt="AperÃ§u" class="w-full h-full object-cover">
             </div>
           </div>
           <p class="mt-1.5 text-xs text-gray-500">Format: JPG, PNG. Taille max: 2 Mo</p>
@@ -2816,7 +2791,7 @@
           class="flex-1 flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium text-white bg-[#104382] rounded-lg transition-colors">
           <div *ngIf="creatingActionType"
             class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-          {{ creatingActionType ? 'Création en cours...' : 'Créer le type' }}
+          {{ creatingActionType ? 'CrÃ©ation en cours...' : 'CrÃ©er le type' }}
         </button>
 
         <button (click)="closeCreateActionTypeModal()" [disabled]="creatingActionType"
@@ -2863,10 +2838,10 @@
           </div>
         </div>
 
-        <!-- État du patient -->
+        <!-- Ã‰tat du patient -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">État du patient à la sortie *</label>
-          <textarea [(ngModel)]="formulaireSortie.etatPatient" rows="3" placeholder="Ex: Améliorée, Bon état général..."
+          <label class="block text-sm font-medium text-gray-700 mb-2">Ã‰tat du patient Ã  la sortie *</label>
+          <textarea [(ngModel)]="formulaireSortie.etatPatient" rows="3" placeholder="Ex: AmÃ©liorÃ©e, Bon Ã©tat gÃ©nÃ©ral..."
             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent resize-none"></textarea>
         </div>
 
@@ -2875,22 +2850,22 @@
           <label class="block text-sm font-medium text-gray-700 mb-2">Recommandations post-hospitalisation
             *</label>
           <textarea [(ngModel)]="formulaireSortie.recommandations" rows="3"
-            placeholder="Ex: Repos pendant 24h. Éviter les aliments chauds..."
+            placeholder="Ex: Repos pendant 24h. Ã‰viter les aliments chauds..."
             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent resize-none"></textarea>
         </div>
 
-        <!-- Traitement à domicile -->
+        <!-- Traitement Ã  domicile -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Traitement à domicile</label>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Traitement Ã  domicile</label>
           <textarea [(ngModel)]="formulaireSortie.traitementDomicile" rows="3"
             placeholder="Ex: Amoxicilline 1g toutes les 8h pendant 5 jours..."
             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent resize-none"></textarea>
         </div>
 
-        <!-- Commentaires médicaux -->
+        <!-- Commentaires mÃ©dicaux -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Commentaires médicaux</label>
-          <textarea [(ngModel)]="formulaireSortie.commentaires" rows="3" placeholder="Commentaires complémentaires..."
+          <label class="block text-sm font-medium text-gray-700 mb-2">Commentaires mÃ©dicaux</label>
+          <textarea [(ngModel)]="formulaireSortie.commentaires" rows="3" placeholder="Commentaires complÃ©mentaires..."
             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent resize-none"></textarea>
         </div>
       </div>

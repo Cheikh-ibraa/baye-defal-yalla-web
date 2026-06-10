@@ -141,10 +141,10 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                   <tr *ngFor="let ordonnance of ordonnancesFiltrees" (click)="selectionnerOrdonnance(ordonnance)"
                     class="hover:bg-gray-50 cursor-pointer transition"
-                    [class.bg-blue-50]="ordonnanceSelectionnee?.id === ordonnance.id">
+                    [class.bg-blue-50]="selectedPrescription?.id === ordonnance.id">
                     <td class="px-3 sm:px-4 md:px-6 py-4 text-sm font-semibold text-blue-600">
                       <div class="truncate max-w-[100px] sm:max-w-[150px] md:max-w-none">
-                        {{ ordonnance.reference || 'ORD-' + ordonnance.id }}
+                        {{ ordonnance.reference || 'ORD-' + ordonnance.id.substring(0, 8) }}
                       </div>
                     </td>
                     <td class="px-3 sm:px-4 md:px-6 py-4 text-sm text-gray-900">
@@ -172,7 +172,7 @@
           <div
             class="px-3 sm:px-4 md:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3 bg-white text-sm flex-shrink-0">
             <div class="flex items-center gap-2 w-full sm:w-auto justify-center sm:justify-start">
-              <span class="text-gray-700 text-xs sm:text-sm">Par page:</span>
+              <span class="text-gray-700 text-xs sm:text-sm">éléments par page:</span>
               <select [(ngModel)]="elementsParPage" (change)="changerElementsParPage(elementsParPage)"
                 class="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-[#104382] outline-none">
                 <option [value]="5">5</option>
@@ -184,7 +184,7 @@
             <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
               <span class="text-gray-700 text-xs sm:text-sm text-center">{{ infosPagination }}</span>
               <div class="flex gap-1">
-                <button (click)="pagePrecedente()" [disabled]="pageActuelle === 0"
+                <button (click)="pagePrecedente()" [disabled]="isFirstPage"
                   class="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -207,7 +207,7 @@
         <div class="bg-white rounded-lg shadow-sm h-full flex flex-col">
 
           <!-- Aucune sélection -->
-          <div *ngIf="!ordonnanceSelectionnee" class="flex-1 flex items-center justify-center p-8 text-center">
+          <div *ngIf="!selectedPrescription" class="flex-1 flex items-center justify-center p-8 text-center">
             <div>
               <svg class="mx-auto h-16 w-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -218,14 +218,15 @@
           </div>
 
           <!-- Détails -->
-          <div *ngIf="ordonnanceSelectionnee" class="flex flex-col h-full">
+          <div *ngIf="selectedPrescription" class="flex flex-col h-full">
             <div class="p-5 md:p-6 border-b border-gray-200">
               <h2 class="text-lg font-medium text-[#343A40] mb-4">
-                Ordonnance {{ ordonnanceSelectionnee.reference }}
+                Ordonnance {{ selectedPrescription.reference || ('ORD-' + selectedPrescription.id.substring(0, 8)) }}
               </h2>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <button (click)="sendToPatient()"
-                  class="flex items-center justify-center gap-2 px-3 py-2.5 bg-[#104382] text-white rounded-lg transition text-xs font-medium">
+                  [disabled]="selectedPrescription.status !== 'DRAFT'"
+                  class="flex items-center justify-center gap-2 px-3 py-2.5 bg-[#104382] text-white rounded-lg transition text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed">
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                       d="M15.6683 0.685806C15.7047 0.594942 15.7136 0.495402 15.6939 0.399526C15.6742 0.303649 15.6269 0.215653 15.5576 0.146447C15.4884 0.0772403 15.4004 0.0298668 15.3046 0.0101994C15.2087 -0.0094681 15.1092 -0.000564594 15.0183 0.0358061L0.471288 5.85481C0.343177 5.90609 0.231698 5.99172 0.149119 6.10227C0.0665401 6.21283 0.0160632 6.34402 0.00324374 6.48142C-0.00957573 6.61882 0.0157593 6.75709 0.0764603 6.88101C0.137161 7.00494 0.230875 7.10971 0.347288 7.18381L5.34229 10.3618L6.87329 12.7678C6.9456 12.877 7.05785 12.9534 7.18592 12.9807C7.31399 13.008 7.44766 12.984 7.55819 12.9138C7.66873 12.8436 7.74732 12.7328 7.77707 12.6053C7.80682 12.4778 7.78535 12.3437 7.71729 12.2318L6.34129 10.0698L13.8353 2.57581L11.9403 7.31381C11.9143 7.37504 11.9007 7.44085 11.9004 7.50738C11.9001 7.57392 11.9132 7.63984 11.9387 7.70128C11.9642 7.76273 12.0017 7.81846 12.0491 7.86521C12.0964 7.91196 12.1526 7.9488 12.2144 7.97355C12.2761 7.99831 12.3422 8.01049 12.4087 8.00938C12.4753 8.00828 12.5409 7.9939 12.6018 7.9671C12.6627 7.9403 12.7176 7.90162 12.7634 7.85332C12.8092 7.80502 12.8448 7.74807 12.8683 7.68581L15.6683 0.685806ZM13.1283 1.86881L5.63429 9.36281L1.29529 6.60181L13.1283 1.86881Z"
@@ -254,132 +255,108 @@
             <!-- Contenu scrollable -->
             <div class="flex-1 overflow-y-auto p-5 md:p-6 space-y-6">
 
-              <!-- Loading détails -->
-              <div *ngIf="loadingDetails" class="text-center py-8">
-                <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-[#104382]">
+              <!-- QR Code -->
+              <div class="flex flex-col items-center">
+                <div class="w-48 h-48 bg-white flex items-center justify-center">
+                  <div *ngIf="loadingQr" class="text-center">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-[#104382]"></div>
+                  </div>
+                  <img *ngIf="!loadingQr && qrCodeData"
+                    [src]="getQrCodeImageUrl(qrCodeData)"
+                    [alt]="'QR code ' + selectedPrescription.reference"
+                    class="w-44 h-44 object-contain" />
+                  <div *ngIf="!loadingQr && !qrCodeData" class="text-center text-gray-400">
+                    <svg class="mx-auto h-12 w-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                    </svg>
+                    <p class="text-xs">QR non disponible</p>
+                  </div>
                 </div>
-                <p class="mt-2 text-sm text-gray-500">Chargement des détails...</p>
+                <p class="mt-3 text-sm text-gray-500 text-center">
+                  Scannez avec votre téléphone pour ouvrir les détails de l'ordonnance.
+                </p>
               </div>
 
-              <!-- Détails complets -->
-              <ng-container *ngIf="!loadingDetails && ordonnanceDetails">
+              <!-- Patient -->
+              <div class="flex items-center justify-between gap-4">
+                <h3 class="text-sm font-medium text-gray-500">Patient</h3>
+                <p class="text-base font-bold text-gray-900 text-right">{{ getPatientName(selectedPrescription) }}</p>
+              </div>
 
-                <!-- QR Code -->
-                <div class="flex flex-col items-center">
-                  <div class="w-48 h-48 bg-white flex items-center justify-center">
-                    <img *ngIf="ordonnanceDetails.qrCodeUrl" [src]="getQrCodeImageUrl(ordonnanceDetails.qrCodeUrl)"
-                      [alt]="'QR code ordonnance ' + ordonnanceDetails.reference" class="w-44 h-44 object-contain" />
+              <!-- Statut -->
+              <div class="flex items-center justify-between gap-4">
+                <h3 class="text-sm font-medium text-gray-500">Statut</h3>
+                <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
+                  [ngClass]="getStatutClass(selectedPrescription.status)">
+                  {{ getStatutLabel(selectedPrescription.status) }}
+                </span>
+              </div>
+
+              <!-- Date -->
+              <div class="flex items-center justify-between gap-4">
+                <h3 class="text-sm font-medium text-gray-500">Date de création</h3>
+                <p class="text-sm text-gray-900">{{ formatDate(selectedPrescription.createdAt) }}</p>
+              </div>
+
+              <!-- Diagnostic -->
+              <div *ngIf="selectedPrescription.diagnosis" class="flex items-start justify-between gap-4">
+                <h3 class="text-sm font-medium text-gray-500 flex-shrink-0">Diagnostic</h3>
+                <p class="text-sm text-gray-900 text-right">{{ selectedPrescription.diagnosis }}</p>
+              </div>
+
+              <!-- Médicaments -->
+              <div *ngIf="selectedPrescription.items && selectedPrescription.items.length">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">Médicaments ({{ selectedPrescription.items.length }})</h3>
+                <div class="overflow-hidden rounded-xl border border-gray-200 bg-white">
+                  <div class="overflow-x-auto">
+                    <table class="w-full border-collapse">
+                      <thead>
+                        <tr class="bg-gray-50">
+                          <th class="px-4 py-4 text-left text-xs 2xl:text-sm font-semibold text-[#6B7280] border-b border-gray-200">
+                            Médicament
+                          </th>
+                          <th class="px-4 py-4 text-left text-xs 2xl:text-sm font-semibold text-[#6B7280] border-b border-gray-200">
+                            Posologie
+                          </th>
+                          <th class="px-4 py-4 text-right text-xs 2xl:text-sm font-semibold text-[#6B7280] border-b border-gray-200 w-24">
+                            Quantité
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let med of selectedPrescription.items"
+                          class="border-b border-gray-200 last:border-b-0">
+                          <td class="px-4 py-4 text-sm font-medium text-[#4B5563]">
+                            {{ med.medicationName }}
+                          </td>
+                          <td class="px-4 py-4 text-sm text-[#4B5563]">
+                            {{ med.dosage || '—' }}
+                          </td>
+                          <td class="px-4 py-4 text-sm text-[#4B5563] text-right">
+                            {{ med.quantity }}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
-                  <p class="mt-3 text-sm text-gray-500 text-center">
-                    Scannez avec votre téléphone pour ouvrir les détails de l'ordonnance.
-                  </p>
                 </div>
 
-
-                <!-- Patient -->
-                <div class="flex items-center justify-between gap-4">
-                  <h3 class="text-sm font-medium text-gray-500">Patient</h3>
-                  <p class="text-base font-bold text-gray-900 text-right">{{ getPatientName(ordonnanceDetails) }}</p>
-                </div>
-
-                <!-- Statut -->
-                <div class="flex items-center justify-between gap-4">
-                  <h3 class="text-sm font-medium text-gray-500 mb-2">Statut</h3>
-                  <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
-                    [ngClass]="getStatutClass(ordonnanceDetails.status)">
-                    {{ getStatutLabel(ordonnanceDetails.status) }}
-                  </span>
-                </div>
-
-                <!-- Date -->
-                <div class="flex items-center justify-between gap-4">
-                  <h3 class="text-sm font-medium text-gray-500 mb-2">Date de création</h3>
-                  <p class="text-sm text-gray-900">{{ formatDate(ordonnanceDetails.createdAt) }}</p>
-                </div>
-
-                <!-- Pharmacie -->
-                <div class="flex items-center justify-between gap-4">
-                  <h3 class="text-sm font-medium text-gray-500 mb-2">Pharmacie</h3>
-                  <p class="text-sm text-gray-900">{{ getPharmacyName(ordonnanceDetails) }}</p>
-                </div>
-
-                <!-- Adresse -->
-                <div class="flex items-center justify-between gap-4" *ngIf="ordonnanceDetails.address">
-                  <h3 class="text-sm font-medium text-gray-500 mb-2">Adresse de livraison</h3>
-                  <p class="text-sm text-gray-900">{{ ordonnanceDetails.address }}</p>
-                </div>
-
-                <!-- Médicaments -->
-                <div *ngIf="ordonnanceDetails.medications.length">
-                  <h3 class="text-lg font-bold text-gray-900 mb-4">Médicaments ({{ ordonnanceDetails.medications.length
-                    }})</h3>
-                  <div class="overflow-hidden rounded-xl border border-gray-200 bg-white">
-                    <div class="overflow-x-auto">
-                      <table class="w-full border-collapse">
-                        <thead>
-                          <tr class="bg-gray-50">
-                            <th
-                              class="px-4 py-4 text-left text-xs 2xl:text-sm font-semibold text-[#6B7280] border-b border-gray-200">
-                              Médicament
-                            </th>
-                            <th
-                              class="px-4 py-4 text-left text-xs 2xl:text-sm font-semibold text-[#6B7280] border-b border-gray-200">
-                              Posologie
-                            </th>
-                            <th
-                              class="px-4 py-4 text-right text-xs 2xl:text-sm font-semibold text-[#6B7280] border-b border-gray-200 w-24">
-                              Quantité
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr *ngFor="let med of ordonnanceDetails.medications"
-                            class="border-b border-gray-200 last:border-b-0">
-                            <td class="px-4 py-4 text-sm font-medium text-[#4B5563]">
-                              {{ med.name }}
-                            </td>
-                            <td class="px-4 py-4 text-sm text-[#4B5563]">
-                              {{ med.dosage || '—' }}
-                            </td>
-                            <td class="px-4 py-4 text-sm text-[#4B5563] text-right">
-                              {{ med.quantity }}
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
+                <!-- Total -->
+                <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                  <div class="flex justify-between items-center">
+                    <span class="font-medium text-blue-900">Montant estimé :</span>
+                    <span class="text-lg font-bold text-blue-900">
+                      {{ getTotalAmount(selectedPrescription) | number:'1.0-0' }} FCFA
+                    </span>
                   </div>
-
-                  <!-- Total 
-                  <div class="mt-4 p-4 bg-blue-50 rounded-lg">
-                    <div class="flex justify-between items-center">
-                      <span class="font-medium text-blue-900">Montant total:</span>
-                      <span class="text-xl font-bold text-blue-900">
-                        {{ getTotalAmount(ordonnanceDetails) | number:'1.2-2' }} FCFA
-                      </span>
-                    </div>
-                  </div>
-                  -->
                 </div>
+              </div>
 
-                <!-- Pas de médicaments -->
-                <div *ngIf="!ordonnanceDetails.medications.length">
-                  <h3 class="text-lg font-bold text-gray-900 mb-4">Médicaments</h3>
-                  <p class="text-sm text-gray-500 italic">Aucun médicament associé</p>
-                </div>
-              </ng-container>
-
-              <!-- Erreur détails -->
-              <div *ngIf="!loadingDetails && !ordonnanceDetails" class="text-center py-8">
-                <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                </svg>
-                <p class="text-gray-500">Erreur lors du chargement des détails</p>
-                <button (click)="loadOrdonnanceDetails(ordonnanceSelectionnee!.id)"
-                  class="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">
-                  Réessayer
-                </button>
+              <!-- Pas de médicaments -->
+              <div *ngIf="!selectedPrescription.items || !selectedPrescription.items.length">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">Médicaments</h3>
+                <p class="text-sm text-gray-500 italic">Aucun médicament associé</p>
               </div>
             </div>
           </div>

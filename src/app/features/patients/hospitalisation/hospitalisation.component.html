@@ -2,15 +2,15 @@
   <!-- Header -->
   <div class="header">
     <button (click)="goBack()"
-        class="inline-flex items-center justify-center p-4 bg-white rounded-lg shadow-sm hover:bg-gray-50 transition-colors mb-2">
+        class="inline-flex items-center justify-center p-4 bg-white rounded-lg shadow-sm hover:bg-gray-50 transition-colors mb-2 flex-shrink-0">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M20 12H4M4 12L10 6M4 12L10 18" stroke="#2B3674" stroke-width="1.5" stroke-linecap="round"
             stroke-linejoin="round" />
         </svg>
       </button>
     <div class="header-content">
-      <h1 class="text-[#343A40] header-title">Nouvelle hospitalisation</h1>
-      <p class="header-subtitle">Enregistrez un patient et renseignez les détails de l'hospitalisation</p>
+      <h1 class="header-title">Nouvelle hospitalisation</h1>
+      <p class="header-subtitle">Sélectionnez un patient, renseignez les informations puis enregistrez.</p>
     </div>
   </div>
 
@@ -33,25 +33,15 @@
         <div class="section-content" *ngIf="patientInfoExpanded">
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">N° Référence </label>
-              <input type="text" class="form-input" [value]="selectedPatient?.reference || 'Non définie'" disabled />
+              <label class="form-label">N° Référence</label>
+              <input type="text" class="form-input"
+                [value]="selectedPatient?.id || selectedPatient?.reference || ''"
+                placeholder="Ex: NDIAYE-000025" disabled />
             </div>
 
             <div class="form-group">
               <label class="form-label">Nom du patient</label>
-              <input type="text" class="form-input" [value]="getPatientFullName()" disabled />
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Téléphone</label>
-              <input type="text" class="form-input" [value]="selectedPatient?.telephone || ''" disabled />
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Adresse</label>
-              <input type="text" class="form-input" [value]="selectedPatient?.adress || ''" disabled />
+              <input type="text" class="form-input" [value]="selectedPatient?.nom || ''" disabled />
             </div>
           </div>
         </div>
@@ -75,31 +65,16 @@
               <label class="form-label">
                 Établissement de santé <span class="required">*</span>
               </label>
-              <select class="form-input" [(ngModel)]="formData.facilityId" name="facilityId"
-                (change)="onEtablissementChange()" required>
-                <option [value]="0">Sélectionnez un établissement</option>
-                <option *ngFor="let etab of etablissements" [value]="etab.id">
-                  {{ etab.name }}
-                </option>
-              </select>
+              <input type="text" class="form-input" [(ngModel)]="formData.facilityName" name="facilityName"
+                placeholder="Ex: CHU de Dakar" required />
             </div>
 
             <div class="form-group">
               <label class="form-label">
                 Service / Département <span class="required">*</span>
               </label>
-              <select class="form-input" [(ngModel)]="formData.departmentId" name="departmentId"
-                [disabled]="!formData.facilityId || departementsFiltered.length === 0" required>
-                <option [value]="0">
-                  {{ formData.facilityId ? 'Sélectionnez un service' : 'Sélectionnez d\'abord un établissement' }}
-                </option>
-                <option *ngFor="let dept of departementsFiltered" [value]="dept.id">
-                  {{ dept.name }}
-                </option>
-              </select>
-              <p class="form-hint" *ngIf="formData.facilityId && departementsFiltered.length === 0">
-                Chargement des services...
-              </p>
+              <input type="text" class="form-input" [(ngModel)]="formData.departmentName" name="departmentName"
+                placeholder="Ex: Endocrinologie" required />
             </div>
           </div>
 
@@ -115,8 +90,8 @@
             <label class="form-label">
               Diagnostic initial <span class="required">*</span>
             </label>
-            <textarea class="form-textarea" [(ngModel)]="formData.initialDiagnosis" name="initialDiagnosis"
-              placeholder="Décrivez le diagnostic initial..." rows="2" required></textarea>
+            <input type="text" class="form-input" [(ngModel)]="formData.initialDiagnosis" name="initialDiagnosis"
+              placeholder="Ex: Diabète Type 2 décompensé" required />
           </div>
         </div>
       </div>
@@ -154,18 +129,13 @@
               <input type="date" class="form-input" [(ngModel)]="formData.exitDate" name="exitDate" />
             </div>
           </div>
-
-          <div class="form-group" *ngIf="formData.exitDate">
-            <label class="form-label">Heure prévisionnelle de sortie</label>
-            <input type="time" class="form-input" [(ngModel)]="formData.exitTime" name="exitTime" />
-          </div>
         </div>
       </div>
 
-      <!-- Médecin responsable -->
+      <!-- Responsable médical -->
       <div class="form-section">
         <div class="section-header" (click)="toggleSection('responsable')">
-          <h2 class="section-title">Médecin responsable</h2>
+          <h2 class="section-title">Responsable médical</h2>
           <button type="button" class="toggle-button">
             <svg [class.rotated]="!responsableExpanded" width="20" height="20" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2">
@@ -177,13 +147,15 @@
         <div class="section-content" *ngIf="responsableExpanded">
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Médecin référent</label>
-              <input type="text" class="form-input" [value]="getDoctorFullName()" disabled />
+              <label class="form-label">Médecin référent <span class="required">*</span></label>
+              <input type="text" class="form-input" [(ngModel)]="formData.doctorName" name="doctorName"
+                placeholder="Ex: Dr. Lamine DIOP" required />
             </div>
 
             <div class="form-group">
-              <label class="form-label">Contact du Service</label>
-              <input type="text" class="form-input" [value]="currentUser?.telephone || 'Non défini'" disabled />
+              <label class="form-label">Contact du service</label>
+              <input type="text" class="form-input" [(ngModel)]="formData.serviceContact" name="serviceContact"
+                placeholder="Ex: 33 123 45 67" />
             </div>
           </div>
         </div>
@@ -210,31 +182,29 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label">Lit <span class="required">*</span></label>
+              <label class="form-label">Lit</label>
               <input type="text" class="form-input" [(ngModel)]="formData.bedNumber" name="bedNumber"
-                placeholder="Ex: Lit A" required />
+                placeholder="Ex: Lit A" />
             </div>
           </div>
 
           <div class="form-group">
             <label class="form-label">Observations médicales</label>
             <textarea class="form-textarea" [(ngModel)]="formData.observation" name="observation"
-              placeholder="Saisissez toutes observations complémentaires..." rows="3"></textarea>
+              placeholder="Observations complémentaires..." rows="3"></textarea>
           </div>
 
           <div class="form-group">
             <label class="form-label">Niveau de priorité <span class="required">*</span></label>
-            <div class="radio-group">
-              <label class="radio-label">
-                <input type="radio" name="priority" value="NORMAL" [(ngModel)]="formData.priority" />
-                <span class="radio-custom"></span>
-                <span class="radio-text">Normal</span>
-              </label>
-              <label class="radio-label">
-                <input type="radio" name="priority" value="URGENCE" [(ngModel)]="formData.priority" />
-                <span class="radio-custom"></span>
-                <span class="radio-text">Urgent</span>
-              </label>
+            <div class="priority-group">
+              <button type="button" class="priority-btn" [class.active]="formData.priority === 'NORMAL'"
+                (click)="formData.priority = 'NORMAL'">
+                Normal
+              </button>
+              <button type="button" class="priority-btn priority-btn-urgent" [class.active]="formData.priority === 'URGENCE'"
+                (click)="formData.priority = 'URGENCE'">
+                Urgent
+              </button>
             </div>
           </div>
         </div>
@@ -242,20 +212,8 @@
 
       <!-- Action Buttons -->
       <div class="action-buttons">
-        <button type="submit" class="btn btn-primary">
-          <svg class="btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2">
-            <path d="M5 13l4 4L19 7" />
-          </svg>
-          Enregistrer l'hospitalisation
-        </button>
-        <button type="button" class="btn btn-secondary" (click)="onCancel()">
-          <svg class="btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2">
-            <path d="M6 18L18 6M6 6l12 12" />
-          </svg>
-          Annuler
-        </button>
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+        <button type="button" class="btn btn-secondary" (click)="onCancel()">Annuler</button>
       </div>
     </form>
   </div>

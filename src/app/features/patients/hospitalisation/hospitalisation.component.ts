@@ -228,8 +228,12 @@ export class HospitalisationComponent implements OnInit {
   formData = {
     patientId: 0,
     facilityId: 0,
+    facilityName: '',
     departmentId: 0,
+    departmentName: '',
     responsibleMedicalId: 0,
+    doctorName: '',
+    serviceContact: '',
     hospitalizationReason: '',
     initialDiagnosis: '',
     observation: '',
@@ -247,6 +251,7 @@ export class HospitalisationComponent implements OnInit {
     this.currentUser = this.mockCurrentUser;
     if (this.currentUser) {
       this.formData.responsibleMedicalId = this.currentUser.id;
+      this.formData.doctorName = this.getDoctorFullName();
     }
 
     // Récupérer le patient sélectionné depuis localStorage
@@ -503,10 +508,10 @@ export class HospitalisationComponent implements OnInit {
     }
 
     // Validation établissement et service
-    if (!this.formData.facilityId || !this.formData.departmentId) {
+    if (!this.formData.facilityName.trim() || !this.formData.departmentName.trim()) {
       Swal.fire({
         title: 'Informations incomplètes',
-        text: 'Veuillez sélectionner un établissement et un service',
+        text: 'Veuillez renseigner l\'établissement de santé et le service',
         icon: 'warning',
         confirmButtonColor: '#01b894',
         width: '400px'
@@ -553,15 +558,15 @@ export class HospitalisationComponent implements OnInit {
     // Préparer les données pour l'API
     const requestData: CreateHospitalizationRequest = {
       patientId: this.formData.patientId,
-      facilityId: this.formData.facilityId,
-      departmentId: this.formData.departmentId,
+      facilityId: this.formData.facilityId || 1,
+      departmentId: this.formData.departmentId || 1,
       responsibleMedicalId: this.formData.responsibleMedicalId,
       hospitalizationReason: this.formData.hospitalizationReason,
       initialDiagnosis: this.formData.initialDiagnosis,
       observation: this.formData.observation,
       entryDateTime: this.formatDateTimeToBackend(this.formData.entryDate, this.formData.entryTime),
-      exitDateTime: this.formData.exitDate && this.formData.exitTime
-        ? this.formatDateTimeToBackend(this.formData.exitDate, this.formData.exitTime)
+      exitDateTime: this.formData.exitDate
+        ? this.formatDateTimeToBackend(this.formData.exitDate, this.formData.exitTime || '00:00')
         : '',
       room: this.formData.room,
       bedNumber: this.formData.bedNumber,
