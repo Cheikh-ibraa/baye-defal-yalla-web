@@ -2,7 +2,7 @@ import {
   Component, OnInit, ViewChild, ElementRef,
   AfterViewInit, OnDestroy, inject, PLATFORM_ID,
 } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { CommonModule, isPlatformBrowser, UpperCasePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -42,7 +42,7 @@ interface EvolutionPoint { label: string; count: number; }
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
-  imports: [CommonModule],
+  imports: [CommonModule, UpperCasePipe],
   standalone: true,
 })
 export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -55,6 +55,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   isBrowser = isPlatformBrowser(this.platformId);
   selectedPeriod: PeriodType = 'WEEKLY';
+
+  pharmacistName = '';
+  avgPreparationTime = '—';
 
   dashboard: DashboardData | null = null;
   evolution: EvolutionPoint[] = [];
@@ -73,8 +76,21 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly filesBaseUrl = environment.filesUrl;
 
   ngOnInit(): void {
+    this.extractPharmacistName();
     this.loadDashboard();
     this.loadEvolution();
+  }
+
+  private extractPharmacistName(): void {
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const first = payload.given_name ?? payload.firstName ?? '';
+      const last  = payload.family_name ?? payload.lastName ?? '';
+      const full  = `${first} ${last}`.trim();
+      this.pharmacistName = full || payload.preferred_username || payload.name || '';
+    } catch { /* token absent ou invalide */ }
   }
 
   ngAfterViewInit(): void {
@@ -194,6 +210,10 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.lineChartInstance.data.labels = this.evolution.map(e => e.label);
     this.lineChartInstance.data.datasets[0].data = this.evolution.map(e => e.count);
     this.lineChartInstance.update();
+  }
+
+  get evolutionIsEmpty(): boolean {
+    return this.evolution.length > 0 && this.evolution.every(e => e.count === 0);
   }
 
   pieData(): number[] {
