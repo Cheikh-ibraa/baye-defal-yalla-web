@@ -316,13 +316,13 @@ export const routes: Routes = [
           import('./features/gestion-stock/gestion-stock.routes')
             .then(m => m.GESTION_STOCK_ROUTES)
       },
-      {
-        path: 'livraison',
-        canActivate: [roleGuard(['pharmacist'])],
-        loadChildren: () =>
-          import('./features/livraison/livraison.routes')
-            .then(m => m.LIVRAISON_ROUTES)
-      },
+      // {
+      //   path: 'livraison',
+      //   canActivate: [roleGuard(['pharmacist'])],
+      //   loadChildren: () =>
+      //     import('./features/livraison/livraison.routes')
+      //       .then(m => m.LIVRAISON_ROUTES)
+      // },
 
       // ================= COMPTE =================
       {
@@ -451,7 +451,75 @@ export const routes: Routes = [
           import('./features/dons/dons-detail.component')
             .then(m => m.DonsDetailComponent)
       },
+      {
+        path: 'demande-imagerie',
+        loadComponent: () =>
+          import('./features/imagerie/demande-imagerie/demande-imagerie.component')
+            .then(m => m.DemandeImagerieComponent)
+      },
+      {
+        path: 'detail-demande-imagerie/:id',
+        loadComponent: () =>
+          import('./features/imagerie/detail-demande-imagerie/detail-demande-imagerie.component')
+            .then(m => m.DetailDemandeImagerieComponent)
+      },
+      {
+        path: 'demande-laboratoire',
+        loadComponent: () =>
+          import('./features/laboratoire/demande-laboratoire/demande-laboratoire.component')
+            .then(m => m.DemandeLaboratoireComponent)
+      },
+      {
+        path: 'detail-demande-laboratoire/:id',
+        loadComponent: () =>
+          import('./features/laboratoire/demande-laboratoire/detail-demande-laboratoire.component')
+            .then(m => m.DetailDemandeLaboratoireComponent)
+      },
+      {
+        path: 'demande-complement',
+        loadChildren: () =>
+          import('./features/demande-complement/demande-complement.routes')
+            .then(m => m.DEMANDE_COMPLEMENT_ROUTES)
+      },
 
+      {
+        path: 'rapport',
+        loadComponent: () =>
+          import('./features/rapports/rapports.component')
+            .then(m => m.RapportsComponent)
+      },
+      {
+        path: 'detail-rapport/:id',
+        loadComponent: () =>
+          import('./features/rapports/detail-rapport.component')
+            .then(m => m.DetailRapportComponent)
+      },
+
+      {
+        path: 'budget',
+        loadComponent: () =>
+          import('./features/budget/budget.component')
+            .then(m => m.BudgetComponent)
+      },
+
+      {
+        path: 'demande-organisation',
+        loadComponent: () =>
+          import('./features/demande-organisation/demande-organisation.component')
+            .then(m => m.DemandeOrganisationComponent)
+      },
+      {
+        path: 'demande-organisation/:id',
+        loadComponent: () =>
+          import('./features/demande-organisation/detail-demande-organisation.component')
+            .then(m => m.DetailDemandeOrganisationComponent)
+      },
+      {
+        path: 'demande-organisation/:id/devis',
+        loadComponent: () =>
+          import('./features/demande-organisation/detail-devis-organisation.component')
+            .then(m => m.DetailDevisOrganisationComponent)
+      },
       // ================= COMPTE =================
       {
         path: 'comptes',
