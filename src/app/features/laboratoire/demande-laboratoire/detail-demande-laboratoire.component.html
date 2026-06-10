@@ -1,0 +1,273 @@
+<div *ngIf="detail" class="min-h-screen bg-[#F4F6F9]">
+  <div class="max-w-7xl mx-auto space-y-6">
+
+    <!-- ── HEADER ────────────────────────────────────────────────────────── -->
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button (click)="goBack()"
+          class="w-12 h-12 flex items-center justify-center rounded-lg bg-white transition">
+          <svg width="16" height="14" viewBox="0 0 14 11" fill="none">
+            <path d="M13.157 5.303H.586M.586 5.303L5.3.589M.586 5.303L5.3 10.017" stroke="#2B3674" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <h1 class="text-xl sm:text-2xl font-bold text-[#131B2E]">Détail de la demande</h1>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button (click)="refuser()"
+          class="px-5 py-3 border border-[104382] rounded-lg text-sm text-[#131B2E] transition-colors">
+          Refuser
+        </button>
+        <button (click)="ouvrirAccepter()"
+          class="px-5 py-3 bg-[#104382] hover:bg-[#0D3568] text-white rounded-lg text-sm transition-colors">
+          Accepter la demande
+        </button>
+      </div>
+    </div>
+
+    <!-- ── MAIN GRID ──────────────────────────────────────────────────────── -->
+    <div class="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-6">
+
+      <!-- ── SIDEBAR GAUCHE ──────────────────────────────────────────────── -->
+      <div class="bg-white rounded-2xl px-4 py-6 space-y-6">
+
+        <!-- Patient -->
+        <div class="pb-6 border-b border-gray-100">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-14 h-14 rounded-full bg-[#1E4D9B1A] flex items-center justify-center shrink-0">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M12 12C10.35 12 8.9375 11.4125 7.7625 10.2375C6.5875 9.0625 6 7.65 6 6C6 4.35 6.5875 2.9375 7.7625 1.7625C8.9375 0.5875 10.35 0 12 0C13.65 0 15.0625 0.5875 16.2375 1.7625C17.4125 2.9375 18 4.35 18 6C18 7.65 17.4125 9.0625 16.2375 10.2375C15.0625 11.4125 13.65 12 12 12ZM0 24V19.8C0 18.95 0.21875 18.1687 0.65625 17.4562C1.09375 16.7437 1.675 16.2 2.4 15.825C3.95 15.05 5.525 14.4688 7.125 14.0813C8.725 13.6938 10.35 13.5 12 13.5C13.65 13.5 15.275 13.6938 16.875 14.0813C18.475 14.4688 20.05 15.05 21.6 15.825C22.325 16.2 22.9062 16.7437 23.3438 17.4562C23.7812 18.1687 24 18.95 24 19.8V24H0Z" fill="#00367C"/>
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-xl sm:text-2xl font-semibold text-[#131B2E]">{{ detail.patient.nom }}</h2>
+              <div class="flex items-center gap-1 mt-1">
+                <span class="px-2 py-0.5 bg-[#1E4D9B1A] text-[#104382] text-xs font-semibold rounded">
+                  {{ detail.patient.genre }}
+                </span>
+                <span class="text-sm text-[#434751]">{{ detail.patient.age }} ans</span>
+                <span class="text-[#434751]">•</span>
+                <span class="text-sm text-[#434751]">Ref: {{ detail.patient.ref }}</span>
+              </div>
+            </div>
+          </div>
+
+          <span class="inline-block px-3 py-1 rounded text-xs font-medium tracking-wider"
+            [ngClass]="getPriorityClass(detail.priority)">
+            {{ detail.priority }}
+          </span>
+        </div>
+
+        <!-- Médecin prescripteur -->
+        <div class="pb-6 border-b border-gray-100">
+          <p class="text-xs font-bold text-[#434751] uppercase tracking-wider mb-3">Médecin prescripteur</p>
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-xl bg-[#1E4D9B1A] flex items-center justify-center shrink-0">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M11.5 20C9.7 20 8.16667 19.3667 6.9 18.1C5.63333 16.8333 5 15.3 5 13.5V12.925C3.56667 12.6917 2.375 12.0208 1.425 10.9125C0.475 9.80417 0 8.5 0 7V1H3V0H5V4H3V3H2V7C2 8.1 2.39167 9.04167 3.175 9.825C3.95833 10.6083 4.9 11 6 11C7.1 11 8.04167 10.6083 8.825 9.825C9.60833 9.04167 10 8.1 10 7V3H9V4H7V0H9V1H12V7C12 8.5 11.525 9.80417 10.575 10.9125C9.625 12.0208 8.43333 12.6917 7 12.925V13.5C7 14.75 7.4375 15.8125 8.3125 16.6875C9.1875 17.5625 10.25 18 11.5 18C12.75 18 13.8125 17.5625 14.6875 16.6875C15.5625 15.8125 16 14.75 16 13.5V11.825C15.4167 11.625 14.9375 11.2667 14.5625 10.75C14.1875 10.2333 14 9.65 14 9C14 8.16667 14.2917 7.45833 14.875 6.875C15.4583 6.29167 16.1667 6 17 6C17.8333 6 18.5417 6.29167 19.125 6.875C19.7083 7.45833 20 8.16667 20 9C20 9.65 19.8125 10.2333 19.4375 10.75C19.0625 11.2667 18.5833 11.625 18 11.825V13.5C18 15.3 17.3667 16.8333 16.1 18.1C14.8333 19.3667 13.3 20 11.5 20ZM17 10C17.2833 10 17.5208 9.90417 17.7125 9.7125C17.9042 9.52083 18 9.28333 18 9C18 8.71667 17.9042 8.47917 17.7125 8.2875C17.5208 8.09583 17.2833 8 17 8C16.7167 8 16.4792 8.09583 16.2875 8.2875C16.0958 8.47917 16 8.71667 16 9C16 9.28333 16.0958 9.52083 16.2875 9.7125C16.4792 9.90417 16.7167 10 17 10Z" fill="#00367C"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-bold text-[#131B2E]">{{ detail.medecin.nom }}</p>
+              <p class="text-xs text-[#434751]">{{ detail.medecin.specialite }} • {{ detail.medecin.clinique }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contexte médical -->
+        <div>
+          <p class="text-xs font-bold text-[#434751] uppercase tracking-wider mb-3">Contexte médical</p>
+          <div class="bg-[#F8FAFC] rounded-xl p-4 border border-gray-100">
+            <p class="text-sm text-[#475569] leading-relaxed italic">{{ detail.contexteMedical }}</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── CONTENU DROIT : Analyses ───────────────────────────────────── -->
+      <div class="space-y-5">
+        <h2 class="text-xl font-bold text-[#131B2E]">
+          Examens Demandés ({{ detail.examens.length }})
+        </h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div *ngFor="let examen of detail.examens"
+            class="bg-white rounded-2xl p-5 flex items-center gap-4 transition-shadow">
+
+            <div class="w-12 h-12 rounded-xl bg-[#1E4D9B1A] flex items-center justify-center shrink-0">
+
+              <!-- NFS : goutte de sang -->
+              <ng-container *ngIf="examen.icon === 'nfs'">
+               <svg width="16" height="20" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M8 20C5.71667 20 3.8125 19.2167 2.2875 17.65C0.7625 16.0833 0 14.1333 0 11.8C0 10.1333 0.6625 8.32083 1.9875 6.3625C3.3125 4.40417 5.31667 2.28333 8 0C10.6833 2.28333 12.6875 4.40417 14.0125 6.3625C15.3375 8.32083 16 10.1333 16 11.8C16 14.1333 15.2375 16.0833 13.7125 17.65C12.1875 19.2167 10.2833 20 8 20ZM8 18C9.73333 18 11.1667 17.4125 12.3 16.2375C13.4333 15.0625 14 13.5833 14 11.8C14 10.5833 13.4958 9.20833 12.4875 7.675C11.4792 6.14167 9.98333 4.46667 8 2.65C6.01667 4.46667 4.52083 6.14167 3.5125 7.675C2.50417 9.20833 2 10.5833 2 11.8C2 13.5833 2.56667 15.0625 3.7 16.2375C4.83333 17.4125 6.26667 18 8 18ZM5 16H11V14H5V16ZM7 13H9V11H11V9H9V7H7V9H5V11H7V13Z" fill="#104382"/>
+</svg>
+              </ng-container>
+
+              <!-- Glycémie : goutte avec onde -->
+              <ng-container *ngIf="examen.icon === 'glycemie'">
+               <svg width="16" height="19" viewBox="0 0 16 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M8 19C5.78333 19 3.89583 18.2333 2.3375 16.7C0.779167 15.1667 0 13.3 0 11.1C0 10.0167 0.208333 9.00417 0.625 8.0625C1.04167 7.12083 1.61667 6.28333 2.35 5.55L8 0L13.65 5.55C14.3833 6.28333 14.9583 7.12083 15.375 8.0625C15.7917 9.00417 16 10.0167 16 11.1C16 13.3 15.2208 15.1667 13.6625 16.7C12.1042 18.2333 10.2167 19 8 19ZM2.05 12H13.9C14.1 10.8 13.9875 9.775 13.5625 8.925C13.1375 8.075 12.7 7.43333 12.25 7L8 2.8L3.75 7C3.3 7.43333 2.85833 8.075 2.425 8.925C1.99167 9.775 1.86667 10.8 2.05 12Z" fill="#104382"/>
+</svg>
+              </ng-container>
+
+              <!-- Créatinine : tube à essai -->
+              <ng-container *ngIf="examen.icon === 'creatinine'">
+               <svg width="19" height="18" viewBox="0 0 19 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M2.0285 18C1.1785 18 0.574338 17.6208 0.216005 16.8625C-0.142329 16.1042 -0.0548287 15.4 0.478505 14.75L6.0285 8V2H5.0285C4.74517 2 4.50767 1.90417 4.316 1.7125C4.12434 1.52083 4.0285 1.28333 4.0285 1C4.0285 0.716667 4.12434 0.479167 4.316 0.2875C4.50767 0.0958333 4.74517 0 5.0285 0H13.0285C13.3118 0 13.5493 0.0958333 13.741 0.2875C13.9327 0.479167 14.0285 0.716667 14.0285 1C14.0285 1.28333 13.9327 1.52083 13.741 1.7125C13.5493 1.90417 13.3118 2 13.0285 2H12.0285V8L17.5785 14.75C18.1118 15.4 18.1993 16.1042 17.841 16.8625C17.4827 17.6208 16.8785 18 16.0285 18H2.0285ZM2.0285 16H16.0285L10.0285 8.7V2H8.0285V8.7L2.0285 16Z" fill="#104382"/>
+</svg>
+              </ng-container>
+
+              <!-- HbA1c : croix médicale -->
+              <ng-container *ngIf="examen.icon === 'hba1c'">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#104382" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 8v8M8 12h8"/>
+                  <rect x="3" y="3" width="18" height="18" rx="3"/>
+                </svg>
+              </ng-container>
+
+              <!-- Lipides : molécule -->
+              <ng-container *ngIf="examen.icon === 'lipides'">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#104382" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.64 5.64l2.12 2.12M16.24 16.24l2.12 2.12M5.64 18.36l2.12-2.12M16.24 7.76l2.12-2.12"/>
+                </svg>
+              </ng-container>
+
+              <!-- Hépatique : foie / onde -->
+              <ng-container *ngIf="examen.icon === 'hepatique'">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M5 20V15H0V5H5V0H15V5H20V15H15V20H5ZM2 9H7C7.16667 9 7.325 9.04167 7.475 9.125C7.625 9.20833 7.74167 9.31667 7.825 9.45L8.7 10.75L10.05 6.7C10.1167 6.5 10.2375 6.33333 10.4125 6.2C10.5875 6.06667 10.7833 6 11 6C11.1667 6 11.325 6.04167 11.475 6.125C11.625 6.20833 11.7417 6.31667 11.825 6.45L13.525 9H18V7H13V2H7V7H2V9ZM7 18H13V13H18V11H13C12.8333 11 12.675 10.9583 12.525 10.875C12.375 10.7917 12.25 10.6833 12.15 10.55L11.3 9.25L9.95 13.3C9.88333 13.5 9.75833 13.6667 9.575 13.8C9.39167 13.9333 9.19167 14 8.975 14C8.80833 14 8.65 13.9583 8.5 13.875C8.35 13.7917 8.23333 13.6833 8.15 13.55L6.45 11H2V13H7V18Z" fill="#104382"/>
+</svg>
+              </ng-container>
+
+            </div>
+
+            <div>
+              <p class="text-sm font-bold text-[#131B2E]">{{ examen.titre }}</p>
+              <p class="text-xs text-[#434751] mt-0.5">{{ examen.sousTitre }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL : Accepter la demande ───────────────────────────────────────── -->
+<div *ngIf="showAccepterModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+  (click)="fermerModal()">
+  <div class="bg-white rounded-2xl w-full max-w-[580px] shadow-xl overflow-hidden" (click)="$event.stopPropagation()">
+
+    <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-[#1E4D9B1A] flex items-center justify-center">
+           <svg width="20" height="18" viewBox="0 0 20 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2 18C1.45 18 0.979167 17.8042 0.5875 17.4125C0.195833 17.0208 0 16.55 0 16V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H18C18.55 0 19.0208 0.195833 19.4125 0.5875C19.8042 0.979167 20 1.45 20 2V16C20 16.55 19.8042 17.0208 19.4125 17.4125C19.0208 17.8042 18.55 18 18 18H2ZM2 16H18V2H2V16ZM3 14H8V12H3V14ZM12.55 12L17.5 7.05L16.075 5.625L12.55 9.175L11.125 7.75L9.725 9.175L12.55 12ZM3 10H8V8H3V10ZM3 6H8V4H3V6ZM2 16V2V16Z" fill="#00367C"/>
+          </svg>
+        </div>
+        <h2 class="text-xl sm:text-2xl font-bold text-[#00367C]">Accepter la demande</h2>
+      </div>
+      <button (click)="fermerModal()" class="text-gray-400 hover:text-gray-600">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="px-6 py-5 space-y-5 overflow-y-auto" style="max-height: calc(100vh - 180px)">
+
+      <!-- Fiche patient + médecin -->
+      <div class="bg-[#F4F6F9] rounded-xl p-4">
+        <div class="flex items-start justify-between pb-4 border-b border-gray-200 mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center text-white text-sm font-semibold shrink-0">
+              {{ getInitiales() }}
+            </div>
+            <div>
+              <p class="text-xs text-[#737782] uppercase tracking-wider mb-0.5">Patient</p>
+              <p class="text-sm text-[#131B2E]">{{ detail!.patient.nom }}</p>
+              <p class="text-sm text-[#434751]">Réf: #{{ detail!.patient.ref }}</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-xs text-[#737782] uppercase tracking-wider mb-0.5">Médecin prescripteur</p>
+            <p class="text-sm text-[#131B2E]">{{ detail!.medecin.nom }}</p>
+            <p class="text-sm text-[#434751]">{{ detail!.medecin.clinique }}</p>
+          </div>
+        </div>
+
+        <div>
+          <p class="text-xs text-[#737782] uppercase tracking-wider mb-2">Analyses demandées</p>
+          <div class="flex flex-wrap gap-2">
+            <span *ngFor="let e of detail?.examens"
+              class="px-3 py-1 bg-[#2C7BE51A] text-[#00367C] text-sm rounded-full">
+              {{ e.titre }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Montant -->
+      <div>
+        <label class="block text-sm font-semibold text-[#00367C] mb-2">Montant total</label>
+        <div class="relative">
+          <input type="number" [(ngModel)]="form.montant" placeholder="15 000"
+            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-[#1E293B] pr-16 focus:outline-none focus:ring-2 focus:ring-[#104382]">
+          <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[#94A3B8] font-medium">FCFA</span>
+        </div>
+      </div>
+
+      <!-- Date + Heure -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-[#1E293B] mb-2">Date du rendez-vous</label>
+          <input type="date" [(ngModel)]="form.date"
+            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#104382]">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-[#1E293B] mb-2">Heure</label>
+          <input type="time" [(ngModel)]="form.heure"
+            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#104382]">
+        </div>
+      </div>
+
+      <!-- Note -->
+      <div>
+        <label class="block text-sm font-semibold text-[#1E293B] mb-2">Note ou commentaire</label>
+        <textarea [(ngModel)]="form.note" rows="4"
+          class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-[#1E293B] resize-none focus:outline-none focus:ring-2 focus:ring-[#104382]"></textarea>
+      </div>
+
+    </div>
+
+    <div class="flex items-center gap-4 px-6 py-4 border-t border-gray-100">
+      <button (click)="fermerModal()"
+        class="flex-1 py-3 border border-gray-200 rounded-xl text-base font-semibold text-[#434751] transition-colors">
+        Annuler
+      </button>
+      <button (click)="confirmerAcceptation()"
+        class="flex-1 py-3 bg-[#104382] hover:bg-[#0D3568] text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-colors">
+        <svg width="22" height="21" viewBox="0 0 22 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7.6 21L5.7 17.8L2.1 17L2.45 13.3L0 10.5L2.45 7.7L2.1 4L5.7 3.2L7.6 0L11 1.45L14.4 0L16.3 3.2L19.9 4L19.55 7.7L22 10.5L19.55 13.3L19.9 17L16.3 17.8L14.4 21L11 19.55L7.6 21ZM8.45 18.45L11 17.35L13.6 18.45L15 16.05L17.75 15.4L17.5 12.6L19.35 10.5L17.5 8.35L17.75 5.55L15 4.95L13.55 2.55L11 3.65L8.4 2.55L7 4.95L4.25 5.55L4.5 8.35L2.65 10.5L4.5 12.6L4.25 15.45L7 16.05L8.45 18.45ZM9.95 14.05L15.6 8.4L14.2 6.95L9.95 11.2L7.8 9.1L6.4 10.5L9.95 14.05Z" fill="white"/>
+        </svg>
+        Confirmer l'acceptation
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── SUCCESS ────────────────────────────────────────────────────────────── -->
+<div *ngIf="showSuccessModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+  <div class="bg-white rounded-2xl shadow-xl px-10 py-8 flex flex-col items-center gap-3 max-w-[280px] w-full">
+    <div class="w-20 h-20 rounded-2xl border-2 border-dashed border-[#104382] flex items-center justify-center">
+      <div class="w-14 h-14 rounded-full border-2 border-[#104382] flex items-center justify-center">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#104382" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+    </div>
+    <p class="text-sm font-bold text-[#1E293B] text-center">Demande acceptée</p>
+  </div>
+</div>

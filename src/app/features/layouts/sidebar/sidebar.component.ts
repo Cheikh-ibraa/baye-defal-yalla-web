@@ -61,7 +61,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     prenom: 'Awa',
     email: 'awa.ndiaye@local.test',
     telephone: '+221770000000',
-    profil: 'PHARMACIST',
+    profil: 'LABORATORY',
     pharmacyId: 1
   } as User;
 
@@ -109,6 +109,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   labMenuItems: MenuItem[] = [
     { id: 'dashboard-lab', label: 'Tableau Lab', route: '/dashboard-lab' },
     { id: 'examens-laboratoire', label: 'Examens', route: '/examens-laboratoire' },
+    { id: 'demande-laboratoire', label: 'Demandes', route: '/demande-laboratoire' },
     { id: 'comptes', label: 'Mon compte', route: '/compte' }
   ];
 
@@ -116,6 +117,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   imagerieMenuItems: MenuItem[] = [
     { id: 'dashboard-imagerie', label: 'Tableau de bord', route: '/dashboard-imagerie' },
     { id: 'examens-imagerie', label: 'Examens', route: '/examens-imagerie' },
+    { id: 'demande-imagerie', label: 'Demandes', route: '/demande-imagerie' },
     { id: 'comptes', label: 'Mon compte', route: '/compte' }
   ];
 
@@ -256,12 +258,16 @@ export class SidebarComponent implements OnInit, OnDestroy {
     }
     if (url.startsWith('/dashboard-lab') || 
         url.startsWith('/examens-laboratoire') ||
+        url.startsWith('/demande-laboratoire') ||
+        url.startsWith('/detail-demande-laboratoire') ||
         url.startsWith('/detail-examen-laboratoire')) {
       return 'LABORATORY';
     }
     if (url.startsWith('/dashboard-imagerie') || 
         url.startsWith('/examens-imagerie') ||
-        url.startsWith('/detail-examen-imagerie')) {
+        url.startsWith('/detail-examen-imagerie') ||
+        url.startsWith('/demande-imagerie') ||
+        url.startsWith('/detail-demande-imagerie')) {
       return 'IMAGING_CENTER';
     }
     if (url.startsWith('/organisation') || 
@@ -314,7 +320,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       if (!this.currentUser) {
         this.currentUser = { ...this.mockCurrentUser };
       }
-      this.currentUser.profil = detectedProfile;
+      this.currentUser = { ...this.currentUser, profil: detectedProfile };
     }
     this.updateMenuBasedOnProfile();
 

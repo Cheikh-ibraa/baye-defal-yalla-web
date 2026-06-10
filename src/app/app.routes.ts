@@ -362,6 +362,18 @@ export const routes: Routes = [
           import('./features/imagerie/detail-examen-imagerie/detail-examen-imagerie.component')
             .then(m => m.DetailExamenImagerieComponent)
       },
+      {
+        path: 'demande-imagerie',
+        loadComponent: () =>
+          import('./features/imagerie/demande-imagerie/demande-imagerie.component')
+            .then(m => m.DemandeImagerieComponent)
+      },
+      {
+        path: 'detail-demande-imagerie/:id',
+        loadComponent: () =>
+          import('./features/imagerie/detail-demande-imagerie/detail-demande-imagerie.component')
+            .then(m => m.DetailDemandeImagerieComponent)
+      },
 
 
       {
@@ -385,6 +397,18 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/laboratoire/examens-laboratoire/examens-laboratoire.component')
             .then(m => m.ExamensLaboratoireComponent)
+      },
+      {
+        path: 'demande-laboratoire',
+        loadComponent: () =>
+          import('./features/laboratoire/demande-laboratoire/demande-laboratoire.component')
+            .then(m => m.DemandeLaboratoireComponent)
+      },
+      {
+        path: 'detail-demande-laboratoire/:id',
+        loadComponent: () =>
+          import('./features/laboratoire/demande-laboratoire/detail-demande-laboratoire.component')
+            .then(m => m.DetailDemandeLaboratoireComponent)
       },
       {
         path: 'detail-examen-laboratoire/:id',

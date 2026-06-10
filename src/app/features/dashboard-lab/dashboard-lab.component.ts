@@ -1,535 +1,107 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms';
-
-import {
-  Chart,
-  LineController,
-  LineElement,
-  PointElement,
-  LinearScale,
-  CategoryScale,
-  DoughnutController,
-  ArcElement,
-  BarController,
-  BarElement,
-  Tooltip,
-  Legend,
-  Filler,
-  ChartConfiguration
-} from 'chart.js';
-
 import { of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 
-// Inline response type for dashboard (replace DashboardLaboratoireService dependency)
-interface DashboardLaboratoireResponse {
-  monthlyRequests: { [key: string]: number };
-  requestsByStatus: { [key: string]: number };
-  requestsByType: { [key: string]: number };
-  requestsByUrgency: { [key: string]: number };
-  // Additional counts used in template
-  totalRequests?: number;
-  pendingRequests?: number;
-  urgentRequests?: number;
-  completedRequests?: number;
-  youngPatients?: number;
+// ── Interfaces ────────────────────────────────────────────────────────────────
+
+type Priority  = 'Urgent' | 'Normal';
+type ExamStatus = 'En attente' | 'En cours' | 'Validé' | 'Annulé';
+
+interface ExamRow {
+  id: number;
+  initials: string;
+  patientName: string;
+  patientRef: string;
+  type: string;
+  prescripteur: string;
+  receivedAt: string;
+  priority: Priority;
+  status: ExamStatus;
 }
 
-import { Laboratoire } from '../../modele/laboratoir';
+interface PerformanceBar {
+  label: string;
+  value: number;
+  max: number;
+  unit: string;
+  displayValue: string;
+  valueClass: string;
+  barClass: string;
+  subLabel: string;
+}
 
-// =====================
-// Chart.js register
-// =====================
-Chart.register(
-  LineController,
-  LineElement,
-  PointElement,
-  LinearScale,
-  CategoryScale,
-  DoughnutController,
-  ArcElement,
-  BarController,
-  BarElement,
-  Tooltip,
-  Legend,
-  Filler
-);
+interface AssuranceItem {
+  label: string;
+  percent: number;
+  dotClass: string;
+}
 
-type ChartLoadingState = 'idle' | 'loading' | 'success' | 'error';
-
-interface UserLocal { id: number; [key: string]: any }
+// ── Component ─────────────────────────────────────────────────────────────────
 
 @Component({
   selector: 'app-dashboard-lab',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './dashboard-lab.component.html',
-  styleUrl: './dashboard-lab.component.css'
+  styleUrl: './dashboard-lab.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DashboardLabComponent implements OnInit, OnDestroy {
+export class DashboardLabComponent implements OnInit {
 
-  // =====================
-  // USER
-  // =====================
-  currentUser: UserLocal | null = null;
+  loading = true;
 
-  // =====================
-  // DASHBOARD DATA
-  // =====================
-  dashboardData: DashboardLaboratoireResponse | null = null;
+  // ── Stats ──────────────────────────────────────────────────────────────────
+  stats = [
+    { label: 'Examens reçus',    value: 8,  sub: 'Aujourd\'hui',    subClass: 'text-gray-400',  icon: 'flask'  },
+    { label: 'Examens en attente', value: 4, sub: 'Dont 2 urgences', subClass: 'text-gray-400',  icon: 'clock'  },
+    { label: 'Examens urgents',  value: 3,  sub: '-5%  vs mois dernier', subClass: 'text-red-500',   icon: 'alert'  },
+    { label: 'Examens validés',  value: 2,  sub: '+8%  vs mois dernier', subClass: 'text-[#00B894]', icon: 'check'  }
+  ];
 
-  // =====================
-  // STATES
-  // =====================
-  dashboardLoading: ChartLoadingState = 'idle';
-  planningLoading: ChartLoadingState = 'idle';
+  // ── Table ──────────────────────────────────────────────────────────────────
+  examens: ExamRow[] = [
+    { id: 4, initials: 'MD', patientName: 'Moussa Wade', patientRef: '#0004', type: 'Hémogramme complet', prescripteur: 'Dr. DIOP', receivedAt: '2025-01-15 09:15', priority: 'Urgent', status: 'En attente' },
+    { id: 3, initials: 'MF', patientName: 'Maman Fall',  patientRef: '#0003', type: 'Hémogramme complet', prescripteur: 'Dr. DIOP', receivedAt: '2025-01-15 09:15', priority: 'Urgent', status: 'En attente' },
+    { id: 2, initials: 'FF', patientName: 'Fatou Fall',  patientRef: '#0002', type: 'Glycémie à jeun',    prescripteur: 'Dr. DIOP', receivedAt: '2025-01-15 08:30', priority: 'Normal', status: 'En cours'   },
+    { id: 1, initials: 'IL', patientName: 'Isseu Ly',    patientRef: '#0001', type: 'Bilan lipidique',    prescripteur: 'Dr. DIOP', receivedAt: '2025-01-14 11:45', priority: 'Normal', status: 'Validé'     },
+    { id: 1, initials: 'IL', patientName: 'Isseu Ly',    patientRef: '#0001', type: 'Bilan lipidique',    prescripteur: 'Dr. DIOP', receivedAt: '2025-01-14 11:45', priority: 'Normal', status: 'Validé'     }
+  ];
 
-  monthlyChartState: ChartLoadingState = 'idle';
-  statusChartState: ChartLoadingState = 'idle';
-  typeChartState: ChartLoadingState = 'idle';
-  urgencyChartState: ChartLoadingState = 'idle';
+  // ── Performance du jour ────────────────────────────────────────────────────
+  performance: PerformanceBar[] = [
+    { label: 'Délai moyen de rendu', value: 75, max: 100, unit: '', displayValue: '45 min', valueClass: 'text-[#343A40] font-medium', barClass: 'bg-[#2C7BE5]',  subLabel: 'Objectif : < 60 min' },
+    { label: 'Taux de conformité',   value: 98.5, max: 100, unit: '', displayValue: '98.5%', valueClass: 'text-[#343A40] font-medium', barClass: 'bg-[#00B894]', subLabel: '' },
+    { label: 'Analyses anormales',   value: 12, max: 100, unit: '', displayValue: '12%',  valueClass: 'text-[#F59E0B] font-semibold', barClass: 'bg-[#F59E0B]', subLabel: '' }
+  ];
 
-  // =====================
-  // PLANNING
-  // =====================
-  examens: Laboratoire[] = [];
+  // ── État Assurance ─────────────────────────────────────────────────────────
+  assurance: AssuranceItem[] = [
+    { label: 'Pris en charge', percent: 85, dotClass: 'bg-[#00B894]' },
+    { label: 'En attente',     percent: 12, dotClass: 'bg-[#F59E0B]' },
+    { label: 'Refusé',         percent: 3,  dotClass: 'bg-red-500'   }
+  ];
 
-  // =====================
-  // CHARTS
-  // =====================
-  private monthlyChart?: Chart;
-  private statusChart?: Chart;
-  private typeChart?: Chart;
-  private urgencyChart?: Chart;
+  constructor(private router: Router, private cdr: ChangeDetectorRef) {}
 
-  constructor(
-    private router: Router,
-    
-  ) {}
-
-  // =====================
-  // INIT
-  // =====================
   ngOnInit(): void {
-    console.log('🧪 [LAB] Dashboard init');
-    const user = this.getMockCurrentUser();
-    console.log('👤 [AUTH MOCK] currentUser =', user);
-
-    this.currentUser = user;
-
-    if (user) {
-      console.log('✅ [AUTH MOCK] User détecté → chargement dashboard');
-      this.loadDashboard(user.id);
-      this.loadPlanningDuJour();
-    } else {
-      console.warn('⚠️ [AUTH MOCK] Aucun utilisateur connecté');
-    }
-  }
-
-  // =====================
-  // DESTROY
-  // =====================
-  ngOnDestroy(): void {
-    console.log('🧹 [LAB] Destroy dashboard');
-    this.destroyCharts();
-  }
-
-  private destroyCharts(): void {
-    console.log('🧹 Destruction des graphiques');
-    this.monthlyChart?.destroy();
-    this.statusChart?.destroy();
-    this.typeChart?.destroy();
-    this.urgencyChart?.destroy();
-  }
-
-  // =====================
-  // DASHBOARD API
-  // =====================
-  loadDashboard(laboratoryId: number): void {
-    console.log('📡 [API] loadDashboard → laboratoryId =', laboratoryId);
-
-    this.dashboardLoading = 'loading';
-    this.monthlyChartState = 'loading';
-    this.statusChartState = 'loading';
-    this.typeChartState = 'loading';
-    this.urgencyChartState = 'loading';
-
-    this.localGetDashboard(laboratoryId).subscribe({
-      next: (data) => {
-        console.log('📊 [API MOCK] Dashboard response =', data);
-
-        this.dashboardData = data;
-        this.dashboardLoading = 'success';
-
-        this.destroyCharts();
-
-        console.log('📈 Création graphiques (mock)...');
-        this.createMonthlyChart(data.monthlyRequests);
-        this.createStatusChart(data.requestsByStatus);
-        this.createTypeChart(data.requestsByType);
-        this.createUrgencyChart(data.requestsByUrgency);
-      },
-      error: (err: any) => {
-        console.error('❌ [API MOCK] Dashboard error', err);
-        this.dashboardLoading = 'error';
-      }
+    of(null).pipe(delay(300)).subscribe(() => {
+      this.loading = false;
+      this.cdr.markForCheck();
     });
   }
 
-  // =====================
-  // DATE FORMAT
-  // =====================
-  private getTodayDate(): string {
-    const d = new Date();
-    const date = `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
-    console.log('📅 Date du jour =', date);
-    return date;
-  }
-
-  // =====================
-  // PLANNING DU JOUR
-  // =====================
-  loadPlanningDuJour(): void {
-    console.log('📡 [API] loadPlanningDuJour');
-
-    this.planningLoading = 'loading';
-    const today = this.getTodayDate();
-
-    this.localGetAllAnalysisRequests().subscribe({
-      next: (res: any) => {
-        console.log('📋 [API MOCK] Planning brut =', res);
-
-        this.examens = (res.content || res).filter((e: Laboratoire) =>
-          e.status === 'ACCEPTED' &&
-          e.appointmentDate === today
-        );
-
-        console.log('📅 Planning filtré (mock) =', this.examens);
-        this.planningLoading = 'success';
-      },
-      error: (err: any) => {
-        console.error('❌ [API MOCK] Planning error', err);
-        this.planningLoading = 'error';
-      }
-    });
-  }
-
-  // ===== Local mocks =====
-  private localGetDashboard(_laboratoryId: number) {
-    const mock: DashboardLaboratoireResponse = {
-      monthlyRequests: { '1': 5, '2': 8, '3': 12 },
-      requestsByStatus: { PENDING: 3, ACCEPTED: 10, COMPLETED: 12 },
-      requestsByType: { 'Blood Test': 10, 'X-Ray': 8 },
-      requestsByUrgency: { NORMAL: 18, URGENT: 7 }
-    };
-    return of(mock).pipe(delay(200));
-  }
-
-  // Local mock for current user
-  private getMockCurrentUser(): UserLocal {
-    return { id: 1, prenom: 'Lab', nom: 'Demo' } as UserLocal;
-  }
-
-  private localGetAllAnalysisRequests() {
-    const mock = {
-      content: [
-        { id: 1, patientName: 'Alice', status: 'ACCEPTED', appointmentDate: this.getTodayDate() },
-        { id: 2, patientName: 'Bob', status: 'PENDING', appointmentDate: this.getTodayDate() }
-      ]
-    };
-    return of(mock).pipe(delay(150));
-  }
-
-  // =====================
-  // CHARTS
-  // =====================
-
-  private createMonthlyChart(data: { [key: string]: number }): void {
-    console.log('📈 [LABO] Monthly chart raw data:', data);
-    this.monthlyChartState = 'loading';
-
-    try {
-      const labels = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Aoû','Sep','Oct','Nov','Déc'];
-      const values = labels.map((_, i) => data?.[(i + 1).toString()] ?? 0);
-
-      console.log('📈 [LABO] Monthly values:', values);
-
-      const config: ChartConfiguration<'line'> = {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [
-            {
-              data: values,
-              borderColor: 'rgba(44, 123, 229, 0.25)',
-              borderWidth: 8,
-              tension: 0.45,
-              pointRadius: 0,
-              fill: false
-            },
-            {
-              label: 'Analyses',
-              data: values,
-              borderColor: '#2C7BE5',
-              borderWidth: 3,
-              tension: 0.45,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-              pointBackgroundColor: '#ffffff',
-              pointBorderColor: '#2C7BE5',
-              pointBorderWidth: 2,
-              fill: false
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: { mode: 'index', intersect: false },
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: '#111827',
-              padding: 10,
-              displayColors: false,
-              callbacks: {
-                label: (ctx) => `${ctx.parsed.y} analyses`
-              }
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: { color: '#6B7280', font: { size: 11 } },
-              grid: { color: 'rgba(0,0,0,0.06)' },
-              border: { display: false }
-            },
-            x: {
-              ticks: { color: '#6B7280', font: { size: 11 } },
-              grid: { color: 'rgba(0,0,0,0.04)' },
-              border: { display: false }
-            }
-          }
-        }
-      };
-
-      this.monthlyChart?.destroy();
-      this.monthlyChart = new Chart('monthlyChart', config);
-      this.monthlyChartState = 'success';
-
-      console.log('✅ [LABO] Monthly chart created');
-    } catch (e) {
-      console.error('❌ [LABO] Monthly chart error', e);
-      this.monthlyChartState = 'error';
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  getStatusClass(status: ExamStatus): string {
+    switch (status) {
+      case 'En attente': return 'bg-yellow-100 text-yellow-700';
+      case 'En cours':   return 'bg-blue-100 text-blue-700';
+      case 'Validé':     return 'bg-green-100 text-[#00B894]';
+      case 'Annulé':     return 'bg-red-100 text-red-600';
     }
   }
 
-
-
-
-  private createStatusChart(data: { [key: string]: number }): void {
-    console.log('🥧 [LABO] Status chart raw data:', data);
-    this.statusChartState = 'loading';
-
-    try {
-      const statusLabels: any = {
-        PENDING: 'En attente',
-        ACCEPTED: 'Accepté',
-        COMPLETED: 'Terminé',
-        CANCELLED: 'Annulé'
-      };
-
-      const statusColors: any = {
-        PENDING: '#2C7BE5',
-        ACCEPTED: '#00B894',
-        COMPLETED: '#F59E0B',
-        CANCELLED: '#8B5CF6'
-      };
-
-      const keys = Object.keys(data || {});
-      console.log('🥧 [LABO] Status keys:', keys);
-
-      const labels = keys.map(k => statusLabels[k] || k);
-      const values = keys.map(k => data[k]);
-      const colors = keys.map(k => statusColors[k] || '#ccc');
-
-      const config: ChartConfiguration<'doughnut'> = {
-        type: 'doughnut',
-        data: {
-          labels,
-          datasets: [{ data: values, backgroundColor: colors, borderWidth: 0 }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          cutout: '0%',
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: { boxWidth: 16, padding: 20 }
-            },
-            tooltip: {
-              backgroundColor: '#111827',
-              callbacks: {
-                label: (ctx) => `${ctx.parsed} analyses`
-              }
-            }
-          }
-        }
-      };
-
-      this.statusChart?.destroy();
-      this.statusChart = new Chart('statusChart', config);
-      this.statusChartState = 'success';
-
-      console.log('✅ [LABO] Status chart created');
-    } catch (e) {
-      console.error('❌ [LABO] Status chart error', e);
-      this.statusChartState = 'error';
-    }
-  }
-
-
-
-
-
-
-
-    // =====================
-    // GRAPHIQUE PAR TYPE
-    // =====================
-    private createTypeChart(data: { [key: string]: number }): void {
-    console.log('📊 [LABO] Type chart raw data:', data);
-    this.typeChartState = 'loading';
-
-    try {
-      if (!data || Object.keys(data).length === 0) {
-        console.warn('⚠️ [LABO] No type data');
-        this.typeChartState = 'error';
-        return;
-      }
-
-      const entries = Object.entries(data).sort((a, b) => b[1] - a[1]);
-      const labels = entries.map(e => e[0]);
-      const values = entries.map(e => e[1]);
-
-      const config: ChartConfiguration<'bar'> = {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [{
-            label: 'Analyses',
-            data: values,
-            backgroundColor: 'rgba(44,123,229,0.8)',
-            borderColor: '#2C7BE5',
-            borderWidth: 2,
-            borderRadius: 8
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          indexAxis: labels.length > 5 ? 'y' : 'x',
-          plugins: { legend: { display: false } }
-        }
-      };
-
-      this.typeChart?.destroy();
-      this.typeChart = new Chart('typeChart', config);
-      this.typeChartState = 'success';
-
-      console.log('✅ [LABO] Type chart created');
-    } catch (e) {
-      console.error('❌ [LABO] Type chart error', e);
-      this.typeChartState = 'error';
-    }
-  }
-
-
-    // =====================
-    // GRAPHIQUE PAR RÉGION
-    // =====================
-   private createUrgencyChart(data: { [key: string]: number }): void {
-    console.log('🚨 [LABO] Urgency chart raw data:', data);
-    this.urgencyChartState = 'loading';
-
-    try {
-      if (!data || Object.keys(data).length === 0) {
-        console.warn('⚠️ [LABO] No urgency data');
-        this.urgencyChartState = 'error';
-        return;
-      }
-
-      const labels = Object.keys(data);
-      const values = Object.values(data);
-
-      const config: ChartConfiguration<'bar'> = {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [{
-            label: 'Analyses',
-            data: values,
-            backgroundColor: 'rgba(239,68,68,0.8)',
-            borderColor: '#EF4444',
-            borderWidth: 2,
-            borderRadius: 8
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } }
-        }
-      };
-
-      this.urgencyChart?.destroy();
-      this.urgencyChart = new Chart('urgencyChart', config);
-      this.urgencyChartState = 'success';
-
-      console.log('✅ [LABO] Urgency chart created');
-    } catch (e) {
-      console.error('❌ [LABO] Urgency chart error', e);
-      this.urgencyChartState = 'error';
-    }
-  }
-
-
-  // =====================
-  // NAVIGATION
-  // =====================
-  viewExamDetails(exam: Laboratoire): void {
-    console.log('➡️ Navigation détail examen =', exam);
-    this.router.navigate(['/examens'], {
-      queryParams: { examId: exam.id }
-    });
-  }
-
-  viewAllExams(): void {
-    console.log('➡️ Navigation tous les examens');
-    this.router.navigate(['/examens']);
-  }
-
-  // =====================
-  // HELPERS
-  // =====================
-  getInitials(name: string): string {
-    const initials = name
-      ?.split(' ')
-      .map(p => p[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-
-    console.log('🔤 Initiales =', initials);
-    return initials;
-  }
-
-  getInitialsColor(initials: string): string {
-    const colors = ['bg-blue-500','bg-purple-500','bg-pink-500','bg-indigo-500','bg-teal-500'];
-    const color = colors[initials.charCodeAt(0) % colors.length];
-    return color;
-  }
+  navigateToAll(): void { this.router.navigate(['/examens-laboratoire']); }
+  viewExam(id: number): void { this.router.navigate(['/detail-examen-laboratoire', id]); }
 }

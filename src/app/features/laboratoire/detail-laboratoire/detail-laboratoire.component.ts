@@ -12,7 +12,7 @@ interface ResultatBiologique {
   valeur: number;
   unite: string;
   reference: string;
-  etat: 'Normal' | 'Attention' | 'Anormal';
+  etat: string;
 }
 
 interface Toast {
@@ -47,9 +47,23 @@ export class DetailLaboratoireComponent implements OnInit {
   // ======================
 
 
-  // ======================
-  // MODALS
-  // ======================
+  // UI STATE
+  ongletActif: 'resultats' | 'compte-rendu' = 'resultats';
+
+  // Résultats biologiques
+  resultats: ResultatBiologique[] = [
+    { parametre: 'Hémoglobine', valeur: 0, unite: 'g/dL', reference: '12.0 - 16.0', etat: 'Normal' },
+    { parametre: 'Leucocytes',  valeur: 0, unite: 'G/L',  reference: '4.0 - 10.0',  etat: 'Normal' },
+    { parametre: 'Plaquettes',  valeur: 0, unite: 'G/L',  reference: '150 - 400',   etat: 'Normal' }
+  ];
+
+  ajouterResultat(): void {
+    this.resultats.push({ parametre: '', valeur: 0, unite: '', reference: '', etat: 'Normal' });
+  }
+
+  supprimerResultat(index: number): void {
+    if (this.resultats.length > 1) this.resultats.splice(index, 1);
+  }
   showEditRdvModal = false;
   showEditRdvSuccess = false;
 
@@ -174,7 +188,7 @@ export class DetailLaboratoireComponent implements OnInit {
 
         this.prescripteur = {
           name: data?.doctorName || '',
-          specialite: 'Médecin prescripteur'
+          specialite: (data as any)?.doctorSpecialite || 'Médecin prescripteur'
         };
 
         this.prescription = {
@@ -548,24 +562,14 @@ function noop() {}
 
 // Simulates fetching a Laboratoire by id
 function localGetLaboratoireById(id: number) {
-  const mock: Laboratoire = {
-    id,
-    patientName: 'Alice Mock',
-    doctorName: 'Dr Mock',
-    laboratoryName: 'Lab Mock',
-    type: 'Blood Test',
-    clinicalIndication: '',
-    youngPatient: false,
-    urgencyLevel: 'NORMAL',
-    status: 'PENDING',
-    createdAt: new Date().toISOString(),
-    appointmentDate: '',
-    appointmentTime: '',
-    pictures: [],
-    report: '',
-    reportFile: ''
+  const MOCK: Record<number, any> = {
+    4: { id: 4, patientName: 'Moussa Wade', doctorName: 'Dr. Diop', doctorSpecialite: 'Médecin Générale', laboratoryName: 'Lab', type: 'Hémogramme complet', clinicalIndication: 'Douleurs persistantes depuis 3 semaines.', urgencyLevel: 'URGENT', status: 'ACCEPTED', createdAt: '2023-10-25T08:30:00.000Z', appointmentDate: null, appointmentTime: null, pictures: [], report: null, reportFile: null },
+    3: { id: 3, patientName: 'Maman Fall',  doctorName: 'Dr. Diop', doctorSpecialite: 'Médecin Générale', laboratoryName: 'Lab', type: 'Hémogramme complet', clinicalIndication: 'Toux persistante.', urgencyLevel: 'URGENT', status: 'ACCEPTED', createdAt: '2025-01-15T09:15:00.000Z', appointmentDate: null, appointmentTime: null, pictures: [], report: null, reportFile: null },
+    2: { id: 2, patientName: 'Fatou Fall',  doctorName: 'Dr. Diop', doctorSpecialite: 'Médecin Générale', laboratoryName: 'Lab', type: 'Glycémie à jeun',    clinicalIndication: 'Contrôle glycémique.', urgencyLevel: 'NORMAL',  status: 'ACCEPTED', createdAt: '2025-01-15T08:30:00.000Z', appointmentDate: null, appointmentTime: null, pictures: [], report: null, reportFile: null },
+    1: { id: 1, patientName: 'Isseu Ly',    doctorName: 'Dr. Diop', doctorSpecialite: 'Médecin Générale', laboratoryName: 'Lab', type: 'Bilan lipidique',    clinicalIndication: 'Bilan cardiovasculaire.', urgencyLevel: 'NORMAL',  status: 'COMPLETED', createdAt: '2025-01-14T11:45:00.000Z', appointmentDate: '2025-01-15', appointmentTime: '10:00', pictures: [], report: 'Bilan lipidique dans les normes.', reportFile: null }
   };
-  return of(mock).pipe(delay(150));
+  const mock = MOCK[id] ?? MOCK[4];
+  return of(mock as Laboratoire).pipe(delay(150));
 }
 
 function localAcceptLaboratoire(payload: any) {
