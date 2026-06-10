@@ -543,7 +543,7 @@ interface Tab {
 @Component({
   selector: 'app-patients',
   standalone: true,
-  imports: [CommonModule, FormsModule, ExamensComponent, ImagerieListComponent, FileToDataUrlPipe],
+  imports: [CommonModule, FormsModule,   FileToDataUrlPipe],
   templateUrl: './patients.component.html',
   styleUrls: ['./patients.component.css']
 })
@@ -3519,7 +3519,7 @@ export class PatientsComponent implements OnInit {
    * Détermine le statut réel d'une hospitalisation
    * Le statut dépend UNIQUEMENT de l'existence d'un ordre de sortie (autorisation de sortie)
    * et NON de exitDateTime qui est juste la date de sortie prévue
-   * 
+   *
    * - "en-cours" : Hospitalisation créée, pas encore d'autorisation de sortie
    * - "sortie-autorisee" : Une autorisation de sortie a été créée (hasDischargeOrder() === true)
    */
@@ -3538,11 +3538,11 @@ export class PatientsComponent implements OnInit {
 
   /**
    * Obtient le libellé court du statut pour les cards de la liste d'hospitalisations
-   * 
+   *
    * Règles d'affichage :
    * - "En cours" : hospitalisation active, pas d'autorisation de sortie
    * - "Sortie" : version courte pour les cards, quand sortie autorisée
-   * 
+   *
    * @param hosp - L'hospitalisation dont on veut le statut
    * @returns "Sortie" | "En cours"
    */
@@ -3552,11 +3552,11 @@ export class PatientsComponent implements OnInit {
 
   /**
    * Obtient le libellé complet du statut pour le modal de détail d'hospitalisation
-   * 
+   *
    * Règles d'affichage :
    * - "En cours" : hospitalisation active, pas d'autorisation de sortie
    * - "Sortie autorisée" : version longue pour le modal, quand sortie autorisée
-   * 
+   *
    * @param hosp - L'hospitalisation dont on veut le statut
    * @returns "Sortie autorisée" | "En cours"
    */

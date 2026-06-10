@@ -192,6 +192,15 @@ export const routes: Routes = [
             .then(m => m.DetailPaiementComponent)
       },
 
+
+      // ✅ DASHBOARD IMAGING CENTER (AJOUT)
+      {
+        path: 'dashboard-imagerie',
+        loadComponent: () =>
+          import('./features/imagerie/dashboard-imagerie/dashboard-imagerie.component')
+            .then(m => m.DashboardImagerieComponent)
+      },
+
       // ================= ADMIN =================
       {
         path: 'medecins',
@@ -383,6 +392,7 @@ export const routes: Routes = [
             .then(m => m.PARAMETREBANCAIREROUTES)
       },
 
+
       // ================= IMAGERIE =================
       {
         path: 'dashboard-imagerie',
@@ -398,6 +408,7 @@ export const routes: Routes = [
           import('./features/imagerie/examens-imagerie/examens-imagerie.component')
             .then(m => m.ExamensImagerieComponent)
       },
+
       {
         path: 'detail-examen-imagerie/:id',
         canActivate: [roleGuard(['radiologist'])],
@@ -405,8 +416,29 @@ export const routes: Routes = [
           import('./features/imagerie/detail-examen-imagerie/detail-examen-imagerie.component')
             .then(m => m.DetailExamenImagerieComponent)
       },
+      {
+        path: 'demande-imagerie',
+        loadComponent: () =>
+          import('./features/imagerie/demande-imagerie/demande-imagerie.component')
+            .then(m => m.DemandeImagerieComponent)
+      },
+      {
+        path: 'detail-demande-imagerie/:id',
+        loadComponent: () =>
+          import('./features/imagerie/detail-demande-imagerie/detail-demande-imagerie.component')
+            .then(m => m.DetailDemandeImagerieComponent)
+      },
+
+
+      {
+        path: 'comptes',
+        loadComponent: () =>
+          import('./features/comptes/comptes.component')
+            .then(m => m.ComptesComponent)
+      },
 
       // ================= LABORATOIRE =================
+
       {
         path: 'dashboard-lab',
         canActivate: [roleGuard(['lab-technician'])],
@@ -414,12 +446,25 @@ export const routes: Routes = [
           import('./features/dashboard-lab/dashboard-lab.component')
             .then(m => m.DashboardLabComponent)
       },
+
       {
         path: 'examens-laboratoire',
         canActivate: [roleGuard(['lab-technician'])],
         loadComponent: () =>
           import('./features/laboratoire/examens-laboratoire/examens-laboratoire.component')
             .then(m => m.ExamensLaboratoireComponent)
+      },
+      {
+        path: 'demande-laboratoire',
+        loadComponent: () =>
+          import('./features/laboratoire/demande-laboratoire/demande-laboratoire.component')
+            .then(m => m.DemandeLaboratoireComponent)
+      },
+      {
+        path: 'detail-demande-laboratoire/:id',
+        loadComponent: () =>
+          import('./features/laboratoire/demande-laboratoire/detail-demande-laboratoire.component')
+            .then(m => m.DetailDemandeLaboratoireComponent)
       },
       {
         path: 'detail-examen-laboratoire/:id',
@@ -494,14 +539,30 @@ export const routes: Routes = [
           import('./features/rapports/detail-rapport.component')
             .then(m => m.DetailRapportComponent)
       },
-
+      {
+        path: 'organisation',
+        loadComponent: () =>
+          import('./features/dashboard/dashboard.component')
+            .then(m => m.DashboardComponent)
+      },
+      {
+        path: 'rapport',
+        loadComponent: () =>
+          import('./features/rapports/rapports.component')
+            .then(m => m.RapportsComponent)
+      },
+      {
+        path: 'detail-rapport/:id',
+        loadComponent: () =>
+          import('./features/rapports/detail-rapport.component')
+            .then(m => m.DetailRapportComponent)
+      },
       {
         path: 'budget',
         loadComponent: () =>
           import('./features/budget/budget.component')
             .then(m => m.BudgetComponent)
       },
-
       {
         path: 'demande-organisation',
         loadComponent: () =>
@@ -519,17 +580,46 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/demande-organisation/detail-devis-organisation.component')
             .then(m => m.DetailDevisOrganisationComponent)
-      },
-      // ================= COMPTE =================
-      {
-        path: 'comptes',
-        canActivate: [roleGuard(['admin'])],
-        loadComponent: () =>
-          import('./features/comptes/comptes.component')
-            .then(m => m.ComptesComponent)
-      },
-    ]
-  },
+      }
 
-  { path: '**', redirectTo: '/portail' }
+    ]
+    },
+  //
+  //
+  //     {
+  //       path: 'budget',
+  //       loadComponent: () =>
+  //         import('./features/budget/budget.component')
+  //           .then(m => m.BudgetComponent)
+  //     },
+  //
+  //     {
+  //       path: 'demande-organisation',
+  //       loadComponent: () =>
+  //         import('./features/demande-organisation/demande-organisation.component')
+  //           .then(m => m.DemandeOrganisationComponent)
+  //     },
+  //     {
+  //       path: 'demande-organisation/:id',
+  //       loadComponent: () =>
+  //         import('./features/demande-organisation/detail-demande-organisation.component')
+  //           .then(m => m.DetailDemandeOrganisationComponent)
+  //     },
+  //     {
+  //       path: 'demande-organisation/:id/devis',
+  //       loadComponent: () =>
+  //         import('./features/demande-organisation/detail-devis-organisation.component')
+  //           .then(m => m.DetailDevisOrganisationComponent)
+  //     },
+  //     // ================= COMPTE =================
+  //     {
+  //       path: 'comptes',
+  //       canActivate: [roleGuard(['admin'])],
+  //       loadComponent: () =>
+  //         import('./features/comptes/comptes.component')
+  //           .then(m => m.ComptesComponent)
+  //     },
+
+  { path: '**', redirectTo: '/portail' },
+
 ];

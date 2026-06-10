@@ -5,7 +5,6 @@ import { ActivatedRoute } from '@angular/router';
 import { of, delay } from 'rxjs';
 import { Examen } from '../../../modele/imagerie.model';
 import { Location } from '@angular/common';
-import { StandalonePacsViewerComponent } from '../../../core/utils/standalone-pacs-viewer.component';
 
 interface Toast {
   id: number;
@@ -15,7 +14,7 @@ interface Toast {
 @Component({
   selector: 'app-detail-examen-imagerie',
   standalone: true,
-  imports: [CommonModule, FormsModule, StandalonePacsViewerComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './detail-examen-imagerie.component.html',
   styleUrl: './detail-examen-imagerie.component.css'
 })
@@ -70,7 +69,7 @@ export class DetailExamenImagerieComponent implements OnInit {
   // ======================
   // UI STATE
   // ======================
-  ongletActif: 'images' | 'compte-rendu' | 'dicom' = 'dicom';
+  ongletActif: 'images' | 'compte-rendu' | 'dicom' = 'images';
 
   // ======================
   // MODALS
@@ -194,18 +193,109 @@ export class DetailExamenImagerieComponent implements OnInit {
   // --- Local imagerie mocks/helpers ---
   private mockExamenStore: any[] = [
     {
-      id: 1,
-      type: 'Radiologie',
+      id: 5,
+      type: 'IRM',
+      region: 'Cérébral',
+      urgencyLevel: 'URGENT',
+      status: 'ACCEPTED',
+      patientFirstName: 'Moussa',
+      patientLastName: 'Wade',
+      patientName: 'Moussa Wade',
+      doctorName: 'Dr. Diop',
+      doctorSpecialite: 'Médecin Générale',
+      clinicalIndication: 'Douleurs persistantes depuis 3 semaines.\nSuspicion de lésion méniscale.\nAntécédents de traumatisme sportif.',
+      contreIndications: { texte: 'Aucune contre-indication signalée', pacemaker: false, claustrophobie: false },
+      createdAt: '2023-10-25T08:30:00.000Z',
+      pictures: ['irm_cerebral_1.jpg'],
+      accessionNumber: 'IMG-001',
+      appointmentDate: null,
+      appointmentTime: null,
+      report: null,
+      reportFile: null
+    },
+    {
+      id: 4,
+      type: 'Scanner',
+      region: 'Thorax',
+      urgencyLevel: 'URGENT',
+      status: 'ACCEPTED',
+      patientFirstName: 'Maman',
+      patientLastName: 'Fall',
+      patientName: 'Maman Fall',
+      doctorName: 'Dr. Pneumo',
+      doctorSpecialite: 'Pneumologue',
+      clinicalIndication: 'Toux persistante depuis 6 semaines.\nSuspicion de pneumonie.',
+      contreIndications: null,
+      createdAt: '2025-01-15T09:15:00.000Z',
+      pictures: [],
+      accessionNumber: 'IMG-002',
+      appointmentDate: null,
+      appointmentTime: null,
+      report: null,
+      reportFile: null
+    },
+    {
+      id: 3,
+      type: 'Radio',
+      region: 'Genou Droit',
       urgencyLevel: 'NORMAL',
       status: 'PENDING',
-      patientName: 'DIAW M',
-      doctorName: 'Dr Mock',
-      clinicalIndication: 'Douleur thoracique',
-      createdAt: new Date().toISOString(),
-      pictures: ['img1.jpg','img2.jpg'],
-      accessionNumber: 'ACC-1',
+      patientFirstName: 'Fatou',
+      patientLastName: 'Fall',
+      patientName: 'Fatou Fall',
+      doctorName: 'Dr. Ortho',
+      doctorSpecialite: 'Orthopédiste',
+      clinicalIndication: 'Douleur au genou droit suite à une chute.',
+      contreIndications: null,
+      createdAt: '2025-01-15T08:30:00.000Z',
+      pictures: [],
+      accessionNumber: 'IMG-003',
       appointmentDate: null,
-      appointmentTime: null
+      appointmentTime: null,
+      report: null,
+      reportFile: null
+    },
+    {
+      id: 2,
+      type: 'Echo',
+      region: 'Abdominal',
+      urgencyLevel: 'NORMAL',
+      status: 'PENDING',
+      patientFirstName: 'Isseu',
+      patientLastName: 'Ly',
+      patientName: 'Isseu Ly',
+      doctorName: 'Dr. Gastro',
+      doctorSpecialite: 'Gastroentérologue',
+      clinicalIndication: 'Douleurs abdominales chroniques.',
+      contreIndications: null,
+      createdAt: '2025-01-14T11:45:00.000Z',
+      pictures: [],
+      accessionNumber: 'IMG-004',
+      appointmentDate: null,
+      appointmentTime: null,
+      report: null,
+      reportFile: null
+    },
+    {
+      id: 1,
+      type: 'Scanner',
+      region: 'Genou Gauche',
+      urgencyLevel: 'NORMAL',
+      status: 'PENDING',
+      patientFirstName: 'Isseu',
+      patientLastName: 'Ly',
+      patientName: 'Isseu Ly',
+      doctorName: 'Dr. Ortho',
+      doctorSpecialite: 'Orthopédiste',
+      clinicalIndication: 'Douleur au genou gauche, limitation de mobilité.',
+      contreIndications: null,
+      createdAt: '2025-01-14T11:45:00.000Z',
+      pictures: [],
+      accessionNumber: 'IMG-005',
+      appointmentDate: null,
+      appointmentTime: null,
+      report: null,
+      reportFile: null
     }
   ];
 
@@ -305,14 +395,14 @@ export class DetailExamenImagerieComponent implements OnInit {
 
         this.prescripteur = {
           name: data.doctorName,
-          specialite: 'Médecin prescripteur'
+          specialite: data.doctorSpecialite || 'Médecin prescripteur'
         };
 
         this.prescription = {
           typeExamen: data.type,
           zone: data.region,
           indications: data.clinicalIndication ? [data.clinicalIndication] : [],
-          contreIndications: null,
+          contreIndications: data.contreIndications || null,
           dateReception: new Date(data.createdAt).toLocaleString()
         };
 

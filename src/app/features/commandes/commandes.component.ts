@@ -1,127 +1,39 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Observable, of, throwError } from 'rxjs';
-import { delay } from 'rxjs/operators';
-import { Subject } from 'rxjs';
+import { Subject, of } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import Swal from 'sweetalert2';
-// Inlined types from commande.service
-interface Doctor {
-  id: number;
-  nom: string;
-  prenom: string;
-}
 
-interface Patient {
-  id: number;
-  nom: string;
-  prenom: string;
-}
+type PrescriptionStatus =
+  | 'PENDING'
+  | 'ACCEPTED'
+  | 'REJECTED'
+  | 'IN_PREPARATION'
+  | 'READY'
+  | 'DELIVERED'
+  | string;
 
-interface Pharmacist {
-  id: number;
-  nom: string;
-  prenom: string;
-}
-
-interface PharmacyInfo {
-  id: number;
-  name: string;
-  address: string;
-  phone: string;
-  email: string;
-  latitude: number;
-  longitude: number;
-  logo: string;
-  pharmacist: Pharmacist;
-}
-
-interface Medication {
-  id: number;
-  name: string;
-  quantity: number;
-  dosage: string;
-  price: number;
-}
+interface Patient { prenom: string; nom: string; }
+interface Doctor { prenom: string; nom: string; }
+interface Medication { id: number; name: string; dosage: string; quantity: number; price: number; }
+interface Pharmacy { id: number; name: string; }
 
 interface Prescription {
   id: number;
-  doctor: Doctor;
   patient: Patient;
+  doctor: Doctor;
   createdAt: string;
-  status: string;
-  qrCodeUrl: string;
-  fullyPaidByDonor: boolean;
-  partiallyPaidByDonor: boolean;
-  pharmacy: PharmacyInfo;
-  amount: number | null;
-  needsHelp: boolean;
-  address: string;
-  latitude: number;
-  longitude: number;
-  prescriptionFile: string | null;
+  status: PrescriptionStatus;
   medications: Medication[];
+  amount?: number;
+  pharmacy?: Pharmacy;
+  prescriptionFile?: string;
 }
 
-interface PaginatedResponse<T> {
-  content: T[];
-  pageable: {
-    pageNumber: number;
-    pageSize: number;
-    sort: {
-      unsorted: boolean;
-      sorted: boolean;
-      empty: boolean;
-    };
-    offset: number;
-    paged: boolean;
-    unpaged: boolean;
-  };
-  totalElements: number;
-  totalPages: number;
-  last: boolean;
-  numberOfElements: number;
-  size: number;
-  number: number;
-  sort: {
-    unsorted: boolean;
-    sorted: boolean;
-    empty: boolean;
-  };
-  first: boolean;
-  empty: boolean;
-}
-
-interface MedicationValidation {
-  medicationId: number;
-  unitPrice: number;
-}
-
-interface ValidateCommandeRequest {
-  prescriptionId: number;
-  amount: number;
-  medications: MedicationValidation[];
-}
-
-interface RejectCommandeRequest { prescriptionId: number; }
+interface ValidateCommandeMedication { medicationId: number; unitPrice: number; }
+interface ValidateCommandeRequest { prescriptionId: number; amount: number; medications: ValidateCommandeMedication[]; }
 interface ReadyCommandeRequest { prescriptionId: number; }
-import { User } from '../../core/auth.types';
-// AuthFacade removed — using local mock current user for static UI
-
-export interface OrderItem {
-  name: string;
-  quantity: number;
-  price: number;
-}
-
-export interface Order {
-  reference: string;
-  patient: string;
-  date: string;
-  status: 'En attente' | 'Validée';
-  items: OrderItem[];
-}
 
 @Component({
   selector: 'app-commandes',
@@ -131,201 +43,67 @@ export interface Order {
   styleUrls: ['./commandes.component.css']
 })
 export class CommandesComponent implements OnInit, OnDestroy {
-  private readonly statuses: Prescription['status'][] = ['PENDING', 'ACCEPTED', 'REJECTED', 'IN_PREPARATION', 'READY', 'DELIVERED'];
 
-  // Data properties from service
+  // ── Mock data ──────────────────────────────────────────────────────────────
+  private mockData: Prescription[] = [
+    {
+      id: 1,
+      patient: { prenom: 'Alice', nom: 'Martin' },
+      doctor: { prenom: 'Jean', nom: 'Dupont' },
+      createdAt: new Date().toISOString(),
+      status: 'IN_PREPARATION',
+      medications: [
+        { id: 10, name: 'Paracétamol', dosage: '500mg', quantity: 2, price: 1200 },
+        { id: 11, name: 'Ibuprofène', dosage: '400mg', quantity: 1, price: 2000 }
+      ],
+      amount: 4400
+    }
+  ];
+
+  private state = {
+    getPrescriptions: (_pharmacyId: number, _page: number, _size: number) =>
+      of({ content: this.mockData, totalElements: this.mockData.length, totalPages: 1 }),
+    getPrescriptionDetails: (id: number) =>
+      of(this.mockData.find(p => p.id === id) ?? null),
+    validatePrescription: (_payload: ValidateCommandeRequest) => of({}),
+    markAsReady: (_payload: ReadyCommandeRequest) => of({})
+  };
+
+  // ── Data ───────────────────────────────────────────────────────────────────
   prescriptions: Prescription[] = [];
   selectedPrescription: Prescription | null = null;
-
-  // UI state
-  saisieMode: 'medicament' | 'total' = 'medicament';
-  montantTotal: number = 0;
-  loading: boolean = false;
-  error: string = '';
-
-  // Responsive properties
-  showMobileDetails: boolean = false;
-  isMobileView: boolean = false;
-  isTabletView: boolean = false;
-
-  // Filter and search properties
   filteredPrescriptions: Prescription[] = [];
   paginatedPrescriptions: Prescription[] = [];
-  searchTerm: string = '';
-  showFilter: boolean = false;
 
-  // Pagination properties
-  currentPage: number = 1;
-  itemsPerPage: number = 100;
-  totalItems: number = 0;
-  totalPages: number = 0;
+  // ── UI state ───────────────────────────────────────────────────────────────
+  saisieMode: 'medicament' | 'total' = 'medicament';
+  activeTab = 'medicaments';
+  montantTotal = 0;
+  loading = false;
+  error = '';
+  showMobileDetails = false;
+  isMobileView = false;
+  isTabletView = false;
+  searchTerm = '';
+  showFilter = false;
+  showDemandeModal = false;
+  priorite: 'Normal' | 'Prioritaire' | 'Urgent' = 'Urgent';
+  messageOptionnel = '';
+  medicationAvailability: Map<number, boolean> = new Map();
 
-  // Math reference for template
+  // ── Pagination ─────────────────────────────────────────────────────────────
+  currentPage = 1;
+  itemsPerPage = 100;
+  totalItems = 0;
+  totalPages = 0;
+
   Math = Math;
 
-  // User and pharmacy IDs - dynamically retrieved from AuthService
-  private userId: number = 0;
-  private pharmacyId: number = 0;
-  private mockPrescriptions: Prescription[] = [];
-  private nextPrescriptionId = 1;
+  private userId = 0;
+  private pharmacyId = 0;
   private destroy$ = new Subject<void>();
 
-  constructor(
-  ) {
-    this.initLocalCommandesData();
-    this.checkScreenSize();
-  }
-
-  private initLocalCommandesData(): void {
-    const pharmacy = {
-      id: 1,
-      name: 'Pharmacie Demo',
-      address: 'Adresse de démonstration',
-      phone: '000000000',
-      email: 'demo@pharmacie.local',
-      latitude: 0,
-      longitude: 0,
-      logo: '',
-      pharmacist: { id: 1, nom: 'Demo', prenom: 'Pharmacien' }
-    };
-
-    for (let i = 1; i <= 24; i++) {
-      const status = this.statuses[(i - 1) % this.statuses.length];
-      const medications = [
-        { id: i * 10 + 1, name: `Médicament ${i}-A`, dosage: '500mg', quantity: 2, price: 1200 },
-        { id: i * 10 + 2, name: `Médicament ${i}-B`, dosage: '250mg', quantity: 1, price: 850 }
-      ];
-
-      this.mockPrescriptions.push({
-        id: this.nextPrescriptionId++,
-        doctor: { id: i, nom: `Docteur${i}`, prenom: 'Amina' },
-        patient: { id: i, nom: `Patient${i}`, prenom: 'Ali' },
-        createdAt: new Date(Date.now() - i * 86400000).toISOString(),
-        status,
-        qrCodeUrl: '',
-        fullyPaidByDonor: false,
-        partiallyPaidByDonor: i % 3 === 0,
-        pharmacy,
-        amount: medications.reduce((sum, med) => sum + (med.quantity * med.price), 0),
-        needsHelp: i % 4 === 0,
-        address: `Quartier ${i}`,
-        latitude: 0,
-        longitude: 0,
-        prescriptionFile: i % 2 === 0 ? `ordonnance-${i}.pdf` : null,
-        medications
-      });
-    }
-  }
-
-  // Local mock for current user
-  private getMockCurrentUser(): User {
-    return { id: 1, prenom: 'Demo', nom: 'Pharmacien', profil: 'PHARMACIE', lat: 0, lon: 0, pharmacyId: 1 } as any;
-  }
-
-  // Local replacement for getCurrentUserById
-  private localGetCurrentUserById(id: number) {
-    const mock: User = { id, prenom: 'Demo', nom: 'Pharmacien', profil: 'PHARMACIE', lat: 0, lon: 0, pharmacyId: 1 } as any;
-    return of(mock).pipe(delay(120));
-  }
-
-  private clonePrescription(prescription: Prescription): Prescription {
-    return {
-      ...prescription,
-      doctor: { ...prescription.doctor },
-      patient: { ...prescription.patient },
-      pharmacy: {
-        ...prescription.pharmacy,
-        pharmacist: { ...prescription.pharmacy.pharmacist }
-      },
-      medications: prescription.medications.map(medication => ({ ...medication }))
-    };
-  }
-
-  private toPageResponse(items: Prescription[], page: number, size: number): PaginatedResponse<Prescription> {
-    const totalElements = items.length;
-    const totalPages = Math.max(1, Math.ceil(totalElements / size));
-    const start = page * size;
-    const content = items.slice(start, start + size).map(item => this.clonePrescription(item));
-
-    return {
-      content,
-      pageable: {
-        pageNumber: page,
-        pageSize: size,
-        sort: { unsorted: false, sorted: true, empty: false },
-        offset: start,
-        paged: true,
-        unpaged: false
-      },
-      totalElements,
-      totalPages,
-      last: page >= totalPages - 1,
-      numberOfElements: content.length,
-      size,
-      number: page,
-      sort: { unsorted: false, sorted: true, empty: false },
-      first: page === 0,
-      empty: content.length === 0
-    };
-  }
-
-  private localGetCommandes(pharmacyId: number, page: number = 0, size: number = 10): Observable<PaginatedResponse<Prescription>> {
-    const filtered = this.mockPrescriptions.filter(p => p.pharmacy?.id === pharmacyId);
-    return of(this.toPageResponse(filtered, page, size)).pipe(delay(250));
-  }
-
-  private localGetDetailsCommande(prescriptionId: number): Observable<Prescription> {
-    const found = this.mockPrescriptions.find(p => p.id === prescriptionId);
-    if (!found) return throwError(() => new Error('Commande introuvable'));
-    return of(this.clonePrescription(found)).pipe(delay(180));
-  }
-
-  private localValiderCommande(validationData: ValidateCommandeRequest): Observable<any> {
-    const index = this.mockPrescriptions.findIndex(p => p.id === validationData.prescriptionId);
-    if (index === -1) return throwError(() => new Error('Commande introuvable'));
-
-    const current = this.mockPrescriptions[index];
-    const validatedMedications = current.medications.map(medication => {
-      const validation = validationData.medications.find(item => item.medicationId === medication.id);
-      return {
-        ...medication,
-        price: validation ? validation.unitPrice : medication.price
-      };
-    });
-
-    this.mockPrescriptions[index] = {
-      ...current,
-      status: 'ACCEPTED',
-      amount: validationData.amount,
-      medications: validatedMedications
-    };
-
-    return of({ message: 'Commande acceptée' }).pipe(delay(250));
-  }
-
-  private localMarquerCommandePrete(readyData: ReadyCommandeRequest): Observable<any> {
-    const index = this.mockPrescriptions.findIndex(p => p.id === readyData.prescriptionId);
-    if (index === -1) return throwError(() => new Error('Commande introuvable'));
-
-    this.mockPrescriptions[index] = {
-      ...this.mockPrescriptions[index],
-      status: 'READY'
-    };
-
-    return of({ message: 'Commande prête' }).pipe(delay(200));
-  }
-
-  private localRejeterCommande(rejectionData: RejectCommandeRequest): Observable<any> {
-    const index = this.mockPrescriptions.findIndex(p => p.id === rejectionData.prescriptionId);
-    if (index === -1) return throwError(() => new Error('Commande introuvable'));
-
-    this.mockPrescriptions[index] = {
-      ...this.mockPrescriptions[index],
-      status: 'REJECTED'
-    };
-
-    return of({ message: 'Commande refusée' }).pipe(delay(200));
-  }
+  constructor() { this.checkScreenSize(); }
 
   ngOnInit(): void {
     this.initializeUserData();
@@ -337,100 +115,39 @@ export class CommandesComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  /**
-   * Écouter les changements de taille d'écran
-   */
-  @HostListener('window:resize', ['$event'])
-  onResize(event?: any): void {
-    this.checkScreenSize();
-  }
+  @HostListener('window:resize')
+  onResize(): void { this.checkScreenSize(); }
 
-  /**
-   * Vérifier la taille de l'écran pour la responsivité
-   */
+  // ── Screen size ────────────────────────────────────────────────────────────
   private checkScreenSize(): void {
     const width = window.innerWidth;
     this.isMobileView = width < 768;
     this.isTabletView = width >= 768 && width < 1024;
-
-    // Réinitialiser showMobileDetails si on passe en desktop
-    if (width >= 1024) {
-      this.showMobileDetails = false;
-    }
+    if (width >= 1024) this.showMobileDetails = false;
   }
 
-  /**
-   * Basculer entre la liste et les détails sur mobile
-   */
-  toggleMobileView(): void {
-    this.showMobileDetails = !this.showMobileDetails;
+  toggleMobileView(): void { this.showMobileDetails = !this.showMobileDetails; }
 
-    // Si on retourne à la liste, déselectionner la commande
-    if (!this.showMobileDetails) {
-      // On garde la sélection mais on masque les détails
-    }
-  }
-
-  /**
-   * Initialiser les données utilisateur à partir de l'AuthService
-   */
+  // ── Init ───────────────────────────────────────────────────────────────────
   private initializeUserData(): void {
-    // Use local mock current user for static UI
-    const currentUser = this.getMockCurrentUser();
-    if (currentUser && currentUser.id) {
-      this.userId = currentUser.id;
-      this.loadUserDataAndCommandes();
-    }
+    this.userId = 1;
+    this.pharmacyId = 1;
+    this.loadCommandes();
   }
 
-  /**
-   * Charger les données utilisateur et ensuite les commandes
-   */
-  private loadUserDataAndCommandes(): void {
-    if (this.userId <= 0) {
-      console.error('ID utilisateur invalide');
-      return;
-    }
-
-    this.loading = true;
-
-    // Use local mock to get user details including pharmacyId
-    this.localGetCurrentUserById(this.userId).subscribe({
-      next: (user: any) => {
-        if (user.pharmacyId) {
-          this.pharmacyId = user.pharmacyId;
-          this.loadCommandes();
-        } else {
-          console.error('Aucun ID de pharmacie trouvé pour l\'utilisateur (mock)');
-          this.loading = false;
-          this.showNoPharmacyError();
-        }
-      },
-      error: (error: any) => {
-        console.error('Erreur lors du chargement des données utilisateur (mock):', error);
-        this.loading = false;
-        this.showUserDataError();
-      }
-    });
-  }
-
-  /**
-   * Charger les commandes depuis le service
-   */
+  // ── Load data ──────────────────────────────────────────────────────────────
   loadCommandes(): void {
     if (this.pharmacyId <= 0) {
-      console.error('ID pharmacie invalide');
-      this.loadUserDataAndCommandes();
+      this.showAlert('Erreur', 'Aucune pharmacie associée à votre compte', 'warning');
       return;
     }
-
     this.loading = true;
     this.error = '';
-    const page = this.currentPage - 1; // API uses 0-based pagination
 
-    this.localGetCommandes(this.pharmacyId, page, this.itemsPerPage)
+    this.state.getPrescriptions(this.pharmacyId, this.currentPage - 1, this.itemsPerPage)
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response: PaginatedResponse<Prescription>) => {
+        next: (response: any) => {
           this.prescriptions = response.content;
           this.filteredPrescriptions = [...this.prescriptions];
           this.totalItems = response.totalElements;
@@ -438,600 +155,344 @@ export class CommandesComponent implements OnInit, OnDestroy {
           this.updatePagination();
           this.loading = false;
         },
-        error: (error) => {
-          console.error('Erreur lors du chargement des commandes:', error);
+        error: () => {
           this.error = 'Erreur lors du chargement des commandes';
           this.loading = false;
-          Swal.fire({
-            title: 'Erreur',
-            text: 'Impossible de charger les commandes',
-            icon: 'error',
-            confirmButtonColor: '#FF6B6B'
-          });
+          this.showAlert('Erreur', 'Impossible de charger les commandes', 'error');
         }
       });
   }
 
-  /**
-   * Charger les détails d'une commande
-   */
   loadCommandeDetails(prescriptionId: number): void {
-    this.localGetDetailsCommande(prescriptionId)
+    this.state.getPrescriptionDetails(prescriptionId)
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (prescription: Prescription) => {
+        next: (prescription: any) => {
           this.selectedPrescription = prescription;
-          // Initialize montantTotal if in total mode
-          if (this.saisieMode === 'total') {
-            this.montantTotal = prescription.amount || 0;
-          }
+          if (this.saisieMode === 'total') this.montantTotal = prescription?.amount ?? 0;
         },
-        error: (error) => {
-          console.error('Erreur lors du chargement des détails:', error);
-          Swal.fire({
-            title: 'Erreur',
-            text: 'Impossible de charger les détails de la commande',
-            icon: 'error',
-            confirmButtonColor: '#FF6B6B'
-          });
-        }
+        error: () => this.showAlert('Erreur', 'Impossible de charger les détails de la commande', 'error')
       });
   }
 
-  /**
-   * Définir le mode de saisie
-   */
+  refreshData(): void { this.loadCommandes(); }
+
+  // ── Selection ──────────────────────────────────────────────────────────────
+  selectPrescription(prescription: Prescription): void {
+    this.loadCommandeDetails(prescription.id);
+    if (this.isMobileView || this.isTabletView) this.showMobileDetails = true;
+  }
+
+  // ── Saisie mode ────────────────────────────────────────────────────────────
   setSaisieMode(mode: 'medicament' | 'total'): void {
     this.saisieMode = mode;
-    // Ne réinitialiser montantTotal que si l'utilisateur n'a encore rien saisi
-    if (mode === 'total' && this.selectedPrescription && this.montantTotal === 0) {
-      this.montantTotal = this.selectedPrescription.amount || 0;
-    }
+    if (mode === 'total' && this.selectedPrescription && this.montantTotal === 0)
+      this.montantTotal = this.selectedPrescription.amount ?? 0;
   }
 
-  /**
-   * Mettre à jour un médicament
-   */
+  // ── Medications ────────────────────────────────────────────────────────────
   updateMedicament(index: number, field: string, event: any): void {
     if (!this.selectedPrescription) return;
-
-    const value = event.target.value;
-    const medication = this.selectedPrescription.medications[index];
-
-    switch (field) {
-      case 'name':
-        medication.name = value;
-        break;
-      case 'dosage':
-        medication.dosage = value;
-        break;
-      case 'quantity':
-        medication.quantity = parseInt(value) || 0;
-        break;
-      case 'price':
-        medication.price = parseFloat(value) || 0;
-        break;
-    }
+    const val = event.target.value;
+    const med = this.selectedPrescription.medications[index];
+    if (field === 'name') med.name = val;
+    else if (field === 'dosage') med.dosage = val;
+    else if (field === 'quantity') med.quantity = parseInt(val) || 0;
+    else if (field === 'price') med.price = parseFloat(val) || 0;
   }
 
-  /**
-   * Ajouter un nouveau médicament
-   */
   ajouterMedicament(): void {
     if (!this.selectedPrescription) return;
-
-    const nouveauMedicament = {
-      id: 0, // Temporary ID for new medication
-      name: '',
-      dosage: '',
-      quantity: 0,
-      price: 0
-    };
-
-    this.selectedPrescription.medications.push(nouveauMedicament);
+    this.selectedPrescription.medications.push({ id: 0, name: '', dosage: '', quantity: 0, price: 0 });
   }
 
-  /**
-   * Supprimer un médicament
-   */
   supprimerMedicament(index: number): void {
-    if (!this.selectedPrescription || this.selectedPrescription.medications.length <= 1) {
-      Swal.fire({
-        title: 'Impossible',
-        text: 'Vous devez garder au moins un médicament dans la commande.',
-        icon: 'warning',
-        confirmButtonColor: '#FF6B6B'
-      });
+    if (!this.selectedPrescription) return;
+    if (this.selectedPrescription.medications.length <= 1) {
+      this.showAlert('Impossible', 'Vous devez garder au moins un médicament dans la commande.', 'warning');
       return;
     }
-
     Swal.fire({
-      title: 'Supprimer ce médicament ?',
-      text: 'Cette action est irréversible.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#FF6B6B',
-      cancelButtonColor: '#6c757d',
-      confirmButtonText: 'Oui, supprimer',
-      cancelButtonText: 'Annuler'
-    }).then((result) => {
+      title: 'Supprimer ce médicament ?', text: 'Cette action est irréversible.', icon: 'warning',
+      showCancelButton: true, confirmButtonColor: '#FF6B6B', cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Oui, supprimer', cancelButtonText: 'Annuler'
+    }).then(result => {
       if (result.isConfirmed) {
         this.selectedPrescription!.medications.splice(index, 1);
-        Swal.fire({
-          title: 'Supprimé !',
-          text: 'Le médicament a été supprimé.',
-          icon: 'success',
-          confirmButtonColor: '#00B894',
-          timer: 2000,
-          timerProgressBar: true
-        });
+        this.showAlert('Supprimé !', 'Le médicament a été supprimé.', 'success');
       }
     });
   }
 
-  /**
-   * Obtenir le total selon le mode de saisie
-   */
-  getTotal(): number {
-    if (this.saisieMode === 'total') {
-      return this.montantTotal;
-    }
-    return this.calculerTotal();
+  // ── Availability toggle ────────────────────────────────────────────────────
+  toggleAvailability(medId: number): void {
+    this.medicationAvailability.set(medId, !this.medicationAvailability.get(medId));
   }
 
-  /**
-   * Calculer le total de la commande
-   */
+  isMedAvailable(medId: number): boolean {
+    return this.medicationAvailability.get(medId) ?? false;
+  }
+
+  // ── Totals ─────────────────────────────────────────────────────────────────
+  getTotal(): number {
+    return this.saisieMode === 'total' ? this.montantTotal : this.calculerTotal();
+  }
+
   calculerTotal(): number {
     if (!this.selectedPrescription) return 0;
-
-    return this.selectedPrescription.medications.reduce((total, medication) => {
-      return total + (medication.quantity * medication.price);
-    }, 0);
+    return this.selectedPrescription.medications.reduce((sum, m) => sum + (m.price * m.quantity), 0);
   }
 
-  /**
-   * Accepter la commande
-   */
+  // ── Actions ────────────────────────────────────────────────────────────────
   accepterCommande(): void {
     if (!this.selectedPrescription) return;
 
-    // Valider le formulaire selon le mode de saisie
     if (this.saisieMode === 'medicament') {
-      const medicamentsValides = this.selectedPrescription.medications.every(med =>
-        med.name.trim() !== '' && med.quantity > 0 && med.price > 0
-      );
-
-      if (!medicamentsValides) {
-        Swal.fire({
-          title: 'Validation incomplète',
-          text: 'Veuillez renseigner le prix unitaire (P U) pour chaque médicament.',
-          icon: 'warning',
-          confirmButtonColor: '#FF6B6B'
-        });
+      const invalid = this.selectedPrescription.medications.some(m => !m.price || m.price <= 0);
+      if (invalid) {
+        this.showAlert('Validation incomplète', 'Veuillez renseigner le prix unitaire (P U) pour chaque médicament.', 'warning');
         return;
       }
-    } else if (this.saisieMode === 'total') {
-      if (!this.montantTotal || this.montantTotal <= 0) {
-        Swal.fire({
-          title: 'Montant invalide',
-          text: 'Veuillez saisir un montant total valide.',
-          icon: 'warning',
-          confirmButtonColor: '#FF6B6B'
-        });
-        return;
-      }
-    }
-
-    const prescriptionRef = `CMD-${this.selectedPrescription.id}`;
-    const patientName = `${this.selectedPrescription.patient.prenom} ${this.selectedPrescription.patient.nom}`;
-
-    Swal.fire({
-      title: 'Accepter cette commande ?',
-      html: `
-        <div style="text-align: center; padding: 10px;">
-          <p style="margin: 0; font-size: 16px; font-weight: 500;">Commande N° <strong style="color: #00B894;">${prescriptionRef}</strong></p>
-          <p style="margin: 12px 0 0 0; font-size: 14px; color: #666;">Patient: <strong>${patientName}</strong></p>
-          <p style="margin: 8px 0 0 0; font-size: 14px; color: #666;">Montant: <strong>${this.getTotal().toLocaleString('fr-FR')} FCFA</strong></p>
-        </div>
-      `,
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonColor: '#00B894',
-      cancelButtonColor: '#6c757d',
-      confirmButtonText: '<span style="font-size: 15px; font-weight: 500; padding: 2px 8px;">✓ Oui, accepter</span>',
-      cancelButtonText: '<span style="font-size: 15px; font-weight: 500; padding: 2px 8px;">✕ Annuler</span>',
-      buttonsStyling: true,
-      allowOutsideClick: false,
-      allowEscapeKey: false
-    }).then((result) => {
-      if (result.isConfirmed) {
-        this.loading = true;
-
-        // Préparer les données de validation selon le mode de saisie
-        let validationData: ValidateCommandeRequest;
-
-        if (this.saisieMode === 'medicament') {
-          // Mode médicament : envoyer les prix par médicament, montant = somme calculée
-          const medicationsToValidate = this.selectedPrescription!.medications
-            .filter(med => med.id && med.id > 0) // Uniquement les médicaments existants (ID valide)
-            .map(med => ({
-              medicationId: med.id,
-              unitPrice: Number(med.price) || 0
-            }));
-
-          validationData = {
-            prescriptionId: this.selectedPrescription!.id,
-            amount: this.calculerTotal(), // Montant calculé depuis les prix par médicament
-            medications: medicationsToValidate
-          };
-
-          console.log('Données de validation (mode médicament) :', validationData);
-        } else {
-          // Mode total : montant global saisi, aucun détail par médicament
-          validationData = {
-            prescriptionId: this.selectedPrescription!.id,
-            amount: Number(this.montantTotal),
-            medications: []
-          };
-        }
-
-        // Appliquer la validation localement dans le state sandbox
-        this.localValiderCommande(validationData)
-          .subscribe({
-            next: (response) => {
-              this.loading = false;
-
-              Swal.fire({
-                title: 'Acceptée !',
-                html: `
-                  <div style="text-align: center;">
-                    <p style="font-size: 15px; color: #666; margin: 8px 0;">La commande <strong>${prescriptionRef}</strong> a été acceptée avec succès.</p>
-                    <p style="font-size: 14px; color: #00B894; margin: 8px 0;">Le patient sera notifié.</p>
-                  </div>
-                `,
-                icon: 'success',
-                confirmButtonColor: '#00B894',
-                confirmButtonText: 'OK',
-                timer: 3000,
-                timerProgressBar: true
-              });
-
-              // Rafraîchir la liste et réinitialiser la sélection
-              this.selectedPrescription = null;
-              this.montantTotal = 0;
-              this.saisieMode = 'medicament';
-              this.showMobileDetails = false; // Retour à la liste sur mobile
-              this.loadCommandes();
-            },
-            error: (error) => {
-              this.loading = false;
-              console.error('❌ Erreur lors de l\'acceptation:', error);
-              console.error('📋 Détails de l\'erreur:', {
-                status: error.status,
-                statusText: error.statusText,
-                message: error.error?.message || error.message,
-                error: error.error
-              });
-
-              let errorMessage = 'Impossible d\'accepter la commande. Veuillez réessayer.';
-
-              // Gestion des messages d'erreur spécifiques
-              if (error.status === 400) {
-                errorMessage = 'Données invalides. Veuillez vérifier les informations saisies.';
-              } else if (error.status === 404) {
-                errorMessage = 'Commande introuvable. Elle a peut-être déjà été traitée.';
-              } else if (error.status === 500) {
-                errorMessage = 'Erreur serveur. Veuillez contacter l\'administrateur.';
-                if (error.error?.message) {
-                  errorMessage += `\n\nDétails: ${error.error.message}`;
-                }
-              } else if (error.error?.message) {
-                errorMessage = error.error.message;
-              }
-
-              Swal.fire({
-                title: 'Erreur',
-                html: `
-                  <div style="text-align: center;">
-                    <p style="font-size: 15px; color: #666; margin: 8px 0;">${errorMessage}</p>
-                    ${error.status ? `<p style="font-size: 12px; color: #999; margin-top: 12px;">Code erreur: ${error.status}</p>` : ''}
-                  </div>
-                `,
-                icon: 'error',
-                confirmButtonColor: '#FF6B6B',
-                confirmButtonText: 'Fermer'
-              });
-            }
-          });
-      }
-    });
-  }
-
-  /**
-   * Marquer une commande en préparation comme prête pour livraison
-   */
-  marquerCommandePretePourLivraison(): void {
-    if (!this.selectedPrescription || this.selectedPrescription.status !== 'IN_PREPARATION') {
+    } else if (!this.montantTotal || this.montantTotal <= 0) {
+      this.showAlert('Montant invalide', 'Veuillez saisir un montant total valide.', 'warning');
       return;
     }
 
-    const prescriptionRef = this.getPrescriptionReference(this.selectedPrescription.id);
+    const ref = this.getPrescriptionReference(this.selectedPrescription.id);
+    const patient = this.getPatientFullName(this.selectedPrescription);
 
     Swal.fire({
-      html: `
-        <div class="text-center px-2 pt-2 pb-1">
-          <div class="w-20 h-20 border-[6px] border-[#E6B27B] rounded-full flex items-center justify-center mx-auto mb-5">
-            <span class="text-5xl leading-none text-[#E6B27B] font-medium">!</span>
-          </div>
-          <h3 class="text-3xl font-medium text-[#2B2B33] mb-3">Confirmer la préparation</h3>
-          <p class="text-lg leading-7 text-[#3E3E47]">
-            Êtes-vous sûr de vouloir marquer cette commande<br>
-            comme <strong class="font-bold text-[#2B2B33]">prête pour livraison</strong> ?
-          </p>
+      title: 'Accepter cette commande ?',
+      html: `<div style="text-align:center;padding:10px">
+        <p style="margin:0;font-size:16px;font-weight:500">Commande N° <strong style="color:#00B894">${ref}</strong></p>
+        <p style="margin:12px 0 0;font-size:14px;color:#666">Patient: <strong>${patient}</strong></p>
+        <p style="margin:8px 0 0;font-size:14px;color:#666">Montant: <strong>${this.getTotal().toLocaleString('fr-FR')} FCFA</strong></p>
+      </div>`,
+      icon: 'question', showCancelButton: true,
+      confirmButtonColor: '#00B894', cancelButtonColor: '#6c757d',
+      confirmButtonText: '✓ Oui, accepter', cancelButtonText: '✕ Annuler',
+      allowOutsideClick: false, allowEscapeKey: false
+    }).then(result => {
+      if (!result.isConfirmed) return;
+      this.loading = true;
+
+      const validationData: ValidateCommandeRequest = this.saisieMode === 'medicament'
+        ? {
+            prescriptionId: this.selectedPrescription!.id,
+            amount: this.calculerTotal(),
+            medications: this.selectedPrescription!.medications
+              .filter(m => m.id > 0)
+              .map(m => ({ medicationId: m.id, unitPrice: m.price }))
+          }
+        : { prescriptionId: this.selectedPrescription!.id, amount: this.montantTotal, medications: [] };
+
+      this.state.validatePrescription(validationData)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => { this.loading = false; Swal.fire({ title: 'Acceptée !', text: `La commande ${ref} a été acceptée avec succès.`, icon: 'success', confirmButtonColor: '#00B894' }); this.loadCommandes(); },
+          error: () => { this.loading = false; this.showAlert('Erreur', 'Impossible d\'accepter la commande. Veuillez réessayer.', 'error'); }
+        });
+    });
+  }
+
+  marquerCommandePretePourLivraison(): void {
+    if (!this.selectedPrescription || this.selectedPrescription.status !== 'IN_PREPARATION') return;
+    const ref = this.getPrescriptionReference(this.selectedPrescription.id);
+
+    Swal.fire({
+      html: `<div class="text-center px-2 pt-2 pb-1">
+        <div class="w-20 h-20 border-[6px] border-[#E6B27B] rounded-full flex items-center justify-center mx-auto mb-5">
+          <span class="text-5xl leading-none text-[#E6B27B] font-medium">!</span>
         </div>
-      `,
-      showCancelButton: true,
-      showConfirmButton: true,
-      confirmButtonText: 'Oui, confirmer',
-      cancelButtonText: 'Annuler',
-      buttonsStyling: false,
-      allowOutsideClick: false,
-      allowEscapeKey: false,
+        <h3 class="text-3xl font-medium text-[#2B2B33] mb-3">Confirmer la préparation</h3>
+        <p class="text-lg leading-7 text-[#3E3E47]">Êtes-vous sûr de vouloir marquer cette commande<br>comme <strong class="font-bold text-[#2B2B33]">prête pour livraison</strong> ?</p>
+      </div>`,
+      showCancelButton: true, showConfirmButton: true,
+      confirmButtonText: 'Oui, confirmer', cancelButtonText: 'Annuler',
+      buttonsStyling: false, allowOutsideClick: false, allowEscapeKey: false,
       customClass: {
         popup: 'rounded-[20px] p-6 sm:p-7',
         actions: 'flex items-center justify-center gap-4 mt-6',
         confirmButton: 'bg-[#54B796] text-white rounded-md px-6 py-2.5 text-base font-medium hover:bg-[#45A688] transition-colors',
         cancelButton: 'bg-transparent text-[#FF5A5F] px-3 py-2.5 text-base font-medium'
       }
-    }).then((result) => {
-      if (!result.isConfirmed || !this.selectedPrescription) {
-        return;
-      }
-
+    }).then(result => {
+      if (!result.isConfirmed || !this.selectedPrescription) return;
       this.loading = true;
 
-      const readyData: ReadyCommandeRequest = {
-        prescriptionId: this.selectedPrescription.id
-      };
-
-      this.localMarquerCommandePrete(readyData).subscribe({
-        next: () => {
-          this.loading = false;
-
-          Swal.fire({
-            title: 'Succès',
-            html: `
-              <div style="text-align: center;">
-                <p style="font-size: 15px; color: #666; margin: 8px 0;">
-                  La commande <strong>${prescriptionRef}</strong> est maintenant prête pour livraison.
-                </p>
-              </div>
-            `,
-            icon: 'success',
-            confirmButtonColor: '#00B894',
-            confirmButtonText: 'OK'
-          });
-
-          this.selectedPrescription = null;
-          this.showMobileDetails = false;
-          this.loadCommandes();
-        },
-        error: (error) => {
-          this.loading = false;
-          console.error('❌ Erreur lors du passage en prêt pour livraison:', error);
-
-          Swal.fire({
-            title: 'Erreur',
-            text: 'Impossible de marquer la commande comme prête pour livraison.',
-            icon: 'error',
-            confirmButtonColor: '#FF6B6B',
-            confirmButtonText: 'Fermer'
-          });
-        }
-      });
+      this.state.markAsReady({ prescriptionId: this.selectedPrescription.id })
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => { this.loading = false; Swal.fire({ title: 'Succès', text: `La commande ${ref} est maintenant prête pour livraison.`, icon: 'success', confirmButtonColor: '#00B894' }); this.loadCommandes(); },
+          error: () => { this.loading = false; this.showAlert('Erreur', 'Impossible de marquer la commande comme prête pour livraison.', 'error'); }
+        });
     });
   }
 
-  /**
-   * Refuser la commande
-   */
   refuserCommande(): void {
     if (!this.selectedPrescription) return;
+    const ref = this.getPrescriptionReference(this.selectedPrescription.id);
 
     Swal.fire({
-      title: 'Refuser cette commande ?',
-      text: 'Veuillez fournir une raison (facultatif) :',
-      input: 'text',
-      inputPlaceholder: 'Raison du refus',
+      title: 'Confirmation',
+      html: `Souhaitez-vous <strong>refuser</strong> cette commande ?`,
+      iconHtml: '<div style="width:60px;height:60px;border-radius:50%;border:3px solid #F5A623;display:flex;align-items:center;justify-content:center;font-size:28px;color:#F5A623;font-weight:bold">!</div>',
+      customClass: { icon: 'border-0' },
       showCancelButton: true,
-      confirmButtonColor: '#FF6B6B',
-      cancelButtonColor: '#aaa',
-      confirmButtonText: 'Refuser',
-      cancelButtonText: 'Annuler'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        const rejectionData: RejectCommandeRequest = {
-          prescriptionId: this.selectedPrescription!.id
-        };
-
-        this.localRejeterCommande(rejectionData)
-          .subscribe({
-            next: () => {
-              const raison = result.value || 'Non précisée';
-
-              Swal.fire({
-                title: 'Refusée !',
-                text: 'La commande a été refusée.',
-                icon: 'info',
-                confirmButtonColor: '#FF6B6B'
-              });
-
-              // Refresh the list and clear selection
-              this.selectedPrescription = null;
-              this.showMobileDetails = false; // Retour à la liste sur mobile
-              this.loadCommandes();
-            },
-            error: (error) => {
-              console.error('Erreur lors du refus:', error);
-              Swal.fire({
-                title: 'Erreur',
-                text: 'Impossible de refuser la commande',
-                icon: 'error',
-                confirmButtonColor: '#FF6B6B'
-              });
-            }
-          });
-      }
+      confirmButtonColor: '#F36B6B', cancelButtonColor: 'transparent',
+      confirmButtonText: 'Oui, refuser', cancelButtonText: 'Annuler'
+    }).then(result => {
+      if (!result.isConfirmed) return;
+      Swal.fire({
+        title: 'Motif du rejet',
+        html: `<div style="text-align:left">
+          <label style="font-size:14px;color:#374151;display:block;margin-bottom:8px">Commentaire</label>
+          <textarea id="swal-motif" placeholder="Saisir" rows="4"
+            style="width:100%;border:1px solid #D1D5DB;border-radius:8px;padding:10px;font-size:14px;resize:none;outline:none"></textarea>
+        </div>`,
+        showCancelButton: true,
+        confirmButtonColor: '#F36B6B', cancelButtonColor: 'transparent',
+        confirmButtonText: 'Soumettre', cancelButtonText: 'Annuler',
+        showCloseButton: true,
+        preConfirm: () => (document.getElementById('swal-motif') as HTMLTextAreaElement)?.value || ''
+      }).then(motifResult => {
+        if (!motifResult.isConfirmed) return;
+        this.showAlert('Refus enregistré', `La commande ${ref} a été refusée.`, 'success');
+      });
     });
   }
 
-  // Search functionality
-  onSearch(): void {
-    if (!this.searchTerm.trim()) {
-      this.filteredPrescriptions = [...this.prescriptions];
-    } else {
-      this.filteredPrescriptions = this.prescriptions.filter(prescription => {
-        const prescriptionRef = `CMD-${prescription.id}`;
-        const patientName = `${prescription.patient.prenom} ${prescription.patient.nom}`;
-        const doctorName = `${prescription.doctor.prenom} ${prescription.doctor.nom}`;
+  // ── Demande complément ─────────────────────────────────────────────────────
+  ouvrirDemandeComplement(): void {
+    this.priorite = 'Urgent';
+    this.messageOptionnel = '';
+    this.showDemandeModal = true;
+  }
 
-        return prescriptionRef.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-          patientName.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-          doctorName.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-          prescription.createdAt.includes(this.searchTerm) ||
-          prescription.status.toLowerCase().includes(this.searchTerm.toLowerCase());
-      });
-    }
+  fermerDemandeModal(): void { this.showDemandeModal = false; }
+
+  publierDemande(): void {
+    this.showDemandeModal = false;
+    Swal.fire({
+      html: `
+        <div style="display:flex;flex-direction:column;align-items:center;padding:24px 16px 8px">
+          <div style="width:90px;height:90px;border-radius:50%; #4FBFA5;display:flex;align-items:center;justify-content:center;margin-bottom:20px">
+            <div style="width:70px;height:70px;border-radius:50%;background:#4FBFA5;display:flex;align-items:center;justify-content:center">
+             <svg width="95" height="95" viewBox="0 0 95 95" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M70.2452 34.0264C70.9107 34.7294 71.27 35.6677 71.2443 36.6353C71.2186 37.6029 70.81 38.5208 70.1082 39.1875L43.3438 64.7644C42.6518 65.4153 41.736 65.7751 40.7861 65.7692C39.8501 65.7728 38.9494 65.4125 38.2741 64.7644L24.8918 51.976C24.5207 51.6521 24.2188 51.2566 24.0044 50.8131C23.79 50.3696 23.6675 49.8874 23.6442 49.3954C23.6209 48.9033 23.6973 48.4117 23.8689 47.9499C24.0405 47.4882 24.3037 47.0659 24.6426 46.7085C24.9816 46.3511 25.3893 46.0659 25.8413 45.87C26.2932 45.6742 26.7801 45.5718 27.2727 45.5689C27.7653 45.566 28.2534 45.6628 28.7076 45.8534C29.1618 46.0439 29.5728 46.3244 29.9159 46.6779L40.7861 57.0457L65.0841 33.8894C65.7871 33.224 66.7254 32.8646 67.693 32.8903C68.6606 32.916 69.5785 33.3246 70.2452 34.0264ZM95 47.5C95 56.8946 92.2142 66.0782 86.9948 73.8896C81.7754 81.7009 74.357 87.7891 65.6775 91.3843C56.998 94.9794 47.4473 95.9201 38.2332 94.0873C29.0191 92.2545 20.5554 87.7305 13.9124 81.0876C7.26945 74.4446 2.74552 65.9809 0.91272 56.7668C-0.920077 47.5527 0.020581 38.002 3.61574 29.3225C7.2109 20.643 13.2991 13.2246 21.1104 8.00519C28.9218 2.78583 38.1054 0 47.5 0C60.0904 0.0241427 72.1582 5.03634 81.0609 13.9391C89.9637 22.8418 94.9759 34.9096 95 47.5ZM87.6923 47.5C87.6923 39.5507 85.3351 31.7799 80.9187 25.1703C76.5023 18.5608 70.2251 13.4092 62.8809 10.3671C55.5368 7.32509 47.4554 6.52915 39.6589 8.07997C31.8623 9.6308 24.7008 13.4587 19.0798 19.0797C13.4588 24.7007 9.63082 31.8623 8.08 39.6589C6.52917 47.4554 7.32511 55.5367 10.3672 62.8809C13.4092 70.2251 18.5608 76.5023 25.1704 80.9187C31.78 85.3351 39.5507 87.6923 47.5 87.6923C58.156 87.6802 68.372 83.4418 75.9069 75.9069C83.4418 68.372 87.6802 58.1559 87.6923 47.5Z" fill="#00B894"/>
+</svg>
+            </div>
+          </div>
+          <p style="font-size:16px;font-weight:600;color:#1E293B;margin:0">Demande publiée avec succès</p>
+        </div>
+      `,
+      showConfirmButton: false,
+      timer: 2500,
+      width: 320,
+      padding: '0',
+      customClass: { popup: 'rounded-2xl' }
+    });
+  }
+
+  // ── QR Code ────────────────────────────────────────────────────────────────
+  downloadQrCode(): void { this.showAlert('Télécharger QR', 'Téléchargement du QR code...', 'info'); }
+
+  printQrCode(): void { window.print(); }
+
+  scanQrCode(): void {
+    if (!this.selectedPrescription) return;
+    const ref = this.getPrescriptionReference(this.selectedPrescription.id);
+    Swal.fire({
+      title: 'Scanner un QR Code',
+      html: `<div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:8px 0">
+        <div style="background:#4a4a4a;border-radius:12px;padding:20px;width:220px;height:220px;display:flex;align-items:center;justify-content:center">
+          <div style="position:relative;width:180px;height:180px">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${ref}" style="width:100%;height:100%;border-radius:4px"/>
+          </div>
+        </div>
+        <p style="font-size:14px;color:#6B7280;text-align:center;max-width:280px">Placez le QR Code de la patiente devant la caméra pour la réception de ses médicaments</p>
+      </div>`,
+      showConfirmButton: false, showCancelButton: true,
+      cancelButtonText: 'Fermer', showCloseButton: true,
+      customClass: { title: 'text-lg font-semibold text-left', popup: 'rounded-2xl' }
+    });
+  }
+
+  // ── Search & Filter ────────────────────────────────────────────────────────
+  onSearch(): void {
+    const term = this.searchTerm.trim().toLowerCase();
+    this.filteredPrescriptions = !term
+      ? [...this.prescriptions]
+      : this.prescriptions.filter(p =>
+          this.getPrescriptionReference(p.id).toLowerCase().includes(term) ||
+          this.getPatientFullName(p).toLowerCase().includes(term) ||
+          this.getDoctorFullName(p).toLowerCase().includes(term) ||
+          p.createdAt.includes(term) ||
+          p.status.toLowerCase().includes(term)
+        );
     this.totalItems = this.filteredPrescriptions.length;
     this.currentPage = 1;
     this.updatePagination();
   }
 
-  // Filter functionality
-  toggleFilter(): void {
-    this.showFilter = !this.showFilter;
-  }
+  toggleFilter(): void { this.showFilter = !this.showFilter; }
 
-  // Selection functionality
-  selectPrescription(prescription: Prescription): void {
-    this.loadCommandeDetails(prescription.id);
-
-    // Sur mobile et tablet, afficher automatiquement les détails
-    if (this.isMobileView || this.isTabletView) {
-      this.showMobileDetails = true;
-    }
-  }
-
-  // Pagination functionality
-  onItemsPerPageChange(): void {
+  filterByStatus(status: string): void {
+    this.filteredPrescriptions = status === 'all'
+      ? [...this.prescriptions]
+      : this.prescriptions.filter(p => p.status === status);
+    this.totalItems = this.filteredPrescriptions.length;
     this.currentPage = 1;
-    this.loadCommandes();
+    this.updatePagination();
   }
 
-  previousPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-      this.loadCommandes();
-    }
-  }
+  // ── Pagination ─────────────────────────────────────────────────────────────
+  onItemsPerPageChange(): void { this.currentPage = 1; this.loadCommandes(); }
 
-  nextPage(): void {
-    if (this.currentPage < this.getTotalPages()) {
-      this.currentPage++;
-      this.loadCommandes();
-    }
-  }
+  previousPage(): void { if (this.currentPage > 1) { this.currentPage--; this.loadCommandes(); } }
+
+  nextPage(): void { if (this.currentPage < this.totalPages) { this.currentPage++; this.loadCommandes(); } }
 
   private updatePagination(): void {
     this.totalItems = this.filteredPrescriptions.length;
     const maxPage = Math.ceil(this.totalItems / this.itemsPerPage) || 1;
     if (this.currentPage > maxPage) this.currentPage = maxPage;
-
     const start = (this.currentPage - 1) * this.itemsPerPage;
-    const end = Math.min(start + this.itemsPerPage, this.totalItems);
-    this.paginatedPrescriptions = this.filteredPrescriptions.slice(start, end);
+    this.paginatedPrescriptions = this.filteredPrescriptions.slice(start, start + this.itemsPerPage);
   }
 
-  // Pagination helper methods
-  getTotalPages(): number {
-    return this.totalPages;
-  }
+  getTotalPages(): number { return this.totalPages; }
+  getStartIndex(): number { return (this.currentPage - 1) * this.itemsPerPage + 1; }
+  getEndIndex(): number { return Math.min(this.currentPage * this.itemsPerPage, this.totalItems); }
 
-  getStartIndex(): number {
-    return (this.currentPage - 1) * this.itemsPerPage + 1;
-  }
-
-  getEndIndex(): number {
-    return Math.min(this.currentPage * this.itemsPerPage, this.totalItems);
-  }
-
-  // Status helper methods
-  isStatusPending(status: string): boolean {
-    return status === 'PENDING';
-  }
-
-  isStatusValidated(status: string): boolean {
-    return status === 'ACCEPTED';
-  }
-
+  // ── Status helpers ─────────────────────────────────────────────────────────
   getStatusClass(status: string): string {
-    switch (status) {
-      case 'PENDING': return 'bg-[#FEF3C7] text-[#D97706]';
-      case 'ACCEPTED': return 'bg-green-100 text-green-700';
-      case 'REJECTED': return 'bg-red-100 text-red-700';
-      case 'IN_PREPARATION': return 'bg-blue-100 text-blue-700';
-      case 'READY': return 'bg-purple-100 text-purple-700';
-      case 'DELIVERED': return 'bg-teal-100 text-teal-700';
-      default: return 'bg-gray-100 text-gray-600';
-    }
+    const map: Record<string, string> = {
+      PENDING: 'bg-[#FEF3C7] text-[#D97706]',
+      ACCEPTED: 'bg-green-100 text-green-700',
+      REJECTED: 'bg-red-100 text-red-700',
+      IN_PREPARATION: 'bg-blue-100 text-blue-700',
+      READY: 'bg-purple-100 text-purple-700',
+      DELIVERED: 'bg-teal-100 text-teal-700'
+    };
+    return map[status] ?? 'bg-gray-100 text-gray-600';
   }
 
   getStatusText(status: string): string {
-    switch (status) {
-      case 'PENDING': return 'En attente';
-      case 'ACCEPTED': return 'Acceptée';
-      case 'REJECTED': return 'Refusée';
-      case 'IN_PREPARATION': return 'En préparation';
-      case 'READY': return 'Prête';
-      case 'DELIVERED': return 'Livrée';
-      default: return status;
-    }
+    const map: Record<string, string> = {
+      PENDING: 'En attente', ACCEPTED: 'Acceptée', REJECTED: 'Refusée',
+      IN_PREPARATION: 'En préparation', READY: 'Prête', DELIVERED: 'Livrée'
+    };
+    return map[status] ?? status;
   }
 
-  // Utility methods
+  // ── Utility ────────────────────────────────────────────────────────────────
   formatDate(dateString: string): string {
     if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR');
+    return new Date(dateString).toLocaleDateString('fr-FR');
   }
 
-  getPrescriptionReference(id: number): string {
-    return `CMD-${id}`;
-  }
-
-  /**
-   * Vérifie si le fichier de l'ordonnance est un PDF
-   */
-  isPrescriptionPdf(filename: string | null): boolean {
-    if (!filename) return false;
-    return filename.toLowerCase().endsWith('.pdf');
-  }
-
-  /**
-   * Retourne l'URL complète du fichier
-   */
-  getFileUrl(filename: string | null): string {
-    if (!filename) return '';
-    return `https://wakana.online/repertoire_chantier/${filename}`;
-  }
-
-  /**
-   * Ouvre le fichier dans un nouvel onglet
-   */
-  openFile(filename: string | null): void {
-    if (!filename) return;
-    window.open(this.getFileUrl(filename), '_blank');
-  }
+  getPrescriptionReference(id: number): string { return `CMD-${id}`; }
 
   getPatientFullName(prescription: Prescription): string {
     return `${prescription.patient.prenom} ${prescription.patient.nom}`;
@@ -1041,86 +502,27 @@ export class CommandesComponent implements OnInit, OnDestroy {
     return `${prescription.doctor.prenom} ${prescription.doctor.nom}`;
   }
 
-  // Filter by status
-  filterByStatus(status: string): void {
-    if (status === 'all') {
-      this.filteredPrescriptions = [...this.prescriptions];
-    } else {
-      this.filteredPrescriptions = this.prescriptions.filter(prescription => prescription.status === status);
-    }
-    this.totalItems = this.filteredPrescriptions.length;
-    this.currentPage = 1;
-    this.updatePagination();
+  isPrescriptionPdf(filename: string | null): boolean {
+    return !!filename && filename.toLowerCase().endsWith('.pdf');
   }
 
-  refreshData(): void {
-    this.loadCommandes();
+  getFileUrl(filename: string | null): string {
+    return filename ? `https://wakana.online/repertoire_chantier/${filename}` : '';
   }
 
-  /**
-   * TrackBy function pour optimiser les performances
-   */
-  trackByPrescriptionId(index: number, prescription: Prescription): number {
+  openFile(filename: string | null): void {
+    if (filename) window.open(this.getFileUrl(filename), '_blank');
+  }
+
+  trackByPrescriptionId(_index: number, prescription: Prescription): number {
     return prescription.id;
   }
 
-  // Error handling methods
-  private showAuthenticationError(): void {
-    Swal.fire({
-      title: 'Erreur d\'authentification',
-      text: 'Vous devez être connecté pour accéder à cette page',
-      icon: 'warning',
-      confirmButtonColor: '#FF6B6B',
-      confirmButtonText: 'OK'
-    });
-  }
-
-  private showNoPharmacyError(): void {
-    Swal.fire({
-      title: 'Erreur',
-      text: 'Aucune pharmacie associée à votre compte',
-      icon: 'warning',
-      confirmButtonColor: '#FF6B6B',
-      confirmButtonText: 'OK'
-    });
-  }
-
-  private showUserDataError(): void {
-    Swal.fire({
-      title: 'Erreur',
-      text: 'Impossible de récupérer les informations utilisateur',
-      icon: 'error',
-      confirmButtonColor: '#FF6B6B',
-      confirmButtonText: 'OK'
-    });
-  }
-
-  // Utility methods for component state
-  isUserLoggedIn(): boolean {
-    return !!this.getMockCurrentUser();
-  }
-
-  getCurrentUserProfile(): string {
-    const user = this.getMockCurrentUser();
-    return user?.profil || '';
-  }
-
-  getCurrentPharmacyId(): number {
-    return this.pharmacyId;
-  }
-
-  hasValidPharmacy(): boolean {
-    return this.pharmacyId > 0;
-  }
-
-  /**
-   * Formater la devise
-   */
   formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'XOF',
-      minimumFractionDigits: 0
-    }).format(amount);
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', minimumFractionDigits: 0 }).format(amount);
+  }
+
+  private showAlert(title: string, text: string, icon: any): void {
+    Swal.fire({ title, text, icon, confirmButtonColor: '#104382' });
   }
 }

@@ -178,7 +178,7 @@ export class DashboardHospitalComponent {
 
   readonly hospitalMenuItems = [
     { label: 'Tableau de bord', route: '/dashboard-hospital', active: true },
-    { label: 'Demandes', route: '/demandes' },
+    { label: 'Demandes', route: '/demandes-medicales' },
     { label: 'Patients', route: '/patients-hospital' },
     { label: 'Hospitalisations', route: '/hospitalisations' },
     { label: 'Chirurgie', route: '/chirurgie' },
