@@ -45,7 +45,7 @@
       <div class="relative inline-block text-left w-full sm:w-auto">
         <!-- Bouton principal -->
         <button (click)="toggleDropdown()" [disabled]="isExporting"
-          class="bg-[#2C7BE5] hover:bg-[#3072BC] disabled:opacity-60 disabled:cursor-not-allowed text-white px-4 sm:px-6 py-2.5 rounded-md flex items-center justify-center gap-2 transition-colors duration-200 p-[10px] w-full sm:w-auto text-sm">
+          class="bg-[#104382] hover:bg-[#3072BC] disabled:opacity-60 disabled:cursor-not-allowed text-white px-4 sm:px-6 py-2.5 rounded-md flex items-center justify-center gap-2 transition-colors duration-200 p-[10px] w-full sm:w-auto text-sm">
           <ng-container *ngIf="isExporting; else exportIcon">
             <!-- Spinner pendant l'export -->
             <svg class="animate-spin w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"

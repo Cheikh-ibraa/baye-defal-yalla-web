@@ -530,11 +530,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         datasets: [{
           label: 'Commandes livrées',
           data: this.getLineChartData(),
-          borderColor: '#14B8A6',
+          borderColor: '#104382',
           backgroundColor: 'transparent',
           borderWidth: 2,
-          pointBackgroundColor: '#14B8A6',
-          pointBorderColor: '#14B8A6',
+          pointBackgroundColor: '#FFFFFF',
+          pointBorderColor: '#104382',
           pointRadius: 4,
           tension: 0.4
         }]

@@ -140,9 +140,9 @@
             {{ ongletActif === 'compte-rendu' ? 'Compte rendu' : 'Résultats biologiques' }}
           </h2>
           <div class="flex items-center gap-3">
-            <span *ngIf="examen.urgence" class="text-sm font-semibold text-[#FF6B6B]">Urgent</span>
+            <span *ngIf="examen.urgence" class="text-sm font-semibold text-[#FF6B6B] bg-[#F5F7FA] rounded-full p-2">Urgent</span>
             <span *ngIf="examen.statut === 'ACCEPTED' || examen.statut === 'COMPLETED'"
-              class="text-sm font-semibold text-[#343A40]">Prise en charge validée</span>
+              class="text-sm font-semibold text-[#343A40] bg-[#F5F7FA] rounded-full p-2">Prise en charge validée</span>
             <span *ngIf="examen.statut === 'PENDING'"
               class="px-3 py-1 text-xs rounded-full font-medium bg-yellow-100 text-yellow-700">En attente</span>
           </div>

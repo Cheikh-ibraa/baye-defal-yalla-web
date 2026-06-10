@@ -54,14 +54,43 @@ export class LoginComponent implements OnInit {
    * Redirige vers le dashboard approprié selon le profil de l'utilisateur
    * Ou vers l'URL demandée (returnUrl) si elle existe
    */
-  private redirectAfterLogin(): void {
+  private getDashboardRoute(profil: string): string {
+    const cleanProfil = profil ? profil.toUpperCase() : '';
+    switch (cleanProfil) {
+      case 'ADMIN': return '/admin/dashboard';
+      case 'DOCTOR':
+      case 'MEDECIN': return '/doctor/dashboard';
+      case 'PHARMACIST':
+      case 'PHARMACIE': return '/pharmacist/dashboard';
+      case 'LABORATORY':
+      case 'LAB':
+      case 'LABORATOIRE': return '/laboratory/dashboard';
+      case 'IMAGING_CENTER':
+      case 'IMAGERIE': return '/imaging/dashboard';
+      case 'ORGANISATION':
+      case 'ORGANIZATION': return '/organization/dashboard';
+      case 'ASSOCIATION': return '/association/dashboard';
+      case 'HOSPITAL':
+      case 'HOPITAL': return '/hospital/dashboard';
+      case 'FOURNISSEUR':
+      case 'SUPPLIER': return '/fournisseur/dashboard';
+      case 'DONOR':
+      case 'DONATEUR': return '/donor/dashboard';
+      case 'PATIENT': return '/patient/dashboard';
+      default: return '/portail';
+    }
+  }
+
+  private redirectAfterLogin(user?: User): void {
     // Si une URL de retour existe, l'utiliser
     if (this.returnUrl && this.returnUrl !== '/login' && this.returnUrl !== '/portail') {
       this.router.navigateByUrl(this.returnUrl);
       return;
     }
 
-    this.router.navigate(['/medecins']);
+    const activeUser = user || JSON.parse(localStorage.getItem('user_data') || '{}');
+    const route = this.getDashboardRoute(activeUser.profil);
+    this.router.navigate([route]);
   }
 
   // Alias pour compatibilité (utilisé dans d'autres méthodes)
@@ -80,13 +109,25 @@ export class LoginComponent implements OnInit {
         localStorage.setItem('remember_me', 'true');
       }
 
+      let profile = 'PHARMACIST';
+      const emailLower = email.toLowerCase();
+      if (emailLower.includes('admin')) profile = 'ADMIN';
+      else if (emailLower.includes('medecin') || emailLower.includes('doctor')) profile = 'DOCTOR';
+      else if (emailLower.includes('lab')) profile = 'LABORATORY';
+      else if (emailLower.includes('imag')) profile = 'IMAGING_CENTER';
+      else if (emailLower.includes('orga')) profile = 'ORGANISATION';
+      else if (emailLower.includes('hosp')) profile = 'HOSPITAL';
+      else if (emailLower.includes('fourn')) profile = 'FOURNISSEUR';
+      else if (emailLower.includes('don')) profile = 'DONOR';
+      else if (emailLower.includes('patient')) profile = 'PATIENT';
+
       const mockUser: User = {
         id: 1,
         nom: 'Ndiaye',
         prenom: 'Awa',
         email: email.toLowerCase(),
         telephone: '+221770000000',
-        profil: 'PHARMACIST',
+        profil: profile,
         pharmacyId: 1,
         adress: 'Dakar',
         lat: null,
@@ -99,7 +140,7 @@ export class LoginComponent implements OnInit {
       setTimeout(() => {
         this.isLoading = false;
         this.showSuccessMessage('Connexion réussie !');
-        this.router.navigate(['/dashboard']);
+        this.redirectAfterLogin(mockUser);
       }, 400);
     } else {
       this.markFormGroupTouched(this.loginForm);

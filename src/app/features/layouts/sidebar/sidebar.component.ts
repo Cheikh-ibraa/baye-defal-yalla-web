@@ -67,93 +67,93 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   // Menus DOCTOR
   doctorMenuItems: MenuItem[] = [
-    { id: 'dashboard-med', label: 'Tableau Med', route: '/dashboard-med' },
-    { id: 'create-ordonnance', label: 'Créer une ordonnance', route: '/create-ordonnance' },
-    { id: 'ordonnances', label: 'Mes ordonnances', route: '/ordonnances' },
-    { id: 'patients', label: 'Patients', route: '/patients' },
-    { id: 'planings', label: 'Planings', route: '/planings' },
-    { id: 'comptes', label: 'Mon compte', route: '/compte' }
+    { id: 'dashboard-med', label: 'Tableau Med', route: '/doctor/dashboard' },
+    { id: 'create-ordonnance', label: 'Créer une ordonnance', route: '/doctor/create-ordonnance' },
+    { id: 'ordonnances', label: 'Mes ordonnances', route: '/doctor/ordonnances' },
+    { id: 'patients', label: 'Patients', route: '/doctor/patients' },
+    { id: 'planings', label: 'Planings', route: '/doctor/planings' },
+    { id: 'comptes', label: 'Mon compte', route: '/doctor/account' }
   ];
 
   // Menus ADMIN
   adminMenuItems: MenuItem[] = [
-    { id: 'dashboard-admin', label: 'Tableau Admin', route: '/dashboard-admin' },
-    { id: 'medecins', label: 'Gestion des médecins', route: '/medecins' },
-    { id: 'pharmacies', label: 'Gestion des pharmacies', route: '/pharmacies' },
-    { id: 'livreurs', label: 'Gestion des livreurs', route: '/livreurs' },
-    { id: 'patientmanage', label: 'Gestion des patients', route: '/patientmanage' },
-    { id: 'paiements-help', label: 'Paiements & Aide', route: '/paiements-help' },
-    { id: 'administration', label: 'Administration', route: '/administration' },
+    { id: 'dashboard-admin', label: 'Tableau Admin', route: '/admin/dashboard' },
+    { id: 'medecins', label: 'Gestion des médecins', route: '/admin/medecins' },
+    { id: 'pharmacies', label: 'Gestion des pharmacies', route: '/admin/pharmacies' },
+    { id: 'livreurs', label: 'Gestion des livreurs', route: '/admin/livreurs' },
+    { id: 'patientmanage', label: 'Gestion des patients', route: '/admin/patients' },
+    { id: 'paiements-help', label: 'Paiements & Aide', route: '/admin/paiements-help' },
+    { id: 'administration', label: 'Administration', route: '/admin/administration' },
     { id: 'finance-parent', label: 'Gestion financière' },
-    { id: 'finance-dashboard', label: 'Tableau de bord', route: '/finance-dashboard' },
-    { id: 'finance-pharmacies', label: 'Pharmacies', route: '/finance-pharmacies' },
-    { id: 'finance-virements', label: 'Demandes de virement', route: '/finance-virements' },
-    { id: 'comptes', label: 'Mon compte', route: '/compte' }
+    { id: 'finance-dashboard', label: 'Tableau de bord', route: '/admin/finance-dashboard' },
+    { id: 'finance-pharmacies', label: 'Pharmacies', route: '/admin/finance-pharmacies' },
+    { id: 'finance-virements', label: 'Demandes de virement', route: '/admin/finance-virements' },
+    { id: 'comptes', label: 'Mon compte', route: '/admin/account' }
   ];
 
   // Menus PHARMACIST
   pharmacyMenuItems: MenuItem[] = [
-    { id: 'dashboard', label: 'Tableau de bord', route: '/dashboard' },
-    { id: 'commande', label: 'Commandes reçues', route: '/commande' },
-    { id: 'gestion-stock', label: 'Gestion stock', route: '/gestion-stock' },
-    { id: 'demande-complement', label: 'Demande complément', route: '/demande-complement' },
+    { id: 'dashboard', label: 'Tableau de bord', route: '/pharmacist/dashboard' },
+    { id: 'commande', label: 'Commandes reçues', route: '/pharmacist/commande' },
+    { id: 'gestion-stock', label: 'Gestion stock', route: '/pharmacist/gestion-stock' },
+    { id: 'demande-complement', label: 'Demande complément', route: '/pharmacist/demande-complement' },
     { id: 'finance-parent', label: 'Gestion financière' },
-    { id: 'finance-dashboardpharmacie', label: 'Tableau de bord', route: '/finance-dashboardpharmacie' },
-    { id: 'finance-transactions', label: 'Pharmacies', route: '/finance-transactions' },
-    { id: 'finance-retraits', label: 'Demandes de retraits', route: '/finance-retraits' },
-    { id: 'parametre-bancaire', label: 'parametre-bancaire', route: '/parametre-bancaire' },
-    { id: 'comptes', label: 'Mon compte', route: '/compte' }
+    { id: 'finance-dashboardpharmacie', label: 'Tableau de bord', route: '/pharmacist/finance-dashboardpharmacie' },
+    { id: 'finance-transactions', label: 'Pharmacies', route: '/pharmacist/finance-transactions' },
+    { id: 'finance-retraits', label: 'Demandes de retraits', route: '/pharmacist/finance-retraits' },
+    { id: 'parametre-bancaire', label: 'parametre-bancaire', route: '/pharmacist/parametre-bancaire' },
+    { id: 'comptes', label: 'Mon compte', route: '/pharmacist/account' }
   ];
 
   // Menus LABORATORY
   labMenuItems: MenuItem[] = [
-    { id: 'dashboard-lab', label: 'Tableau Lab', route: '/dashboard-lab' },
-    { id: 'examens-laboratoire', label: 'Examens', route: '/examens-laboratoire' },
-    { id: 'demande-laboratoire', label: 'Demandes', route: '/demande-laboratoire' },
-    { id: 'comptes', label: 'Mon compte', route: '/compte' }
+    { id: 'dashboard-lab', label: 'Tableau Lab', route: '/laboratory/dashboard' },
+    { id: 'examens-laboratoire', label: 'Examens', route: '/laboratory/examens' },
+    { id: 'demande-laboratoire', label: 'Demandes', route: '/laboratory/demandes' },
+    { id: 'comptes', label: 'Mon compte', route: '/laboratory/account' }
   ];
 
   // Menus IMAGING_CENTER
   imagerieMenuItems: MenuItem[] = [
-    { id: 'dashboard-imagerie', label: 'Tableau de bord', route: '/dashboard-imagerie' },
-    { id: 'examens-imagerie', label: 'Examens', route: '/examens-imagerie' },
-    { id: 'demande-imagerie', label: 'Demandes', route: '/demande-imagerie' },
-    { id: 'comptes', label: 'Mon compte', route: '/compte' }
+    { id: 'dashboard-imagerie', label: 'Tableau de bord', route: '/imaging/dashboard' },
+    { id: 'examens-imagerie', label: 'Examens', route: '/imaging/examens' },
+    { id: 'demande-imagerie', label: 'Demandes', route: '/imaging/demandes' },
+    { id: 'comptes', label: 'Mon compte', route: '/imaging/account' }
   ];
 
   // Menus HOSPITAL
   hospitalMenuItems: MenuItem[] = [
-    { id: 'dashboard-hospital', label: 'Tableau de bord', route: '/dashboard-hospital' },
-    { id: 'demandes', label: 'Demandes médicales', route: '/demandes-medicales' },
-    { id: 'patients-hospital', label: 'Patients', route: '/patients-hospital' },
-    { id: 'hospitalisations', label: 'Hospitalisations', route: '/hospitalisations' },
-    { id: 'chirurgie', label: 'Chirurgie', route: '/chirurgie' },
-    { id: 'demande-materiels', label: 'Demande de matériels', route: '/demande-materiels' },
-    { id: 'paiements-hospital', label: 'Paiements', route: '/paiements-hospital' },
-    { id: 'comptes', label: 'Mon compte', route: '/compte' }
+    { id: 'dashboard-hospital', label: 'Tableau de bord', route: '/hospital/dashboard' },
+    { id: 'demandes', label: 'Demandes médicales', route: '/hospital/demandes' },
+    { id: 'patients-hospital', label: 'Patients', route: '/hospital/patients' },
+    { id: 'hospitalisations', label: 'Hospitalisations', route: '/hospital/hospitalisations' },
+    { id: 'chirurgie', label: 'Chirurgie', route: '/hospital/chirurgie' },
+    { id: 'demande-materiels', label: 'Demande de matériels', route: '/hospital/demande-materiels' },
+    { id: 'paiements-hospital', label: 'Paiements', route: '/hospital/paiements' },
+    { id: 'comptes', label: 'Mon compte', route: '/hospital/account' }
   ];
 
   // Menus FOURNISSEUR
   fournisseurMenuItems: MenuItem[] = [
-    { id: 'dashboard-fournisseur', label: 'Tableau de bord', route: '/dashboard-fournisseur' },
-    { id: 'demandes-fournisseur', label: 'Demandes', route: '/demandes-fournisseur' },
-    { id: 'devis-fournisseur', label: 'Devis', route: '/devis-fournisseur' },
-    { id: 'comptes', label: 'Mon compte', route: '/compte' }
+    { id: 'dashboard-fournisseur', label: 'Tableau de bord', route: '/fournisseur/dashboard' },
+    { id: 'demandes-fournisseur', label: 'Demandes', route: '/fournisseur/demandes' },
+    { id: 'devis-fournisseur', label: 'Devis', route: '/fournisseur/devis' },
+    { id: 'comptes', label: 'Mon compte', route: '/fournisseur/account' }
   ];
 
   // Menus DONATEUR
   donateurMenuItems: MenuItem[] = [
-    { id: 'dons', label: 'Dons', route: '/dons' },
-    { id: 'dons-historique', label: 'Historique', route: '/dons-historique' },
-    { id: 'comptes', label: 'Mon compte', route: '/compte' }
+    { id: 'dons', label: 'Dons', route: '/donor/dons' },
+    { id: 'dons-historique', label: 'Historique', route: '/donor/dons-historique' },
+    { id: 'comptes', label: 'Mon compte', route: '/donor/account' }
   ];
 
   // Menus ORGANISATION
   organisationMenuItems: MenuItem[] = [
-    { id: 'rapport', label: 'Rapport', route: '/rapport' },
-    { id: 'budget', label: 'Budget', route: '/budget' },
-    { id: 'demande', label: 'Demande', route: '/demande-organisation' },
-    { id: 'comptes', label: 'Mon compte', route: '/compte' }
+    { id: 'rapport', label: 'Rapport', route: '/organization/rapport' },
+    { id: 'budget', label: 'Budget', route: '/organization/budget' },
+    { id: 'demande', label: 'Demande', route: '/organization/demande' },
+    { id: 'comptes', label: 'Mon compte', route: '/organization/account' }
   ];
 
 
@@ -236,6 +236,19 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   private detectProfileFromUrl(url: string): string | null {
+    if (url.startsWith('/admin/')) return 'ADMIN';
+    if (url.startsWith('/doctor/')) return 'DOCTOR';
+    if (url.startsWith('/pharmacist/')) return 'PHARMACIST';
+    if (url.startsWith('/laboratory/')) return 'LABORATORY';
+    if (url.startsWith('/imaging/')) return 'IMAGING_CENTER';
+    if (url.startsWith('/organization/')) return 'ORGANISATION';
+    if (url.startsWith('/association/')) return 'ORGANISATION';
+    if (url.startsWith('/hospital/')) return 'HOSPITAL';
+    if (url.startsWith('/fournisseur/')) return 'FOURNISSEUR';
+    if (url.startsWith('/donor/')) return 'DONATEUR';
+    if (url.startsWith('/patient/')) return 'PATIENT';
+
+    // Fallback for legacy flat routes
     if (url.startsWith('/dashboard-admin') || 
         url.startsWith('/medecins') || 
         url.startsWith('/pharmacies') || 
@@ -277,7 +290,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
         url.startsWith('/demande-organisation')) {
       return 'ORGANISATION';
     }
-    // ⚠️ FOURNISSEUR doit être vérifié AVANT HOSPITAL car /demandes matcherait /demandes-fournisseur
     if (url.startsWith('/dashboard-fournisseur') || 
         url.startsWith('/demandes-fournisseur') || 
         url.startsWith('/devis-fournisseur')) {
@@ -332,19 +344,19 @@ export class SidebarComponent implements OnInit, OnDestroy {
     }
 
     // Custom mappings for detail pages to highlight their parent sidebar tab
-    if (url.startsWith('/detail-don')) {
+    if (url.includes('/detail-don') || url.includes('/donor/detail-don')) {
       this.activeItem = 'dons-historique';
       return;
     }
-    if (url.startsWith('/detail-rapport')) {
+    if (url.includes('/detail-rapport') || url.includes('/organization/detail-rapport')) {
       this.activeItem = 'rapport';
       return;
     }
-    if (url.startsWith('/detail-examen-laboratoire')) {
+    if (url.includes('/detail-examen-laboratoire') || url.includes('/laboratory/examens/')) {
       this.activeItem = 'examens-laboratoire';
       return;
     }
-    if (url.startsWith('/detail-examen-imagerie')) {
+    if (url.includes('/detail-examen-imagerie') || url.includes('/imaging/examens/')) {
       this.activeItem = 'examens-imagerie';
       return;
     }
@@ -358,6 +370,19 @@ export class SidebarComponent implements OnInit, OnDestroy {
     else if (this.isFournisseur) this.activeItem = 'dashboard-fournisseur';
     else if (this.isOrganisation) this.activeItem = 'organisation';
     else this.activeItem = '';
+  }
+
+  get accountRoute(): string {
+    if (this.isDoctor) return '/doctor/account';
+    if (this.isAdmin) return '/admin/account';
+    if (this.isPharmacy) return '/pharmacist/account';
+    if (this.isLab) return '/laboratory/account';
+    if (this.isImagerie) return '/imaging/account';
+    if (this.isHospital) return '/hospital/account';
+    if (this.isFournisseur) return '/fournisseur/account';
+    if (this.isDonor) return '/donor/account';
+    if (this.isOrganisation) return '/organization/account';
+    return '/pharmacist/account'; // fallback
   }
 
   private redirectToDefaultDashboard(): void {

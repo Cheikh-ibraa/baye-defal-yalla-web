@@ -167,4 +167,13 @@ export class DetailDemandeImagerieComponent implements OnInit {
   refuser(): void {
     this.router.navigate(['/demande-imagerie']);
   }
+
+  getPatientInitiales(): string {
+    if (!this.detail) return '';
+    return this.detail.patient.nom
+      .split(' ')
+      .filter(n => n.length > 0)
+      .map(n => n[0].toUpperCase())
+      .join('');
+  }
 }

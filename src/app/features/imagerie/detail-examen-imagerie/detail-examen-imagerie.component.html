@@ -169,7 +169,7 @@
             {{ ongletActif === 'compte-rendu' ? 'Compte rendu' : 'Images médicales' }}
           </h2>
           <div class="flex items-center gap-2">
-            <span *ngIf="examen.urgence" class="text-xs font-semibold text-[#FF6B6B] bg-[F5F7FA] rounded-full p-2">Urgent</span>
+            <span *ngIf="examen.urgence" class="text-xs font-semibold text-[#FF6B6B] bg-[#FF6B6BA] rounded-full p-2">Urgent</span>
             <span *ngIf="examen.statut === 'ACCEPTED' || examen.statut === 'COMPLETED'"
               class="text-xs font-semibold text-[#343A40] bg-[#F5F7FA] rounded-full p-2">Prise en charge validée</span>
             <span *ngIf="examen.statut === 'PENDING'"
