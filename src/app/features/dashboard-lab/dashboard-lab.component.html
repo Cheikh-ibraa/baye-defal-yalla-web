@@ -32,9 +32,9 @@
       <!-- Examens reçus -->
       <div class="bg-white rounded-2xl p-5 flex items-start justify-between shadow-sm">
         <div class="flex flex-col gap-3">
-          <p class="text-sm text-[#6B7280]">Examens reçus</p>
-          <p class="text-4xl font-semibold text-[#111827]">8</p>
-          <p class="text-xs text-gray-400">Aujourd'hui</p>
+          <p class="text-sm text-[#6B7280]">{{ stats[0].label }}</p>
+          <p class="text-4xl font-semibold text-[#111827]">{{ loading ? '—' : stats[0].value }}</p>
+          <p class="text-xs text-gray-400">{{ stats[0].sub }}</p>
         </div>
         <div class="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center shrink-0">
           <svg width="20" height="20" viewBox="0 0 22 22" fill="none"><path d="M5.5 11.5H5.646C7.852 11.5 10.027 12.014 12 13C13.973 13.986 16.148 14.5 18.354 14.5H19.5M6.5.5H15.5V.75L14.793 1.722C13.845 3.025 13.394 4.623 13.52 6.229C13.646 7.834 14.342 9.342 15.481 10.481L21.5 16.5C21.5 18.5 20.5 20 18.5 21.5H3.5C1.5 20 .5 18.5.5 16.5L6.52 10.48C7.659 9.341 8.354 7.833 8.48 6.228C8.606 4.622 8.155 3.024 7.207 1.722L6.5.75V.5Z" stroke="#2C7BE5"/></svg>
@@ -44,9 +44,9 @@
       <!-- Examens en attente -->
       <div class="bg-white rounded-2xl p-5 flex items-start justify-between shadow-sm">
         <div class="flex flex-col gap-3">
-          <p class="text-sm text-[#6B7280]">Examens en attente</p>
-          <p class="text-4xl font-semibold text-[#111827]">4</p>
-          <p class="text-xs text-gray-400">Dont 2 urgences</p>
+          <p class="text-sm text-[#6B7280]">{{ stats[1].label }}</p>
+          <p class="text-4xl font-semibold text-[#111827]">{{ loading ? '—' : stats[1].value }}</p>
+          <p class="text-xs text-gray-400">{{ stats[1].sub }}</p>
         </div>
         <div class="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center shrink-0">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 5.25a.75.75 0 00-.75.75v8.25c0 .276.15.53.39.664l5.25 3a.75.75 0 00.75-1.3L12.75 13.5V6a.75.75 0 00-.75-.75z" fill="#F39C12"/><path d="M12 24a12 12 0 100-24 12 12 0 000 24zm10.5-12a10.5 10.5 0 11-21 0 10.5 10.5 0 0121 0z" fill="#F39C12"/></svg>
@@ -56,12 +56,9 @@
       <!-- Examens urgents -->
       <div class="bg-white rounded-2xl p-5 flex items-start justify-between shadow-sm">
         <div class="flex flex-col gap-3">
-          <p class="text-sm text-[#6B7280]">Examens urgents</p>
-          <p class="text-4xl font-semibold text-[#111827]">3</p>
-          <p class="text-xs text-red-500 flex items-center gap-1">
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 9L1 1h8L5 9z" fill="#EF4444"/></svg>
-            -5%  vs mois dernier
-          </p>
+          <p class="text-sm text-[#6B7280]">{{ stats[2].label }}</p>
+          <p class="text-4xl font-semibold text-[#111827]">{{ loading ? '—' : stats[2].value }}</p>
+          <p class="text-xs" [ngClass]="stats[2].subClass">{{ stats[2].sub }}</p>
         </div>
         <div class="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center shrink-0">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
@@ -71,12 +68,9 @@
       <!-- Examens validés -->
       <div class="bg-white rounded-2xl p-5 flex items-start justify-between shadow-sm">
         <div class="flex flex-col gap-3">
-          <p class="text-sm text-[#6B7280]">Examens validés</p>
-          <p class="text-4xl font-semibold text-[#111827]">2</p>
-          <p class="text-xs text-[#00B894] flex items-center gap-1">
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1l4 8H1L5 1z" fill="#00B894"/></svg>
-            +8%  vs mois dernier
-          </p>
+          <p class="text-sm text-[#6B7280]">{{ stats[3].label }}</p>
+          <p class="text-4xl font-semibold text-[#111827]">{{ loading ? '—' : stats[3].value }}</p>
+          <p class="text-xs" [ngClass]="stats[3].subClass">{{ stats[3].sub }}</p>
         </div>
         <div class="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center shrink-0">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00B894" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-5"/></svg>

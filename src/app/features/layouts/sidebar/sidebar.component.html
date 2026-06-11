@@ -381,7 +381,7 @@
     <!-- LAB -->
     <ng-container *ngIf="isLab">
       <!-- Tableau Lab -->
-      <a routerLink="/dashboard-lab"
+      <a routerLink="/laboratory/dashboard"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         #rlaLab="routerLinkActive"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
@@ -395,7 +395,7 @@
       </a>
 
       <!-- Examens -->
-      <a routerLink="/examens-laboratoire"
+      <a routerLink="/laboratory/examens"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
@@ -415,7 +415,7 @@
       </a>
 
       <!-- Demandes Laboratoire -->
-      <a routerLink="/demande-laboratoire"
+      <a routerLink="/laboratory/demandes"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
@@ -736,7 +736,7 @@
     </ng-container>
 
     <!-- MON COMPTE (commun) -->
-    <a routerLink="/compte"
+    <a [routerLink]="accountRoute"
       routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
       class="flex items-center h-[54px] w-[254px] px-[15px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
       <div class="flex items-center justify-center w-6 h-6">

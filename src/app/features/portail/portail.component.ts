@@ -2,35 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 
-interface HelpNeededItem {
-  id: number;
-  type: 'ANALYSIS' | 'IMAGING' | 'PRESCRIPTION' | string;
-  reference: string | null;
-  patientName: string;
-  patientAvatar: string | null;
-  patientId: string | null;
-  doctorName: string;
-  doctorspeciality: string | null;
-  doctorAvatar: string | null;
-  facilityName: string;
-  itemType: string | null;
-  description: string | null;
-  amount: number;
-  amountContributed: number;
-  remainingAmount: number;
-  contributionPercentage: number;
-  urgencyLevel: 'NORMAL' | 'URGENT' | 'CRITICAL' | null;
-  youngPatient: boolean;
-  createdAt: string | null;
-  appointmentDate: string | null;
-  status: string;
-  prescriptionFile: string | null;
-  address: string | null;
-  latitude: number | null;
-  longitude: number | null;
-  reportFile: string | null;
-  report: string | null;
-}
 
 interface UserProfile {
   id: string;
@@ -44,33 +15,7 @@ interface UserProfile {
   hoverColor: string;
 }
 
-interface Donor {
-  name: string;
-  date: string;
-  amount: string;
-}
 
-interface DonationItem {
-  id: number;
-  type: string;
-  urgency: string;
-  urgencyColor: string;
-  patientName: string;
-  patientAge: number;
-  patientPhoto: string;
-  indication: string;
-  doctorName: string;
-  doctorSpecialty: string;
-  doctorPhoto: string;
-  description: string;
-  objectif: number;
-  collected: number;
-  percentage: number;
-  fileType: 'image' | 'pdf';
-  fileName: string;
-  filePath: string;
-  donors: Donor[];
-}
 
 interface FeatureCard {
   icon: 'prescription' | 'tracking' | 'payment' | 'search' | 'notifications' | 'dashboard';
@@ -78,98 +23,6 @@ interface FeatureCard {
   description: string;
 }
 
-const STATIC_HELP_NEEDED_ITEMS: HelpNeededItem[] = [
-  {
-    id: 1,
-    type: 'PRESCRIPTION',
-    reference: 'PR-2026-001',
-    patientName: 'Mamadou Sow',
-    patientAvatar: null,
-    patientId: 'P-0001',
-    doctorName: 'Awa Diop',
-    doctorspeciality: 'Généraliste',
-    doctorAvatar: null,
-    facilityName: 'Centre de santé de Fann',
-    itemType: 'Ordonnance',
-    description:
-      'Cette ordonnance médicale a été délivrée afin de financer des médicaments essentiels liés à une hypertension sévère.',
-    amount: 25000,
-    amountContributed: 17789,
-    remainingAmount: 7211,
-    contributionPercentage: 72,
-    urgencyLevel: 'URGENT',
-    youngPatient: false,
-    createdAt: '2026-02-06T10:20:00Z',
-    appointmentDate: '2026-02-15T09:00:00Z',
-    status: 'PENDING',
-    prescriptionFile: 'ordonnance.jpg',
-    address: 'Fann, Dakar',
-    latitude: 14.6937,
-    longitude: -17.4664,
-    reportFile: null,
-    report: null
-  },
-  {
-    id: 2,
-    type: 'ANALYSIS',
-    reference: 'AN-2026-011',
-    patientName: 'Seydou Diop',
-    patientAvatar: null,
-    patientId: 'P-0002',
-    doctorName: 'Mamadou Sarr',
-    doctorspeciality: 'Généraliste',
-    doctorAvatar: null,
-    facilityName: 'Laboratoire Pasteur',
-    itemType: 'Analyse sanguine',
-    description:
-      'Demande de soutien pour des analyses biologiques urgentes afin de confirmer un diagnostic et démarrer le traitement.',
-    amount: 50000,
-    amountContributed: 16500,
-    remainingAmount: 33500,
-    contributionPercentage: 33,
-    urgencyLevel: 'NORMAL',
-    youngPatient: false,
-    createdAt: '2026-02-09T12:30:00Z',
-    appointmentDate: '2026-02-18T08:30:00Z',
-    status: 'PENDING',
-    prescriptionFile: null,
-    address: 'Point E, Dakar',
-    latitude: 14.6928,
-    longitude: -17.4633,
-    reportFile: 'prescription_radio.pdf',
-    report: 'Analyses complémentaires recommandées par le médecin traitant.'
-  },
-  {
-    id: 3,
-    type: 'IMAGING',
-    reference: 'IM-2026-008',
-    patientName: 'Awa Cisse',
-    patientAvatar: null,
-    patientId: 'P-0003',
-    doctorName: 'Demba Thioune',
-    doctorspeciality: 'Cardiologue',
-    doctorAvatar: null,
-    facilityName: 'Imagerie Médicale Liberté',
-    itemType: 'Radiographie pulmonaire',
-    description:
-      'Soutien demandé pour financer un examen d’imagerie indispensable à l’évaluation clinique et au suivi.',
-    amount: 75000,
-    amountContributed: 49890,
-    remainingAmount: 25110,
-    contributionPercentage: 66,
-    urgencyLevel: 'CRITICAL',
-    youngPatient: false,
-    createdAt: '2026-02-10T09:10:00Z',
-    appointmentDate: '2026-02-20T11:00:00Z',
-    status: 'PENDING',
-    prescriptionFile: null,
-    address: 'Mermoz, Dakar',
-    latitude: 14.7065,
-    longitude: -17.4758,
-    reportFile: 'prescription_radio.pdf',
-    report: 'Examen d’imagerie prioritaire validé par le spécialiste.'
-  }
-];
 
 @Component({
   selector: 'app-portail',
@@ -182,9 +35,6 @@ export class PortailComponent implements OnInit {
   selectedProfile: UserProfile;
 
   // API data
-  helpNeededItems: HelpNeededItem[] = [];
-  isLoadingDons = false;
-  donsError: string | null = null;
 
   profiles: UserProfile[] = [
     {
@@ -331,131 +181,17 @@ export class PortailComponent implements OnInit {
   ];
 
   // Données des dons
-  selectedDonation: DonationItem | null = null;
-  showDonationModal = false;
 
   // Détail API
-  selectedHelpItem: HelpNeededItem | null = null;
-  detailLoading = false;
-  detailError: string | null = null;
-  showDetailModal = false;
 
-  donations: DonationItem[] = [
-    {
-      id: 1,
-      type: 'Ordonnance',
-      urgency: 'Urgent',
-      urgencyColor: 'bg-[#E74C3C]',
-      patientName: 'Mamadou Sow',
-      patientAge: 65,
-      patientPhoto: '',
-      indication: 'Hypertension',
-      doctorName: 'Dr. Awa Diop',
-      doctorSpecialty: 'Généraliste',
-      doctorPhoto: '',
-      description: "Cette ordonnance médicale a été délivrée par un professionnel de santé afin de prescrire les médicaments et traitements nécessaires à la prise en charge du patient. Elle précise les produits à administrer, leurs dosages ainsi que la durée du traitement recommandée. Ces soins sont indispensables pour améliorer l'état de santé du patient et éviter toute complication liée à sa maladie.",
-      objectif: 25000,
-      collected: 17789,
-      percentage: 72,
-      fileType: 'image',
-      fileName: 'ordonnance.jpg',
-      filePath: 'assets/images/ordonnance.jpg',
-      donors: [
-        { name: 'Moussa Ndiaye', date: '06 février 2026', amount: '+2 000 F' },
-        { name: 'Anonyme', date: '09 février 2026', amount: '+5 000 F' },
-        { name: 'Fatou Diallo', date: '12 février 2026', amount: '+3 500 F' },
-        { name: 'Ibrahima Ba', date: '14 février 2026', amount: '+1 000 F' }
-      ]
-    },
-    {
-      id: 2,
-      type: 'Analyse médicale',
-      urgency: 'Moyen',
-      urgencyColor: 'bg-[#FFA500]',
-      patientName: 'Seydou Diop',
-      patientAge: 35,
-      patientPhoto: '',
-      indication: 'Analyse sanguine',
-      doctorName: 'Dr. Mamadou Sarr',
-      doctorSpecialty: 'Généraliste',
-      doctorPhoto: '',
-      description: "Cette ordonnance médicale a été délivrée par un professionnel de santé afin de prescrire les médicaments et traitements nécessaires à la prise en charge du patient. Elle précise les produits à administrer, leurs dosages ainsi que la durée du traitement recommandée. Ces soins sont indispensables pour améliorer l'état de santé du patient et éviter toute complication liée à sa maladie.",
-      objectif: 50000,
-      collected: 16500,
-      percentage: 36,
-      fileType: 'pdf',
-      fileName: 'prescription Radio.pdf',
-      filePath: '',
-      donors: [
-        { name: 'Moussa Ndiaye', date: '06 février 2026', amount: '+2 000 F' },
-        { name: 'Anonyme', date: '09 février 2026', amount: '+5 000 F' },
-        { name: 'Aminata Fall', date: '10 février 2026', amount: '+4 000 F' }
-      ]
-    },
-    {
-      id: 3,
-      type: 'Imagerie médicale',
-      urgency: 'Faible',
-      urgencyColor: 'bg-[#00B894]',
-      patientName: 'Awa Cisse',
-      patientAge: 43,
-      patientPhoto: '',
-      indication: 'Radiographie pulmonaire',
-      doctorName: 'Dr. Demba Thioune',
-      doctorSpecialty: 'Cardiologue',
-      doctorPhoto: '',
-      description: "Cette ordonnance médicale a été délivrée par un professionnel de santé afin de prescrire les médicaments et traitements nécessaires à la prise en charge du patient. Elle précise les produits à administrer, leurs dosages ainsi que la durée du traitement recommandée. Ces soins sont indispensables pour améliorer l'état de santé du patient et éviter toute complication liée à sa maladie.",
-      objectif: 75000,
-      collected: 49890,
-      percentage: 62,
-      fileType: 'pdf',
-      fileName: 'prescription Radio.pdf',
-      filePath: '',
-      donors: [
-        { name: 'Moussa Ndiaye', date: '06 février 2026', amount: '+2 000 F' },
-        { name: 'Anonyme', date: '09 février 2026', amount: '+5 000 F' }
-      ]
-    }
-  ];
 
   constructor(private router: Router) {
     this.selectedProfile = this.profiles[0];
   }
 
   ngOnInit(): void {
-    this.loadHelpNeeded();
   }
 
-  loadHelpNeeded(): void {
-    this.isLoadingDons = false;
-    this.donsError = null;
-    this.helpNeededItems = [...STATIC_HELP_NEEDED_ITEMS];
-  }
-
-  getUrgencyLabel(level: string): string {
-    switch (level) {
-      case 'CRITICAL': return 'Prioritaire';
-      case 'URGENT': return 'Urgent';
-      default: return 'Normal';
-    }
-  }
-
-  getUrgencyColor(level: string): string {
-    switch (level) {
-      case 'CRITICAL': return 'bg-[#E74C3C]';
-      case 'URGENT': return 'bg-[#FFA500]';
-      default: return 'bg-[#58D68D]';
-    }
-  }
-
-  getTypeLabel(type: string): string {
-    switch (type) {
-      case 'ANALYSIS': return 'Analyse médicale';
-      case 'IMAGING': return 'Imagerie médicale';
-      case 'PRESCRIPTION': return 'Ordonnance';
-      default: return type;
-    }
-  }
 
   /** 🔹 Sélection d’un profil (Patient, Médecin, etc.) */
   selectProfile(profile: UserProfile): void {
@@ -499,59 +235,7 @@ export class PortailComponent implements OnInit {
     }
   }
 
-  /** 🔹 Ouvre le modal détails don (appel API) */
-  openDonationDetail(donationId: number, type: string): void {
-    this.detailLoading = false;
-    this.detailError = null;
-    this.selectedHelpItem = null;
-    this.showDetailModal = true;
 
-    const item = this.helpNeededItems.find((don) => don.id === donationId && don.type === type)
-      ?? this.helpNeededItems.find((don) => don.id === donationId)
-      ?? null;
-
-    if (!item) {
-      this.detailError = 'Impossible de charger les détails de cette contribution.';
-      return;
-    }
-
-    this.selectedHelpItem = item;
-  }
-
-  /** 🔹 Ferme le modal détails */
-  closeDetailModal(): void {
-    this.showDetailModal = false;
-    setTimeout(() => {
-      this.selectedHelpItem = null;
-      this.detailError = null;
-    }, 300);
-  }
-
-  /** 🔹 Construit l'URL d'un fichier */
-  getFileUrl(filename: string): string {
-    return `https://wakana.online/repertoire_chantier/${filename}`;
-  }
-
-  /** 🔹 Détecte si le fichier est une image */
-  isImageFile(filename: string): boolean {
-    return /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(filename);
-  }
-
-  /** 🔹 Détecte si le fichier est un PDF */
-  isPdfFile(filename: string): boolean {
-    return /\.pdf$/i.test(filename);
-  }
-
-  /** 🔹 Retourne le fichier disponible (ordonnance ou rapport) */
-  getDetailFile(): string | null {
-    if (!this.selectedHelpItem) return null;
-    return this.selectedHelpItem.prescriptionFile || this.selectedHelpItem.reportFile || null;
-  }
-
-  /** 🔹 Formater un montant en FCFA */
-  formatAmount(amount: number): string {
-    return amount.toLocaleString('fr-FR');
-  }
 
   /** 🔹 Aller vers la page Dons */
   goToDons(): void {
@@ -583,26 +267,4 @@ export class PortailComponent implements OnInit {
     }
   }
 
-  // Donate modal
-  showDonateModal = false;
-  donateAmount = 5000;
-  selectedPreset: number | null = 5000;
-  presetAmounts = [1000, 2000, 5000, 10000];
-  recentAmounts = [1000, 2000, 5000, 5000];
-
-  openDonateModal(donationId: number): void {
-    this.donateAmount = 5000;
-    this.selectedPreset = 5000;
-    this.showDonateModal = true;
-  }
-
-  closeDonateModal(): void {
-    this.showDonateModal = false;
-  }
-
-  selectPreset(amount: number): void {
-    this.selectedPreset = amount;
-    this.donateAmount = amount;
-  }
 }
-

@@ -1,24 +1,19 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { of } from 'rxjs';
-import { delay } from 'rxjs/operators';
-import { Laboratoire } from '../../../modele/laboratoir';
-import { Location } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 
 interface ResultatBiologique {
   parametre: string;
-  valeur: number;
+  valeur: number | string;
   unite: string;
   reference: string;
   etat: string;
 }
 
-interface Toast {
-  id: number;
-  message: string;
-}
+interface Toast { id: number; message: string; }
 
 @Component({
   selector: 'app-detail-laboratoire',
@@ -29,553 +24,364 @@ interface Toast {
 })
 export class DetailLaboratoireComponent implements OnInit {
 
-  // ======================
-  // API SOURCE
-  // ======================
-  examApi!: Laboratoire;
+  private readonly api = environment.baseUrl;
+
+  // ── state ──────────────────────────────────────────────────────────────────
+  examApi: any = null;
+  orderId = '';
   loading = false;
   error = '';
+  isSaving = false;
 
-  // ======================
-  // TOAST SYSTEM
-  // ======================
   toasts: Toast[] = [];
   private toastIdCounter = 0;
 
-  // ======================
-  // UI STATE
-  // ======================
-
-
-  // UI STATE
   ongletActif: 'resultats' | 'compte-rendu' = 'resultats';
 
-  // Résultats biologiques
-  resultats: ResultatBiologique[] = [
-    { parametre: 'Hémoglobine', valeur: 0, unite: 'g/dL', reference: '12.0 - 16.0', etat: 'Normal' },
-    { parametre: 'Leucocytes',  valeur: 0, unite: 'G/L',  reference: '4.0 - 10.0',  etat: 'Normal' },
-    { parametre: 'Plaquettes',  valeur: 0, unite: 'G/L',  reference: '150 - 400',   etat: 'Normal' }
-  ];
+  // ── data ───────────────────────────────────────────────────────────────────
+  examen      = { code: '', type: '', urgence: false, statut: '' };
+  patient     = { initials: '', name: '', role: 'Patient' };
+  prescripteur = { name: '', specialite: '' };
+  prescription = { typeExamen: '', indications: [] as string[], dateReception: '' };
+  rendezVous  = { date: '—', heure: '—' };
 
+  resultats: ResultatBiologique[] = [];
+
+  // ── forms ──────────────────────────────────────────────────────────────────
+  validationDemandeForm = { date: '', heure: '', prix: '', note: '' };
+  rendezVousForm        = { date: '', heure: '', note: '' };
+  compteRenduForm       = { description: '', pdfPassword: '' };
+
+  // ── modals ─────────────────────────────────────────────────────────────────
+  showValidationDemandeModal   = false;
+  showValidationDemandeSuccess = false;
+  showArriveePatientModal      = false;
+  showArriveePatientSuccess    = false;
+  arriveeNote                  = '';
+  showEditRdvModal             = false;
+  showEditRdvSuccess           = false;
+  showValidateCompteRenduModal    = false;
+  showValidateCompteRenduSuccess  = false;
+  showPdfPasswordModal         = false;
+  pdfPasswordModalInput        = '';
+  showPdfModalPasswordInput    = false;
+  pdfUrlToOpen: string | null  = null;
+  showPdfPasswordInput         = false;
+  showPdfPasswordInApercu      = false;
+  lastSubmittedPdfPassword     = '';
+
+  // ── file ───────────────────────────────────────────────────────────────────
+  compteRenduFile: File | null        = null;
+  compteRenduFilePreview: string | null = null;
+
+  constructor(
+    private route: ActivatedRoute,
+    private location: Location,
+    private http: HttpClient
+  ) {}
+
+  // ── init ───────────────────────────────────────────────────────────────────
+  ngOnInit(): void {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) this.loadExamen(id);
+  }
+
+  loadExamen(id: string): void {
+    this.loading = true;
+    this.orderId = id;
+
+    this.http.get<any>(`${this.api}/diagnostic/lab-orders/${id}`).subscribe({
+      next: (order) => {
+        this.examApi = order;
+
+        this.examen = {
+          code:    order.labOrderRef ?? `LAB-${id.slice(0, 6).toUpperCase()}`,
+          type:    (order.categories ?? []).join(', '),
+          urgence: order.urgency === 'URGENT',
+          statut:  order.status
+        };
+
+        this.prescription = {
+          typeExamen:    (order.categories ?? []).join(', '),
+          indications:   order.clinicalIndication ? [order.clinicalIndication] : [],
+          dateReception: this.formatDate(order.receivedAt ?? order.createdAt)
+        };
+
+        if (order.appointmentDate) {
+          const d = new Date(order.appointmentDate);
+          this.rendezVous = {
+            date:  d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+            heure: d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+          };
+        } else {
+          this.rendezVous = { date: '—', heure: '—' };
+        }
+
+        if ((order.structuredResults ?? []).length > 0) {
+          this.resultats = order.structuredResults;
+        }
+
+        if (order.observations) {
+          this.compteRenduForm.description = order.observations;
+        }
+
+        this.resolveNames(order.patientId, order.doctorId);
+      },
+      error: () => {
+        this.error = 'Erreur lors du chargement de l\'examen';
+        this.loading = false;
+      }
+    });
+  }
+
+  private resolveNames(patientId: string, doctorId: string): void {
+    const ids = [patientId, doctorId].filter(Boolean);
+    if (!ids.length) { this.loading = false; return; }
+
+    this.http.get<{ keycloakId: string; firstName: string; lastName: string }[]>(
+      `${this.api}/users/names?ids=${ids.join(',')}`
+    ).subscribe({
+      next: (names) => {
+        const map: Record<string, string> = {};
+        for (const n of names) {
+          map[n.keycloakId] = `${n.firstName ?? ''} ${n.lastName ?? ''}`.trim();
+        }
+        const patientName = map[patientId] || 'Patient';
+        const doctorName  = map[doctorId]  || 'Médecin';
+
+        this.patient = { initials: this.getInitials(patientName), name: patientName, role: 'Patient' };
+        this.prescripteur = {
+          name:      `Dr. ${doctorName}`,
+          specialite: 'Médecin prescripteur'
+        };
+        this.loading = false;
+      },
+      error: () => {
+        this.patient = { initials: 'P', name: 'Patient', role: 'Patient' };
+        this.prescripteur = { name: 'Dr.', specialite: 'Médecin prescripteur' };
+        this.loading = false;
+      }
+    });
+  }
+
+  // ── status helpers ─────────────────────────────────────────────────────────
+  canValidate(): boolean {
+    return this.examApi?.status === 'PENDING';
+  }
+
+  get examenStatus(): string { return this.examApi?.status ?? ''; }
+
+  isCompteRenduPublie(): boolean { return this.examenStatus === 'COMPLETED'; }
+
+  canEditCompteRendu(): boolean {
+    return ['ACCEPTED', 'FUNDED', 'IN_PROGRESS'].includes(this.examenStatus);
+  }
+
+  isExamenCancelled(): boolean {
+    return ['REJECTED', 'EXPIRED'].includes(this.examenStatus);
+  }
+
+  // ── modal: valider demande (accept + RDV) ──────────────────────────────────
+  openValidationDemande(): void {
+    this.validationDemandeForm = { date: '', heure: '', prix: '', note: '' };
+    this.showValidationDemandeModal = true;
+  }
+
+  closeValidationDemande(): void { this.showValidationDemandeModal = false; }
+
+  confirmerValidationDemande(): void {
+    const { date, heure, prix, note } = this.validationDemandeForm;
+    if (!date || !heure) { this.showErrorToast('Veuillez renseigner la date et l\'heure'); return; }
+    if (!prix || isNaN(+prix) || +prix <= 0) { this.showErrorToast('Veuillez saisir un montant valide'); return; }
+
+    const appointmentDate = new Date(`${date}T${heure}:00`).toISOString();
+    const body = { price: +prix, appointmentDate, ...(note ? { note } : {}) };
+
+    this.isSaving = true;
+    this.http.patch(`${this.api}/diagnostic/lab-orders/${this.orderId}/accept`, body).subscribe({
+      next: () => {
+        this.isSaving = false;
+        this.showValidationDemandeModal = false;
+        this.showValidationDemandeSuccess = true;
+        setTimeout(() => { this.showValidationDemandeSuccess = false; this.loadExamen(this.orderId); }, 2000);
+      },
+      error: (err) => {
+        this.isSaving = false;
+        this.showErrorToast(err?.error?.message ?? 'Erreur lors de la validation');
+      }
+    });
+  }
+
+  closeValidationDemandeSuccess(): void { this.showValidationDemandeSuccess = false; }
+
+  // ── modal: confirmer arrivée patient ──────────────────────────────────────
+  openArriveePatient(): void {
+    this.arriveeNote = '';
+    this.showArriveePatientModal = true;
+  }
+
+  closeArriveePatient(): void { this.showArriveePatientModal = false; }
+
+  confirmerArriveePatient(): void {
+    this.isSaving = true;
+    this.http.patch(`${this.api}/diagnostic/lab-orders/${this.orderId}/start`, {
+      appointmentDate: new Date().toISOString(),
+      notes: this.arriveeNote || undefined
+    }).subscribe({
+      next: () => {
+        this.isSaving = false;
+        this.showArriveePatientModal = false;
+        this.showArriveePatientSuccess = true;
+        setTimeout(() => { this.showArriveePatientSuccess = false; this.loadExamen(this.orderId); }, 2000);
+      },
+      error: (err) => {
+        this.isSaving = false;
+        this.showErrorToast(err?.error?.message ?? 'Erreur lors de la confirmation');
+      }
+    });
+  }
+
+  // ── modal: modifier RDV ────────────────────────────────────────────────────
+  openEditRdv(): void { this.showEditRdvModal = true; }
+  closeEditRdv(): void { this.showEditRdvModal = false; }
+
+  confirmerEditRdv(): void {
+    if (!this.rendezVousForm.date || !this.rendezVousForm.heure) {
+      this.showErrorToast('Veuillez renseigner la date et l\'heure'); return;
+    }
+    const appointmentDate = new Date(`${this.rendezVousForm.date}T${this.rendezVousForm.heure}:00`).toISOString();
+
+    this.http.patch(`${this.api}/diagnostic/lab-orders/${this.orderId}/start`, {
+      appointmentDate,
+      notes: this.rendezVousForm.note || undefined
+    }).subscribe({
+      next: () => {
+        this.showEditRdvModal = false;
+        this.showEditRdvSuccess = true;
+        setTimeout(() => { this.showEditRdvSuccess = false; this.loadExamen(this.orderId); }, 2000);
+      },
+      error: (err) => this.showErrorToast(err?.error?.message ?? 'Erreur lors de la modification')
+    });
+  }
+
+  closeEditRdvSuccess(): void { this.showEditRdvSuccess = false; }
+
+  // ── résultats biologiques ──────────────────────────────────────────────────
   ajouterResultat(): void {
     this.resultats.push({ parametre: '', valeur: 0, unite: '', reference: '', etat: 'Normal' });
   }
 
   supprimerResultat(index: number): void {
-    if (this.resultats.length > 1) this.resultats.splice(index, 1);
-  }
-  showEditRdvModal = false;
-  showEditRdvSuccess = false;
-
-  showValidateCompteRenduModal = false;
-  showValidateCompteRenduSuccess = false;
-
-  showValidationDemandeModal = false;
-  showValidationDemandeSuccess = false;
-
-  // PDF password modal (before opening PDF)
-  showPdfPasswordModal = false;
-  pdfPasswordModalInput = '';
-  showPdfModalPasswordInput = false;
-  pdfUrlToOpen: string | null = null;
-
-  // Password visibility in form & aperçu
-  showPdfPasswordInput = false;
-  showPdfPasswordInApercu = false;
-
-  // Keep password after publish for aperçu display
-  lastSubmittedPdfPassword = '';
-
-
-  // ======================
-  // DATA
-  // ======================
-  examen = { code: '', type: '', urgence: false, statut: '' };
-
-  patient = { initials: '', name: '', role: 'Patient' };
-
-  prescripteur = { name: '', specialite: '' };
-
-  prescription = {
-    typeExamen: '',
-    indications: [] as string[],
-    dateReception: ''
-  };
-
-  rendezVous = { date: '—', heure: '—' };
-
-
-  // ======================
-  // FORMS
-  // ======================
-  rendezVousForm = { date: '', heure: '', note: '' };
-  compteRenduForm = { description: '', pdfPassword: '' };
-
-
-
-
-  // Validation demande
-  selectedLaboratoireId: number | null = null;
-  validationDemandeForm = {
-    date: '',
-    heure: '',
-    note: ''
-  };
-
-  // Compte rendu
-  compteRenduFile: File | null = null;
-  compteRenduFilePreview: string | null = null;
-
-  constructor(
-    private route: ActivatedRoute,
-    private location: Location
-  ) { }
-
-  // ======================
-  // INIT
-  // ======================
-  ngOnInit(): void {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
-    if (id) {
-      this.loadExamen(id);
-    }
+    this.resultats.splice(index, 1);
   }
 
-  // ======================
-  // TOAST METHODS
-  // ======================
-  showErrorToast(message: string): void {
-    const toast: Toast = {
-      id: this.toastIdCounter++,
-      message
-    };
-
-    this.toasts.push(toast);
-
-    // Auto-remove après 5 secondes
-    setTimeout(() => {
-      this.removeToast(toast.id);
-    }, 5000);
-  }
-
-  removeToast(id: number): void {
-    this.toasts = this.toasts.filter(t => t.id !== id);
-  }
-
-  // ======================
-  // API DETAIL
-  // ======================
-  loadExamen(id: number): void {
-    this.loading = true;
-
-    localGetLaboratoireById(id).subscribe({
-      next: (data: Laboratoire | null) => {
-        this.examApi = data as any;
-        console.log('Détail examen laboratoire (mock)', this.examApi);
-
-        this.examen = {
-          code: `LAB-${data?.id || ''}`,
-          type: data?.type || '',
-          urgence: data?.urgencyLevel === 'URGENT',
-          statut: data?.status || ''
-        };
-
-        this.patient = {
-          initials: (data?.patientName || '').split(' ').map((n: string) => n[0]).join(''),
-          name: data?.patientName || '',
-          role: 'Patient'
-        };
-
-        this.prescripteur = {
-          name: data?.doctorName || '',
-          specialite: (data as any)?.doctorSpecialite || 'Médecin prescripteur'
-        };
-
-        this.prescription = {
-          typeExamen: data?.type || '',
-          indications: data?.clinicalIndication ? [data.clinicalIndication] : [],
-          dateReception: data?.createdAt ? new Date(data.createdAt).toLocaleString() : ''
-        };
-
-        this.rendezVous = {
-          date: data?.appointmentDate || '—',
-          heure: data?.appointmentTime || '—'
-        };
-
-        this.loading = false;
-      },
-      error: (err: any) => {
-        this.error = 'Erreur lors du chargement du détail';
-        this.loading = false;
-        this.showErrorToast('Impossible de charger les détails de l\'examen');
-        console.error('Erreur chargement examen (mock):', err);
-      }
+  // ── compte rendu ───────────────────────────────────────────────────────────
+  genererAvecIA(): void {
+    if (!this.orderId) return;
+    this.http.post<{ report: string }>(`${this.api}/diagnostic/lab-orders/${this.orderId}/generate-report`, {}).subscribe({
+      next: (res) => { this.compteRenduForm.description = res.report; },
+      error: () => this.showErrorToast('Erreur lors de la génération IA')
     });
   }
 
-  // ======================
-  // LOGIQUE
-  // ======================
-  canValidate(): boolean {
-    return (
-      this.examApi?.status === 'PENDING' &&
-      !this.examApi?.appointmentDate &&
-      !this.examApi?.appointmentTime
-    );
-  }
-
-  get examenStatus(): string {
-    return this.examApi?.status as string;
-  }
-
-  isCompteRenduPublie(): boolean {
-    return this.examenStatus === 'COMPLETED';
-  }
-
-  canEditCompteRendu(): boolean {
-    return this.examenStatus === 'PENDING' || this.examenStatus === 'ACCEPTED';
-  }
-
-  isExamenCancelled(): boolean {
-    return this.examenStatus === 'CANCELLED';
-  }
-
-  // ======================
-  // MODALS RDV
-  // ======================
-  openEditRdv() {
-    this.showEditRdvModal = true;
-  }
-
-  closeEditRdv() {
-    this.showEditRdvModal = false;
-  }
-
-  confirmerEditRdv() {
-    if (!this.rendezVousForm.date || !this.rendezVousForm.heure) {
-      this.showErrorToast('Veuillez renseigner la date et l\'heure');
-      return;
-    }
-
-    // TODO: Appel API pour modifier le RDV
-    this.showEditRdvModal = false;
-    this.showEditRdvSuccess = true;
-
-    setTimeout(() => {
-      this.showEditRdvSuccess = false;
-    }, 2000);
-  }
-
-  closeEditRdvSuccess() {
-    this.showEditRdvSuccess = false;
-  }
-
-  // ======================
-  // MODALS VALIDATION
-  // ======================
-  openValidationDemande(): void {
-    if (!this.examApi) {
-      this.showErrorToast('Examen non chargé');
-      return;
-    }
-
-    this.selectedLaboratoireId = this.examApi.id;
-    this.patient.name = this.examApi.patientName || 'le patient';
-
-    this.validationDemandeForm = {
-      date: '',
-      heure: '',
-      note: ''
-    };
-
-    this.showValidationDemandeModal = true;
-  }
-
-  closeValidationDemande(): void {
-    this.showValidationDemandeModal = false;
-    this.selectedLaboratoireId = null;
-  }
-
-  private formatDateToJJMMAAAA(date: string): string {
-    if (!date) return '';
-    const [year, month, day] = date.split('-');
-    return `${day}-${month}-${year}`;
-  }
-
-  confirmerValidationDemande(): void {
-    if (!this.selectedLaboratoireId) {
-      this.showErrorToast('Aucune demande sélectionnée');
-      return;
-    }
-
-    if (!this.compteRenduForm.description) {
-      this.showErrorToast('Veuillez saisir le compte rendu');
-      return;
-    }
-
-
-    const payload = {
-      requestId: this.selectedLaboratoireId,
-      date: this.formatDateToJJMMAAAA(this.validationDemandeForm.date),
-      time: this.validationDemandeForm.heure
-    };
-
-    localAcceptLaboratoire(payload).subscribe({
-      next: (res: any) => {
-        console.log('✅ Demande validée (mock):', res);
-
-        this.showValidationDemandeModal = false;
-        this.showValidationDemandeSuccess = true;
-
-        setTimeout(() => {
-          this.showValidationDemandeSuccess = false;
-          // Recharger les données
-          if (this.examApi) {
-            this.loadExamen(this.examApi.id);
-          }
-        }, 2000);
-      },
-      error: (err: any) => {
-        console.error('❌ Erreur validation demande (mock):', err);
-        this.showErrorToast('Erreur lors de la validation de la demande');
-      }
-    });
-  }
-
-  closeValidationDemandeSuccess(): void {
-    this.showValidationDemandeSuccess = false;
-  }
-
-
-  // ======================
-  // COMPTE RENDU
-  // ======================
-  genererAvecIA() {
-    this.compteRenduForm.description = 'Compte rendu généré automatiquement par l\'IA.';
-  }
-
-  openValiderCompteRendu() {
-    if (!this.compteRenduForm.description) {
-      this.showErrorToast('Veuillez saisir le compte rendu');
-      return;
-    }
-    if (!this.compteRenduFile) {
-      this.showErrorToast('Veuillez joindre un fichier PDF (obligatoire)');
-      return;
-    }
-    if (!this.compteRenduForm.pdfPassword) {
-      this.showErrorToast('Veuillez renseigner le mot de passe du PDF');
-      return;
-    }
+  openValiderCompteRendu(): void {
     this.showValidateCompteRenduModal = true;
   }
 
-
-  closeValidateCompteRendu() {
-    this.showValidateCompteRenduModal = false;
-  }
-
-  closeCompteRenduSuccess() {
-    this.showValidateCompteRenduSuccess = false;
-  }
-
-  closeValidateCompteRenduSuccess() {
-    this.showValidateCompteRenduSuccess = false;
-  }
-
-  getCurrentDate(): string {
-    const now = new Date();
-    const day = String(now.getDate()).padStart(2, '0');
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const year = now.getFullYear();
-    return `${day}/${month}/${year}`;
-  }
-
-  onCompteRenduFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (!input.files || input.files.length === 0) return;
-
-    const file = input.files[0];
-
-    // PDF uniquement
-    if (!file.name.toLowerCase().endsWith('.pdf')) {
-      this.showErrorToast('Seuls les fichiers PDF sont acceptés');
-      input.value = '';
-      return;
-    }
-
-    // Validation de la taille (10 MB max)
-    const maxSize = 10 * 1024 * 1024;
-    if (file.size > maxSize) {
-      this.showErrorToast('Le fichier est trop volumineux (max 10 MB)');
-      input.value = '';
-      return;
-    }
-
-    this.compteRenduFile = file;
-    this.compteRenduFilePreview = null;
-    console.log('📄 Fichier sélectionné:', this.compteRenduFile.name);
-  }
-
-  removeCompteRenduFile(): void {
-    this.compteRenduFile = null;
-    this.compteRenduFilePreview = null;
-  }
+  closeValidateCompteRendu(): void { this.showValidateCompteRenduModal = false; }
 
   confirmerPublierCompteRendu(): void {
-    if (!this.examApi) {
-      this.showErrorToast('Examen non chargé');
-      return;
-    }
 
-    if (!this.compteRenduForm.description) {
-      this.showErrorToast('Veuillez remplir tous les champs obligatoires');
-      return;
-    }
-
-    console.log('📤 Envoi du compte rendu...');
-
-    const pdfPwd = this.compteRenduForm.pdfPassword;
-
-    localSubmitAnalysisReport({
-      requestId: this.examApi?.id || 0,
-      report: this.compteRenduForm.description,
-      reportFile: this.compteRenduFile || undefined,
-      pdfPassword: pdfPwd || undefined
-    }).subscribe({
-      next: (response: any) => {
-        console.log('✅ Compte rendu publié (mock):', response);
-
-        // Conserver le mot de passe pour affichage dans l'aperçu
-        this.lastSubmittedPdfPassword = this.compteRenduForm.pdfPassword;
-
-        if (this.examApi) {
-          this.examApi.status = 'COMPLETED';
-        }
-
+    this.isSaving = true;
+    const payload: any = { structuredResults: this.resultats };
+    if (this.compteRenduForm.description) payload.observations = this.compteRenduForm.description;
+    this.http.patch(`${this.api}/diagnostic/lab-orders/${this.orderId}/results`, payload).subscribe({
+      next: () => {
+        this.isSaving = false;
+        this.examApi = { ...this.examApi, status: 'COMPLETED' };
         this.showValidateCompteRenduModal = false;
         this.showValidateCompteRenduSuccess = true;
-
-        setTimeout(() => {
-          this.showValidateCompteRenduSuccess = false;
-          if (this.examApi) {
-            this.loadExamen(this.examApi.id);
-          }
-        }, 2000);
+        setTimeout(() => { this.showValidateCompteRenduSuccess = false; this.loadExamen(this.orderId); }, 2000);
       },
-      error: (err: any) => {
-        console.error('❌ Erreur publication compte rendu (mock):', err);
-        this.showErrorToast('Erreur lors de la publication du compte rendu');
+      error: (err) => {
+        this.isSaving = false;
+        this.showErrorToast(err?.error?.message ?? 'Erreur lors de la publication');
       }
     });
   }
 
-  // ======================
-  // PDF PASSWORD HELPERS
-  // ======================
+  closeCompteRenduSuccess(): void   { this.showValidateCompteRenduSuccess = false; }
+  closeValidateCompteRenduSuccess(): void { this.showValidateCompteRenduSuccess = false; }
 
-  getPdfPassword(): string {
-    return this.examApi?.pdfPassword || this.lastSubmittedPdfPassword || '';
+  // ── fichier PDF ────────────────────────────────────────────────────────────
+  onCompteRenduFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    const file = input.files[0];
+    if (!file.name.toLowerCase().endsWith('.pdf')) { this.showErrorToast('Seuls les fichiers PDF sont acceptés'); input.value = ''; return; }
+    if (file.size > 10 * 1024 * 1024) { this.showErrorToast('Le fichier est trop volumineux (max 10 MB)'); input.value = ''; return; }
+    this.compteRenduFile = file;
+    this.compteRenduFilePreview = null;
   }
 
+  removeCompteRenduFile(): void { this.compteRenduFile = null; this.compteRenduFilePreview = null; }
+
+  // ── PDF helpers ────────────────────────────────────────────────────────────
+  getPdfPassword(): string { return this.examApi?.pdfPassword ?? this.lastSubmittedPdfPassword ?? ''; }
+
   copyPdfPassword(): void {
-    const pwd = this.compteRenduForm.pdfPassword;
-    if (!pwd) return;
-    navigator.clipboard.writeText(pwd).then(() => {
-      // feedback silencieux
-    });
+    if (this.compteRenduForm.pdfPassword) navigator.clipboard.writeText(this.compteRenduForm.pdfPassword);
   }
 
   copyPdfPasswordFromApercu(): void {
     const pwd = this.getPdfPassword();
-    if (!pwd) return;
-    navigator.clipboard.writeText(pwd);
-  }
-
-  openPdfPage(url: string): void {
-    const encoded = encodeURIComponent(url);
-    window.open(`/pdf-viewer?url=${encoded}`, '_blank');
+    if (pwd) navigator.clipboard.writeText(pwd);
   }
 
   openPdfPasswordModal(url: string): void {
-    this.pdfUrlToOpen = url;
-    this.pdfPasswordModalInput = '';
-    this.showPdfModalPasswordInput = false;
-    this.showPdfPasswordModal = true;
+    this.pdfUrlToOpen = url; this.pdfPasswordModalInput = ''; this.showPdfModalPasswordInput = false; this.showPdfPasswordModal = true;
   }
 
-  closePdfPasswordModal(): void {
-    this.showPdfPasswordModal = false;
-    this.pdfUrlToOpen = null;
-    this.pdfPasswordModalInput = '';
-  }
+  closePdfPasswordModal(): void { this.showPdfPasswordModal = false; this.pdfUrlToOpen = null; }
 
   confirmOpenPdf(): void {
     const expected = this.getPdfPassword();
-    if (expected && this.pdfPasswordModalInput !== expected) {
-      this.showErrorToast('Mot de passe incorrect');
-      return;
-    }
-    if (this.pdfUrlToOpen) {
-      window.open(this.pdfUrlToOpen, '_blank');
-    }
+    if (expected && this.pdfPasswordModalInput !== expected) { this.showErrorToast('Mot de passe incorrect'); return; }
+    if (this.pdfUrlToOpen) window.open(this.pdfUrlToOpen, '_blank');
     this.closePdfPasswordModal();
   }
 
-  // ======================
-  // UTILS
-  // ======================
-  getStatutLabel(statut: string): string {
-    switch (statut) {
-      case 'PENDING':
-        return 'En attente';
-      case 'ACCEPTED':
-        return 'Validée';
-      case 'REJECTED':
-        return 'Annulée';
-      case 'COMPLETED':
-        return 'Terminée';
-      default:
-        return statut;
-    }
+  // ── toasts ─────────────────────────────────────────────────────────────────
+  showErrorToast(message: string): void {
+    const toast = { id: this.toastIdCounter++, message };
+    this.toasts.push(toast);
+    setTimeout(() => this.removeToast(toast.id), 5000);
   }
 
-  goBack(): void {
-    this.location.back();
-  }
+  removeToast(id: number): void { this.toasts = this.toasts.filter(t => t.id !== id); }
+
+  // ── utils ──────────────────────────────────────────────────────────────────
+  goBack(): void { this.location.back(); }
 
   getInitials(fullName: string): string {
-    if (!fullName) return '';
-    return fullName
-      .split(' ')
-      .filter(n => n.length > 0)
-      .map(n => n[0].toUpperCase())
-      .join('');
+    return (fullName ?? '').split(' ').filter(n => n).map(n => n[0].toUpperCase()).join('').slice(0, 2);
   }
 
-}
+  getCurrentDate(): string {
+    const now = new Date();
+    return `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`;
+  }
 
-// ===== Local mocks used by this component =====
-function noop() {}
+  getStatutLabel(statut: string): string {
+    const map: Record<string, string> = {
+      PENDING: 'En attente', ACCEPTED: 'Validée', FUNDED: 'Financée',
+      IN_PROGRESS: 'En cours', COMPLETED: 'Terminée', REJECTED: 'Annulée', EXPIRED: 'Expirée'
+    };
+    return map[statut] ?? statut;
+  }
 
-/* Add mock implementations as top-level functions to avoid touching class fields too much */
-
-// Simulates fetching a Laboratoire by id
-function localGetLaboratoireById(id: number) {
-  const MOCK: Record<number, any> = {
-    4: { id: 4, patientName: 'Moussa Wade', doctorName: 'Dr. Diop', doctorSpecialite: 'Médecin Générale', laboratoryName: 'Lab', type: 'Hémogramme complet', clinicalIndication: 'Douleurs persistantes depuis 3 semaines.', urgencyLevel: 'URGENT', status: 'ACCEPTED', createdAt: '2023-10-25T08:30:00.000Z', appointmentDate: null, appointmentTime: null, pictures: [], report: null, reportFile: null },
-    3: { id: 3, patientName: 'Maman Fall',  doctorName: 'Dr. Diop', doctorSpecialite: 'Médecin Générale', laboratoryName: 'Lab', type: 'Hémogramme complet', clinicalIndication: 'Toux persistante.', urgencyLevel: 'URGENT', status: 'ACCEPTED', createdAt: '2025-01-15T09:15:00.000Z', appointmentDate: null, appointmentTime: null, pictures: [], report: null, reportFile: null },
-    2: { id: 2, patientName: 'Fatou Fall',  doctorName: 'Dr. Diop', doctorSpecialite: 'Médecin Générale', laboratoryName: 'Lab', type: 'Glycémie à jeun',    clinicalIndication: 'Contrôle glycémique.', urgencyLevel: 'NORMAL',  status: 'ACCEPTED', createdAt: '2025-01-15T08:30:00.000Z', appointmentDate: null, appointmentTime: null, pictures: [], report: null, reportFile: null },
-    1: { id: 1, patientName: 'Isseu Ly',    doctorName: 'Dr. Diop', doctorSpecialite: 'Médecin Générale', laboratoryName: 'Lab', type: 'Bilan lipidique',    clinicalIndication: 'Bilan cardiovasculaire.', urgencyLevel: 'NORMAL',  status: 'COMPLETED', createdAt: '2025-01-14T11:45:00.000Z', appointmentDate: '2025-01-15', appointmentTime: '10:00', pictures: [], report: 'Bilan lipidique dans les normes.', reportFile: null }
-  };
-  const mock = MOCK[id] ?? MOCK[4];
-  return of(mock as Laboratoire).pipe(delay(150));
-}
-
-function localAcceptLaboratoire(payload: any) {
-  return of({ message: 'Accepted' }).pipe(delay(120));
-}
-
-function localSubmitAnalysisReport(payload: any) {
-  return of({ message: 'Report submitted' }).pipe(delay(180));
+  private formatDate(iso: string | null): string {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
+  }
 }

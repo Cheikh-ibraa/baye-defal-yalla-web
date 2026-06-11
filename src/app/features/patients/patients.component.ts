@@ -1458,11 +1458,12 @@ export class PatientsComponent implements OnInit {
   patientsRecents: Array<{
     id: string; nom: string; initiales: string; telephone: string; dateVisite: Date;
     age: number; dateNaissance: string; sexe: string; groupe: string; poids: number; taille: number; imc: string;
+    keycloakId: string;
   }> = [];
   loadingRecents = false;
 
   // === Autocomplete recherche ===
-  autocompleteResults: Array<{ id: string; nom: string; initiales: string; telephone: string }> = [];
+  autocompleteResults: Array<{ id: string; nom: string; initiales: string; telephone: string; keycloakId: string }> = [];
   showAutocomplete = false;
   searchLoading = false;
   private searchTimer: any = null;
@@ -1534,6 +1535,7 @@ export class PatientsComponent implements OnInit {
             poids: 0,
             taille: 0,
             imc: '0',
+            keycloakId: p.keycloakId || '',
           };
         });
       },
@@ -1564,11 +1566,13 @@ export class PatientsComponent implements OnInit {
             const lastName = u.user?.lastName || u.lastName || u.nom || '';
             const phone = u.phone || u.patientProfile?.phone || u.telephone || '';
             const ref = u.patientRef || u.patientProfile?.patientRef || '';
+            const keycloakId = u.keycloakId || u.patientProfile?.keycloakId || '';
             return {
               id: ref,
               nom: `${firstName} ${lastName}`.trim() || 'Nom non disponible',
               initiales: this.getInitials(firstName, lastName),
               telephone: phone,
+              keycloakId,
             };
           });
           this.showAutocomplete = this.autocompleteResults.length > 0;
@@ -1582,10 +1586,11 @@ export class PatientsComponent implements OnInit {
     }, 300);
   }
 
-  selectFromAutocomplete(s: { id: string; nom: string; initiales: string; telephone: string }): void {
+  selectFromAutocomplete(s: { id: string; nom: string; initiales: string; telephone: string; keycloakId: string }): void {
     this.rechercheTexte = s.telephone || s.id;
     this.showAutocomplete = false;
     this.autocompleteResults = [];
+    if (s.keycloakId) localStorage.setItem('selectedPatientId', s.keycloakId);
     this.selectedPatient = {
       id: s.id,
       nom: s.nom,
@@ -3020,6 +3025,7 @@ export class PatientsComponent implements OnInit {
       poids: p.poids, taille: p.taille, imc: p.imc
     };
     localStorage.setItem('selectedPatient', JSON.stringify(this.selectedPatient));
+    if (p.keycloakId) localStorage.setItem('selectedPatientId', p.keycloakId);
     this.showPatientDetail = true;
     this.activeTab = 'hospitalisation';
     this.loadPatientData();

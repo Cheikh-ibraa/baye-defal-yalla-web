@@ -89,6 +89,34 @@ export class LoginComponent implements OnInit {
         const role = this.getRoleFromToken(res.accessToken);
         this.isLoading = false;
 
+        // Stocker user_data pour que le sidebar affiche le bon menu
+        const PROFIL_MAP: Record<string, string> = {
+          'admin':              'ADMIN',
+          'doctor':             'DOCTOR',
+          'pharmacist':         'PHARMACIST',
+          'hospital':           'HOSPITAL',
+          'lab-technician':     'LABORATORY',
+          'radiologist':        'IMAGING_CENTER',
+          'supplier':           'FOURNISSEUR',
+          'donor-individual':   'DONOR',
+          'donor-organization': 'DONOR',
+          'patient':            'PATIENT',
+        };
+        try {
+          const payload = JSON.parse(atob(res.accessToken.split('.')[1]));
+          localStorage.setItem('user_data', JSON.stringify({
+            id: 0,
+            nom:       payload.family_name ?? '',
+            prenom:    payload.given_name  ?? '',
+            email:     payload.email       ?? '',
+            telephone: payload.preferred_username ?? '',
+            adress: '',
+            lat: null,
+            lon: null,
+            profil: PROFIL_MAP[role] ?? role.toUpperCase(),
+          }));
+        } catch { /* token malformé */ }
+
         // Le patient utilise uniquement l'application mobile
         if (role === 'patient') {
           this.isMobileOnly = true;

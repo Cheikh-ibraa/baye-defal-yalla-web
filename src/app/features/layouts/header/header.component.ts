@@ -258,7 +258,22 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   onProfileClick() {
-    this.router.navigate(['/compte']);
+    let accountLink = '/pharmacist/account';
+    if (this.currentUser) {
+      const profile = this.currentUser.profil.toUpperCase();
+      if (profile === 'DOCTOR' || profile === 'MEDECIN') accountLink = '/doctor/account';
+      else if (profile === 'ADMIN') accountLink = '/admin/account';
+      else if (profile === 'PHARMACIST' || profile === 'PHARMACIE') accountLink = '/pharmacist/account';
+      else if (profile === 'LABORATORY' || profile === 'LAB' || profile === 'LABORATOIRE') accountLink = '/laboratory/account';
+      else if (profile === 'IMAGING_CENTER' || profile === 'IMAGERIE') accountLink = '/imaging/account';
+      else if (profile === 'ORGANISATION' || profile === 'ORGANIZATION') accountLink = '/organization/account';
+      else if (profile === 'ASSOCIATION') accountLink = '/association/account';
+      else if (profile === 'HOSPITAL' || profile === 'HOPITAL') accountLink = '/hospital/account';
+      else if (profile === 'FOURNISSEUR' || profile === 'SUPPLIER') accountLink = '/fournisseur/account';
+      else if (profile === 'DONOR' || profile === 'DONATEUR') accountLink = '/donor/account';
+      else if (profile === 'PATIENT') accountLink = '/patient/account';
+    }
+    this.router.navigate([accountLink]);
     this.closeMenus();
   }
 
@@ -358,6 +373,19 @@ private capitalizeWords(text: string): string {
   }
 
   private detectProfileFromUrl(url: string): string | null {
+    if (url.startsWith('/admin/')) return 'ADMIN';
+    if (url.startsWith('/doctor/')) return 'DOCTOR';
+    if (url.startsWith('/pharmacist/')) return 'PHARMACIST';
+    if (url.startsWith('/laboratory/')) return 'LABORATORY';
+    if (url.startsWith('/imaging/')) return 'IMAGING_CENTER';
+    if (url.startsWith('/organization/')) return 'ORGANISATION';
+    if (url.startsWith('/association/')) return 'ORGANISATION';
+    if (url.startsWith('/hospital/')) return 'HOSPITAL';
+    if (url.startsWith('/fournisseur/')) return 'FOURNISSEUR';
+    if (url.startsWith('/donor/')) return 'DONATEUR';
+    if (url.startsWith('/patient/')) return 'PATIENT';
+
+    // Fallback detection
     if (url.startsWith('/organisation') || 
         url.startsWith('/rapport') || 
         url.startsWith('/detail-rapport') || 

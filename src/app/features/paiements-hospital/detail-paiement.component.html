@@ -6,9 +6,10 @@
       <div class="flex items-start gap-4">
         <button (click)="back()"
           class="mt-1 flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-white transition hover:bg-slate-50">
-         <svg width="18" height="14" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M16.75 6.75H0.75M6.75 12.75L0.75 6.75L6.75 0.75" stroke="#2B3674" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
+          <svg width="18" height="14" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16.75 6.75H0.75M6.75 12.75L0.75 6.75L6.75 0.75" stroke="#2B3674" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
         </button>
         <div>
           <h1 class="text-2xl font-bold tracking-tight text-[#0F172A] sm:text-[28px]">Details de la facturation</h1>
@@ -17,21 +18,21 @@
       </div>
 
       <div class="flex shrink-0 gap-3">
-        <button class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-[#475569] transition hover:bg-slate-50">
+        <button
+          class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-[#475569] transition hover:bg-slate-50">
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <polyline stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" points="6 9 6 2 18 2 18 9"/>
+            <polyline stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" points="6 9 6 2 18 2 18 9" />
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-              d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-            <rect x="6" y="14" width="12" height="8" stroke-width="1.8"/>
+              d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+            <rect x="6" y="14" width="12" height="8" stroke-width="1.8" />
           </svg>
           Imprimer
         </button>
-        <button class="inline-flex items-center gap-2 rounded-xl bg-[#124A92] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0F3E79]">
-          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <button
+          class="inline-flex items-center gap-2 rounded-lg bg-[#124A92] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0F3E79]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline stroke-linecap="round" stroke-linejoin="round" stroke-width="2" points="7 10 12 15 17 10"/>
-            <line x1="12" y1="15" x2="12" y2="3" stroke-linecap="round" stroke-width="2"/>
+              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
           </svg>
           Télécharger PDF
         </button>
@@ -44,11 +45,8 @@
       <!-- Carte patient -->
       <div class="rounded-2xl bg-white p-5 ring-1 ring-slate-100">
         <div class="flex items-center gap-3">
-          <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#F1F5F9] text-[#94A3B8]">
-            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <circle cx="12" cy="8" r="3.5" stroke-width="1.8"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 19a7 7 0 0 1 14 0"/>
-            </svg>
+          <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#F1F5F9]">
+                     <img src="assets/icones/avatar.svg" alt="Avatar" class="h-5 w-5 object-cover">
           </div>
           <div>
             <p class="text-lg sm:text-xl font-bold text-[#191B23]">{{ detail?.nom }}</p>
@@ -57,16 +55,22 @@
         </div>
 
         <div class="mt-4 space-y-2.5">
-          <div class="flex items-center gap-2.5 rounded-xl bg-[#F4F6F9] px-3 py-2.5 text-sm sm:text-base text-[#191B23]">
+          <div
+            class="flex items-center gap-2.5 rounded-xl bg-[#F4F6F9] px-3 py-2.5 text-sm sm:text-base text-[#191B23]">
             <svg width="16" height="20" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M8 10C8.55 10 9.02083 9.80417 9.4125 9.4125C9.80417 9.02083 10 8.55 10 8C10 7.45 9.80417 6.97917 9.4125 6.5875C9.02083 6.19583 8.55 6 8 6C7.45 6 6.97917 6.19583 6.5875 6.5875C6.19583 6.97917 6 7.45 6 8C6 8.55 6.19583 9.02083 6.5875 9.4125C6.97917 9.80417 7.45 10 8 10ZM8 17.35C10.0333 15.4833 11.5417 13.7875 12.525 12.2625C13.5083 10.7375 14 9.38333 14 8.2C14 6.38333 13.4208 4.89583 12.2625 3.7375C11.1042 2.57917 9.68333 2 8 2C6.31667 2 4.89583 2.57917 3.7375 3.7375C2.57917 4.89583 2 6.38333 2 8.2C2 9.38333 2.49167 10.7375 3.475 12.2625C4.45833 13.7875 5.96667 15.4833 8 17.35ZM8 20C5.31667 17.7167 3.3125 15.5958 1.9875 13.6375C0.6625 11.6792 0 9.86667 0 8.2C0 5.7 0.804167 3.70833 2.4125 2.225C4.02083 0.741667 5.88333 0 8 0C10.1167 0 11.9792 0.741667 13.5875 2.225C15.1958 3.70833 16 5.7 16 8.2C16 9.86667 15.3375 11.6792 14.0125 13.6375C12.6875 15.5958 10.6833 17.7167 8 20Z" fill="#00339E"/>
-</svg>
+              <path
+                d="M8 10C8.55 10 9.02083 9.80417 9.4125 9.4125C9.80417 9.02083 10 8.55 10 8C10 7.45 9.80417 6.97917 9.4125 6.5875C9.02083 6.19583 8.55 6 8 6C7.45 6 6.97917 6.19583 6.5875 6.5875C6.19583 6.97917 6 7.45 6 8C6 8.55 6.19583 9.02083 6.5875 9.4125C6.97917 9.80417 7.45 10 8 10ZM8 17.35C10.0333 15.4833 11.5417 13.7875 12.525 12.2625C13.5083 10.7375 14 9.38333 14 8.2C14 6.38333 13.4208 4.89583 12.2625 3.7375C11.1042 2.57917 9.68333 2 8 2C6.31667 2 4.89583 2.57917 3.7375 3.7375C2.57917 4.89583 2 6.38333 2 8.2C2 9.38333 2.49167 10.7375 3.475 12.2625C4.45833 13.7875 5.96667 15.4833 8 17.35ZM8 20C5.31667 17.7167 3.3125 15.5958 1.9875 13.6375C0.6625 11.6792 0 9.86667 0 8.2C0 5.7 0.804167 3.70833 2.4125 2.225C4.02083 0.741667 5.88333 0 8 0C10.1167 0 11.9792 0.741667 13.5875 2.225C15.1958 3.70833 16 5.7 16 8.2C16 9.86667 15.3375 11.6792 14.0125 13.6375C12.6875 15.5958 10.6833 17.7167 8 20Z"
+                fill="#00339E" />
+            </svg>
             <span class="truncate">{{ detail?.localisation }}</span>
           </div>
-          <div class="flex items-center gap-2.5 rounded-xl bg-[#F4F6F9] px-3 py-2.5 text-sm sm:text-base text-[#191B23]">
-           <svg width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V4C0 3.45 0.195833 2.97917 0.5875 2.5875C0.979167 2.19583 1.45 2 2 2H3V0H5V2H13V0H15V2H16C16.55 2 17.0208 2.19583 17.4125 2.5875C17.8042 2.97917 18 3.45 18 4V18C18 18.55 17.8042 19.0208 17.4125 19.4125C17.0208 19.8042 16.55 20 16 20H2ZM2 18H16V8H2V18ZM2 6H16V4H2V6ZM2 6V4V6Z" fill="#00339E"/>
-</svg>
+          <div
+            class="flex items-center gap-2.5 rounded-xl bg-[#F4F6F9] px-3 py-2.5 text-sm sm:text-base text-[#191B23]">
+            <svg width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V4C0 3.45 0.195833 2.97917 0.5875 2.5875C0.979167 2.19583 1.45 2 2 2H3V0H5V2H13V0H15V2H16C16.55 2 17.0208 2.19583 17.4125 2.5875C17.8042 2.97917 18 3.45 18 4V18C18 18.55 17.8042 19.0208 17.4125 19.4125C17.0208 19.8042 16.55 20 16 20H2ZM2 18H16V8H2V18ZM2 6H16V4H2V6ZM2 6V4V6Z"
+                fill="#00339E" />
+            </svg>
             <span>Admis le {{ detail?.dateAdmission }}</span>
           </div>
         </div>
@@ -96,20 +100,27 @@
         <p class="mb-4 text-xs font-bold uppercase tracking-widest text-[#434655]">Historique</p>
         <div class="relative">
           <div class="absolute bottom-0 left-[13px] top-0 w-px bg-[#E2E8F0]" aria-hidden="true"></div>
-          <div *ngFor="let step of detail?.historique; let last = last"
-            class="relative flex gap-3" [ngClass]="last ? '' : 'pb-5'">
+          <div *ngFor="let step of detail?.historique; let last = last" class="relative flex gap-3"
+            [ngClass]="last ? '' : 'pb-5'">
             <div class="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
               [ngClass]="stepIconBg(step.status)">
-              <svg *ngIf="step.icon === 'check'" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m5 13 4 4L19 7"/>
+              <svg *ngIf="step.icon === 'check'" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m5 13 4 4L19 7" />
               </svg>
-              <svg *ngIf="step.icon === 'user'" width="10" height="12" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M0 11.6667V8.16667C0 7.84583 0.114236 7.57118 0.342708 7.34271C0.571181 7.11424 0.845833 7 1.16667 7H8.16667C8.4875 7 8.76215 7.11424 8.99063 7.34271C9.2191 7.57118 9.33333 7.84583 9.33333 8.16667V11.6667H0ZM1.16667 9.33333H8.16667V8.16667H1.16667V9.33333ZM4.66667 7L1.75 2.91667C1.75 2.10972 2.03438 1.42188 2.60313 0.853125C3.17188 0.284375 3.85972 0 4.66667 0C5.47361 0 6.16146 0.284375 6.73021 0.853125C7.29896 1.42188 7.58333 2.10972 7.58333 2.91667L4.66667 7ZM4.66667 5.36667L6.41667 2.91667C6.41667 2.43056 6.24653 2.01736 5.90625 1.67708C5.56597 1.33681 5.15278 1.16667 4.66667 1.16667C4.18056 1.16667 3.76736 1.33681 3.42708 1.67708C3.08681 2.01736 2.91667 2.43056 2.91667 2.91667L4.66667 5.36667Z" fill="white"/>
-</svg>
+              <svg *ngIf="step.icon === 'user'" width="10" height="12" viewBox="0 0 10 12" fill="none"
+                xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M0 11.6667V8.16667C0 7.84583 0.114236 7.57118 0.342708 7.34271C0.571181 7.11424 0.845833 7 1.16667 7H8.16667C8.4875 7 8.76215 7.11424 8.99063 7.34271C9.2191 7.57118 9.33333 7.84583 9.33333 8.16667V11.6667H0ZM1.16667 9.33333H8.16667V8.16667H1.16667V9.33333ZM4.66667 7L1.75 2.91667C1.75 2.10972 2.03438 1.42188 2.60313 0.853125C3.17188 0.284375 3.85972 0 4.66667 0C5.47361 0 6.16146 0.284375 6.73021 0.853125C7.29896 1.42188 7.58333 2.10972 7.58333 2.91667L4.66667 7ZM4.66667 5.36667L6.41667 2.91667C6.41667 2.43056 6.24653 2.01736 5.90625 1.67708C5.56597 1.33681 5.15278 1.16667 4.66667 1.16667C4.18056 1.16667 3.76736 1.33681 3.42708 1.67708C3.08681 2.01736 2.91667 2.43056 2.91667 2.91667L4.66667 5.36667Z"
+                  fill="white" />
+              </svg>
 
-              <svg *ngIf="step.icon === 'doc'" width="10" height="12" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M2.33333 9.33333H7V8.16667H2.33333V9.33333ZM2.33333 7H7V5.83333H2.33333V7ZM1.16667 11.6667C0.845833 11.6667 0.571181 11.5524 0.342708 11.324C0.114236 11.0955 0 10.8208 0 10.5V1.16667C0 0.845833 0.114236 0.571181 0.342708 0.342708C0.571181 0.114236 0.845833 0 1.16667 0H5.83333L9.33333 3.5V10.5C9.33333 10.8208 9.2191 11.0955 8.99063 11.324C8.76215 11.5524 8.4875 11.6667 8.16667 11.6667H1.16667ZM5.25 4.08333V1.16667H1.16667V10.5H8.16667V4.08333H5.25ZM1.16667 1.16667V4.08333V1.16667V4.08333V10.5V1.16667Z" fill="#747686"/>
-</svg>
+              <svg *ngIf="step.icon === 'doc'" width="10" height="12" viewBox="0 0 10 12" fill="none"
+                xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M2.33333 9.33333H7V8.16667H2.33333V9.33333ZM2.33333 7H7V5.83333H2.33333V7ZM1.16667 11.6667C0.845833 11.6667 0.571181 11.5524 0.342708 11.324C0.114236 11.0955 0 10.8208 0 10.5V1.16667C0 0.845833 0.114236 0.571181 0.342708 0.342708C0.571181 0.114236 0.845833 0 1.16667 0H5.83333L9.33333 3.5V10.5C9.33333 10.8208 9.2191 11.0955 8.99063 11.324C8.76215 11.5524 8.4875 11.6667 8.16667 11.6667H1.16667ZM5.25 4.08333V1.16667H1.16667V10.5H8.16667V4.08333H5.25ZM1.16667 1.16667V4.08333V1.16667V4.08333V10.5V1.16667Z"
+                  fill="#747686" />
+              </svg>
             </div>
             <div class="min-w-0 flex-1 pt-0.5">
               <p class="text-sm sm:text-base font-semibold text-[#191B23]">{{ step.label }}</p>
@@ -145,7 +156,8 @@
                 <tr *ngFor="let acte of detail?.actes" class="text-sm sm:text-base hover:bg-[#F8FAFC]">
                   <td class="px-6 py-6 font-bold text-[#0F172A] align-top">{{ acte.nom }}</td>
                   <td class="px-4 py-6 text-[#64748B] align-top">{{ acte.description }}</td>
-                  <td class="px-6 py-6 text-right font-bold text-[#0F172A] align-top whitespace-nowrap">{{ acte.prix }}</td>
+                  <td class="px-6 py-6 text-right font-bold text-[#0F172A] align-top whitespace-nowrap">{{ acte.prix }}
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -167,8 +179,7 @@
               <span class="text-white font-light">Financement</span>
               <span class="font-bold text-white">{{ detail?.recap?.financement }}</span>
             </div>
-            <div *ngIf="detail?.recap?.assurance"
-              class="flex items-center justify-between text-sm sm:text-base">
+            <div *ngIf="detail?.recap?.assurance" class="flex items-center justify-between text-sm sm:text-base">
               <span class="text-white font-light">{{ detail?.recap?.assuranceLabel }}</span>
               <span class="font-bold text-[#69FF87]">{{ detail?.recap?.assurance }}</span>
             </div>
@@ -188,20 +199,26 @@
               <div class="flex items-center gap-3">
                 <ng-container [ngSwitch]="flux.iconType">
                   <!-- Donateur Anonyme Icon -->
-                  <div *ngSwitchCase="'don'" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#EEF1FD]">
+                  <div *ngSwitchCase="'don'"
+                    class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#EEF1FD]">
                     <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M15 11L10.85 6.95C10.3333 6.45 9.89583 5.89583 9.5375 5.2875C9.17917 4.67917 9 4.01667 9 3.3C9 2.38333 9.32083 1.60417 9.9625 0.9625C10.6042 0.320833 11.3833 0 12.3 0C12.8333 0 13.3333 0.1125 13.8 0.3375C14.2667 0.5625 14.6667 0.866667 15 1.25C15.3333 0.866667 15.7333 0.5625 16.2 0.3375C16.6667 0.1125 17.1667 0 17.7 0C18.6167 0 19.3958 0.320833 20.0375 0.9625C20.6792 1.60417 21 2.38333 21 3.3C21 4.01667 20.825 4.67917 20.475 5.2875C20.125 5.89583 19.6917 6.45 19.175 6.95L15 11ZM15 8.2L17.725 5.525C18.0417 5.20833 18.3333 4.87083 18.6 4.5125C18.8667 4.15417 19 3.75 19 3.3C19 2.93333 18.875 2.625 18.625 2.375C18.375 2.125 18.0667 2 17.7 2C17.4667 2 17.2458 2.04583 17.0375 2.1375C16.8292 2.22917 16.65 2.36667 16.5 2.55L15 4.35L13.5 2.55C13.35 2.36667 13.1708 2.22917 12.9625 2.1375C12.7542 2.04583 12.5333 2 12.3 2C11.9333 2 11.625 2.125 11.375 2.375C11.125 2.625 11 2.93333 11 3.3C11 3.75 11.1333 4.15417 11.4 4.5125C11.6667 4.87083 11.9583 5.20833 12.275 5.525L15 8.2ZM6 16.5L12.95 18.4L18.9 16.55C18.8167 16.4 18.6958 16.2708 18.5375 16.1625C18.3792 16.0542 18.2 16 18 16H12.95C12.5 16 12.1417 15.9833 11.875 15.95C11.6083 15.9167 11.3333 15.85 11.05 15.75L8.725 14.975L9.275 13.025L11.3 13.7C11.5833 13.7833 11.9167 13.85 12.3 13.9C12.6833 13.95 13.25 13.9833 14 14C14 13.8167 13.9458 13.6417 13.8375 13.475C13.7292 13.3083 13.6 13.2 13.45 13.15L7.6 11H6V16.5ZM0 20V9H7.6C7.71667 9 7.83333 9.0125 7.95 9.0375C8.06667 9.0625 8.175 9.09167 8.275 9.125L14.15 11.3C14.7 11.5 15.1458 11.85 15.4875 12.35C15.8292 12.85 16 13.4 16 14H18C18.8333 14 19.5417 14.275 20.125 14.825C20.7083 15.375 21 16.1 21 17V18L13 20.5L6 18.55V20H0ZM2 18H4V11H2V18Z" fill="#00339E"/>
-</svg>
+                      <path
+                        d="M15 11L10.85 6.95C10.3333 6.45 9.89583 5.89583 9.5375 5.2875C9.17917 4.67917 9 4.01667 9 3.3C9 2.38333 9.32083 1.60417 9.9625 0.9625C10.6042 0.320833 11.3833 0 12.3 0C12.8333 0 13.3333 0.1125 13.8 0.3375C14.2667 0.5625 14.6667 0.866667 15 1.25C15.3333 0.866667 15.7333 0.5625 16.2 0.3375C16.6667 0.1125 17.1667 0 17.7 0C18.6167 0 19.3958 0.320833 20.0375 0.9625C20.6792 1.60417 21 2.38333 21 3.3C21 4.01667 20.825 4.67917 20.475 5.2875C20.125 5.89583 19.6917 6.45 19.175 6.95L15 11ZM15 8.2L17.725 5.525C18.0417 5.20833 18.3333 4.87083 18.6 4.5125C18.8667 4.15417 19 3.75 19 3.3C19 2.93333 18.875 2.625 18.625 2.375C18.375 2.125 18.0667 2 17.7 2C17.4667 2 17.2458 2.04583 17.0375 2.1375C16.8292 2.22917 16.65 2.36667 16.5 2.55L15 4.35L13.5 2.55C13.35 2.36667 13.1708 2.22917 12.9625 2.1375C12.7542 2.04583 12.5333 2 12.3 2C11.9333 2 11.625 2.125 11.375 2.375C11.125 2.625 11 2.93333 11 3.3C11 3.75 11.1333 4.15417 11.4 4.5125C11.6667 4.87083 11.9583 5.20833 12.275 5.525L15 8.2ZM6 16.5L12.95 18.4L18.9 16.55C18.8167 16.4 18.6958 16.2708 18.5375 16.1625C18.3792 16.0542 18.2 16 18 16H12.95C12.5 16 12.1417 15.9833 11.875 15.95C11.6083 15.9167 11.3333 15.85 11.05 15.75L8.725 14.975L9.275 13.025L11.3 13.7C11.5833 13.7833 11.9167 13.85 12.3 13.9C12.6833 13.95 13.25 13.9833 14 14C14 13.8167 13.9458 13.6417 13.8375 13.475C13.7292 13.3083 13.6 13.2 13.45 13.15L7.6 11H6V16.5ZM0 20V9H7.6C7.71667 9 7.83333 9.0125 7.95 9.0375C8.06667 9.0625 8.175 9.09167 8.275 9.125L14.15 11.3C14.7 11.5 15.1458 11.85 15.4875 12.35C15.8292 12.85 16 13.4 16 14H18C18.8333 14 19.5417 14.275 20.125 14.825C20.7083 15.375 21 16.1 21 17V18L13 20.5L6 18.55V20H0ZM2 18H4V11H2V18Z"
+                        fill="#00339E" />
+                    </svg>
                   </div>
                   <!-- AXA Logo Icon -->
-                  <img *ngSwitchCase="'assurance'" src="assets/images/axa.png" alt="Assurance" class="h-11 w-11 object-cover rounded-full"/>
+                  <img *ngSwitchCase="'assurance'" src="assets/images/axa.png" alt="Assurance"
+                    class="h-11 w-11 object-cover rounded-full" />
                   <!-- Default / Fallback Icon -->
-                  <div *ngSwitchDefault class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#EAF8F1]">
-                    <img src="assets/images/axa.png" alt="Paiement" class="h-6 w-6"/>
+                  <div *ngSwitchDefault
+                    class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#EAF8F1]">
+                    <img src="assets/images/axa.png" alt="Paiement" class="h-6 w-6" />
                   </div>
                 </ng-container>
                 <div class="min-w-0">
-                  <p class="text-sm sm:text-base font-bold text-[#191B23] leading-tight" style="white-space: pre-line;">{{ flux.source }}</p>
+                  <p class="text-sm sm:text-base font-bold text-[#191B23] leading-tight" style="white-space: pre-line;">
+                    {{ flux.source }}</p>
                   <p class="mt-1 text-xs text-[#434655]">{{ flux.date }}</p>
                 </div>
               </div>

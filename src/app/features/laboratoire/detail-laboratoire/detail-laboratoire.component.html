@@ -32,11 +32,35 @@
         </h1>
       </div>
 
-      <button (click)="openValidationDemande()"
+      <!-- PENDING : valider la demande -->
+      <button *ngIf="examen.statut === 'PENDING'" (click)="openValidationDemande()"
         class="flex items-center gap-2 px-5 py-2.5 bg-[#104382] hover:bg-[#0D3568] text-white rounded-lg text-sm font-semibold transition-colors">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 3v8M4 8h8" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
-        Rendez-vous
+        Valider la demande
       </button>
+
+      <!-- ACCEPTED : en attente du paiement -->
+      <span *ngIf="examen.statut === 'ACCEPTED'"
+        class="flex items-center gap-2 px-4 py-2.5 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-sm font-medium">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        En attente du paiement
+      </span>
+
+      <!-- FUNDED : patient doit se présenter -->
+      <button *ngIf="examen.statut === 'FUNDED'" (click)="openArriveePatient()"
+        class="flex items-center gap-2 px-5 py-2.5 bg-[#00B894] hover:bg-[#00a382] text-white rounded-lg text-sm font-semibold transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+        </svg>
+        Patient arrivé
+      </button>
+
+      <!-- IN_PROGRESS : en cours d'analyse, pas d'action header -->
+      <span *ngIf="examen.statut === 'IN_PROGRESS'"
+        class="flex items-center gap-2 px-4 py-2.5 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-lg text-sm font-medium">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+        Analyse en cours
+      </span>
     </div>
 
     <!-- MAIN GRID -->
@@ -140,11 +164,21 @@
             {{ ongletActif === 'compte-rendu' ? 'Compte rendu' : 'Résultats biologiques' }}
           </h2>
           <div class="flex items-center gap-3">
-            <span *ngIf="examen.urgence" class="text-sm font-semibold text-[#FF6B6B]">Urgent</span>
-            <span *ngIf="examen.statut === 'ACCEPTED' || examen.statut === 'COMPLETED'"
-              class="text-sm font-semibold text-[#343A40]">Prise en charge validée</span>
+            <span *ngIf="examen.urgence" class="px-3 py-1 text-xs rounded-full font-semibold text-[#FF6B6B] bg-red-50">Urgent</span>
             <span *ngIf="examen.statut === 'PENDING'"
               class="px-3 py-1 text-xs rounded-full font-medium bg-yellow-100 text-yellow-700">En attente</span>
+            <span *ngIf="examen.statut === 'ACCEPTED'"
+              class="px-3 py-1 text-xs rounded-full font-medium bg-blue-100 text-blue-700">RDV proposé</span>
+            <span *ngIf="examen.statut === 'FUNDED'"
+              class="px-3 py-1 text-xs rounded-full font-medium bg-purple-100 text-purple-700">Financé</span>
+            <span *ngIf="examen.statut === 'IN_PROGRESS'"
+              class="px-3 py-1 text-xs rounded-full font-medium bg-indigo-100 text-indigo-700">En cours</span>
+            <span *ngIf="examen.statut === 'COMPLETED'"
+              class="px-3 py-1 text-xs rounded-full font-medium bg-green-100 text-[#00B894]">Terminé</span>
+            <span *ngIf="examen.statut === 'REJECTED'"
+              class="px-3 py-1 text-xs rounded-full font-medium bg-red-100 text-red-600">Rejeté</span>
+            <span *ngIf="examen.statut === 'EXPIRED'"
+              class="px-3 py-1 text-xs rounded-full font-medium bg-gray-100 text-gray-500">Expiré</span>
           </div>
         </div>
 
@@ -168,56 +202,97 @@
           <!-- Table résultats -->
           <div class="rounded-xl border border-gray-200 overflow-x-auto">
             <div class="min-w-[640px]">
-            <!-- Header -->
-            <div class="grid grid-cols-[1.5fr_1fr_0.8fr_1.2fr_1fr_44px] gap-3 px-5 py-3 bg-[#F8FAFC]">
-              <span class="text-sm text-[#64748B]">Paramètre</span>
-              <span class="text-sm text-[#64748B]">Valeur</span>
-              <span class="text-sm text-[#64748B]">Unité</span>
-              <span class="text-sm text-[#64748B]">Référence</span>
-              <span class="text-sm text-[#64748B]">État</span>
-              <span></span>
-            </div>
 
-            <!-- Lignes -->
-            <div class="divide-y divide-gray-100">
-              <div *ngFor="let r of resultats; let i = index"
-                class="grid grid-cols-[1.5fr_1fr_0.8fr_1.2fr_1fr_44px] gap-3 items-center px-5 py-4">
-
-                <input type="text" [(ngModel)]="r.parametre" placeholder="Paramètre"
-                  class="border border-gray-200 rounded-lg px-3 py-2 text-sm text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#104382] w-full">
-
-                <input type="number" [(ngModel)]="r.valeur" step="0.01"
-                  class="border border-gray-200 rounded-lg px-3 py-2 text-sm text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#104382] w-full">
-
-                <input type="text" [(ngModel)]="r.unite" placeholder="Unité"
-                  class="border border-gray-200 rounded-lg px-3 py-2 text-sm text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#104382] w-full">
-
-                <input type="text" [(ngModel)]="r.reference" placeholder="Référence"
-                  class="border border-gray-200 rounded-lg px-3 py-2 text-sm text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#104382] w-full">
-
-                <input type="text" [(ngModel)]="r.etat" placeholder="État"
-                  class="border border-gray-200 rounded-lg px-3 py-2 text-sm text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#104382] w-full">
-
-                <button (click)="supprimerResultat(i)" [disabled]="resultats.length <= 1"
-                  class="flex items-center justify-center text-red-400 hover:text-red-600 disabled:opacity-30 transition-colors">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
-                  </svg>
-                </button>
-
+              <!-- Header -->
+              <div class="grid gap-3 px-5 py-3 bg-[#F8FAFC]"
+                [ngClass]="isCompteRenduPublie() ? 'grid-cols-[1.5fr_1fr_0.8fr_1.2fr_1fr]' : 'grid-cols-[1.5fr_1fr_0.8fr_1.2fr_1fr_44px]'">
+                <span class="text-sm text-[#64748B]">Paramètre</span>
+                <span class="text-sm text-[#64748B]">Valeur</span>
+                <span class="text-sm text-[#64748B]">Unité</span>
+                <span class="text-sm text-[#64748B]">Référence</span>
+                <span class="text-sm text-[#64748B]">État</span>
+                <span *ngIf="!isCompteRenduPublie()"></span>
               </div>
-            </div>
+
+              <!-- État vide -->
+              <div *ngIf="resultats.length === 0"
+                class="flex flex-col items-center justify-center py-10 text-center text-gray-400 space-y-2">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                <p class="text-sm font-medium text-gray-500">Aucun résultat saisi</p>
+                <p class="text-xs text-gray-400">Cliquez sur « Ajouter » pour saisir les résultats de l'analyse.</p>
+              </div>
+
+              <!-- Lignes en mode lecture (COMPLETED) -->
+              <div *ngIf="isCompteRenduPublie()" class="divide-y divide-gray-100">
+                <div *ngFor="let r of resultats"
+                  class="grid grid-cols-[1.5fr_1fr_0.8fr_1.2fr_1fr] gap-3 items-center px-5 py-4">
+                  <span class="text-sm font-medium text-[#1E293B]">{{ r.parametre }}</span>
+                  <span class="text-sm text-[#1E293B]">{{ r.valeur }}</span>
+                  <span class="text-sm text-gray-500">{{ r.unite }}</span>
+                  <span class="text-sm text-gray-500">{{ r.reference }}</span>
+                  <span class="px-2 py-0.5 rounded-full text-xs font-medium inline-block"
+                    [ngClass]="{
+                      'bg-green-100 text-green-700': r.etat === 'Normal',
+                      'bg-red-100 text-red-600':    r.etat === 'Élevé' || r.etat === 'Eleve' || r.etat === 'Anormal',
+                      'bg-yellow-100 text-yellow-700': r.etat === 'Bas',
+                      'bg-gray-100 text-gray-600':  r.etat !== 'Normal' && r.etat !== 'Élevé' && r.etat !== 'Eleve' && r.etat !== 'Anormal' && r.etat !== 'Bas'
+                    }">{{ r.etat }}</span>
+                </div>
+              </div>
+
+              <!-- Lignes en mode saisie (éditable) -->
+              <div *ngIf="!isCompteRenduPublie()" class="divide-y divide-gray-100">
+                <div *ngFor="let r of resultats; let i = index"
+                  class="grid grid-cols-[1.5fr_1fr_0.8fr_1.2fr_1fr_44px] gap-3 items-center px-5 py-4">
+
+                  <input type="text" [(ngModel)]="r.parametre" placeholder="ex: Hémoglobine"
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#104382] w-full">
+
+                  <input type="number" [(ngModel)]="r.valeur" step="0.01" placeholder="0"
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#104382] w-full">
+
+                  <input type="text" [(ngModel)]="r.unite" placeholder="ex: g/dL"
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#104382] w-full">
+
+                  <input type="text" [(ngModel)]="r.reference" placeholder="ex: 12.0 - 16.0"
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#104382] w-full">
+
+                  <input type="text" [(ngModel)]="r.etat" placeholder="Normal / Élevé / Bas"
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#104382] w-full">
+
+                  <button (click)="supprimerResultat(i)"
+                    class="flex items-center justify-center text-red-400 hover:text-red-600 transition-colors">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
+                    </svg>
+                  </button>
+
+                </div>
+              </div>
+
             </div>
           </div>
 
-          <!-- Bouton Ajouter -->
-          <div class="flex justify-end">
+          <!-- Boutons bas : Ajouter + Terminer l'analyse -->
+          <div *ngIf="!isCompteRenduPublie()" class="flex items-center justify-between">
             <button (click)="ajouterResultat()"
               class="flex items-center gap-2 px-4 py-2 bg-[#EEF4FF] border border-[#104382] text-[#104382] rounded-lg text-sm font-medium hover:bg-[#104382]/10 transition-colors">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#104382" stroke-width="2" stroke-linecap="round">
                 <circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>
               </svg>
               Ajouter
+            </button>
+
+            <!-- Bouton Terminer visible uniquement en IN_PROGRESS avec au moins 1 résultat -->
+            <button *ngIf="examen.statut === 'IN_PROGRESS' && resultats.length > 0"
+              (click)="openValiderCompteRendu()" [disabled]="isSaving"
+              class="flex items-center gap-2 px-5 py-2.5 bg-[#00B894] hover:bg-[#00a382] disabled:opacity-60 text-white rounded-lg text-sm font-semibold transition-colors">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 6L9 17l-5-5"/>
+              </svg>
+              Terminer l'analyse
             </button>
           </div>
         </div>
@@ -435,8 +510,8 @@
                 Générer avec IA
               </button>
 
-              <button type="button" (click)="openValiderCompteRendu()" class="flex items-center gap-2 px-5 py-2.5 bg-[#104382]
-                       hover:bg-[#009e7a] text-white rounded-xl text-sm font-medium">
+              <button type="button" (click)="openValiderCompteRendu()" [disabled]="isSaving"
+                class="flex items-center gap-2 px-5 py-2.5 bg-[#104382] hover:bg-[#009e7a] disabled:opacity-60 text-white rounded-xl text-sm font-medium">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                 </svg>
@@ -493,17 +568,23 @@
       </div>
     </div>
 
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-[#1E293B] mb-1.5">Montant (FCFA) <span class="text-red-500">*</span></label>
+      <input type="number" [(ngModel)]="validationDemandeForm.prix" min="0" placeholder="ex: 25000"
+        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#104382]">
+    </div>
+
     <div class="mb-6">
       <label class="block text-sm font-medium text-[#1E293B] mb-1.5">Notes complémentaires (optionnel)</label>
-      <textarea [(ngModel)]="validationDemandeForm.note" rows="4"
+      <textarea [(ngModel)]="validationDemandeForm.note" rows="3"
         placeholder="Instructions particulières pour le patient"
         class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-400 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#104382] resize-none"></textarea>
     </div>
 
     <div class="grid grid-cols-2 gap-4">
-      <button (click)="confirmerValidationDemande()"
-        class="py-3 bg-[#104382] hover:bg-[#0D3568] text-white rounded-lg font-semibold text-sm transition-colors">
-        Valider
+      <button (click)="confirmerValidationDemande()" [disabled]="isSaving"
+        class="py-3 bg-[#104382] hover:bg-[#0D3568] disabled:opacity-60 text-white rounded-lg font-semibold text-sm transition-colors">
+        {{ isSaving ? 'Validation...' : 'Valider' }}
       </button>
       <button (click)="closeValidationDemande()"
         class="py-3 bg-[#F1F5F9] hover:bg-gray-200 text-[#475569] rounded-lg font-semibold text-sm transition-colors">
@@ -526,6 +607,76 @@
     <p class="text-2xl font-bold text-[#1E293B] mb-2">Rendez-vous confirmé</p>
     <p class="text-base text-[#475569] leading-relaxed">
       Le rendez-vous pour <strong class="text-[#1E293B]">{{ patient.name }}</strong> a été <strong class="text-[#1E293B]">planifié</strong> avec succès.
+    </p>
+  </div>
+</div>
+
+<!-- MODAL: Confirmer arrivée patient -->
+<div *ngIf="showArriveePatientModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+  (click)="closeArriveePatient()">
+  <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl" (click)="$event.stopPropagation()">
+
+    <div class="flex items-center justify-between mb-5">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00B894" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <h2 class="text-lg font-bold text-[#1E293B]">Patient arrivé</h2>
+      </div>
+      <button (click)="closeArriveePatient()" class="text-gray-400 hover:text-gray-600">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <!-- Récap patient -->
+    <div class="bg-[#F8FAFC] rounded-xl p-4 mb-5 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-[#EEF4FF] flex items-center justify-center text-[#104382] text-sm font-bold">
+        {{ patient.initials }}
+      </div>
+      <div>
+        <p class="text-sm font-semibold text-[#1E293B]">{{ patient.name }}</p>
+        <p class="text-xs text-gray-400">Examen {{ examen.code }} — {{ examen.type }}</p>
+      </div>
+    </div>
+
+    <p class="text-sm text-gray-500 mb-4">
+      Confirmez que le patient s'est présenté au laboratoire. L'analyse va démarrer.
+    </p>
+
+    <!-- Note optionnelle -->
+    <div class="mb-5">
+      <label class="block text-sm font-medium text-[#1E293B] mb-1.5">Note (optionnel)</label>
+      <textarea [(ngModel)]="arriveeNote" rows="2" placeholder="Ex: patient à jeun, échantillon prélevé..."
+        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#104382] resize-none"></textarea>
+    </div>
+
+    <div class="flex gap-3">
+      <button (click)="closeArriveePatient()"
+        class="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition">
+        Annuler
+      </button>
+      <button (click)="confirmerArriveePatient()" [disabled]="isSaving"
+        class="flex-1 px-4 py-2.5 bg-[#00B894] hover:bg-[#00a382] disabled:opacity-60 text-white rounded-lg text-sm font-semibold transition">
+        {{ isSaving ? 'Confirmation...' : 'Confirmer l\'arrivée' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Arrivée confirmée (success) -->
+<div *ngIf="showArriveePatientSuccess" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+  <div class="bg-white rounded-2xl w-full max-w-lg p-8 text-center shadow-xl">
+    <div class="flex justify-center mb-5">
+      <svg width="80" height="80" viewBox="0 0 95 95" fill="none">
+        <path d="M70.2452 34.0264C70.9107 34.7294 71.27 35.6677 71.2443 36.6353C71.2186 37.6029 70.81 38.5208 70.1082 39.1875L43.3438 64.7644C42.6518 65.4153 41.736 65.7751 40.7861 65.7692C39.8501 65.7728 38.9494 65.4125 38.2741 64.7644L24.8918 51.976C24.5207 51.6521 24.2188 51.2566 24.0044 50.8131C23.79 50.3696 23.6675 49.8874 23.6442 49.3954C23.6209 48.9033 23.6973 48.4117 23.8689 47.9499C24.0405 47.4882 24.3037 47.0659 24.6426 46.7085C24.9816 46.3511 25.3893 46.0659 25.8413 45.87C26.2932 45.6742 26.7801 45.5718 27.2727 45.5689C27.7653 45.566 28.2534 45.6628 28.7076 45.8534C29.1618 46.0439 29.5728 46.3244 29.9159 46.6779L40.7861 57.0457L65.0841 33.8894C65.7871 33.224 66.7254 32.8646 67.693 32.8903C68.6606 32.916 69.5785 33.3246 70.2452 34.0264ZM95 47.5C95 56.8946 92.2142 66.0782 86.9948 73.8896C81.7754 81.7009 74.357 87.7891 65.6775 91.3843C56.998 94.9794 47.4473 95.9201 38.2332 94.0873C29.0191 92.2545 20.5554 87.7305 13.9124 81.0876C7.26945 74.4446 2.74552 65.9809 0.91272 56.7668C-0.920077 47.5527 0.020581 38.002 3.61574 29.3225C7.2109 20.643 13.2991 13.2246 21.1104 8.00519C28.9218 2.78583 38.1054 0 47.5 0C60.0904 0.0241427 72.1582 5.03634 81.0609 13.9391C89.9637 22.8418 94.9759 34.9096 95 47.5ZM87.6923 47.5C87.6923 39.5507 85.3351 31.7799 80.9187 25.1703C76.5023 18.5608 70.2251 13.4092 62.8809 10.3671C55.5368 7.32509 47.4554 6.52915 39.6589 8.07997C31.8623 9.6308 24.7008 13.4587 19.0798 19.0797C13.4588 24.7007 9.63082 31.8623 8.08 39.6589C6.52917 47.4554 7.32511 55.5367 10.3672 62.8809C13.4092 70.2251 18.5608 76.5023 25.1704 80.9187C31.78 85.3351 39.5507 87.6923 47.5 87.6923C58.156 87.6802 68.372 83.4418 75.9069 75.9069C83.4418 68.372 87.6802 58.1559 87.6923 47.5Z" fill="#00B894"/>
+      </svg>
+    </div>
+    <p class="text-2xl font-bold text-[#1E293B] mb-2">Arrivée confirmée</p>
+    <p class="text-base text-[#475569] leading-relaxed">
+      Le patient <strong class="text-[#1E293B]">{{ patient.name }}</strong> est bien présent.<br>
+      L'analyse est maintenant <strong class="text-[#1E293B]">en cours</strong>.
     </p>
   </div>
 </div>
