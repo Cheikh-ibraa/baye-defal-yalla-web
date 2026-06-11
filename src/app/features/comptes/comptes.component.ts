@@ -1,15 +1,29 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { Subject, of } from 'rxjs';
+import { takeUntil, catchError } from 'rxjs/operators';
 import { UserService, DoctorDocument } from '../../core/services/user.service';
+import { environment } from '../../../environments/environment';
 
 interface PersonalInfo {
   prenom: string;
   nom: string;
   email: string;
   telephone: string;
+  adresse: string;
+}
+
+interface PharmacyInfo {
+  id: string;
+  name: string;
+  address: string;
+  phone: string;
+  email?: string;
+  openingHours: string;
+  isOpen: boolean;
+  logo?: string;
 }
 
 interface DoctorInfo {
@@ -23,17 +37,22 @@ interface DoctorInfo {
 interface Facture {
   id: string;
   reference: string;
-  echeance: string;
-  montant: string;
-  statut: 'en_attente' | 'payee';
+  amount: number;
+  planName: string;
+  paymentMethod: string;
+  status: 'PAID' | 'PENDING' | 'FAILED';
+  createdAt: string;
 }
 
 interface Subscription {
-  id: number;
-  pack: string;
+  id: string;
+  status: 'ACTIVE' | 'EXPIRED' | 'CANCELLED' | 'PENDING';
+  billingPeriod: string;
+  amount: number;
+  paymentMethod: string;
   startDate: string;
   endDate: string;
-  status: 'Actif' | 'Expiré';
+  plan?: { id: string; name: string };
 }
 
 @Component({
@@ -44,15 +63,19 @@ interface Subscription {
   styleUrl: './comptes.component.css'
 })
 export class ComptesComponent implements OnInit, OnDestroy {
+  private http = inject(HttpClient);
+  private readonly api = environment.baseUrl;
+
   activeSection: string = 'personal';
   isLoading: boolean = false;
   isSaving: boolean = false;
+  isSavingPharmacy: boolean = false;
   errorMessage: string = '';
   successMessage: string = '';
   private readonly destroy$ = new Subject<void>();
 
   // Données utilisateur
-  personalInfo: PersonalInfo = { prenom: '', nom: '', email: '', telephone: '' };
+  personalInfo: PersonalInfo = { prenom: '', nom: '', email: '', telephone: '', adresse: '' };
   doctorInfo: DoctorInfo = { specialization: '', licenseNumber: '', hospitalName: '', phone: '', biography: '' };
   documents: DoctorDocument[] = [];
 
@@ -70,24 +93,14 @@ export class ComptesComponent implements OnInit, OnDestroy {
   documentName = '';
   selectedDocumentFile: File | null = null;
 
-  // Pharmacie (stub pour pharmacists — sera étendu avec l'API pharmacist)
-  pharmacyInfo: any = { logo: '', name: '', email: '', phone: '', hourly: '', address: '', latitude: 0, longitude: 0, pharmacist: { prenom: '', nom: '' } };
+  // Pharmacie
+  pharmacyInfo: PharmacyInfo = { id: '', name: '', address: '', phone: '', openingHours: '', isOpen: false };
   selectedPharmacyLogoFile: File | null = null;
 
-  // Données mockées (abonnements / factures — pas d'API disponible)
-  subscriptions: Subscription[] = [
-    { id: 1, pack: 'Pro', startDate: '05/07/2025', endDate: '05/08/2025', status: 'Expiré' },
-    { id: 2, pack: 'Pro', startDate: '05/06/2025', endDate: '05/07/2025', status: 'Actif' },
-    { id: 3, pack: 'Pro Plus', startDate: '05/05/2025', endDate: '05/06/2025', status: 'Actif' },
-    { id: 4, pack: 'Pro Plus', startDate: '05/04/2025', endDate: '05/05/2025', status: 'Actif' }
-  ];
-
-  factures: Facture[] = [
-    { id: '1', reference: 'FAC-2025-07', echeance: '05/07/2025', montant: '250 000', statut: 'en_attente' },
-    { id: '2', reference: 'FAC-2025-06', echeance: '05/06/2025', montant: '250 000', statut: 'payee' },
-    { id: '3', reference: 'FAC-2025-05', echeance: '05/05/2025', montant: '250 000', statut: 'payee' },
-    { id: '4', reference: 'FAC-2025-04', echeance: '05/04/2025', montant: '250 000', statut: 'payee' }
-  ];
+  subscriptions: Subscription[] = [];
+  factures: Facture[] = [];
+  isLoadingSubscriptions = false;
+  isLoadingInvoices = false;
 
   // Modal paiement
   showSuccessPopup = false;
@@ -135,6 +148,7 @@ export class ComptesComponent implements OnInit, OnDestroy {
 
     if (isPharmacist || isAdmin) {
       items.push({ id: 'documents', label: 'Documents justificatifs', icon: 'document' });
+      items.push({ id: 'pharmacy', label: 'Informations de la pharmacie', icon: 'pharmacy' });
       items.push({ id: 'subscription', label: 'Abonnements', icon: 'package' });
       items.push({ id: 'invoices', label: 'Mes factures', icon: 'invoice' });
     }
@@ -152,8 +166,13 @@ export class ComptesComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.userRole = this.getRoleFromToken();
     this.loadProfile();
-    if (this.userRole === 'doctor') {
+    if (this.userRole === 'doctor' || this.userRole === 'pharmacist' || this.userRole === 'admin') {
       this.loadDoctorDocuments();
+    }
+    if (this.userRole === 'pharmacist' || this.userRole === 'admin') {
+      this.loadPharmacyInfo();
+      this.loadSubscriptions();
+      this.loadInvoices();
     }
   }
 
@@ -181,7 +200,8 @@ export class ComptesComponent implements OnInit, OnDestroy {
           prenom: user.firstName,
           nom: user.lastName,
           email: user.email,
-          telephone: user.doctorProfile?.phone ?? ''
+          telephone: user.phone ?? user.doctorProfile?.phone ?? (user.pharmacistProfile as any)?.phone ?? '',
+          adresse: (user.pharmacistProfile as any)?.address ?? (user.patientProfile as any)?.address ?? ''
         };
         if (user.doctorProfile) {
           this.doctorInfo = {
@@ -202,9 +222,56 @@ export class ComptesComponent implements OnInit, OnDestroy {
     });
   }
 
+  private loadPharmacyInfo(): void {
+    this.http.get<PharmacyInfo>(`${this.api}/pharmacy/pharmacies/me`)
+      .pipe(catchError(() => of(null)), takeUntil(this.destroy$))
+      .subscribe(data => {
+        if (data) {
+          this.pharmacyInfo = {
+            id: data.id ?? '',
+            name: data.name ?? '',
+            address: data.address ?? '',
+            phone: data.phone ?? '',
+            email: (data as any).email ?? '',
+            openingHours: (data as any).openingHours ?? '',
+            isOpen: (data as any).isOpen ?? false,
+            logo: (data as any).logoUrl ?? ''
+          };
+        }
+      });
+  }
+
+  private loadSubscriptions(): void {
+    this.isLoadingSubscriptions = true;
+    this.http.get<Subscription | null>(`${this.api}/pharmacy/subscriptions/me`)
+      .pipe(catchError(() => of(null)), takeUntil(this.destroy$))
+      .subscribe(data => {
+        this.subscriptions = data ? [data] : [];
+        this.isLoadingSubscriptions = false;
+      });
+  }
+
+  private loadInvoices(): void {
+    this.isLoadingInvoices = true;
+    this.http.get<Facture[]>(`${this.api}/pharmacy/subscriptions/invoices`)
+      .pipe(catchError(() => of([] as Facture[])), takeUntil(this.destroy$))
+      .subscribe(data => {
+        this.factures = data;
+        this.totalItems = data.length;
+        this.totalPages = Math.max(1, Math.ceil(data.length / this.itemsPerPage));
+        this.isLoadingInvoices = false;
+      });
+  }
+
   private loadDoctorDocuments(): void {
     this.userService.getDoctorDocuments().pipe(takeUntil(this.destroy$)).subscribe({
-      next: (docs) => { this.documents = docs; },
+      next: (docs) => {
+        this.documents = docs.map((d: any) => ({
+          ...d,
+          status: d.status ?? (d.verificationStatus === 'VERIFIED' ? 'VALIDATED' : d.verificationStatus),
+          createdAt: d.createdAt ?? d.uploadedAt,
+        }));
+      },
       error: (err) => console.error('[DOCS] Erreur:', err)
     });
   }
@@ -352,19 +419,33 @@ export class ComptesComponent implements OnInit, OnDestroy {
 
   // === Factures ===
 
-  getStatusClassFact(statut: string): string {
-    return statut === 'en_attente' ? 'bg-orange-100 text-orange-800' :
-           statut === 'payee' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
+  getStatusClassFact(status: string): string {
+    switch (status) {
+      case 'PAID':    return 'bg-green-100 text-green-800';
+      case 'PENDING': return 'bg-orange-100 text-orange-800';
+      case 'FAILED':  return 'bg-red-100 text-red-800';
+      default:        return 'bg-gray-100 text-gray-800';
+    }
   }
 
-  getStatusTextFact(statut: string): string {
-    return statut === 'en_attente' ? 'En attente' : statut === 'payee' ? 'Payée' : 'Inconnu';
+  getStatusTextFact(status: string): string {
+    switch (status) {
+      case 'PAID':    return 'Payée';
+      case 'PENDING': return 'En attente';
+      case 'FAILED':  return 'Échouée';
+      default:        return 'Inconnu';
+    }
   }
 
   payerFacture(id: string): void {
     const facture = this.factures.find(f => f.id === id);
     if (!facture) return;
-    this.selectedInvoice = { reference: facture.reference, amount: facture.montant, dueDate: facture.echeance, status: this.getStatusTextFact(facture.statut) };
+    this.selectedInvoice = {
+      reference: facture.reference,
+      amount: facture.amount.toLocaleString('fr-FR') + ' FCFA',
+      dueDate: this.formatDate(facture.createdAt),
+      status: this.getStatusTextFact(facture.status),
+    };
     this.invoicePaymentMethod = 'card';
     this.invoiceMobileOperator = '';
     this.invoiceCardName = '';
@@ -383,7 +464,7 @@ export class ComptesComponent implements OnInit, OnDestroy {
   processInvoicePayment(): void {
     if (!this.selectedInvoice) return;
     const facture = this.factures.find(f => f.reference === this.selectedInvoice!.reference);
-    if (facture) facture.statut = 'payee';
+    if (facture) facture.status = 'PAID';
     this.showSuccessPopup = true;
     this.successMessage = `Facture ${this.selectedInvoice.reference} payée avec succès !`;
     this.nextDueDate = new Date().toLocaleDateString('fr-FR');
@@ -397,9 +478,14 @@ export class ComptesComponent implements OnInit, OnDestroy {
 
   // === Abonnements ===
 
+  formatDate(dateString: string): string {
+    if (!dateString) return '—';
+    return new Date(dateString).toLocaleDateString('fr-FR');
+  }
+
   openRenewalModal(subscription: Subscription): void {
     this.selectedSubscription = subscription;
-    this.selectedPlan = subscription.pack.toLowerCase().replace(' ', '-');
+    this.selectedPlan = (subscription.plan?.name ?? 'pro').toLowerCase().replace(' ', '-');
     this.showRenewalModal = true;
   }
 
@@ -456,7 +542,7 @@ export class ComptesComponent implements OnInit, OnDestroy {
     const formattedEndDate = newEndDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
     this.subscriptions = this.subscriptions.map(sub =>
       sub.id === this.selectedSubscription!.id
-        ? { ...sub, status: 'Actif' as const, startDate: today.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }), endDate: formattedEndDate }
+        ? { ...sub, status: 'ACTIVE' as const, startDate: today.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }), endDate: formattedEndDate }
         : sub
     );
     this.closePaymentModal();
@@ -497,10 +583,58 @@ export class ComptesComponent implements OnInit, OnDestroy {
   }
 
   onSavePharmacyChanges(): void {
-    console.log('Sauvegarde pharmacie — à connecter à l\'API');
+    if (!this.pharmacyInfo.id) return;
+    this.isSavingPharmacy = true;
+    this.errorMessage = '';
+
+    const patchFields = (logoUrl?: string) => {
+      const body: Record<string, unknown> = {
+        name: this.pharmacyInfo.name,
+        address: this.pharmacyInfo.address,
+        phone: this.pharmacyInfo.phone,
+        email: this.pharmacyInfo.email,
+        openingHours: this.pharmacyInfo.openingHours,
+        isOpen: this.pharmacyInfo.isOpen,
+      };
+      if (logoUrl) body['logoUrl'] = logoUrl;
+
+      this.http.patch(`${this.api}/pharmacy/pharmacies/${this.pharmacyInfo.id}`, body)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            if (logoUrl) { this.pharmacyInfo.logo = logoUrl; }
+            this.selectedPharmacyLogoFile = null;
+            this.successMessage = 'Informations de la pharmacie mises à jour.';
+            this.isSavingPharmacy = false;
+            setTimeout(() => this.successMessage = '', 3000);
+          },
+          error: (err) => {
+            console.error('[SAVE PHARMACY] Erreur:', err);
+            this.errorMessage = 'Erreur lors de la sauvegarde des informations de la pharmacie.';
+            this.isSavingPharmacy = false;
+          }
+        });
+    };
+
+    if (this.selectedPharmacyLogoFile) {
+      const formData = new FormData();
+      formData.append('logo', this.selectedPharmacyLogoFile);
+      this.http.patch<{ logoUrl: string }>(
+        `${this.api}/pharmacy/pharmacies/${this.pharmacyInfo.id}/logo`, formData
+      ).pipe(takeUntil(this.destroy$)).subscribe({
+        next: (res) => patchFields(res.logoUrl),
+        error: (err) => {
+          console.error('[LOGO UPLOAD] Erreur:', err);
+          this.errorMessage = 'Erreur lors de l\'upload du logo.';
+          this.isSavingPharmacy = false;
+        }
+      });
+    } else {
+      patchFields();
+    }
   }
 
-  downloadInvoice(id: number): void {
+  downloadInvoice(id: string): void {
     console.log('Téléchargement facture abonnement:', id);
   }
 

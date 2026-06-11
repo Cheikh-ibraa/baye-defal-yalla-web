@@ -9,6 +9,7 @@ export interface UserProfile {
   firstName: string;
   lastName: string;
   role: string;
+  phone?: string;
   isActive: boolean;
   doctorProfile?: DoctorProfile;
   patientProfile?: any;

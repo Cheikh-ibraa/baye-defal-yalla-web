@@ -66,6 +66,9 @@ export class CommandesComponent implements OnInit, OnDestroy {
   // availability: keyed by medicationName
   medicationAvailability: Map<string, boolean> = new Map();
 
+  // patient names cache: patientId → "Prénom Nom"
+  patientNames: Record<string, string> = {};
+
   // ── Pagination ────────────────────────────────────────────────────────────────
   currentPage   = 1;
   itemsPerPage  = 10;
@@ -121,6 +124,7 @@ export class CommandesComponent implements OnInit, OnDestroy {
         this.totalItems     = this.orders.length;
         this.updatePagination();
         this.loading = false;
+        this.loadPatientNames(this.orders);
         // Reselectionner la commande après reload si demandé
         if (reselectId) {
           const refreshed = this.orders.find(o => o.id === reselectId);
@@ -148,7 +152,20 @@ export class CommandesComponent implements OnInit, OnDestroy {
   }
 
   getPatientDisplay(order: Order): string {
-    return `Patient #${order.patientId.substring(0, 6).toUpperCase()}`;
+    return this.patientNames[order.patientId] || `Patient #${order.patientId.substring(0, 6).toUpperCase()}`;
+  }
+
+  private loadPatientNames(orders: Order[]): void {
+    const ids = [...new Set(orders.map(o => o.patientId))];
+    ids.forEach(id => {
+      if (this.patientNames[id]) return;
+      this.http.get<{ firstName?: string; lastName?: string }>(`${this.api}/internal/patients/${id}`)
+        .pipe(catchError(() => of<{ firstName?: string; lastName?: string }>({})), takeUntil(this.destroy$))
+        .subscribe(data => {
+          const name = `${data.firstName ?? ''} ${data.lastName ?? ''}`.trim();
+          if (name) this.patientNames = { ...this.patientNames, [id]: name };
+        });
+    });
   }
 
   // ── Availability ──────────────────────────────────────────────────────────────
@@ -328,17 +345,56 @@ export class CommandesComponent implements OnInit, OnDestroy {
   scanQrCode(): void {
     if (!this.selectedOrder) return;
     const ref = this.getOrderRef(this.selectedOrder);
+    const id  = this.selectedOrder.id;
+    const qrData = encodeURIComponent(JSON.stringify({ orderId: id, ref }));
+
     Swal.fire({
-      title: 'Scanner un QR Code',
-      html: `<div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:8px 0">
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${ref}" style="width:180px;height:180px"/>
-        <p style="font-size:14px;color:#6B7280;text-align:center">Placez le QR Code devant la caméra pour la réception</p>
-      </div>`,
-      showConfirmButton: false,
+      title: 'Scanner le QR Code',
+      html: `
+        <div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:8px 0">
+          <div style="background:#2d2d2d;border-radius:12px;padding:20px;display:flex;align-items:center;justify-content:center;width:220px;height:220px">
+            <div style="position:relative;width:180px;height:180px">
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${qrData}"
+                style="width:100%;height:100%;border-radius:4px" />
+              <div style="position:absolute;inset:0;pointer-events:none">
+                <div style="position:absolute;top:0;left:0;width:28px;height:28px;border-top:3px solid #2C7BE5;border-left:3px solid #2C7BE5;border-radius:2px 0 0 0"></div>
+                <div style="position:absolute;top:0;right:0;width:28px;height:28px;border-top:3px solid #2C7BE5;border-right:3px solid #2C7BE5;border-radius:0 2px 0 0"></div>
+                <div style="position:absolute;bottom:0;left:0;width:28px;height:28px;border-bottom:3px solid #2C7BE5;border-left:3px solid #2C7BE5;border-radius:0 0 0 2px"></div>
+                <div style="position:absolute;bottom:0;right:0;width:28px;height:28px;border-bottom:3px solid #2C7BE5;border-right:3px solid #2C7BE5;border-radius:0 0 2px 0"></div>
+              </div>
+            </div>
+          </div>
+          <p style="font-size:13px;color:#6B7280;text-align:center;max-width:280px;line-height:1.5">
+            Scannez le QR Code du patient pour confirmer la remise des médicaments de la commande <strong>${ref}</strong>
+          </p>
+        </div>`,
       showCancelButton: true,
+      confirmButtonColor: '#14B8A6',
+      cancelButtonColor: '#E5E7EB',
+      confirmButtonText: 'Confirmer la remise',
       cancelButtonText: 'Fermer',
       showCloseButton: true,
-      customClass: { popup: 'rounded-2xl' },
+      customClass: {
+        confirmButton: 'text-white font-medium px-6 py-2.5 rounded-lg',
+        cancelButton: 'text-gray-700 font-medium px-6 py-2.5 rounded-lg',
+        popup: 'rounded-2xl',
+      },
+    }).then(r => {
+      if (!r.isConfirmed) return;
+      this.http.patch(`${this.api}/pharmacy/orders/${id}/delivered`, {})
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            Swal.fire({
+              title: 'Remise confirmée !',
+              text: `Les médicaments de la commande ${ref} ont été remis au patient.`,
+              icon: 'success',
+              confirmButtonColor: '#4FBFA5',
+            });
+            this.loadOrders();
+          },
+          error: () => Swal.fire('Erreur', 'Impossible de confirmer la remise.', 'error'),
+        });
     });
   }
 

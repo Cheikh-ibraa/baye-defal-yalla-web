@@ -54,6 +54,7 @@ export class DemandeComplementComponent implements OnInit, OnDestroy {
   selectedOrder: Order | null = null;
   emittingPharmacy: PharmacyInfo | null = null;
   pharmacies: PharmacyInfo[] = [];
+  patientNames: Record<string, string> = {};
 
   loading = true;
   loadingPharmacy = false;
@@ -97,6 +98,7 @@ export class DemandeComplementComponent implements OnInit, OnDestroy {
       .subscribe(all => {
         this.orders = all.filter(o => o.parentOrderId != null);
         this.loading = false;
+        this.loadPatientNames(this.orders);
         if (reselectId) {
           const refreshed = this.orders.find(o => o.id === reselectId);
           if (refreshed) { this.selectOrder(refreshed); return; }
@@ -155,7 +157,20 @@ export class DemandeComplementComponent implements OnInit, OnDestroy {
   }
 
   getPatientDisplay(order: Order): string {
-    return `Patient #${order.patientId.substring(0, 6).toUpperCase()}`;
+    return this.patientNames[order.patientId] || `Patient #${order.patientId.substring(0, 6).toUpperCase()}`;
+  }
+
+  private loadPatientNames(orders: Order[]): void {
+    const ids = [...new Set(orders.map(o => o.patientId))];
+    ids.forEach(id => {
+      if (this.patientNames[id]) return;
+      this.http.get<{ firstName?: string; lastName?: string }>(`${this.api}/internal/patients/${id}`)
+        .pipe(catchError(() => of<{ firstName?: string; lastName?: string }>({})), takeUntil(this.destroy$))
+        .subscribe(data => {
+          const name = `${data.firstName ?? ''} ${data.lastName ?? ''}`.trim();
+          if (name) this.patientNames = { ...this.patientNames, [id]: name };
+        });
+    });
   }
 
   previousPage(): void { if (this.currentPage > 0) this.currentPage--; }

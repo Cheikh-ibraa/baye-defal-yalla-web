@@ -130,6 +130,21 @@
             </div>
           </div>
 
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Adresse</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <input type="text" [(ngModel)]="personalInfo.adresse"
+                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] outline-none text-sm"
+                placeholder="Ex: 12 Rue Blanchot, Dakar" />
+            </div>
+          </div>
+
           <div class="flex justify-end pt-4">
             <button (click)="onSaveChanges()" [disabled]="isLoading"
               class="px-6 py-3 bg-[#104382] text-white rounded-lg transition font-medium text-sm disabled:opacity-50">
@@ -200,7 +215,7 @@
 
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-2">Nom du document</label>
-            <input type="text" [(ngModel)]="documentName" placeholder="Ex: Registre de commerce"
+            <input type="text" [(ngModel)]="newDocLabel" placeholder="Ex: Registre de commerce"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] outline-none text-sm" />
           </div>
 
@@ -239,7 +254,7 @@
           <div class="flex items-center gap-4">
             <div
               class="w-16 h-16 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center overflow-hidden">
-              <img *ngIf="pharmacyInfo.logo" [src]="'https://wakana.online/repertoire_chantier/' + pharmacyInfo.logo"
+              <img *ngIf="pharmacyInfo.logo" [src]="pharmacyInfo.logo"
                 alt="Logo" class="w-full h-full object-cover">
               <svg *ngIf="!pharmacyInfo.logo" class="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 4 8z" />
@@ -295,7 +310,7 @@
         <!-- Horaire -->
         <div class="mb-6">
           <label class="block text-sm font-medium text-gray-700 mb-2">Horaire</label>
-          <input type="text" [(ngModel)]="pharmacyInfo.hourly"
+          <input type="text" [(ngModel)]="pharmacyInfo.openingHours"
             class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] outline-none text-sm"
             placeholder="Ex: 08:00 - 20:00" />
         </div>
@@ -322,18 +337,16 @@
         <div class="p-4 bg-gray-50 rounded-lg mb-6">
           <h3 class="text-sm font-medium text-gray-700 mb-3">Pharmacien responsable</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div><span class="text-gray-600">Prénom:</span> <span class="font-medium text-gray-900">{{
-                pharmacyInfo.pharmacist.prenom }}</span></div>
-            <div><span class="text-gray-600">Nom:</span> <span class="font-medium text-gray-900">{{
-                pharmacyInfo.pharmacist.nom }}</span></div>
+            <div><span class="text-gray-600">Prénom:</span> <span class="font-medium text-gray-900">{{ personalInfo.prenom }}</span></div>
+            <div><span class="text-gray-600">Nom:</span> <span class="font-medium text-gray-900">{{ personalInfo.nom }}</span></div>
           </div>
         </div>
 
         <!-- Bouton sauvegarde -->
         <div class="flex justify-end pt-4 border-t border-gray-200">
-          <button (click)="onSavePharmacyChanges()" [disabled]="isLoading"
+          <button (click)="onSavePharmacyChanges()" [disabled]="isSavingPharmacy"
             class="px-6 py-2.5 bg-[#104382] text-white rounded-lg transition font-medium text-sm disabled:opacity-50">
-            {{ isLoading ? 'Enregistrement...' : 'Enregistrer les modifications' }}
+            {{ isSavingPharmacy ? 'Enregistrement...' : 'Enregistrer les modifications' }}
           </button>
         </div>
       </div>
@@ -359,26 +372,26 @@
 
             <!-- Pack -->
             <div class="font-medium text-gray-900">
-              {{ subscription.pack }}
+              {{ subscription.plan?.name || '—' }}
             </div>
 
             <!-- Date Début -->
             <div class="text-gray-600 text-sm">
-              {{ subscription.startDate }}
+              {{ formatDate(subscription.startDate) }}
             </div>
 
             <!-- Date Fin -->
             <div class="text-gray-600 text-sm">
-              {{ subscription.endDate }}
+              {{ formatDate(subscription.endDate) }}
             </div>
 
             <!-- Statut -->
             <div>
-              <span *ngIf="subscription.status === 'Expiré'"
+              <span *ngIf="subscription.status !== 'ACTIVE'"
                 class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-50 text-red-600">
                 Expiré
               </span>
-              <span *ngIf="subscription.status === 'Actif'"
+              <span *ngIf="subscription.status === 'ACTIVE'"
                 class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-50 text-green-600">
                 Actif
               </span>
@@ -386,7 +399,7 @@
 
             <!-- Actions -->
             <div>
-              <button *ngIf="subscription.status === 'Expiré'" (click)="openRenewalModal(subscription)"
+              <button *ngIf="subscription.status !== 'ACTIVE'" (click)="openRenewalModal(subscription)"
                 class="inline-flex items-center gap-2 px-4 py-2 bg-[#104382] text-white rounded-lg transition text-sm font-medium">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M1.33203 8.33203C1.33203 6.11536 3.1307 4.33203 5.33203 4.33203H14.6654" stroke="white"
@@ -401,7 +414,7 @@
                 Renouveler
               </button>
 
-              <button *ngIf="subscription.status === 'Actif'" (click)="downloadInvoice(subscription.id)"
+              <button *ngIf="subscription.status === 'ACTIVE'" (click)="downloadInvoice(subscription.id)"
                 class="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-sm font-medium">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -483,9 +496,9 @@
                   </svg>
                 </div>
                 <div class="flex-1">
-                  <h4 class="text-lg font-semibold text-gray-900 mb-1">Mon abonnement {{ selectedSubscription?.pack }}
+                  <h4 class="text-lg font-semibold text-gray-900 mb-1">Mon abonnement {{ selectedSubscription?.plan?.name }}
                   </h4>
-                  <p class="text-sm text-gray-600">Date d'expiration : {{ selectedSubscription?.endDate }}</p>
+                  <p class="text-sm text-gray-600">Date d'expiration : {{ formatDate(selectedSubscription?.endDate || '') }}</p>
                 </div>
                 <span class="px-3 py-1 bg-red-50 text-red-600 text-xs font-semibold rounded-full">
                   Expiré
@@ -953,16 +966,16 @@
               <tbody class="divide-y divide-gray-100">
                 <tr *ngFor="let facture of factures" class="hover:bg-gray-50">
                   <td class="py-4 px-4"><span class="text-[#00B894] font-medium">{{ facture.reference }}</span></td>
-                  <td class="py-4 px-4 text-gray-700">{{ facture.echeance }}</td>
-                  <td class="py-4 px-4 text-gray-700">{{ facture.montant }}</td>
+                  <td class="py-4 px-4 text-gray-700">{{ formatDate(facture.createdAt) }}</td>
+                  <td class="py-4 px-4 text-gray-700">{{ facture.amount | number:'1.0-0' }} FCFA</td>
                   <td class="py-4 px-4">
-                    <span [ngClass]="getStatusClassFact(facture.statut)"
+                    <span [ngClass]="getStatusClassFact(facture.status)"
                       class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
-                      {{ getStatusTextFact(facture.statut) }}
+                      {{ getStatusTextFact(facture.status) }}
                     </span>
                   </td>
                   <td class="py-4 px-4">
-                    <button *ngIf="facture.statut === 'en_attente'" (click)="payerFacture(facture.id)"
+                    <button *ngIf="facture.status === 'PENDING'" (click)="payerFacture(facture.id)"
                       class="px-3 py-1.5 text-sm bg-[#] text-white rounded-md transition flex items-center gap-2">
 
                       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -974,7 +987,7 @@
                       <span>Payer</span>
                     </button>
 
-                    <button *ngIf="facture.statut === 'payee'" (click)="telechargerFacture(facture.id)"
+                    <button *ngIf="facture.status === 'PAID'" (click)="telechargerFacture(facture.id)"
                       class="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition">
                       Télécharger
                     </button>
