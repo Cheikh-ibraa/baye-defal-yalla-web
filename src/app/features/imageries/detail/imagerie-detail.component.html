@@ -1,0 +1,339 @@
+<div class="min-h-screen bg-[#f5f7fa]">
+
+  <div *ngIf="loading" class="flex items-center justify-center py-24">
+    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-[#6D28D9]"></div>
+  </div>
+
+  <div *ngIf="!loading && loadError" class="text-center py-20 text-red-500 text-sm">{{ loadError }}</div>
+
+  <ng-container *ngIf="!loading && !loadError && imagerieRow">
+
+    <!-- ── Header ─────────────────────────────────────────────────────────────── -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+      <div class="flex items-center gap-3">
+        <button (click)="goBack()"
+          class="p-2 rounded-lg hover:bg-white transition-colors text-gray-500">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+        </button>
+        <h1 class="text-lg sm:text-xl font-semibold text-[#343A40]">
+          Centre {{ imagerieRef }} — {{ displayName }}
+        </h1>
+      </div>
+      <div class="flex items-center gap-3">
+        <button *ngIf="!isActive && hasRadiologist" (click)="activerImagerie()" [disabled]="saving"
+          class="flex items-center gap-2 px-5 py-2 bg-[#00B894] text-white text-sm font-medium rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-60">
+          <div *ngIf="saving" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          <span>Activer</span>
+        </button>
+        <button *ngIf="isActive && hasRadiologist" (click)="desactiverImagerie()" [disabled]="saving"
+          class="flex items-center gap-2 px-5 py-2 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-60">
+          <div *ngIf="saving" class="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+          <span>Désactiver</span>
+        </button>
+        <button (click)="supprimerImagerie()" [disabled]="deleting"
+          class="flex items-center gap-2 px-5 py-2 border border-red-300 text-red-500 text-sm font-medium rounded-lg hover:bg-red-50 transition-colors disabled:opacity-60">
+          <div *ngIf="deleting" class="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin"></div>
+          <span>Supprimer</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Grille principale ─────────────────────────────────────────────────── -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Colonne gauche -->
+      <div class="bg-white rounded-xl shadow-sm p-6 flex flex-col gap-5">
+
+        <!-- Avatar + nom -->
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 text-lg font-bold flex-shrink-0">
+            {{ initials }}
+          </div>
+          <div>
+            <div class="font-semibold text-gray-900">{{ displayName }}</div>
+            <div class="text-sm text-gray-500">{{ imagerieRow.region || '—' }}</div>
+            <div class="flex items-center gap-1.5 mt-1">
+              <span [class]="isActive ? 'bg-green-500' : 'bg-gray-400'" class="w-2 h-2 rounded-full"></span>
+              <span class="text-xs text-gray-500">{{ isActive ? 'Actif' : 'Inactif' }}</span>
+              <span class="mx-1 text-gray-300">·</span>
+              <span class="text-xs" [class]="imagerieRow.isOpen ? 'text-green-600' : 'text-red-500'">
+                {{ imagerieRow.isOpen ? 'Ouvert' : 'Fermé' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-gray-100"/>
+
+        <!-- Informations -->
+        <div>
+          <div class="text-sm font-semibold text-gray-800 mb-4">Informations du centre</div>
+          <div class="space-y-3 text-sm">
+            <div class="flex items-start gap-3 text-gray-600">
+              <svg class="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              <span class="break-words">{{ imagerieRow.address || '—' }}</span>
+            </div>
+            <div *ngIf="imagerieRow.phone" class="flex items-center gap-3 text-gray-600">
+              <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+              </svg>
+              <span>{{ imagerieRow.phone }}</span>
+            </div>
+            <div *ngIf="imagerieRow.email" class="flex items-start gap-3 text-gray-600">
+              <svg class="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
+              <span class="break-all">{{ imagerieRow.email }}</span>
+            </div>
+            <div class="flex items-center gap-3 text-gray-600">
+              <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <span class="px-2 py-0.5 rounded text-xs font-medium"
+                [class]="imagerieRow.statut === 'Normal'
+                  ? 'bg-green-50 text-green-700 border border-green-200'
+                  : 'bg-red-50 text-red-600 border border-red-200'">
+                {{ imagerieRow.statut || 'Normal' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-gray-100"/>
+
+        <!-- Radiologues liés -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <div class="text-sm font-semibold text-gray-800">
+              Radiologues liés
+              <span *ngIf="radiologistUsers.length > 0"
+                class="ml-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-100 text-purple-700 text-xs font-bold">
+                {{ radiologistUsers.length }}
+              </span>
+            </div>
+            <button (click)="openAddModal()"
+              class="flex items-center gap-1 text-xs font-medium text-[#6D28D9] hover:text-[#5b21b6] transition-colors">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              Ajouter
+            </button>
+          </div>
+
+          <div *ngIf="radiologistUsers.length === 0" class="text-sm text-gray-400 italic">
+            Aucun radiologue lié
+          </div>
+
+          <div class="space-y-2">
+            <div *ngFor="let radio of radiologistUsers"
+              class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 group">
+              <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 text-xs font-bold flex-shrink-0">
+                {{ getRadioInitials(radio) }}
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-medium text-gray-900 truncate">{{ getRadioName(radio) }}</p>
+                <p class="text-xs text-gray-400 truncate">{{ getRadioEmail(radio) }}</p>
+              </div>
+              <button (click)="removeRadiologist(radio)" title="Retirer"
+                class="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded text-gray-400 hover:text-red-500 hover:bg-red-50">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Colonne droite -->
+      <div class="lg:col-span-2 flex flex-col gap-5">
+
+        <!-- 4 Cartes stats -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div class="bg-white rounded-xl shadow-sm p-4">
+            <div class="text-xs text-gray-500 mb-1">Total examens</div>
+            <div class="text-2xl font-bold text-gray-900">{{ stats.total }}</div>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm p-4">
+            <div class="text-xs text-gray-500 mb-1">Terminés</div>
+            <div class="text-2xl font-bold text-green-600">{{ stats.completed }}</div>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm p-4">
+            <div class="text-xs text-gray-500 mb-1">En attente</div>
+            <div class="text-2xl font-bold text-yellow-600">{{ stats.pending }}</div>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm p-4">
+            <div class="text-xs text-gray-500 mb-1">Disponibilité</div>
+            <div class="text-2xl font-bold" [class]="disponibiliteClass">{{ stats.disponibilite }}%</div>
+          </div>
+        </div>
+
+        <!-- Historique -->
+        <div class="bg-white rounded-xl shadow-sm flex-1 overflow-hidden">
+          <div class="px-6 pt-5 pb-0">
+            <h2 class="text-base font-semibold text-gray-900 mb-4">Historique des examens</h2>
+            <div class="flex gap-6 border-b border-gray-100">
+              <button (click)="activeTab = 'examens'"
+                [class]="activeTab === 'examens'
+                  ? 'border-b-2 border-[#6D28D9] text-[#6D28D9] font-medium'
+                  : 'text-gray-500 hover:text-gray-700 transition-colors'"
+                class="pb-3 text-sm">
+                Examens
+              </button>
+              <button (click)="activeTab = 'performances'"
+                [class]="activeTab === 'performances'
+                  ? 'border-b-2 border-[#6D28D9] text-[#6D28D9] font-medium'
+                  : 'text-gray-500 hover:text-gray-700 transition-colors'"
+                class="pb-3 text-sm">
+                Performances
+              </button>
+            </div>
+          </div>
+
+          <!-- Tab : Examens -->
+          <div *ngIf="activeTab === 'examens'" class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-gray-100">
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500">Référence</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500">Date</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500">Type</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500">Statut</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-50">
+                <tr *ngIf="recentExamens.length === 0">
+                  <td colspan="4" class="py-10 text-center text-gray-400 text-sm">Aucun examen disponible</td>
+                </tr>
+                <tr *ngFor="let e of recentExamens" class="hover:bg-gray-50 transition-colors">
+                  <td class="px-6 py-3 font-medium text-gray-800 font-mono text-xs">
+                    {{ e.id?.substring(0, 8).toUpperCase() }}
+                  </td>
+                  <td class="px-6 py-3 text-gray-600 whitespace-nowrap">{{ formatDate(e.createdAt) }}</td>
+                  <td class="px-6 py-3 text-gray-500 text-xs">{{ e.type || e.modality || '—' }}</td>
+                  <td class="px-6 py-3 whitespace-nowrap">
+                    <span [class]="examClass(e.status)" class="px-2 py-0.5 rounded text-xs font-medium">
+                      {{ examLabel(e.status) }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Tab : Performances -->
+          <div *ngIf="activeTab === 'performances'" class="p-6">
+            <div class="grid grid-cols-2 gap-4">
+              <div class="bg-gray-50 rounded-lg p-4">
+                <div class="text-xs text-gray-500 mb-1">Taux de complétion</div>
+                <div class="text-xl font-bold text-gray-900">
+                  {{ stats.total > 0 ? ((stats.completed / stats.total) * 100 | number:'1.0-0') : 0 }}%
+                </div>
+                <div class="mt-2 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                  <div class="h-full bg-green-500 rounded-full"
+                    [style.width.%]="stats.total > 0 ? (stats.completed / stats.total) * 100 : 0"></div>
+                </div>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-4">
+                <div class="text-xs text-gray-500 mb-1">Taux d'annulation</div>
+                <div class="text-xl font-bold text-gray-900">
+                  {{ stats.total > 0 ? ((stats.cancelled / stats.total) * 100 | number:'1.0-0') : 0 }}%
+                </div>
+                <div class="mt-2 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                  <div class="h-full bg-red-400 rounded-full"
+                    [style.width.%]="stats.total > 0 ? (stats.cancelled / stats.total) * 100 : 0"></div>
+                </div>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-4">
+                <div class="text-xs text-gray-500 mb-1">Délai moyen de traitement</div>
+                <div class="text-xl font-bold text-gray-900">{{ stats.delaiMoyen || '—' }} min</div>
+                <div class="text-xs mt-1"
+                  [class]="stats.delaiMoyen <= 180 ? 'text-green-600' : 'text-red-500'">
+                  {{ stats.delaiMoyen <= 180 ? 'Dans les normes' : 'Délai élevé' }}
+                </div>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-4">
+                <div class="text-xs text-gray-500 mb-1">Disponibilité</div>
+                <div class="text-xl font-bold" [class]="disponibiliteClass">{{ stats.disponibilite }}%</div>
+                <div class="mt-2 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                  <div class="h-full rounded-full"
+                    [class]="stats.disponibilite >= 90 ? 'bg-green-500' : stats.disponibilite >= 70 ? 'bg-yellow-400' : 'bg-red-400'"
+                    [style.width.%]="stats.disponibilite"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+</div>
+
+<!-- ── Modale : Ajouter un radiologue ──────────────────────────────────────── -->
+<div *ngIf="showAddModal"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+  (click)="closeAddModal()">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6" (click)="$event.stopPropagation()">
+
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="text-base font-semibold text-gray-900">Ajouter un radiologue</h3>
+      <button (click)="closeAddModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <p class="text-xs text-gray-500 mb-4">
+      Si le compte n'existe pas encore, il sera créé automatiquement avec le rôle <strong>radiologue</strong> et les identifiants seront envoyés par email.
+    </p>
+
+    <div class="space-y-3">
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">Email <span class="text-red-500">*</span></label>
+        <input type="email" [(ngModel)]="addRadioEmail" placeholder="radiologue@exemple.com"
+          class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6D28D9]"/>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">Prénom <span class="text-gray-400">(optionnel)</span></label>
+          <input type="text" [(ngModel)]="addRadioFirst" placeholder="Aminata"
+            class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6D28D9]"/>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">Nom <span class="text-gray-400">(optionnel)</span></label>
+          <input type="text" [(ngModel)]="addRadioLast" placeholder="Sow"
+            class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6D28D9]"/>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="addError" class="mt-3 bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-700">
+      {{ addError }}
+    </div>
+
+    <div class="flex items-center justify-end gap-3 mt-5">
+      <button (click)="closeAddModal()" [disabled]="addingRadio"
+        class="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50">
+        Annuler
+      </button>
+      <button (click)="confirmAddRadiologist()" [disabled]="!addRadioEmail.trim() || addingRadio"
+        class="flex items-center gap-2 bg-[#6D28D9] hover:bg-[#5b21b6] disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 py-2 rounded-lg text-sm font-semibold transition-colors">
+        <div *ngIf="addingRadio" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+        {{ addingRadio ? 'Création…' : 'Créer & Ajouter' }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -41,7 +41,7 @@
       </a>
 
       <!-- Médecins -->
-      <a routerLink="/medecins"
+      <a routerLink="/admin/medecins"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
@@ -55,7 +55,7 @@
       </a>
 
       <!-- Pharmacies -->
-      <a routerLink="/pharmacies"
+      <a routerLink="/admin/pharmacies"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
@@ -68,24 +68,50 @@
         <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Pharmacies</span>
       </a>
 
-      <!-- Livreurs -->
-      <a routerLink="/livreurs"
+      <!-- Laboratoires -->
+      <a routerLink="/admin/laboratoires"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
-          <svg width="22" height="17" viewBox="0 0 22 17" fill="none" stroke="currentColor"
-            xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M14.75 12.26V2.75C14.75 2.21957 14.5393 1.71086 14.1642 1.33579C13.7891 0.960714 13.2804 0.75 12.75 0.75H2.75C2.21957 0.75 1.71086 0.960714 1.33579 1.33579C0.960714 1.71086 0.75 2.21957 0.75 2.75V11.75C0.75 12.0152 0.855357 12.2696 1.04289 12.4571C1.23043 12.6446 1.48478 12.75 1.75 12.75H2.46C2.65493 12.3049 2.97534 11.9263 3.38204 11.6604C3.78874 11.3945 4.2641 11.2529 4.75 11.2529C5.2359 11.2529 5.71126 11.3945 6.11796 11.6604C6.52466 11.9263 6.84507 12.3049 7.04 12.75H14.46C14.5333 12.5733 14.63 12.41 14.75 12.26ZM14.75 12.26C15.0099 11.9075 15.3581 11.6298 15.7596 11.4548C16.1611 11.2799 16.6017 11.214 17.0368 11.2637C17.4719 11.3134 17.8862 11.4769 18.2379 11.7379C18.5896 11.9989 18.8663 12.348 19.04 12.75H20.75V9.86C20.7504 9.13434 20.5533 8.42225 20.18 7.8L18.95 5.75L18.04 4.24C17.9515 4.09072 17.8257 3.96705 17.6749 3.88114C17.5241 3.79522 17.3535 3.75003 17.18 3.75H14.75V12.26Z"
-              stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-            <path
-              d="M9.75 7.75H4.75M9.75 4.75H4.75M7.25 13.75C7.25044 14.1219 7.16789 14.4892 7.00839 14.8252C6.84888 15.1611 6.61642 15.4573 6.32796 15.692C6.0395 15.9268 5.7023 16.0942 5.34094 16.1821C4.97957 16.27 4.60315 16.2762 4.23909 16.2002C3.87504 16.1242 3.53253 15.9679 3.23652 15.7428C2.94051 15.5176 2.69846 15.2293 2.52802 14.8987C2.35757 14.5682 2.26302 14.2038 2.25125 13.832C2.23948 13.4603 2.3108 13.0907 2.46 12.75C2.6902 12.2244 3.09422 11.7939 3.60423 11.531C4.11424 11.268 4.69919 11.1884 5.26091 11.3057C5.82262 11.423 6.32689 11.7299 6.68908 12.175C7.05127 12.6201 7.24932 13.1762 7.25 13.75ZM19.25 13.75C19.2504 14.1219 19.1679 14.4892 19.0084 14.8252C18.8489 15.1611 18.6164 15.4573 18.328 15.692C18.0395 15.9268 17.7023 16.0942 17.3409 16.1821C16.9796 16.27 16.6031 16.2762 16.2391 16.2002C15.875 16.1242 15.5325 15.9679 15.2365 15.7428C14.9405 15.5176 14.6985 15.2293 14.528 14.8987C14.3576 14.5682 14.263 14.2038 14.2513 13.832C14.2395 13.4603 14.3108 13.0907 14.46 12.75C14.5333 12.5733 14.63 12.41 14.75 12.26C15.0099 11.9075 15.3581 11.6298 15.7596 11.4548C16.1611 11.2799 16.6017 11.214 17.0368 11.2637C17.4719 11.3134 17.8862 11.4769 18.2379 11.7379C18.5896 11.9989 18.8663 12.348 19.04 12.75C19.18 13.065 19.252 13.406 19.25 13.75Z"
-              stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
           </svg>
-
         </div>
-        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Livreurs</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Laboratoires</span>
       </a>
+
+      <!-- Imageries -->
+      <a routerLink="/admin/imageries"
+        routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
+        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        <div class="flex items-center justify-center w-8 h-8">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Imageries</span>
+      </a>
+
+      <!-- Livreurs -->
+<!--      <a routerLink="/livreurs"-->
+<!--        routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"-->
+<!--        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">-->
+<!--        <div class="flex items-center justify-center w-8 h-8">-->
+<!--          <svg width="22" height="17" viewBox="0 0 22 17" fill="none" stroke="currentColor"-->
+<!--            xmlns="http://www.w3.org/2000/svg">-->
+<!--            <path-->
+<!--              d="M14.75 12.26V2.75C14.75 2.21957 14.5393 1.71086 14.1642 1.33579C13.7891 0.960714 13.2804 0.75 12.75 0.75H2.75C2.21957 0.75 1.71086 0.960714 1.33579 1.33579C0.960714 1.71086 0.75 2.21957 0.75 2.75V11.75C0.75 12.0152 0.855357 12.2696 1.04289 12.4571C1.23043 12.6446 1.48478 12.75 1.75 12.75H2.46C2.65493 12.3049 2.97534 11.9263 3.38204 11.6604C3.78874 11.3945 4.2641 11.2529 4.75 11.2529C5.2359 11.2529 5.71126 11.3945 6.11796 11.6604C6.52466 11.9263 6.84507 12.3049 7.04 12.75H14.46C14.5333 12.5733 14.63 12.41 14.75 12.26ZM14.75 12.26C15.0099 11.9075 15.3581 11.6298 15.7596 11.4548C16.1611 11.2799 16.6017 11.214 17.0368 11.2637C17.4719 11.3134 17.8862 11.4769 18.2379 11.7379C18.5896 11.9989 18.8663 12.348 19.04 12.75H20.75V9.86C20.7504 9.13434 20.5533 8.42225 20.18 7.8L18.95 5.75L18.04 4.24C17.9515 4.09072 17.8257 3.96705 17.6749 3.88114C17.5241 3.79522 17.3535 3.75003 17.18 3.75H14.75V12.26Z"-->
+<!--              stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />-->
+<!--            <path-->
+<!--              d="M9.75 7.75H4.75M9.75 4.75H4.75M7.25 13.75C7.25044 14.1219 7.16789 14.4892 7.00839 14.8252C6.84888 15.1611 6.61642 15.4573 6.32796 15.692C6.0395 15.9268 5.7023 16.0942 5.34094 16.1821C4.97957 16.27 4.60315 16.2762 4.23909 16.2002C3.87504 16.1242 3.53253 15.9679 3.23652 15.7428C2.94051 15.5176 2.69846 15.2293 2.52802 14.8987C2.35757 14.5682 2.26302 14.2038 2.25125 13.832C2.23948 13.4603 2.3108 13.0907 2.46 12.75C2.6902 12.2244 3.09422 11.7939 3.60423 11.531C4.11424 11.268 4.69919 11.1884 5.26091 11.3057C5.82262 11.423 6.32689 11.7299 6.68908 12.175C7.05127 12.6201 7.24932 13.1762 7.25 13.75ZM19.25 13.75C19.2504 14.1219 19.1679 14.4892 19.0084 14.8252C18.8489 15.1611 18.6164 15.4573 18.328 15.692C18.0395 15.9268 17.7023 16.0942 17.3409 16.1821C16.9796 16.27 16.6031 16.2762 16.2391 16.2002C15.875 16.1242 15.5325 15.9679 15.2365 15.7428C14.9405 15.5176 14.6985 15.2293 14.528 14.8987C14.3576 14.5682 14.263 14.2038 14.2513 13.832C14.2395 13.4603 14.3108 13.0907 14.46 12.75C14.5333 12.5733 14.63 12.41 14.75 12.26C15.0099 11.9075 15.3581 11.6298 15.7596 11.4548C16.1611 11.2799 16.6017 11.214 17.0368 11.2637C17.4719 11.3134 17.8862 11.4769 18.2379 11.7379C18.5896 11.9989 18.8663 12.348 19.04 12.75C19.18 13.065 19.252 13.406 19.25 13.75Z"-->
+<!--              stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />-->
+<!--          </svg>-->
+
+<!--        </div>-->
+<!--        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Livreurs</span>-->
+<!--      </a>-->
 
       <!-- Patients -->
       <a routerLink="/patientmanage"
