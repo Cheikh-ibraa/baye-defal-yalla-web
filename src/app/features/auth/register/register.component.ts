@@ -5,7 +5,9 @@ import { HttpClient } from '@angular/common/http';
 import { Router, RouterModule } from '@angular/router';
 import { environment } from '../../../../environments/environment';
 
-type RoleKey = 'medecin' | 'pharmacien' | 'patient' | 'donateur';
+type RoleKey   = 'medecin' | 'pharmacien' | 'patient' | 'donateur';
+type DonorType = 'individual' | 'organization' | '';
+
 
 @Component({
   selector: 'app-register',
@@ -18,6 +20,7 @@ export class RegisterComponent {
 
   currentStep = 1;
   selectedRole: RoleKey | '' = '';
+  donorType:    DonorType    = '';
   isRegistering = false;
   registrationSuccess = false;
   registrationError = '';
@@ -66,10 +69,11 @@ export class RegisterComponent {
     'Médecine interne'
   ];
 
-  doctorForm = { fullName: '', phone: '', email: '', speciality: '', password: '', confirmPassword: '' };
+  doctorForm     = { fullName: '', phone: '', email: '', speciality: '', password: '', confirmPassword: '' };
   pharmacistForm = { fullName: '', phone: '', email: '', pharmacyId: '', password: '', confirmPassword: '' };
-  patientForm = { fullName: '', phone: '', email: '', password: '', confirmPassword: '' };
-  donorForm = { fullName: '', phone: '', email: '', password: '', confirmPassword: '' };
+  patientForm    = { fullName: '', phone: '', email: '', password: '', confirmPassword: '' };
+  donorForm      = { fullName: '', phone: '', email: '', password: '', confirmPassword: '' };
+  orgForm        = { organizationName: '', responsable: '', phone: '', email: '', password: '', confirmPassword: '' };
 
   pharmacies: any[] = [];
   pharmaciesLoading = false;
@@ -140,6 +144,12 @@ export class RegisterComponent {
 
   selectRole(role: RoleKey): void {
     this.selectedRole = role;
+    this.donorType    = '';
+    this.clearError();
+  }
+
+  selectDonorType(t: 'individual' | 'organization'): void {
+    this.donorType = t;
     this.clearError();
   }
 
@@ -182,9 +192,16 @@ export class RegisterComponent {
                   this.isPasswordValid(this.patientForm.password) &&
                   this.patientForm.password === this.patientForm.confirmPassword);
       case 'donateur':
-        return !!(this.donorForm.fullName && this.donorForm.phone.length === 9 &&
-                  this.isPasswordValid(this.donorForm.password) &&
-                  this.donorForm.password === this.donorForm.confirmPassword);
+        if (!this.donorType) return false;
+        if (this.donorType === 'individual') {
+          return !!(this.donorForm.fullName && this.donorForm.phone.length === 9 &&
+                    this.isPasswordValid(this.donorForm.password) &&
+                    this.donorForm.password === this.donorForm.confirmPassword);
+        }
+        return !!(this.orgForm.organizationName && this.orgForm.responsable &&
+                  this.orgForm.phone.length === 9 &&
+                  this.isPasswordValid(this.orgForm.password) &&
+                  this.orgForm.password === this.orgForm.confirmPassword);
       default:
         return false;
     }
@@ -199,7 +216,7 @@ export class RegisterComponent {
       case 'medecin': return this.doctorForm.password;
       case 'pharmacien': return this.pharmacistForm.password;
       case 'patient': return this.patientForm.password;
-      case 'donateur': return this.donorForm.password;
+      case 'donateur': return this.donorType === 'organization' ? this.orgForm.password : this.donorForm.password;
       default: return '';
     }
   }
@@ -209,7 +226,7 @@ export class RegisterComponent {
       case 'medecin': return this.doctorForm.confirmPassword;
       case 'pharmacien': return this.pharmacistForm.confirmPassword;
       case 'patient': return this.patientForm.confirmPassword;
-      case 'donateur': return this.donorForm.confirmPassword;
+      case 'donateur': return this.donorType === 'organization' ? this.orgForm.confirmPassword : this.donorForm.confirmPassword;
       default: return '';
     }
   }
@@ -283,13 +300,26 @@ export class RegisterComponent {
       });
 
     } else if (this.selectedRole === 'donateur') {
-      request$ = this.http.post(`${environment.baseUrl}/auth/register/donor`, {
-        fullName: this.donorForm.fullName,
-        phone: this.donorForm.phone,
-        email: this.donorForm.email || undefined,
-        password: this.donorForm.password,
-        confirmPassword: this.donorForm.confirmPassword
-      });
+      if (this.donorType === 'individual') {
+        request$ = this.http.post(`${environment.baseUrl}/auth/register/donor`, {
+          fullName:        this.donorForm.fullName,
+          phone:           this.donorForm.phone,
+          email:           this.donorForm.email || undefined,
+          password:        this.donorForm.password,
+          confirmPassword: this.donorForm.confirmPassword,
+          type:            'individual',
+        });
+      } else {
+        request$ = this.http.post(`${environment.baseUrl}/auth/register/donor`, {
+          fullName:         this.orgForm.responsable,
+          phone:            this.orgForm.phone,
+          email:            this.orgForm.email || undefined,
+          password:         this.orgForm.password,
+          confirmPassword:  this.orgForm.confirmPassword,
+          type:             'organization',
+          organizationName: this.orgForm.organizationName,
+        });
+      }
     }
 
     if (!request$) {
