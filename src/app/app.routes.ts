@@ -57,14 +57,14 @@ export const routes: Routes = [
       { path: 'parametre-bancaire',     redirectTo: 'pharmacist/parametre-bancaire',   pathMatch: 'full'  },
 
       // ================= ORGANIZATION ROUTES =================
-      { path: 'organization/dashboard',       canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) },
-      { path: 'organization/account',         canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/comptes/organization-account.component').then(m => m.OrganizationAccountComponent) },
-      { path: 'organization/rapport',         canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/rapports/rapports.component').then(m => m.RapportsComponent) },
-      { path: 'organization/detail-rapport/:id', canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/rapports/detail-rapport.component').then(m => m.DetailRapportComponent) },
-      { path: 'organization/budget',          canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/budget/budget.component').then(m => m.BudgetComponent) },
-      { path: 'organization/demande',         canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/demande-organisation/demande-organisation.component').then(m => m.DemandeOrganisationComponent) },
-      { path: 'organization/demande/:id',     canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/demande-organisation/detail-demande-organisation.component').then(m => m.DetailDemandeOrganisationComponent) },
-      { path: 'organization/demande/:id/devis', canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/demande-organisation/detail-devis-organisation.component').then(m => m.DetailDevisOrganisationComponent) },
+      { path: 'organization/dashboard',          canActivate: [roleGuard(['admin', 'donor-organization'])], loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) },
+      { path: 'organization/account',            canActivate: [roleGuard(['admin', 'donor-organization'])], loadComponent: () => import('./features/comptes/organization-account.component').then(m => m.OrganizationAccountComponent) },
+      { path: 'organization/rapport',            canActivate: [roleGuard(['admin', 'donor-organization'])], loadComponent: () => import('./features/rapports/rapports.component').then(m => m.RapportsComponent) },
+      { path: 'organization/detail-rapport/:id', canActivate: [roleGuard(['admin', 'donor-organization'])], loadComponent: () => import('./features/rapports/detail-rapport.component').then(m => m.DetailRapportComponent) },
+      { path: 'organization/budget',             canActivate: [roleGuard(['admin', 'donor-organization'])], loadComponent: () => import('./features/budget/budget.component').then(m => m.BudgetComponent) },
+      { path: 'organization/demande',            canActivate: [roleGuard(['admin', 'donor-organization'])], loadComponent: () => import('./features/demande-organisation/demande-organisation.component').then(m => m.DemandeOrganisationComponent) },
+      { path: 'organization/demande/:id',        canActivate: [roleGuard(['admin', 'donor-organization'])], loadComponent: () => import('./features/demande-organisation/detail-demande-organisation.component').then(m => m.DetailDemandeOrganisationComponent) },
+      { path: 'organization/demande/:id/devis',  canActivate: [roleGuard(['admin', 'donor-organization'])], loadComponent: () => import('./features/demande-organisation/detail-devis-organisation.component').then(m => m.DetailDevisOrganisationComponent) },
 
       // ================= ASSOCIATION ROUTES =================
       { path: 'association/dashboard', canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) },

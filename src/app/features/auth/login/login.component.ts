@@ -29,16 +29,16 @@ export class LoginComponent implements OnInit {
 
   // Keycloak realm roles → route (rôles en minuscules/tirets côté backend)
   private readonly ROLE_ROUTES: Record<string, string> = {
-    'admin':              '/dashboard-admin',
-    'doctor':             '/dashboard-med',
-    'pharmacist':         '/dashboard',
-    'hospital':           '/dashboard-hospital',
-    'patient':            '/dashboard',
-    'donor-individual':   '/dons',
-    'donor-organization': '/dons',
-    'supplier':           '/dashboard-fournisseur',
-    'lab-technician':     '/dashboard-lab',
-    'radiologist':        '/dashboard-imagerie',
+    'admin':              '/admin/dashboard',
+    'doctor':             '/doctor/dashboard',
+    'pharmacist':         '/pharmacist/dashboard',
+    'hospital':           '/hospital/dashboard',
+    'patient':            '/patient/dashboard',
+    'donor-individual':   '/donor/dons',
+    'donor-organization': '/organization/rapport',
+    'supplier':           '/fournisseur/dashboard',
+    'lab-technician':     '/laboratory/dashboard',
+    'radiologist':        '/imaging/dashboard',
   };
 
   constructor(
@@ -99,7 +99,7 @@ export class LoginComponent implements OnInit {
           'radiologist':        'IMAGING_CENTER',
           'supplier':           'FOURNISSEUR',
           'donor-individual':   'DONOR',
-          'donor-organization': 'DONOR',
+          'donor-organization': 'ORGANIZATION',
           'patient':            'PATIENT',
         };
         try {
