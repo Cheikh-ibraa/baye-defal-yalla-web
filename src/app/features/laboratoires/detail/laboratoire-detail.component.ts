@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { of } from 'rxjs';
@@ -22,23 +23,31 @@ const EXAM_CLASS: Record<string, string> = {
 @Component({
   selector: 'app-laboratoire-detail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './laboratoire-detail.component.html',
 })
 export class LaboratoireDetailComponent implements OnInit {
-  loading   = true;
-  loadError = '';
-  saving    = false;
-  deleting  = false;
+  loading        = true;
+  loadError      = '';
+  saving         = false;
+  deleting       = false;
+  addingTech     = false;
 
-  laboratoireRow: any = null;
-  technicianUser: any = null;
-  recentExamens:  any[] = [];
+  laboratoireRow:  any   = null;
+  technicianUsers: any[] = [];
+  recentExamens:   any[] = [];
 
   initials    = '';
   displayName = '';
   isActive    = false;
   activeTab: 'examens' | 'performances' = 'examens';
+
+  // Modal ajout technicien
+  showAddModal     = false;
+  addTechEmail     = '';
+  addTechFirstName = '';
+  addTechLastName  = '';
+  addError         = '';
 
   private laboratoireId = '';
   private readonly api  = environment.baseUrl;
@@ -70,28 +79,19 @@ export class LaboratoireDetailComponent implements OnInit {
       .subscribe(detail => {
         if (detail) {
           this.laboratoireRow = { ...this.laboratoireRow, ...detail.laboratory, ...detail.stats };
-          this.recentExamens  = detail.recentExamens  ?? [];
-          this.technicianUser = detail.technicianUser ?? null;
+          this.recentExamens  = detail.recentExamens ?? [];
           this.applyRow();
-          this.loading = false;
-        } else {
-          this.loadFallback();
         }
+        this.loading = false;
+        this.loadTechnicianList();
       });
   }
 
-  private loadFallback(): void {
-    const techId = this.laboratoireRow?.labTechnicianId;
-    if (!techId) { this.loading = false; return; }
-
-    this.http.get<any>(`${this.api}/admin/laboratories/${techId}`)
-      .pipe(catchError(() => of(null)))
-      .subscribe(data => {
-        if (data) {
-          this.technicianUser = data;
-          this.isActive = data.user?.isActive ?? this.isActive;
-        }
-        this.loading = false;
+  private loadTechnicianList(): void {
+    this.http.get<any[]>(`${this.api}/admin/laboratories/${this.laboratoireId}/technicians`)
+      .pipe(catchError(() => of([])))
+      .subscribe(list => {
+        this.technicianUsers = Array.isArray(list) ? list : [];
       });
   }
 
@@ -107,20 +107,85 @@ export class LaboratoireDetailComponent implements OnInit {
     this.isActive    = r.isActive ?? r.isOpen ?? false;
   }
 
+  // ── Gestion des techniciens liés ─────────────────────────────────────────────
+
+  openAddModal(): void {
+    this.showAddModal     = true;
+    this.addTechEmail     = '';
+    this.addTechFirstName = '';
+    this.addTechLastName  = '';
+    this.addError         = '';
+  }
+
+  closeAddModal(): void { this.showAddModal = false; }
+
+  confirmAddTechnician(): void {
+    if (!this.addTechEmail.trim()) return;
+    this.addingTech = true;
+    this.addError   = '';
+    const body: any = { email: this.addTechEmail.trim() };
+    if (this.addTechFirstName.trim()) body.firstName = this.addTechFirstName.trim();
+    if (this.addTechLastName.trim())  body.lastName  = this.addTechLastName.trim();
+
+    this.http.post(
+      `${this.api}/admin/laboratories/${this.laboratoireId}/technicians`,
+      body,
+    ).pipe(
+      catchError(err => {
+        this.addError   = err.error?.message ?? 'Technicien introuvable ou déjà lié.';
+        this.addingTech = false;
+        return of(null);
+      }),
+    ).subscribe(res => {
+      if (res) {
+        this.addingTech   = false;
+        this.showAddModal = false;
+        this.loadTechnicianList();
+      }
+    });
+  }
+
+  removeTechnician(tech: any): void {
+    const name = this.getTechName(tech);
+    if (!confirm(`Retirer ${name} de ce laboratoire ?`)) return;
+    const tid = tech.keycloakId ?? tech.id;
+    this.http.delete(`${this.api}/admin/laboratories/${this.laboratoireId}/technicians/${tid}`)
+      .pipe(catchError(() => of(null)))
+      .subscribe(() => {
+        this.technicianUsers = this.technicianUsers.filter(t => t !== tech);
+      });
+  }
+
+  // ── Helpers technicien ───────────────────────────────────────────────────────
+
+  getTechName(t: any): string {
+    return `${t?.firstName ?? ''} ${t?.lastName ?? ''}`.trim() || t?.email || '—';
+  }
+
+  getTechEmail(t: any): string {
+    return t?.email ?? '—';
+  }
+
+  getTechInitials(t: any): string {
+    return ((t?.firstName?.[0] ?? '') + (t?.lastName?.[0] ?? '')).toUpperCase() || '?';
+  }
+
+  // ── Actions laboratoire ───────────────────────────────────────────────────────
+
   activerLaboratoire(): void {
     if (this.saving) return;
-    const id = this.technicianUser?.keycloakId ?? this.laboratoireRow?.labTechnicianId;
+    const id = this.technicianUsers[0]?.keycloakId ?? this.laboratoireRow?.labTechnicianId;
     if (!id) return;
     this.saving = true;
     this.http.patch(`${this.api}/admin/laboratories/${id}/activate`, {}).subscribe({
-      next:  () => { this.isActive = true; this.saving = false; },
+      next:  () => { this.isActive = true;  this.saving = false; },
       error: () => { this.saving = false; },
     });
   }
 
   desactiverLaboratoire(): void {
     if (this.saving) return;
-    const id = this.technicianUser?.keycloakId ?? this.laboratoireRow?.labTechnicianId;
+    const id = this.technicianUsers[0]?.keycloakId ?? this.laboratoireRow?.labTechnicianId;
     if (!id) return;
     this.saving = true;
     this.http.patch(`${this.api}/admin/users/${id}/deactivate`, {}).subscribe({
@@ -132,8 +197,7 @@ export class LaboratoireDetailComponent implements OnInit {
   supprimerLaboratoire(): void {
     if (!confirm(`Supprimer définitivement "${this.displayName}" ?`)) return;
     this.deleting = true;
-    const id = this.technicianUser?.keycloakId ?? this.laboratoireRow?.labTechnicianId ?? this.laboratoireId;
-    this.http.delete(`${this.api}/admin/laboratories/${id}`).subscribe({
+    this.http.delete(`${this.api}/admin/laboratories/${this.laboratoireId}`).subscribe({
       next:  () => this.router.navigate(['/admin/laboratoires']),
       error: () => { this.deleting = false; },
     });
@@ -152,6 +216,10 @@ export class LaboratoireDetailComponent implements OnInit {
 
   get laboratoireRef(): string { return (this.laboratoireId ?? '').substring(0, 4).toUpperCase(); }
 
+  get hasTechnician(): boolean {
+    return this.technicianUsers.length > 0 || !!(this.laboratoireRow?.labTechnicianId);
+  }
+
   get stats() {
     return {
       total:         this.laboratoireRow?.total          ?? this.laboratoireRow?.analysesTraitees ?? 0,
@@ -166,19 +234,5 @@ export class LaboratoireDetailComponent implements OnInit {
   get disponibiliteClass(): string {
     const d = this.stats.disponibilite;
     return d >= 90 ? 'text-green-600' : d >= 70 ? 'text-yellow-600' : 'text-red-500';
-  }
-
-  get technicianName(): string {
-    const u = this.technicianUser?.user ?? this.technicianUser;
-    if (!u) return '—';
-    return `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim() || u.email || '—';
-  }
-
-  get technicianEmail(): string {
-    return this.technicianUser?.user?.email ?? this.technicianUser?.email ?? '—';
-  }
-
-  get hasTechnician(): boolean {
-    return !!(this.laboratoireRow?.labTechnicianId || this.technicianUser);
   }
 }
