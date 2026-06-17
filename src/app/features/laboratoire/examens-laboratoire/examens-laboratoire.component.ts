@@ -94,8 +94,11 @@ export class ExamensLaboratoireComponent implements OnInit {
     if (this.selectedStatus)   params['status']  = this.selectedStatus;
     if (this.selectedPriority) params['urgency'] = this.selectedPriority;
 
-    this.http.get<any[]>(`${this.api}/diagnostic/lab-orders/all`, { params }).subscribe({
-      next:  (orders) => this.resolveNames(orders),
+    this.http.get<any>(`${this.api}/diagnostic/lab-orders/all`, { params: { ...params, page: '1', limit: '100' } }).subscribe({
+      next:  (res) => {
+        const orders = Array.isArray(res) ? res : (res?.data ?? []);
+        this.resolveNames(orders);
+      },
       error: () => { this.loading = false; this.cdr.markForCheck(); }
     });
   }

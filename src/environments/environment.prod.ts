@@ -1,7 +1,12 @@
 export const environment = {
   production: true,
-  // Remplacer par l'URL publique du api-gateway en production
   baseUrl: 'https://api.bdy.innovimpactdev.cloud/api',
-  // URL publique MinIO pour afficher les fichiers/images
   filesUrl: 'https://minio.innovimpactdev.cloud/baye-defal-yalla',
+  touchpay: {
+    agencyCode: 'SOLI26685',
+    token:      'SJeOJiLKfP2FUHWgTEzhX8Y0km36CwGkbJQTKdplZM3QORfQ6m',
+    serviceId:  'solimus.net',
+    successUrl: 'https://bdy.innovimpactdev.cloud/donor/dons?payment=success',
+    failedUrl:  'https://bdy.innovimpactdev.cloud/donor/dons?payment=failed',
+  },
 };

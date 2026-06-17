@@ -139,6 +139,7 @@ export class OrdonnancesComponent implements OnInit, OnDestroy {
   }
 
   getPatientName(p: Prescription): string {
+    if (p.patientName) return p.patientName;
     return `Patient #${p.patientId.substring(0, 8).toUpperCase()}`;
   }
 

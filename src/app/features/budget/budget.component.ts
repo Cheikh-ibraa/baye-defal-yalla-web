@@ -2,17 +2,19 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
-export interface BudgetEngagement {
-  id: number;
-  amount: string;
-  status: 'Actif' | 'Terminé';
+interface BudgetEngagement {
+  id: string;
+  amount: number;
+  usedAmount: number;
+  remainingAmount: number;
+  status: 'ACTIF' | 'TERMINÉ';
   createdDate: string;
   type: string;
   beneficiaries: string[];
   needs: string[];
-  usedAmount?: string | null;
-  remainingAmount?: string | null;
 }
 
 @Component({
@@ -23,82 +25,108 @@ export interface BudgetEngagement {
   styleUrls: ['./budget.component.css']
 })
 export class BudgetComponent implements OnInit {
-  engagements: BudgetEngagement[] = [
-    {
-      id: 1,
-      amount: '10 000 000 FCFA',
-      status: 'Actif',
-      createdDate: '15/01/2026',
-      type: 'Mensuel',
-      beneficiaries: ['Nouveau-nés', 'Personnes âgées'],
-      needs: ['Analyses', 'Imagerie', 'Ordonnances'],
-      usedAmount: '1 250 000 FCFA',
-      remainingAmount: '3 750 000 FCFA'
-    },
-    {
-      id: 2,
-      amount: '5 000 000 FCFA',
-      status: 'Actif',
-      createdDate: '30/11/2025',
-      type: 'Mensuel',
-      beneficiaries: ['Nouveau-nés', 'Personnes âgées'],
-      needs: ['Analyses', 'Imagerie', 'Ordonnances'],
-      usedAmount: '1 250 000 FCFA',
-      remainingAmount: '3 750 000 FCFA'
-    },
-    {
-      id: 3,
-      amount: '2 000 000 FCFA',
-      status: 'Terminé',
-      createdDate: '10/06/2025',
-      type: 'Annuel',
-      beneficiaries: ['Personnes âgées'],
-      needs: ['Ordonnances'],
-      usedAmount: null,
-      remainingAmount: null
-    }
-  ];
+  engagements: BudgetEngagement[] = [];
+  isLoading = true;
+  error: string | null = null;
+  isSaving = false;
 
-  // Modal display states
+  totalAllocated = 0;
+  totalUsed      = 0;
+  livesImpacted  = 0;
+
+  // Modal
   isModalOpen = false;
   modalStep: 'form' | 'summary' = 'form';
 
   // Form fields
   newAmount: number | null = null;
-  newType: 'Mensuel' | 'Annuel' = 'Mensuel';
+  newType: 'MENSUEL' | 'ANNUEL' = 'MENSUEL';
   newBeneficiaries: { [key: string]: boolean } = {
     'Nouveau-nés': true,
-    'Personnes âgées': true
+    'Personnes âgées': true,
+    'Enfants': false,
+    'Adultes': false,
   };
   newNeeds: { [key: string]: boolean } = {
     'Analyses': true,
     'Imagerie': true,
-    'Ordonnances': false
+    'Ordonnances': false,
   };
 
-  constructor() {}
+  private get authHeaders() {
+    const token = localStorage.getItem('access_token');
+    return { Authorization: `Bearer ${token}` };
+  }
 
-  ngOnInit(): void {}
+  constructor(private http: HttpClient) {}
+
+  ngOnInit(): void {
+    this.load();
+  }
+
+  private load(): void {
+    this.isLoading = true;
+    this.error = null;
+    this.http.get<any>(
+      `${environment.baseUrl}/organization/budgets`,
+      { headers: this.authHeaders }
+    ).subscribe({
+      next: (res) => {
+        this.totalAllocated = Number(res.totalAllocated ?? 0);
+        this.totalUsed      = Number(res.totalUsed      ?? 0);
+        this.livesImpacted  = Number(res.livesImpacted  ?? 0);
+        this.engagements    = (res.budgets ?? []).map((b: any) => this.mapBudget(b));
+        this.isLoading = false;
+      },
+      error: () => {
+        this.error = 'Impossible de charger les engagements.';
+        this.isLoading = false;
+      },
+    });
+  }
+
+  private mapBudget(b: any): BudgetEngagement {
+    const amount  = Number(b.amount ?? 0);
+    const used    = Number(b.usedAmount ?? 0);
+    const date    = new Date(b.createdAt);
+    const dd      = date.getDate().toString().padStart(2, '0');
+    const mm      = (date.getMonth() + 1).toString().padStart(2, '0');
+    const yyyy    = date.getFullYear();
+    return {
+      id:              b.id,
+      amount,
+      usedAmount:      used,
+      remainingAmount: Math.max(0, amount - used),
+      status:          b.status === 'ACTIF' ? 'ACTIF' : 'TERMINÉ',
+      createdDate:     `${dd}/${mm}/${yyyy}`,
+      type:            b.type === 'ANNUEL' ? 'Annuel' : 'Mensuel',
+      beneficiaries:   b.beneficiaryTypes  ?? [],
+      needs:           (b.medicalNeedTypes ?? []).map((n: string) => this.needLabel(n)),
+    };
+  }
+
+  private needLabel(n: string): string {
+    const map: Record<string, string> = {
+      ANALYSE:     'Analyses',
+      IMAGERIE:    'Imagerie',
+      ORDONNANCE:  'Ordonnances',
+      EQUIPEMENT:  'Équipements',
+    };
+    return map[n] ?? n;
+  }
+
+  // ── Modal ────────────────────────────────────────────────────────────────────
 
   openModal(): void {
     this.newAmount = null;
-    this.newType = 'Mensuel';
-    this.newBeneficiaries = {
-      'Nouveau-nés': true,
-      'Personnes âgées': true
-    };
-    this.newNeeds = {
-      'Analyses': true,
-      'Imagerie': true,
-      'Ordonnances': false
-    };
+    this.newType   = 'MENSUEL';
+    this.newBeneficiaries = { 'Nouveau-nés': true, 'Personnes âgées': true, 'Enfants': false, 'Adultes': false };
+    this.newNeeds         = { 'Analyses': true, 'Imagerie': true, 'Ordonnances': false };
     this.modalStep = 'form';
     this.isModalOpen = true;
   }
 
-  closeModal(): void {
-    this.isModalOpen = false;
-  }
+  closeModal(): void { this.isModalOpen = false; }
 
   goToSummary(): void {
     if (!this.newAmount || this.newAmount <= 0) {
@@ -110,24 +138,40 @@ export class BudgetComponent implements OnInit {
 
   confirmBudget(): void {
     if (!this.newAmount || this.newAmount <= 0) return;
+    this.isSaving = true;
 
-    const today = new Date();
-    const formattedDate = this.formatDate(today);
+    const medicalNeedTypes = this.getNeedKeys().map(n => {
+      const map: Record<string, string> = {
+        'Analyses':    'ANALYSE',
+        'Imagerie':    'IMAGERIE',
+        'Ordonnances': 'ORDONNANCE',
+      };
+      return map[n] ?? n.toUpperCase();
+    });
 
-    const newEngagement: BudgetEngagement = {
-      id: Date.now(),
-      amount: this.formatNumber(this.newAmount) + ' FCFA',
-      status: 'Actif',
-      createdDate: formattedDate,
-      type: this.newType,
-      beneficiaries: this.getBeneficiaryKeys(),
-      needs: this.getNeedKeys(),
-      usedAmount: '0 FCFA',
-      remainingAmount: this.formatNumber(this.newAmount) + ' FCFA'
+    const dto = {
+      amount:           this.newAmount,
+      type:             this.newType,
+      beneficiaryTypes: this.getBeneficiaryKeys(),
+      medicalNeedTypes,
     };
 
-    this.engagements = [newEngagement, ...this.engagements];
-    this.closeModal();
+    this.http.post<any>(
+      `${environment.baseUrl}/organization/budgets`,
+      dto,
+      { headers: this.authHeaders }
+    ).subscribe({
+      next: (created) => {
+        this.engagements = [this.mapBudget(created), ...this.engagements];
+        this.totalAllocated += this.newAmount!;
+        this.isSaving = false;
+        this.closeModal();
+      },
+      error: () => {
+        alert("Erreur lors de la création du budget. Veuillez réessayer.");
+        this.isSaving = false;
+      },
+    });
   }
 
   getBeneficiaryKeys(): string[] {
@@ -138,31 +182,17 @@ export class BudgetComponent implements OnInit {
     return Object.keys(this.newNeeds).filter(k => this.newNeeds[k]);
   }
 
-  private formatDate(date: Date): string {
-    const d = date.getDate().toString().padStart(2, '0');
-    const m = (date.getMonth() + 1).toString().padStart(2, '0');
-    const y = date.getFullYear();
-    return `${d}/${m}/${y}`;
-  }
+  // ── Display helpers ──────────────────────────────────────────────────────────
 
-  formatNumber(n: number): string {
-    return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-  }
-
-  parseAmount(amountStr: string): number {
-    const cleaned = amountStr.replace(/[^0-9]/g, '');
-    return parseInt(cleaned, 10) || 0;
+  formatAmount(n: number): string {
+    return (n ?? 0).toLocaleString('fr-FR');
   }
 
   getTotalImpact(): string {
-    const total = this.engagements
-      .filter(e => e.status === 'Actif')
-      .reduce((sum, e) => sum + this.parseAmount(e.amount), 0);
-    return this.formatNumber(total) + ' FCFA';
+    return this.formatAmount(this.totalAllocated) + ' FCFA';
   }
 
-  getActiveEngagementsCount(): number {
-    return this.engagements.filter(e => e.status === 'Actif').length;
+  getActiveCount(): number {
+    return this.engagements.filter(e => e.status === 'ACTIF').length;
   }
 }
-

@@ -1,0 +1,147 @@
+<div class="min-h-screen bg-[#F4F6F9] p-6">
+  <div class="max-w-7xl mx-auto space-y-6">
+
+    <!-- ── HEADER ─────────────────────────────────────────────────────────── -->
+    <div class="flex items-center justify-between flex-wrap gap-3">
+      <div>
+        <h1 class="text-2xl font-bold text-[#1E293B]">Gestion des hôpitaux</h1>
+        <p class="text-sm text-[#64748B] mt-1">Gérez les établissements hospitaliers enregistrés sur la plateforme.</p>
+      </div>
+      <button (click)="goNew()"
+        class="flex items-center gap-2 px-5 py-2.5 bg-[#104382] hover:bg-[#0D3568] text-white rounded-xl text-sm font-semibold transition-colors shadow-sm">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Ajouter un hôpital
+      </button>
+    </div>
+
+    <!-- ── STAT CARDS ──────────────────────────────────────────────────────── -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div *ngFor="let c of statsCards" class="bg-white rounded-2xl p-5 shadow-sm flex items-start gap-4">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" [ngClass]="c.iconBg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path [attr.d]="c.icon"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-xs text-[#6B7280] mb-1">{{ c.label }}</p>
+          <p class="text-2xl font-bold text-[#111827]">{{ c.value }}</p>
+          <p *ngIf="c.sub" class="text-xs mt-0.5" [ngClass]="c.subClass ?? 'text-[#64748B]'">{{ c.sub }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── BARRE RECHERCHE ─────────────────────────────────────────────────── -->
+    <div class="bg-white rounded-2xl shadow-sm p-4 flex items-center gap-3 flex-wrap">
+      <div class="relative flex-1 min-w-[220px]">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" [(ngModel)]="searchTerm" (input)="filter()" placeholder="Rechercher par nom, type, région…"
+          class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#104382]">
+      </div>
+      <select [(ngModel)]="itemsPerPage" (change)="filter()"
+        class="border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#104382]">
+        <option value="5">5 / page</option>
+        <option value="10">10 / page</option>
+        <option value="20">20 / page</option>
+        <option value="50">50 / page</option>
+      </select>
+      <span class="text-sm text-gray-500 ml-auto">{{ filteredHospitals.length }} résultat(s)</span>
+    </div>
+
+    <!-- ── LOADING / ERROR ─────────────────────────────────────────────────── -->
+    <div *ngIf="loading" class="flex justify-center py-20">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#104382]"></div>
+      <span class="ml-3 text-sm text-gray-500">Chargement…</span>
+    </div>
+    <div *ngIf="!loading && loadError" class="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600">{{ loadError }}</div>
+
+    <!-- ── TABLEAU ─────────────────────────────────────────────────────────── -->
+    <div *ngIf="!loading && !loadError" class="bg-white rounded-2xl shadow-sm overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-[#F8FAFC] border-b border-gray-100">
+          <tr>
+            <th class="text-left px-5 py-3.5 font-semibold text-[#64748B]">Hôpital</th>
+            <th class="text-left px-4 py-3.5 font-semibold text-[#64748B]">Type</th>
+            <th class="text-left px-4 py-3.5 font-semibold text-[#64748B] hidden md:table-cell">Région</th>
+            <th class="text-left px-4 py-3.5 font-semibold text-[#64748B] hidden lg:table-cell">Contact</th>
+            <th class="text-center px-4 py-3.5 font-semibold text-[#64748B]">Statut</th>
+            <th class="text-right px-5 py-3.5 font-semibold text-[#64748B]">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let h of paginatedHospitals; let i = index"
+            class="border-b border-gray-50 hover:bg-[#F8FAFC] transition-colors">
+
+            <!-- Hôpital -->
+            <td class="px-5 py-4">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold shrink-0"
+                  [ngClass]="initialsClass(i)">
+                  {{ initials(h.name) }}
+                </div>
+                <div>
+                  <p class="font-semibold text-[#1E293B] leading-snug">{{ h.name }}</p>
+                  <p *ngIf="h.address" class="text-xs text-[#94A3B8] truncate max-w-[200px]">{{ h.address }}</p>
+                </div>
+              </div>
+            </td>
+
+            <!-- Type -->
+            <td class="px-4 py-4">
+              <span *ngIf="h.type" class="px-2.5 py-1 rounded-full text-xs font-medium" [ngClass]="typeClass(h.type)">{{ h.type }}</span>
+              <span *ngIf="!h.type" class="text-[#94A3B8] text-xs">—</span>
+            </td>
+
+            <!-- Région -->
+            <td class="px-4 py-4 hidden md:table-cell text-[#475569]">{{ h.region || '—' }}</td>
+
+            <!-- Contact -->
+            <td class="px-4 py-4 hidden lg:table-cell">
+              <p *ngIf="h.email" class="text-[#475569]">{{ h.email }}</p>
+              <p *ngIf="h.phone" class="text-[#94A3B8] text-xs">{{ h.phone }}</p>
+              <span *ngIf="!h.email && !h.phone" class="text-[#94A3B8]">—</span>
+            </td>
+
+            <!-- Statut -->
+            <td class="px-4 py-4 text-center">
+              <span class="px-2.5 py-1 rounded-full text-xs font-medium"
+                [class.bg-green-100]="h.isActive" [class.text-green-700]="h.isActive"
+                [class.bg-gray-100]="!h.isActive" [class.text-gray-500]="!h.isActive">
+                {{ h.isActive ? 'Actif' : 'Inactif' }}
+              </span>
+            </td>
+
+            <!-- Actions -->
+            <td class="px-5 py-4 text-right">
+              <button (click)="viewDetail(h)"
+                class="px-3.5 py-1.5 text-xs font-semibold text-[#104382] border border-[#104382] rounded-lg hover:bg-[#EFF6FF] transition-colors">
+                Gérer
+              </button>
+            </td>
+          </tr>
+
+          <tr *ngIf="paginatedHospitals.length === 0">
+            <td colspan="6" class="text-center py-16 text-gray-400">
+              <svg class="w-10 h-10 mx-auto mb-3 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+              </svg>
+              Aucun hôpital trouvé
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      <div *ngIf="filteredHospitals.length > 0" class="flex items-center justify-between px-5 py-3.5 border-t border-gray-100 text-sm text-[#64748B]">
+        <span>{{ startItem }}–{{ endItem }} sur {{ filteredHospitals.length }}</span>
+        <div class="flex gap-1.5">
+          <button (click)="previousPage()" [disabled]="currentPage === 1"
+            class="px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">‹</button>
+          <span class="px-3 py-1.5 bg-[#104382] text-white rounded-lg font-medium">{{ currentPage }}</span>
+          <button (click)="nextPage()" [disabled]="currentPage === totalPages"
+            class="px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">›</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

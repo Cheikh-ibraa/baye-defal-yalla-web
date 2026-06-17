@@ -19,16 +19,18 @@ interface OrderItem {
 }
 
 interface Order {
-  id:             string;
-  prescriptionId: string;
-  patientId:      string;
-  pharmacistId:   string;
-  pharmacyId:     string;
-  items:          OrderItem[];
-  status:         string;
-  timeline:       { status: string; changedAt: string }[];
-  createdAt:      string;
-  updatedAt:      string;
+  id:              string;
+  prescriptionId:  string;
+  patientId:       string;
+  pharmacistId:    string;   // pharmacien qui a TRAITÉ la commande (validatedBy)
+  pharmacyId:      string;
+  items:           OrderItem[];
+  status:          string;
+  timeline:        { status: string; changedAt: string; pharmacistId?: string }[];
+  createdAt:       string;
+  updatedAt:       string;
+  validatedBy?:    string;   // ID du pharmacien qui a validé en premier
+  validatedByName?: string;  // nom résolu (optionnel selon le backend)
 }
 
 @Component({
@@ -66,6 +68,8 @@ export class CommandesComponent implements OnInit, OnDestroy {
   // availability: keyed by medicationName
   medicationAvailability: Map<string, boolean> = new Map();
 
+  private pollInterval: any = null;
+
   // patient names cache: patientId → "Prénom Nom"
   patientNames: Record<string, string> = {};
 
@@ -85,6 +89,7 @@ export class CommandesComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.stopPolling();
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -144,6 +149,56 @@ export class CommandesComponent implements OnInit, OnDestroy {
       order.items.map(i => [i.medicationName, i.available === true]),
     );
     if (this.isMobileView || this.isTabletView) this.showMobileDetails = true;
+    this.resetPolling();
+  }
+
+  // ── Auto-refresh polling ──────────────────────────────────────────────────────
+  private resetPolling(): void {
+    this.stopPolling();
+    const s = this.selectedOrder?.status;
+    if (s === 'PENDING' || s === 'IN_PREPARATION') {
+      this.startPolling();
+    }
+  }
+
+  private startPolling(): void {
+    this.pollInterval = setInterval(() => this.silentRefresh(), 8000);
+  }
+
+  private stopPolling(): void {
+    if (this.pollInterval) {
+      clearInterval(this.pollInterval);
+      this.pollInterval = null;
+    }
+  }
+
+  private silentRefresh(): void {
+    if (!this.selectedOrder) { this.stopPolling(); return; }
+    const id = this.selectedOrder.id;
+
+    this.http.get<Order[]>(`${this.api}/pharmacy/orders`)
+      .pipe(catchError(() => of([] as Order[])))
+      .subscribe(data => {
+        if (!data.length) return;
+        this.orders = data.map(o => ({ ...o, items: o.items.map(i => ({ ...i, unitPrice: i.unitPrice ?? 0 })) }));
+        this.filteredOrders = [...this.orders];
+        this.totalItems = this.orders.length;
+        this.updatePagination();
+
+        const updated = this.orders.find(o => o.id === id);
+        if (!updated || updated.status === this.selectedOrder?.status) return;
+
+        // Statut changé → mettre à jour sans réinitialiser l'onglet actif
+        const prevTab = this.activeTab;
+        this.selectedOrder = { ...updated, items: updated.items.map(i => ({ ...i })) };
+        this.activeTab = prevTab;
+        this.medicationAvailability = new Map(
+          updated.items.map(i => [i.medicationName, i.available === true]),
+        );
+        if (updated.status !== 'PENDING' && updated.status !== 'IN_PREPARATION') {
+          this.stopPolling();
+        }
+      });
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -343,57 +398,96 @@ export class CommandesComponent implements OnInit, OnDestroy {
   printQrCode(): void { window.print(); }
 
   scanQrCode(): void {
-    if (!this.selectedOrder) return;
-    const ref = this.getOrderRef(this.selectedOrder);
-    const id  = this.selectedOrder.id;
-    const qrData = encodeURIComponent(JSON.stringify({ orderId: id, ref }));
+    if (!this.selectedOrder || this.selectedOrder.status !== 'READY') return;
+    const orderId  = this.selectedOrder.id;
+    const ref      = this.getOrderRef(this.selectedOrder);
+    const qrData   = encodeURIComponent(JSON.stringify({
+      orderId,
+      prescriptionId: this.selectedOrder.prescriptionId,
+      patientId:      this.selectedOrder.patientId,
+    }));
 
     Swal.fire({
-      title: 'Scanner le QR Code',
+      title: 'Simulation scan QR Code',
       html: `
-        <div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:8px 0">
-          <div style="background:#2d2d2d;border-radius:12px;padding:20px;display:flex;align-items:center;justify-content:center;width:220px;height:220px">
-            <div style="position:relative;width:180px;height:180px">
-              <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${qrData}"
-                style="width:100%;height:100%;border-radius:4px" />
-              <div style="position:absolute;inset:0;pointer-events:none">
-                <div style="position:absolute;top:0;left:0;width:28px;height:28px;border-top:3px solid #2C7BE5;border-left:3px solid #2C7BE5;border-radius:2px 0 0 0"></div>
-                <div style="position:absolute;top:0;right:0;width:28px;height:28px;border-top:3px solid #2C7BE5;border-right:3px solid #2C7BE5;border-radius:0 2px 0 0"></div>
-                <div style="position:absolute;bottom:0;left:0;width:28px;height:28px;border-bottom:3px solid #2C7BE5;border-left:3px solid #2C7BE5;border-radius:0 0 0 2px"></div>
-                <div style="position:absolute;bottom:0;right:0;width:28px;height:28px;border-bottom:3px solid #2C7BE5;border-right:3px solid #2C7BE5;border-radius:0 0 2px 0"></div>
-              </div>
-            </div>
+        <style>
+          @keyframes scanLine { 0%{top:0%} 100%{top:97%} }
+          @keyframes beep     { 0%,100%{opacity:0} 50%{opacity:1} }
+        </style>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:14px;padding:4px 0">
+          <div style="position:relative;width:210px;height:210px;border-radius:10px;overflow:hidden;background:#111;box-shadow:0 0 0 2px #4FBFA5">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=210x210&data=${qrData}"
+                 style="width:100%;height:100%;display:block;opacity:0.9" />
+            <div style="position:absolute;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent 0%,#4FBFA5 40%,#fff 50%,#4FBFA5 60%,transparent 100%);animation:scanLine 1.6s ease-in-out infinite"></div>
+            <div style="position:absolute;top:6px;left:6px;width:22px;height:22px;border-top:3px solid #4FBFA5;border-left:3px solid #4FBFA5;border-radius:3px 0 0 0"></div>
+            <div style="position:absolute;top:6px;right:6px;width:22px;height:22px;border-top:3px solid #4FBFA5;border-right:3px solid #4FBFA5;border-radius:0 3px 0 0"></div>
+            <div style="position:absolute;bottom:6px;left:6px;width:22px;height:22px;border-bottom:3px solid #4FBFA5;border-left:3px solid #4FBFA5;border-radius:0 0 0 3px"></div>
+            <div style="position:absolute;bottom:6px;right:6px;width:22px;height:22px;border-bottom:3px solid #4FBFA5;border-right:3px solid #4FBFA5;border-radius:0 0 3px 0"></div>
           </div>
-          <p style="font-size:13px;color:#6B7280;text-align:center;max-width:280px;line-height:1.5">
-            Scannez le QR Code du patient pour confirmer la remise des médicaments de la commande <strong>${ref}</strong>
+          <div id="qr-sim-status" style="font-size:12px;color:#9CA3AF;text-align:center">Détection en cours…</div>
+          <p style="font-size:13px;color:#6B7280;text-align:center;margin:0">
+            Commande <strong style="color:#104382">${ref}</strong>
           </p>
         </div>`,
       showCancelButton: true,
-      confirmButtonColor: '#14B8A6',
-      cancelButtonColor: '#E5E7EB',
-      confirmButtonText: 'Confirmer la remise',
-      cancelButtonText: 'Fermer',
-      showCloseButton: true,
+      showConfirmButton: false,
+      cancelButtonText: 'Annuler',
       customClass: {
-        confirmButton: 'text-white font-medium px-6 py-2.5 rounded-lg',
-        cancelButton: 'text-gray-700 font-medium px-6 py-2.5 rounded-lg',
-        popup: 'rounded-2xl',
+        popup:        'rounded-2xl',
+        cancelButton: 'text-gray-700 px-5 py-2 rounded-lg border border-gray-300 text-sm font-medium',
       },
-    }).then(r => {
+      allowOutsideClick: false,
+      didOpen: () => {
+        // Simulation : détection automatique après 2 s
+        setTimeout(() => {
+          if (!Swal.isVisible()) return;
+          const statusEl = document.getElementById('qr-sim-status');
+          if (statusEl) {
+            statusEl.style.color   = '#16A34A';
+            statusEl.textContent   = '✓ QR code détecté !';
+          }
+          setTimeout(() => {
+            Swal.close();
+            setTimeout(() => this.processScannedQr(JSON.stringify({ orderId }), orderId, ref), 150);
+          }, 600);
+        }, 2000);
+      },
+    });
+  }
+
+  private processScannedQr(decoded: string, orderId: string, ref: string): void {
+    let scannedId = '';
+    try { scannedId = (JSON.parse(decoded) as { orderId: string }).orderId; }
+    catch { scannedId = decoded; }
+
+    if (scannedId !== orderId) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'QR invalide',
+        text: `Ce QR code ne correspond pas à la commande ${ref}.`,
+        confirmButtonColor: '#104382',
+      });
+      return;
+    }
+
+    this.swalConfirm(
+      this.swalConfirmHtml(`
+        <h3 class="text-2xl font-semibold text-[#2B2B33] mb-3">Confirmer la remise</h3>
+        <p class="text-base text-[#3E3E47] text-center">QR code validé.<br>Confirmez la remise des médicaments au patient pour la commande <strong>${ref}</strong>.</p>`),
+      'Confirmer la remise',
+      'bg-[#16A34A] hover:bg-[#15803D]',
+    ).then(r => {
       if (!r.isConfirmed) return;
-      this.http.patch(`${this.api}/pharmacy/orders/${id}/delivered`, {})
+      this.loading = true;
+      this.http.patch(`${this.api}/pharmacy/orders/${orderId}/delivered`, {})
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => {
-            Swal.fire({
-              title: 'Remise confirmée !',
-              text: `Les médicaments de la commande ${ref} ont été remis au patient.`,
-              icon: 'success',
-              confirmButtonColor: '#4FBFA5',
-            });
+            this.loading = false;
+            this.swalSuccess('Remise confirmée !', `Les médicaments de la commande <strong>${ref}</strong> ont été remis au patient.`);
             this.loadOrders();
           },
-          error: () => Swal.fire('Erreur', 'Impossible de confirmer la remise.', 'error'),
+          error: () => { this.loading = false; this.showAlert('Erreur', 'Impossible de confirmer la remise.', 'error'); },
         });
     });
   }
@@ -481,6 +575,17 @@ export class CommandesComponent implements OnInit, OnDestroy {
   }
 
   trackByOrderId(_i: number, o: Order): string { return o.id; }
+
+  getValidatorDisplay(order: Order): string {
+    if (order.validatedByName) return order.validatedByName;
+    if (order.validatedBy) return `#${order.validatedBy.substring(0, 6).toUpperCase()}`;
+    // Fallback : pharmacistId = celui qui a pris en charge
+    if (order.pharmacistId && order.status !== 'PENDING') {
+      return this.patientNames['pharmacist_' + order.pharmacistId]
+        || `Pharmacien #${order.pharmacistId.substring(0, 6).toUpperCase()}`;
+    }
+    return '';
+  }
 
   private showAlert(title: string, text: string, icon: any): void {
     Swal.fire({ title, text, icon, confirmButtonColor: '#104382' });

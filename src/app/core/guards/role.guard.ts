@@ -6,6 +6,11 @@ function getRolesFromToken(): string[] {
   if (!token) return [];
   try {
     const payload = JSON.parse(atob(token.split('.')[1]));
+    if (payload?.exp && Date.now() / 1000 > payload.exp) {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      return [];
+    }
     return payload?.realm_access?.roles ?? [];
   } catch {
     return [];
@@ -13,12 +18,12 @@ function getRolesFromToken(): string[] {
 }
 
 export const roleGuard = (allowedRoles: string[]): CanActivateFn => {
-  return (_route, _state) => {
+  return (_route, state) => {
     const router = inject(Router);
     const roles = getRolesFromToken();
 
     if (roles.length === 0) {
-      router.navigate(['/login']);
+      router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
       return false;
     }
 

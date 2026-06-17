@@ -1,7 +1,7 @@
-<!-- TOAST NOTIFICATIONS -->
+<!-- TOASTS -->
 <div class="fixed top-4 right-4 z-[100] space-y-2">
   <div *ngFor="let toast of toasts"
-    class="bg-red-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 min-w-[300px] max-w-[400px]">
+    class="bg-red-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 min-w-[300px] max-w-[400px] animate-slide-in">
     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
     </svg>
@@ -21,32 +21,52 @@
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
         <button (click)="goBack()"
-          class="w-12 h-12 flex items-center justify-center rounded-lg bg-white hover:bg-gray-50 transition">
+          class="w-12 h-12 flex items-center justify-center rounded-xl bg-white hover:bg-gray-50 transition">
           <svg width="16" height="14" viewBox="0 0 14 11" fill="none">
             <path d="M13.157 5.303H.586M.586 5.303L5.3.589M.586 5.303L5.3 10.017" stroke="#2B3674" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
-        <h1 class="text-lg sm:text-xl font-semibold text-[#343A40]" *ngIf="examen.code && patient.name">
-          Examen {{ examen.code }} - {{ examen.type }} - {{ patient.name }}
+        <h1 class="text-lg sm:text-xl font-semibold text-[#1E293B]" *ngIf="examen.code && patient.name">
+          Examen {{ examen.code }} - {{ patient.name }}
         </h1>
       </div>
 
-      <!-- Bouton Rendez-vous (logique openValidationDemande) -->
-      <button (click)="openValidationDemande()"
-        class="flex items-center gap-2 px-5 py-2.5 bg-[#104382] hover:bg-[#1a68d1] text-white rounded-lg text-sm font-medium transition-colors">
-       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M8 15C6.14348 15 4.36301 14.2625 3.05025 12.9497C1.7375 11.637 1 9.85652 1 8C1 6.14348 1.7375 4.36301 3.05025 3.05025C4.36301 1.7375 6.14348 1 8 1C9.85652 1 11.637 1.7375 12.9497 3.05025C14.2625 4.36301 15 6.14348 15 8C15 9.85652 14.2625 11.637 12.9497 12.9497C11.637 14.2625 9.85652 15 8 15ZM8 16C10.1217 16 12.1566 15.1571 13.6569 13.6569C15.1571 12.1566 16 10.1217 16 8C16 5.87827 15.1571 3.84344 13.6569 2.34315C12.1566 0.842855 10.1217 0 8 0C5.87827 0 3.84344 0.842855 2.34315 2.34315C0.842855 3.84344 0 5.87827 0 8C0 10.1217 0.842855 12.1566 2.34315 13.6569C3.84344 15.1571 5.87827 16 8 16Z" fill="white"/>
-<path d="M8 4C8.13261 4 8.25979 4.05268 8.35355 4.14645C8.44732 4.24021 8.5 4.36739 8.5 4.5V7.5H11.5C11.6326 7.5 11.7598 7.55268 11.8536 7.64645C11.9473 7.74021 12 7.86739 12 8C12 8.13261 11.9473 8.25979 11.8536 8.35355C11.7598 8.44732 11.6326 8.5 11.5 8.5H8.5V11.5C8.5 11.6326 8.44732 11.7598 8.35355 11.8536C8.25979 11.9473 8.13261 12 8 12C7.86739 12 7.74021 11.9473 7.64645 11.8536C7.55268 11.7598 7.5 11.6326 7.5 11.5V8.5H4.5C4.36739 8.5 4.24021 8.44732 4.14645 8.35355C4.05268 8.25979 4 8.13261 4 8C4 7.86739 4.05268 7.74021 4.14645 7.64645C4.24021 7.55268 4.36739 7.5 4.5 7.5H7.5V4.5C7.5 4.36739 7.55268 4.24021 7.64645 4.14645C7.74021 4.05268 7.86739 4 8 4Z" fill="white"/>
-</svg>
-        Rendez-vous
+      <!-- PENDING : valider la demande -->
+      <button *ngIf="examen.statut === 'PENDING'" (click)="openValidationDemande()"
+        class="flex items-center gap-2 px-5 py-2.5 bg-[#104382] hover:bg-[#0D3568] text-white rounded-lg text-sm font-semibold transition-colors">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 3v8M4 8h8" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Valider la demande
       </button>
+
+      <!-- ACCEPTED : en attente du paiement -->
+      <span *ngIf="examen.statut === 'ACCEPTED'"
+        class="flex items-center gap-2 px-4 py-2.5 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-sm font-medium">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        En attente du paiement
+      </span>
+
+      <!-- FUNDED : patient doit se présenter -->
+      <button *ngIf="examen.statut === 'FUNDED'" (click)="openArriveePatient()"
+        class="flex items-center gap-2 px-5 py-2.5 bg-[#00B894] hover:bg-[#00a382] text-white rounded-lg text-sm font-semibold transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+        </svg>
+        Patient arrivé
+      </button>
+
+      <!-- IN_PROGRESS : examen en cours -->
+      <span *ngIf="examen.statut === 'IN_PROGRESS'"
+        class="flex items-center gap-2 px-4 py-2.5 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-lg text-sm font-medium">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+        Examen en cours
+      </span>
     </div>
 
     <!-- ── MAIN GRID ──────────────────────────────────────────────────────── -->
     <div class="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-5">
 
-      <!-- ── LEFT SIDEBAR ───────────────────────────────────────────────── -->
-      <div class="bg-white rounded-2xl shadow-sm p-5 space-y-5">
+      <!-- ── SIDEBAR ───────────────────────────────────────────────────── -->
+      <div class="bg-white rounded-2xl p-5 space-y-5">
 
         <!-- Patient -->
         <div class="flex items-center justify-between">
@@ -70,33 +90,20 @@
         <!-- Détails prescription -->
         <div class="space-y-4">
           <h3 class="text-sm font-semibold text-[#343A40]">Détails prescription</h3>
-
           <div class="space-y-3 text-sm">
             <div>
               <p class="text-xs text-gray-400 mb-0.5">Type d'examen</p>
               <p class="font-medium text-[#343A40]">{{ prescription.typeExamen }}</p>
             </div>
-            <div>
+            <div *ngIf="prescription.zone">
               <p class="text-xs text-gray-400 mb-0.5">Zone à explorer</p>
               <p class="font-medium text-[#343A40]">{{ prescription.zone }}</p>
             </div>
             <div *ngIf="prescription.indications.length > 0">
-              <p class="text-xs text-gray-400 mb-0.5">Indication Médicale</p>
-              <p class="text-[#343A40] leading-relaxed text-sm">
+              <p class="text-xs text-gray-400 mb-0.5">Indication médicale</p>
+              <p class="text-[#343A40] leading-relaxed">
                 <span *ngFor="let item of prescription.indications">{{ item }}<br></span>
               </p>
-            </div>
-            <div *ngIf="prescription.contreIndications">
-              <p class="text-xs text-gray-400 mb-0.5">Contre-indications</p>
-              <p class="text-red-500 text-sm">
-                {{ prescription.contreIndications.texte }}<br>
-                (Pacemaker : {{ prescription.contreIndications.pacemaker ? 'Oui' : 'Non' }},
-                Claustrophobie : {{ prescription.contreIndications.claustrophobie ? 'Oui' : 'Non' }})
-              </p>
-            </div>
-            <div *ngIf="!prescription.contreIndications">
-              <p class="text-xs text-gray-400 mb-0.5">Contre-indications</p>
-              <p class="text-red-500 text-sm">Aucune contre-indication signalée<br>(Pacemaker : Non, Claustrophobie : Non)</p>
             </div>
             <div>
               <p class="text-xs text-gray-400 mb-0.5">Date de réception</p>
@@ -112,9 +119,8 @@
           <h3 class="text-sm font-semibold text-[#343A40] mb-3">Prescripteur</h3>
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-[#343A40] text-xs font-semibold overflow-hidden">
-                <img src="assets/doctor-placeholder.png" class="w-full h-full object-cover" onerror="this.style.display='none'">
-                <span>{{ getInitials(prescripteur.name) }}</span>
+              <div class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-[#343A40] text-xs font-semibold">
+                {{ getInitials(prescripteur.name) }}
               </div>
               <div>
                 <p class="text-sm font-semibold text-[#343A40]">{{ prescripteur.name }}</p>
@@ -127,11 +133,10 @@
 
         <hr class="border-gray-100">
 
-        <!-- Détails du rendez-vous -->
+        <!-- Rendez-vous -->
         <div class="space-y-3">
           <h3 class="text-sm font-semibold text-[#343A40]">Détails du rendez-vous</h3>
 
-          <!-- Aucun rendez-vous -->
           <div *ngIf="rendezVous.date === '—'"
             class="border border-dashed border-gray-200 rounded-xl p-5 text-center space-y-2 bg-gray-50">
             <div class="w-10 h-10 mx-auto rounded-xl bg-blue-50 flex items-center justify-center">
@@ -143,13 +148,10 @@
             <p class="text-xs text-gray-400 leading-relaxed">Une fois le rendez-vous validé, il apparaîtra ici.</p>
           </div>
 
-          <!-- Rendez-vous existant -->
           <div *ngIf="rendezVous.date !== '—'"
             class="flex items-center gap-3 rounded-xl px-4 py-3 bg-blue-50">
             <div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center">
-              <svg width="16" height="16" viewBox="0 0 17 17" fill="none">
-                <path fill-rule="evenodd" clip-rule="evenodd" d="M3.75 0C4.095 0 4.375.28 4.375.625V1.875H11.875V.625C11.875.28 12.155 0 12.5 0s.625.28.625.625V1.875H13.75C15.13 1.875 16.25 2.994 16.25 4.375V13.75C16.25 15.13 15.13 16.25 13.75 16.25H2.5C1.119 16.25 0 15.13 0 13.75V4.375C0 2.994 1.119 1.875 2.5 1.875H3.125V.625C3.125.28 3.405 0 3.75 0ZM15 7.5C15 6.81 14.44 6.25 13.75 6.25H2.5C1.81 6.25 1.25 6.81 1.25 7.5V13.75C1.25 14.44 1.81 15 2.5 15H13.75C14.44 15 15 14.44 15 13.75V7.5Z" fill="#104382"/>
-              </svg>
+              <svg width="16" height="16" viewBox="0 0 17 17" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M3.75 0C4.095 0 4.375.28 4.375.625V1.875H11.875V.625C11.875.28 12.155 0 12.5 0s.625.28.625.625V1.875H13.75C15.13 1.875 16.25 2.994 16.25 4.375V13.75C16.25 15.13 15.13 16.25 13.75 16.25H2.5C1.119 16.25 0 15.13 0 13.75V4.375C0 2.994 1.119 1.875 2.5 1.875H3.125V.625C3.125.28 3.405 0 3.75 0ZM15 7.5C15 6.81 14.44 6.25 13.75 6.25H2.5C1.81 6.25 1.25 6.81 1.25 7.5V13.75C1.25 14.44 1.81 15 2.5 15H13.75C14.44 15 15 14.44 15 13.75V7.5Z" fill="#104382"/></svg>
             </div>
             <div>
               <p class="text-sm font-medium text-[#343A40]">{{ rendezVous.date }}</p>
@@ -160,24 +162,27 @@
 
       </div>
 
-      <!-- ── RIGHT CONTENT ──────────────────────────────────────────────── -->
-      <div class="bg-white rounded-2xl shadow-sm p-5 space-y-5">
+      <!-- ── CONTENU DROIT ───────────────────────────────────────────────── -->
+      <div class="bg-white rounded-2xl p-5 space-y-5">
 
-        <!-- Title + badges -->
+        <!-- Titre + badges statut -->
         <div class="flex items-center justify-between">
-          <h2 class="text-lg font-semibold text-[#343A40]">
+          <h2 class="text-xl font-bold text-[#1E293B]">
             {{ ongletActif === 'compte-rendu' ? 'Compte rendu' : 'Images médicales' }}
           </h2>
-          <div class="flex items-center gap-2">
-            <span *ngIf="examen.urgence" class="text-xs font-semibold text-[#FF6B6B] bg-[#FF6B6BA] rounded-full p-2">Urgent</span>
-            <span *ngIf="examen.statut === 'ACCEPTED' || examen.statut === 'COMPLETED'"
-              class="text-xs font-semibold text-[#343A40] bg-[#F5F7FA] rounded-full p-2">Prise en charge validée</span>
-            <span *ngIf="examen.statut === 'PENDING'"
-              class="px-3 py-1 text-xs rounded-full font-medium bg-yellow-100 text-yellow-700">En attente</span>
+          <div class="flex items-center gap-3">
+            <span *ngIf="examen.urgence" class="px-3 py-1 text-xs rounded-full font-semibold text-[#FF6B6B] bg-red-50">Urgent</span>
+            <span *ngIf="examen.statut === 'PENDING'"      class="px-3 py-1 text-xs rounded-full font-medium bg-yellow-100 text-yellow-700">En attente</span>
+            <span *ngIf="examen.statut === 'ACCEPTED'"     class="px-3 py-1 text-xs rounded-full font-medium bg-blue-100 text-blue-700">RDV proposé</span>
+            <span *ngIf="examen.statut === 'FUNDED'"       class="px-3 py-1 text-xs rounded-full font-medium bg-purple-100 text-purple-700">Financé</span>
+            <span *ngIf="examen.statut === 'IN_PROGRESS'"  class="px-3 py-1 text-xs rounded-full font-medium bg-indigo-100 text-indigo-700">En cours</span>
+            <span *ngIf="examen.statut === 'COMPLETED'"    class="px-3 py-1 text-xs rounded-full font-medium bg-green-100 text-[#00B894]">Terminé</span>
+            <span *ngIf="examen.statut === 'REJECTED'"     class="px-3 py-1 text-xs rounded-full font-medium bg-red-100 text-red-600">Rejeté</span>
+            <span *ngIf="examen.statut === 'EXPIRED'"      class="px-3 py-1 text-xs rounded-full font-medium bg-gray-100 text-gray-500">Expiré</span>
           </div>
         </div>
 
-        <!-- Tabs -->
+        <!-- Onglets -->
         <div class="flex gap-6 border-b border-gray-100">
           <button (click)="ongletActif = 'images'"
             class="pb-3 text-sm font-medium border-b-2 transition-colors"
@@ -194,45 +199,79 @@
         <!-- ── ONGLET : Images médicales ──────────────────────────────── -->
         <div *ngIf="ongletActif === 'images'" class="space-y-5">
 
-          <!-- Image pleine largeur ou grille -->
-          <div *ngIf="imagesMedicales.length > 0">
-            <div class="rounded-xl overflow-hidden bg-black" style="max-height:280px">
-              <img [src]="imagesMedicales[0].url" alt="Image médicale"
-                class="w-full h-full object-cover cursor-pointer"
-                (error)="$any($event.target).src='assets/images/irm.png'"
-                (click)="openViewImage(imagesMedicales[0])" />
-            </div>
-            <div *ngIf="imagesMedicales.length > 1" class="grid grid-cols-3 gap-3 mt-3">
-              <div *ngFor="let img of imagesMedicales.slice(1)" (click)="openViewImage(img)"
-                class="rounded-xl overflow-hidden bg-black h-24 cursor-pointer">
-                <img [src]="img.url" alt="Image médicale" class="w-full h-full object-cover hover:opacity-80 transition"/>
+          <!-- Message d'attente si pas encore IN_PROGRESS -->
+          <div *ngIf="examen.statut === 'PENDING' || examen.statut === 'ACCEPTED' || examen.statut === 'FUNDED'"
+            class="flex flex-col items-center justify-center py-16 text-center text-gray-400 space-y-3">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+            </svg>
+            <p class="text-sm font-medium text-gray-500">Images non disponibles</p>
+            <p class="text-xs text-gray-400 max-w-xs leading-relaxed">
+              Les images pourront être importées une fois que le patient est arrivé et que l'examen est <strong class="text-indigo-500">en cours</strong>.
+            </p>
+          </div>
+
+          <!-- Images en cours / terminé -->
+          <ng-container *ngIf="examen.statut === 'IN_PROGRESS' || examen.statut === 'COMPLETED'">
+
+            <!-- Grille d'images -->
+            <div *ngIf="imagesMedicales.length > 0">
+              <div class="rounded-xl overflow-hidden bg-black" style="max-height:280px">
+                <img [src]="imagesMedicales[0].url" alt="Image médicale"
+                  class="w-full h-full object-cover cursor-pointer"
+                  (error)="$any($event.target).src='assets/images/irm.png'"
+                  (click)="openViewImage(imagesMedicales[0])"/>
+              </div>
+              <div *ngIf="imagesMedicales.length > 1" class="grid grid-cols-3 gap-3 mt-3">
+                <div *ngFor="let img of imagesMedicales.slice(1)" (click)="openViewImage(img)"
+                  class="rounded-xl overflow-hidden bg-black h-24 cursor-pointer">
+                  <img [src]="img.url" alt="Image médicale" class="w-full h-full object-cover hover:opacity-80 transition"
+                    (error)="$any($event.target).src='assets/images/irm.png'"/>
+                </div>
               </div>
             </div>
+
+            <!-- Aucune image -->
+            <div *ngIf="imagesMedicales.length === 0"
+              class="flex flex-col items-center justify-center py-10 text-center text-gray-400 space-y-2">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+              <p class="text-sm font-medium text-gray-500">Aucune image importée</p>
+              <p class="text-xs text-gray-400">Cliquez sur « Importer » pour ajouter les images de l'examen.</p>
+            </div>
+
+            <!-- Actions -->
+            <div *ngIf="examen.statut === 'IN_PROGRESS'" class="flex items-center justify-between">
+              <!-- Importer -->
+              <button (click)="openImportImage()"
+                class="flex items-center gap-2 px-4 py-2 bg-[#EEF4FF] border border-[#104382] text-[#104382] rounded-lg text-sm font-medium hover:bg-[#104382]/10 transition-colors">
+                <svg width="16" height="14" viewBox="0 0 16 14" fill="none">
+                  <path d="M.5 8.9a.5.5 0 01.5.5v2.5a1 1 0 001 1h12a1 1 0 001-1V9.4a.5.5 0 011 0v2.5A2 2 0 0114 13.9H2a2 2 0 01-2-2V9.4a.5.5 0 01.5-.5z" fill="#104382"/>
+                  <path d="M7.647.147a.5.5 0 01.707 0l3 3a.5.5 0 01-.708.707L8.5 1.708V10.5a.5.5 0 01-1 0V1.708L5.354 3.854a.5.5 0 11-.708-.707l3-3z" fill="#104382"/>
+                </svg>
+                Importer des images
+              </button>
+
+              <!-- Terminer l'examen (si au moins 1 image) -->
+              <button *ngIf="imagesMedicales.length > 0" (click)="openValiderCompteRendu()" [disabled]="isSaving"
+                class="flex items-center gap-2 px-5 py-2.5 bg-[#00B894] hover:bg-[#00a382] disabled:opacity-60 text-white rounded-lg text-sm font-semibold transition-colors">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                Terminer l'examen
+              </button>
+            </div>
+
+          </ng-container>
+
+          <!-- Annulé -->
+          <div *ngIf="isExamenCancelled()" class="text-center py-10 text-gray-500 text-sm">
+            Cet examen a été annulé. Aucune image disponible.
           </div>
 
-          <!-- Image par défaut si aucune image -->
-          <div *ngIf="imagesMedicales.length === 0"
-            class="rounded-xl overflow-hidden bg-black cursor-pointer" style="max-height:280px"
-            (click)="openViewImage({id:0, titre:'IRM', name:'irm.png', url:'assets/images/irm.png'})">
-            <img src="assets/images/irm.png" alt="Image médicale par défaut"
-              class="w-full h-full object-cover" style="max-height:280px" />
-          </div>
-
-          <!-- Bouton importer -->
-          <button (click)="openImportImage()"
-            class="flex items-center gap-2 text-[#104382] text-sm font-medium hover:underline">
-            <svg width="16" height="14" viewBox="0 0 16 14" fill="none">
-              <path d="M.5 8.9a.5.5 0 01.5.5v2.5a1 1 0 001 1h12a1 1 0 001-1V9.4a.5.5 0 011 0v2.5A2 2 0 0114 13.9H2a2 2 0 01-2-2V9.4a.5.5 0 01.5-.5z" fill="#104382"/>
-              <path d="M7.647.147a.5.5 0 01.707 0l3 3a.5.5 0 01-.708.707L8.5 1.708V10.5a.5.5 0 01-1 0V1.708L5.354 3.854a.5.5 0 11-.708-.707l3-3z" fill="#104382"/>
-            </svg>
-            Importer une image
-          </button>
         </div>
 
         <!-- ── ONGLET : Compte rendu ───────────────────────────────────── -->
         <div *ngIf="ongletActif === 'compte-rendu'" class="space-y-6">
 
-          <!-- Aperçu si publié -->
+          <!-- APERÇU si terminé -->
           <div *ngIf="isCompteRenduPublie()" class="space-y-6">
             <h3 class="text-lg font-semibold text-gray-900">Aperçu du compte rendu</h3>
             <div class="bg-white border border-gray-200 rounded-xl p-6 space-y-6">
@@ -249,12 +288,12 @@
               <div>
                 <p class="text-sm font-medium text-gray-700 mb-2">Compte rendu médical</p>
                 <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-800 whitespace-pre-line">
-                  {{ examApi.report || 'Aucun compte rendu disponible.' }}
+                  {{ examApi.report || 'Aucun rapport disponible.' }}
                 </div>
               </div>
-              <div *ngIf="examApi?.reportFile" class="pt-2">
+              <div *ngIf="examApi.reportFile" class="pt-2">
                 <p class="text-sm font-medium text-gray-700 mb-2">Document officiel</p>
-                <a [href]="'https://wakana.online/repertoire_chantier/' + examApi.reportFile" target="_blank"
+                <a [href]="examApi!.reportFile" target="_blank"
                   class="inline-flex items-center gap-2 px-4 py-2 bg-[#104382] text-white rounded-lg text-sm font-medium transition">
                   📄 Ouvrir le document PDF
                 </a>
@@ -268,19 +307,32 @@
             </div>
           </div>
 
-          <!-- Formulaire si éditable -->
+          <!-- Message d'attente si pas encore IN_PROGRESS -->
+          <div *ngIf="examen.statut === 'PENDING' || examen.statut === 'ACCEPTED' || examen.statut === 'FUNDED'"
+            class="flex flex-col items-center justify-center py-16 text-center text-gray-400 space-y-3">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
+            </svg>
+            <p class="text-sm font-medium text-gray-500">Compte rendu non disponible</p>
+            <p class="text-xs text-gray-400 max-w-xs leading-relaxed">
+              Le compte rendu pourra être rédigé une fois que le patient est arrivé et que l'examen est <strong class="text-indigo-500">en cours</strong>.
+            </p>
+          </div>
+
+          <!-- FORMULAIRE si IN_PROGRESS -->
           <div *ngIf="canEditCompteRendu()" class="space-y-6">
             <div class="space-y-2">
               <label class="text-sm font-medium text-gray-700">Description / Observation</label>
               <textarea [(ngModel)]="compteRenduForm.description" rows="6"
+                placeholder="Tapez ou dictez votre observation ici..."
                 class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#104382] focus:border-transparent resize-none"></textarea>
             </div>
 
             <!-- Upload document -->
             <div class="space-y-2">
-              <label class="text-sm font-medium text-gray-700">Document Officiel</label>
+              <label class="text-sm font-medium text-gray-700">Document officiel</label>
               <div *ngIf="!compteRenduFile"
-                class="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center bg-gray-50 hover:bg-gray-100">
+                class="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center bg-gray-50 hover:bg-gray-100 transition-colors">
                 <input type="file" #compteRenduFileInput hidden accept=".png,.jpg,.jpeg,.pdf" (change)="onCompteRenduFileSelected($event)"/>
                 <div class="w-12 h-12 mx-auto mb-3 flex items-center justify-center bg-[#104382]/10 rounded-full">
                   <svg class="w-6 h-6 text-[#104382]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -288,10 +340,10 @@
                   </svg>
                 </div>
                 <button type="button" (click)="compteRenduFileInput.click()"
-                  class="px-5 py-2 bg-[#104382] text-white rounded-lg text-sm font-medium">
+                  class="px-5 py-2 bg-[#104382] hover:bg-[#0D3568] text-white rounded-lg text-sm font-medium transition-colors">
                   Choisir un fichier
                 </button>
-                <p class="text-xs text-gray-400 mt-2">PNG, JPG, PDF jusqu'à 10MB</p>
+                <p class="text-xs text-gray-400 mt-2">PNG, JPG, PDF — max 10 MB</p>
               </div>
               <div *ngIf="compteRenduFile"
                 class="border border-gray-200 rounded-xl p-4 flex items-center justify-between bg-gray-50">
@@ -314,6 +366,7 @@
               </div>
             </div>
 
+            <!-- Actions -->
             <div class="flex items-center justify-between pt-4 border-t border-gray-100">
               <button type="button" (click)="genererAvecIA()"
                 class="flex items-center gap-2 px-4 py-2.5 border border-[#104382] text-[#104382] rounded-xl text-sm font-medium hover:bg-[#104382]/10">
@@ -322,8 +375,8 @@
                 </svg>
                 Générer avec IA
               </button>
-              <button type="button" (click)="openValiderCompteRendu()"
-                class="flex items-center gap-2 px-5 py-2.5 bg-[#104382] text-white rounded-xl text-sm font-medium">
+              <button type="button" (click)="openValiderCompteRendu()" [disabled]="isSaving"
+                class="flex items-center gap-2 px-5 py-2.5 bg-[#104382] hover:bg-[#0D3568] disabled:opacity-60 text-white rounded-xl text-sm font-medium">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                 </svg>
@@ -332,9 +385,11 @@
             </div>
           </div>
 
+          <!-- Annulé -->
           <div *ngIf="isExamenCancelled()" class="text-center py-10 text-gray-500 text-sm">
             Cet examen a été annulé. Aucun compte rendu n'est disponible.
           </div>
+
         </div>
 
       </div>
@@ -342,54 +397,50 @@
   </div>
 </div>
 
-<!-- ── MODAL : Rendez-vous (validation demande) ───────────────────────────── -->
+<!-- ═══════════════════════════════════ MODALS ═══════════════════════════════════ -->
+
+<!-- MODAL : Valider la demande (PENDING) -->
 <div *ngIf="showValidationDemandeModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
   (click)="closeValidationDemande()">
   <div class="bg-white rounded-2xl w-full max-w-xl p-8 shadow-xl" (click)="$event.stopPropagation()">
-
-    <!-- Icône -->
     <div class="flex justify-center mb-5">
       <div class="w-20 h-20 rounded-full border-[3px] border-[#F5A623] flex items-center justify-center">
         <span class="text-[#F5A623] text-4xl font-light leading-none">!</span>
       </div>
     </div>
-
-    <!-- Titre -->
     <h3 class="text-2xl font-semibold text-center text-[#1E293B] mb-3">Valider la demande</h3>
-
-    <!-- Description -->
     <p class="text-sm text-center text-[#475569] leading-relaxed mb-6">
-      Proposez une <strong class="text-[#1E293B]">date</strong> et une <strong class="text-[#1E293B]">heure</strong> pour l'examen. Le patient
-      recevra une notification automatique
+      Proposez une <strong class="text-[#1E293B]">date</strong>, une <strong class="text-[#1E293B]">heure</strong>
+      et un <strong class="text-[#1E293B]">montant</strong>. Le patient recevra une notification automatique.
     </p>
 
-    <!-- Date + Heure côte à côte -->
     <div class="grid grid-cols-2 gap-4 mb-4">
       <div>
         <label class="block text-sm font-medium text-[#1E293B] mb-1.5">Date du rendez-vous</label>
         <input type="date" [(ngModel)]="validationDemandeForm.date"
-          class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#104382]">
+          class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#104382]">
       </div>
       <div>
         <label class="block text-sm font-medium text-[#1E293B] mb-1.5">Heure</label>
         <input type="time" [(ngModel)]="validationDemandeForm.heure"
-          class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#104382]">
+          class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#104382]">
       </div>
     </div>
-
-    <!-- Notes -->
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-[#1E293B] mb-1.5">Montant (FCFA) <span class="text-red-500">*</span></label>
+      <input type="number" [(ngModel)]="validationDemandeForm.prix" min="0" placeholder="ex: 25000"
+        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#104382]">
+    </div>
     <div class="mb-6">
       <label class="block text-sm font-medium text-[#1E293B] mb-1.5">Notes complémentaires (optionnel)</label>
-      <textarea [(ngModel)]="validationDemandeForm.note" rows="4"
+      <textarea [(ngModel)]="validationDemandeForm.note" rows="3"
         placeholder="Instructions particulières pour le patient"
-        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-400 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#104382] resize-none"></textarea>
+        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#104382]"></textarea>
     </div>
-
-    <!-- Boutons -->
     <div class="grid grid-cols-2 gap-4">
-      <button (click)="confirmerValidationDemande()"
-        class="py-3 bg-[#104382] hover:bg-[#0D3568] text-white rounded-lg font-semibold text-sm transition-colors">
-        Valider
+      <button (click)="confirmerValidationDemande()" [disabled]="isSaving"
+        class="py-3 bg-[#104382] hover:bg-[#0D3568] disabled:opacity-60 text-white rounded-lg font-semibold text-sm transition-colors">
+        {{ isSaving ? 'Validation…' : 'Valider' }}
       </button>
       <button (click)="closeValidationDemande()"
         class="py-3 bg-[#F1F5F9] hover:bg-gray-200 text-[#475569] rounded-lg font-semibold text-sm transition-colors">
@@ -399,15 +450,13 @@
   </div>
 </div>
 
-<!-- MODAL: Rendez-vous confirmé -->
+<!-- MODAL : Demande validée (success) -->
 <div *ngIf="showValidationDemandeSuccess" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
   <div class="bg-white rounded-2xl w-full max-w-lg p-8 text-center shadow-xl">
     <div class="flex justify-center mb-5">
-      <div class="flex items-center justify-center">
-       <svg width="95" height="95" viewBox="0 0 95 95" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M70.2452 34.0264C70.9107 34.7294 71.27 35.6677 71.2443 36.6353C71.2186 37.6029 70.81 38.5208 70.1082 39.1875L43.3438 64.7644C42.6518 65.4153 41.736 65.7751 40.7861 65.7692C39.8501 65.7728 38.9494 65.4125 38.2741 64.7644L24.8918 51.976C24.5207 51.6521 24.2188 51.2566 24.0044 50.8131C23.79 50.3696 23.6675 49.8874 23.6442 49.3954C23.6209 48.9033 23.6973 48.4117 23.8689 47.9499C24.0405 47.4882 24.3037 47.0659 24.6426 46.7085C24.9816 46.3511 25.3893 46.0659 25.8413 45.87C26.2932 45.6742 26.7801 45.5718 27.2727 45.5689C27.7653 45.566 28.2534 45.6628 28.7076 45.8534C29.1618 46.0439 29.5728 46.3244 29.9159 46.6779L40.7861 57.0457L65.0841 33.8894C65.7871 33.224 66.7254 32.8646 67.693 32.8903C68.6606 32.916 69.5785 33.3246 70.2452 34.0264ZM95 47.5C95 56.8946 92.2142 66.0782 86.9948 73.8896C81.7754 81.7009 74.357 87.7891 65.6775 91.3843C56.998 94.9794 47.4473 95.9201 38.2332 94.0873C29.0191 92.2545 20.5554 87.7305 13.9124 81.0876C7.26945 74.4446 2.74552 65.9809 0.91272 56.7668C-0.920077 47.5527 0.020581 38.002 3.61574 29.3225C7.2109 20.643 13.2991 13.2246 21.1104 8.00519C28.9218 2.78583 38.1054 0 47.5 0C60.0904 0.0241427 72.1582 5.03634 81.0609 13.9391C89.9637 22.8418 94.9759 34.9096 95 47.5ZM87.6923 47.5C87.6923 39.5507 85.3351 31.7799 80.9187 25.1703C76.5023 18.5608 70.2251 13.4092 62.8809 10.3671C55.5368 7.32509 47.4554 6.52915 39.6589 8.07997C31.8623 9.6308 24.7008 13.4587 19.0798 19.0797C13.4588 24.7007 9.63082 31.8623 8.08 39.6589C6.52917 47.4554 7.32511 55.5367 10.3672 62.8809C13.4092 70.2251 18.5608 76.5023 25.1704 80.9187C31.78 85.3351 39.5507 87.6923 47.5 87.6923C58.156 87.6802 68.372 83.4418 75.9069 75.9069C83.4418 68.372 87.6802 58.1559 87.6923 47.5Z" fill="#00B894"/>
-</svg>
-      </div>
+      <svg width="95" height="95" viewBox="0 0 95 95" fill="none">
+        <path d="M70.2452 34.0264C70.9107 34.7294 71.27 35.6677 71.2443 36.6353C71.2186 37.6029 70.81 38.5208 70.1082 39.1875L43.3438 64.7644C42.6518 65.4153 41.736 65.7751 40.7861 65.7692C39.8501 65.7728 38.9494 65.4125 38.2741 64.7644L24.8918 51.976C24.5207 51.6521 24.2188 51.2566 24.0044 50.8131C23.79 50.3696 23.6675 49.8874 23.6442 49.3954C23.6209 48.9033 23.6973 48.4117 23.8689 47.9499C24.0405 47.4882 24.3037 47.0659 24.6426 46.7085C24.9816 46.3511 25.3893 46.0659 25.8413 45.87C26.2932 45.6742 26.7801 45.5718 27.2727 45.5689C27.7653 45.566 28.2534 45.6628 28.7076 45.8534C29.1618 46.0439 29.5728 46.3244 29.9159 46.6779L40.7861 57.0457L65.0841 33.8894C65.7871 33.224 66.7254 32.8646 67.693 32.8903C68.6606 32.916 69.5785 33.3246 70.2452 34.0264ZM95 47.5C95 56.8946 92.2142 66.0782 86.9948 73.8896C81.7754 81.7009 74.357 87.7891 65.6775 91.3843C56.998 94.9794 47.4473 95.9201 38.2332 94.0873C29.0191 92.2545 20.5554 87.7305 13.9124 81.0876C7.26945 74.4446 2.74552 65.9809 0.91272 56.7668C-0.920077 47.5527 0.020581 38.002 3.61574 29.3225C7.2109 20.643 13.2991 13.2246 21.1104 8.00519C28.9218 2.78583 38.1054 0 47.5 0C60.0904 0.0241427 72.1582 5.03634 81.0609 13.9391C89.9637 22.8418 94.9759 34.9096 95 47.5ZM87.6923 47.5C87.6923 39.5507 85.3351 31.7799 80.9187 25.1703C76.5023 18.5608 70.2251 13.4092 62.8809 10.3671C55.5368 7.32509 47.4554 6.52915 39.6589 8.07997C31.8623 9.6308 24.7008 13.4587 19.0798 19.0797C13.4588 24.7007 9.63082 31.8623 8.08 39.6589C6.52917 47.4554 7.32511 55.5367 10.3672 62.8809C13.4092 70.2251 18.5608 76.5023 25.1704 80.9187C31.78 85.3351 39.5507 87.6923 47.5 87.6923C58.156 87.6802 68.372 83.4418 75.9069 75.9069C83.4418 68.372 87.6802 58.1559 87.6923 47.5Z" fill="#00B894"/>
+      </svg>
     </div>
     <p class="text-2xl font-bold text-[#1E293B] mb-2">Rendez-vous confirmé</p>
     <p class="text-base text-[#475569] leading-relaxed">
@@ -416,12 +465,80 @@
   </div>
 </div>
 
-<!-- MODAL: Importer image -->
+<!-- MODAL : Patient arrivé (FUNDED) -->
+<div *ngIf="showArriveePatientModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+  (click)="closeArriveePatient()">
+  <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl" (click)="$event.stopPropagation()">
+    <div class="flex items-center justify-between mb-5">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00B894" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <h2 class="text-lg font-bold text-[#1E293B]">Patient arrivé</h2>
+      </div>
+      <button (click)="closeArriveePatient()" class="text-gray-400 hover:text-gray-600">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <!-- Récap patient -->
+    <div class="bg-[#F8FAFC] rounded-xl p-4 mb-5 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-[#EEF4FF] flex items-center justify-center text-[#104382] text-sm font-bold">
+        {{ patient.initials }}
+      </div>
+      <div>
+        <p class="text-sm font-semibold text-[#1E293B]">{{ patient.name }}</p>
+        <p class="text-xs text-gray-400">Examen {{ examen.code }} — {{ examen.type }}</p>
+      </div>
+    </div>
+
+    <p class="text-sm text-gray-500 mb-4">
+      Confirmez que le patient s'est présenté au centre d'imagerie. L'examen va démarrer.
+    </p>
+
+    <div class="mb-5">
+      <label class="block text-sm font-medium text-[#1E293B] mb-1.5">Note (optionnel)</label>
+      <textarea [(ngModel)]="arriveeNote" rows="2" placeholder="Ex: patient à jeun, préparation effectuée…"
+        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#104382] resize-none"></textarea>
+    </div>
+
+    <div class="flex gap-3">
+      <button (click)="closeArriveePatient()"
+        class="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition">
+        Annuler
+      </button>
+      <button (click)="confirmerArriveePatient()" [disabled]="isSaving"
+        class="flex-1 px-4 py-2.5 bg-[#00B894] hover:bg-[#00a382] disabled:opacity-60 text-white rounded-lg text-sm font-semibold transition">
+        {{ isSaving ? 'Confirmation…' : 'Confirmer l\'arrivée' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL : Arrivée confirmée (success) -->
+<div *ngIf="showArriveePatientSuccess" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+  <div class="bg-white rounded-2xl w-full max-w-lg p-8 text-center shadow-xl">
+    <div class="flex justify-center mb-5">
+      <svg width="80" height="80" viewBox="0 0 95 95" fill="none">
+        <path d="M70.2452 34.0264C70.9107 34.7294 71.27 35.6677 71.2443 36.6353C71.2186 37.6029 70.81 38.5208 70.1082 39.1875L43.3438 64.7644C42.6518 65.4153 41.736 65.7751 40.7861 65.7692C39.8501 65.7728 38.9494 65.4125 38.2741 64.7644L24.8918 51.976C24.5207 51.6521 24.2188 51.2566 24.0044 50.8131C23.79 50.3696 23.6675 49.8874 23.6442 49.3954C23.6209 48.9033 23.6973 48.4117 23.8689 47.9499C24.0405 47.4882 24.3037 47.0659 24.6426 46.7085C24.9816 46.3511 25.3893 46.0659 25.8413 45.87C26.2932 45.6742 26.7801 45.5718 27.2727 45.5689C27.7653 45.566 28.2534 45.6628 28.7076 45.8534C29.1618 46.0439 29.5728 46.3244 29.9159 46.6779L40.7861 57.0457L65.0841 33.8894C65.7871 33.224 66.7254 32.8646 67.693 32.8903C68.6606 32.916 69.5785 33.3246 70.2452 34.0264ZM95 47.5C95 56.8946 92.2142 66.0782 86.9948 73.8896C81.7754 81.7009 74.357 87.7891 65.6775 91.3843C56.998 94.9794 47.4473 95.9201 38.2332 94.0873C29.0191 92.2545 20.5554 87.7305 13.9124 81.0876C7.26945 74.4446 2.74552 65.9809 0.91272 56.7668C-0.920077 47.5527 0.020581 38.002 3.61574 29.3225C7.2109 20.643 13.2991 13.2246 21.1104 8.00519C28.9218 2.78583 38.1054 0 47.5 0C60.0904 0.0241427 72.1582 5.03634 81.0609 13.9391C89.9637 22.8418 94.9759 34.9096 95 47.5ZM87.6923 47.5C87.6923 39.5507 85.3351 31.7799 80.9187 25.1703C76.5023 18.5608 70.2251 13.4092 62.8809 10.3671C55.5368 7.32509 47.4554 6.52915 39.6589 8.07997C31.8623 9.6308 24.7008 13.4587 19.0798 19.0797C13.4588 24.7007 9.63082 31.8623 8.08 39.6589C6.52917 47.4554 7.32511 55.5367 10.3672 62.8809C13.4092 70.2251 18.5608 76.5023 25.1704 80.9187C31.78 85.3351 39.5507 87.6923 47.5 87.6923C58.156 87.6802 68.372 83.4418 75.9069 75.9069C83.4418 68.372 87.6802 58.1559 87.6923 47.5Z" fill="#00B894"/>
+      </svg>
+    </div>
+    <p class="text-2xl font-bold text-[#1E293B] mb-2">Arrivée confirmée</p>
+    <p class="text-base text-[#475569] leading-relaxed">
+      Le patient <strong class="text-[#1E293B]">{{ patient.name }}</strong> est bien présent.<br>
+      L'examen est maintenant <strong class="text-[#1E293B]">en cours</strong>.
+    </p>
+  </div>
+</div>
+
+<!-- MODAL : Importer images -->
 <div *ngIf="showImportImageModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
   (click)="closeImportImage()">
   <div class="bg-white rounded-2xl w-full max-w-2xl p-6 space-y-5" (click)="$event.stopPropagation()">
     <div class="flex justify-between items-center">
-      <h3 class="text-lg font-semibold">Images médicales</h3>
+      <h3 class="text-lg font-semibold">Importer des images médicales</h3>
       <button (click)="closeImportImage()" class="text-gray-400 hover:text-gray-600">✕</button>
     </div>
     <div class="border border-dashed rounded-xl p-6 text-center space-y-2">
@@ -436,27 +553,56 @@
           class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition">✕</button>
       </div>
     </div>
+    <!-- Barre de progression XHR -->
+    <div *ngIf="isSaving" class="space-y-1">
+      <div class="flex justify-between text-xs text-gray-500">
+        <span>Envoi en cours…</span>
+        <span>{{ uploadProgress }}%</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-2">
+        <div class="bg-[#104382] h-2 rounded-full transition-all duration-200"
+          [style.width.%]="uploadProgress"></div>
+      </div>
+    </div>
+
     <div class="flex gap-3">
-      <button (click)="confirmerImportImage()" [disabled]="selectedFiles.length === 0"
-        class="flex-1 bg-[#104382] text-white py-2.5 rounded-lg text-sm disabled:opacity-50">Enregistrer</button>
-      <button (click)="closeImportImage()" class="flex-1 bg-gray-100 py-2.5 rounded-lg text-sm">Annuler</button>
+      <button (click)="confirmerImportImage()" [disabled]="selectedFiles.length === 0 || isSaving"
+        class="flex-1 bg-[#104382] text-white py-2.5 rounded-lg text-sm disabled:opacity-50">
+        {{ isSaving ? ('Envoi ' + uploadProgress + '%…') : 'Enregistrer' }}
+      </button>
+      <button (click)="closeImportImage()" [disabled]="isSaving"
+        class="flex-1 bg-gray-100 py-2.5 rounded-lg text-sm disabled:opacity-30">Annuler</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL: Voir image -->
+<!-- MODAL : Import réussi -->
+<div *ngIf="showImportImageSuccess" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+  <div class="bg-white rounded-xl w-full max-w-[400px] p-8 text-center space-y-4 shadow-xl">
+    <div class="w-20 h-20 mx-auto rounded-full bg-teal-100 flex items-center justify-center">
+      <svg class="w-12 h-12 text-[#104382]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+      </svg>
+    </div>
+    <p class="text-lg font-semibold text-gray-900">Images importées avec succès</p>
+  </div>
+</div>
+
+<!-- MODAL : Voir image -->
 <div *ngIf="showViewImageModal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
   <div class="bg-white rounded-2xl p-5 max-w-4xl w-full relative">
     <button (click)="closeViewImage()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-sm">✕</button>
-    <img *ngIf="selectedImage" [src]="selectedImage.url" class="max-h-[75vh] mx-auto rounded-xl"/>
+    <img *ngIf="selectedImage" [src]="selectedImage.url" class="max-h-[75vh] mx-auto rounded-xl"
+      (error)="$any($event.target).src='assets/images/irm.png'"/>
     <div class="flex justify-end gap-3 mt-4">
-      <button (click)="openDeleteImageFromView()" class="px-4 py-2 text-sm rounded-lg bg-red-100 text-red-600 hover:bg-red-200">Supprimer</button>
+      <button *ngIf="examen.statut === 'IN_PROGRESS'" (click)="openDeleteImageFromView()"
+        class="px-4 py-2 text-sm rounded-lg bg-red-100 text-red-600 hover:bg-red-200">Supprimer</button>
       <button (click)="closeViewImage()" class="px-4 py-2 text-sm rounded-lg bg-gray-100 hover:bg-gray-200">Fermer</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL: Supprimer image -->
+<!-- MODAL : Supprimer image -->
 <div *ngIf="showDeleteImageModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4"
   (click)="closeDeleteImage()">
   <div class="bg-white rounded-2xl w-full max-w-[420px] p-6 text-center space-y-5 shadow-2xl" (click)="$event.stopPropagation()">
@@ -474,34 +620,37 @@
   </div>
 </div>
 
-<!-- MODAL: Valider compte rendu -->
+<!-- MODAL : Valider compte rendu -->
 <div *ngIf="showValidateCompteRenduModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
   (click)="closeValidateCompteRendu()">
-  <div class="bg-white rounded-2xl w-full max-w-xl p-6 text-center space-y-5 shadow-2xl" (click)="$event.stopPropagation()">
-    <div class="mx-auto flex items-center justify-center">
-     <svg width="95" height="95" viewBox="0 0 95 95" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M51.2422 58.166L43.8203 58.166L43.8203 28.4785L51.2422 28.4785L51.2422 58.166Z" fill="#EFBD8E"/>
-<path d="M47.5 65.291C45.3685 65.291 43.6406 67.0189 43.6406 69.1504C43.6406 71.2819 45.3685 73.0098 47.5 73.0098C49.6315 73.0098 51.3594 71.2819 51.3594 69.1504C51.3594 67.0189 49.6315 65.291 47.5 65.291Z" fill="#EFBD8E"/>
-<path d="M47.5 94.9776C59.6972 95.3703 71.5436 90.595 80.446 81.6968C89.3483 72.7986 94.5815 60.5025 95 47.5C94.5815 34.4975 89.3483 22.2014 80.446 13.3032C71.5436 4.40504 59.6972 -0.370316 47.5 0.0224457C35.3028 -0.370316 23.4564 4.40504 14.554 13.3032C5.65166 22.2014 0.418472 34.4975 0 47.5C0.418472 60.5025 5.65166 72.7986 14.554 81.6968C23.4564 90.595 35.3028 95.3703 47.5 94.9776ZM47.5 7.93537C57.7293 7.54133 67.6886 11.4827 75.1994 18.8972C82.7101 26.3117 87.1609 36.5959 87.5781 47.5C87.1609 58.4041 82.7101 68.6883 75.1994 76.1028C67.6886 83.5174 57.7293 87.4587 47.5 87.0646C37.2707 87.4587 27.3114 83.5174 19.8006 76.1028C12.2899 68.6883 7.83908 58.4041 7.42188 47.5C7.83908 36.5959 12.2899 26.3117 19.8006 18.8972C27.3114 11.4827 37.2707 7.54133 47.5 7.93537Z" fill="#EFBD8E"/>
-</svg>
+  <div class="bg-white rounded-2xl w-full max-w-[420px] p-6 text-center space-y-5 shadow-2xl" (click)="$event.stopPropagation()">
+    <div class="w-16 h-16 mx-auto rounded-full bg-orange-100 flex items-center justify-center">
+      <svg class="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
     </div>
-    <h3 class="text-lg font-semibold text-gray-900">Validation Biologique</h3>
-    <p class="text-sm text-gray-600 leading-relaxed px-2">En validant, le compte rendu sera <strong>signé électroniquement</strong> et transmis au patient.</p>
+    <h3 class="text-lg font-semibold text-gray-900">Terminer et publier l'examen</h3>
+    <p class="text-sm text-gray-600 leading-relaxed px-2">
+      Le compte rendu sera <strong>signé électroniquement</strong>, horodaté et transmis au patient et au médecin prescripteur.
+    </p>
     <div class="flex gap-3 pt-2">
-      <button (click)="confirmerPublierCompteRendu()" class="flex-1 px-4 py-2.5 bg-[#104382] text-white rounded-lg text-sm">Valider</button>
       <button (click)="closeValidateCompteRendu()" class="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg text-sm">Annuler</button>
+      <button (click)="confirmerPublierCompteRendu()" [disabled]="isSaving"
+        class="flex-1 px-4 py-2.5 bg-[#104382] hover:bg-[#0D3568] disabled:opacity-60 text-white rounded-lg text-sm">
+        {{ isSaving ? 'Publication…' : 'Valider et publier' }}
+      </button>
     </div>
   </div>
 </div>
 
-<!-- MODAL: Compte rendu validé -->
+<!-- MODAL : Examen terminé (success) -->
 <div *ngIf="showValidateCompteRenduSuccess" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
   <div class="bg-white rounded-xl w-full max-w-[400px] p-8 text-center space-y-4 shadow-xl">
-    <div class=" mx-auto flex items-center justify-center">
-     <svg width="95" height="95" viewBox="0 0 95 95" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M70.2452 34.0264C70.9107 34.7294 71.27 35.6677 71.2443 36.6353C71.2186 37.6029 70.81 38.5208 70.1082 39.1875L43.3438 64.7644C42.6518 65.4153 41.736 65.7751 40.7861 65.7692C39.8501 65.7728 38.9494 65.4125 38.2741 64.7644L24.8918 51.976C24.5207 51.6521 24.2188 51.2566 24.0044 50.8131C23.79 50.3696 23.6675 49.8874 23.6442 49.3954C23.6209 48.9033 23.6973 48.4117 23.8689 47.9499C24.0405 47.4882 24.3037 47.0659 24.6426 46.7085C24.9816 46.3511 25.3893 46.0659 25.8413 45.87C26.2932 45.6742 26.7801 45.5718 27.2727 45.5689C27.7653 45.566 28.2534 45.6628 28.7076 45.8534C29.1618 46.0439 29.5728 46.3244 29.9159 46.6779L40.7861 57.0457L65.0841 33.8894C65.7871 33.224 66.7254 32.8646 67.693 32.8903C68.6606 32.916 69.5785 33.3246 70.2452 34.0264ZM95 47.5C95 56.8946 92.2142 66.0782 86.9948 73.8896C81.7754 81.7009 74.357 87.7891 65.6775 91.3843C56.998 94.9794 47.4473 95.9201 38.2332 94.0873C29.0191 92.2545 20.5554 87.7305 13.9124 81.0876C7.26945 74.4446 2.74552 65.9809 0.91272 56.7668C-0.920077 47.5527 0.020581 38.002 3.61574 29.3225C7.2109 20.643 13.2991 13.2246 21.1104 8.00519C28.9218 2.78583 38.1054 0 47.5 0C60.0904 0.0241427 72.1582 5.03634 81.0609 13.9391C89.9637 22.8418 94.9759 34.9096 95 47.5ZM87.6923 47.5C87.6923 39.5507 85.3351 31.7799 80.9187 25.1703C76.5023 18.5608 70.2251 13.4092 62.8809 10.3671C55.5368 7.32509 47.4554 6.52915 39.6589 8.07997C31.8623 9.6308 24.7008 13.4587 19.0798 19.0797C13.4588 24.7007 9.63082 31.8623 8.08 39.6589C6.52917 47.4554 7.32511 55.5367 10.3672 62.8809C13.4092 70.2251 18.5608 76.5023 25.1704 80.9187C31.78 85.3351 39.5507 87.6923 47.5 87.6923C58.156 87.6802 68.372 83.4418 75.9069 75.9069C83.4418 68.372 87.6802 58.1559 87.6923 47.5Z" fill="#00B894"/>
-</svg>
+    <div class="w-20 h-20 mx-auto rounded-full bg-teal-100 flex items-center justify-center">
+      <svg class="w-12 h-12 text-[#104382]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+      </svg>
     </div>
-    <p class="text-lg font-semibold text-gray-900">Examen validé avec succès</p>
+    <p class="text-lg font-semibold text-gray-900">Examen terminé avec succès</p>
   </div>
 </div>

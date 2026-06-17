@@ -4,10 +4,10 @@
     <!-- HEADER -->
     <div class="space-y-1">
       <h1 class="text-2xl sm:text-3xl font-bold text-[#0F172A] tracking-tight">
-        Historiques des mes contributions
+        Historique de mes contributions
       </h1>
       <p class="text-sm text-gray-500 font-medium">
-        Consultez l'ensemble de mes contribution
+        Consultez l'ensemble de vos contributions
       </p>
     </div>
 
@@ -25,9 +25,7 @@
       </div>
 
       <div class="space-y-1 relative z-10">
-        <p class="text-sm font-semibold text-[#F0F0FFCC] uppercase tracking-wider">
-          Impact Total
-        </p>
+        <p class="text-sm font-semibold text-[#F0F0FFCC] uppercase tracking-wider">Impact Total</p>
         <h2 class="text-3xl sm:text-4xl text-[#F0F0FF] font-bold tracking-tight">
           {{ formatAmount(totalDonated) }} FCFA
         </h2>
@@ -35,54 +33,67 @@
 
       <div
         class="bg-white/15 backdrop-blur-md border border-white/20 px-4 py-2 rounded-full flex items-center gap-2 relative z-10 self-start md:self-auto">
-        <!-- Shield icon -->
         <svg class="w-4 h-4 text-blue-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round"
             d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
         </svg>
-        <span class="text-xs font-medium tracking-wide">
-          {{ viesImpactees }} vies impactées
-        </span>
+        <span class="text-xs font-medium tracking-wide">{{ viesImpactees }} vies impactées</span>
       </div>
     </div>
 
-    <!-- FILTER BUTTONS -->
-    <div class="flex items-center gap-3">
-      <button (click)="applyFilter('TOUS')"
-        [class]="activeFilter === 'TOUS' ? 'bg-[#11458B] text-white' : 'bg-[#F4F8FE] border border-[#8BBAE21A] text-[#11458B]'"
-        class="px-5 py-2 rounded-lg text-xs font-bold shadow-sm transition duration-150 cursor-pointer">
-        Tous
-      </button>
-      <button (click)="applyFilter('MOIS')"
-        [class]="activeFilter === 'MOIS' ? 'bg-[#11458B] text-white' : 'bg-[#F4F8FE] border border-[#8BBAE21A] text-[#11458B]'"
-        class="px-5 py-2 rounded-lg text-xs font-bold shadow-sm transition duration-150 cursor-pointer">
-        Mois
-      </button>
-      <button (click)="applyFilter('SEMAINE')"
-        [class]="activeFilter === 'SEMAINE' ? 'bg-[#11458B] text-white' : 'bg-[#F4F8FE] border border-[#8BBAE21A] text-[#11458B]'"
-        class="px-5 py-2 rounded-lg text-xs font-bold shadow-sm transition duration-150 cursor-pointer">
-        Semaine
-      </button>
+    <!-- FILTER + COMPTEUR -->
+    <div class="flex items-center justify-between flex-wrap gap-3">
+      <div class="flex items-center gap-3">
+        <button (click)="applyFilter('TOUS')"
+          [class]="activeFilter === 'TOUS' ? 'bg-[#11458B] text-white' : 'bg-[#F4F8FE] border border-[#8BBAE21A] text-[#11458B]'"
+          class="px-5 py-2 rounded-lg text-xs font-bold shadow-sm transition duration-150 cursor-pointer">
+          Tous
+        </button>
+        <button (click)="applyFilter('MOIS')"
+          [class]="activeFilter === 'MOIS' ? 'bg-[#11458B] text-white' : 'bg-[#F4F8FE] border border-[#8BBAE21A] text-[#11458B]'"
+          class="px-5 py-2 rounded-lg text-xs font-bold shadow-sm transition duration-150 cursor-pointer">
+          Mois
+        </button>
+        <button (click)="applyFilter('SEMAINE')"
+          [class]="activeFilter === 'SEMAINE' ? 'bg-[#11458B] text-white' : 'bg-[#F4F8FE] border border-[#8BBAE21A] text-[#11458B]'"
+          class="px-5 py-2 rounded-lg text-xs font-bold shadow-sm transition duration-150 cursor-pointer">
+          Semaine
+        </button>
+      </div>
+
+      <!-- Compteur résultats -->
+      <span *ngIf="!isLoading" class="text-xs text-gray-400 font-medium">
+        {{ filteredDonations.length }} contribution{{ filteredDonations.length > 1 ? 's' : '' }}
+      </span>
+    </div>
+
+    <!-- LOADING STATE -->
+    <div *ngIf="isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngFor="let _ of [1,2,3,4,5,6]"
+        class="bg-white rounded-2xl p-6 border border-gray-100 h-[180px] animate-pulse">
+        <div class="h-4 bg-gray-200 rounded w-2/3 mb-3"></div>
+        <div class="h-3 bg-gray-100 rounded w-1/2 mb-6"></div>
+        <div class="h-3 bg-gray-100 rounded w-1/3"></div>
+      </div>
     </div>
 
     <!-- CARDS GRID -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-      <div *ngFor="let don of filteredDonations"
+    <div *ngIf="!isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngFor="let don of pagedDonations"
         [routerLink]="['/detail-don', don.id]"
         class="bg-white rounded-2xl p-6 border border-gray-100/90 shadow-sm hover:shadow-md hover:border-[#11458B22] transition-all duration-200 flex flex-col justify-between h-[180px] cursor-pointer">
 
         <!-- CARD TOP ROW -->
         <div class="flex justify-between items-start gap-4">
           <div class="flex items-start gap-2.5">
-            <h3 class="text-base font-semibold text-[#171C1F]leading-tight">
-              {{ getFirstName(don.patientName) }}<br>{{ getLastName(don.patientName) }}
+            <h3 class="text-base font-semibold text-[#171C1F] leading-tight">
+              {{ don.patientName }}
             </h3>
-            <span class="px-2 py-0.5 mt-2.5 text-[10px] font-bold tracking-wider rounded bg-[#8BBAE2] text-white">
+            <span class="px-2 py-0.5 mt-1 text-[10px] font-bold tracking-wider rounded bg-[#8BBAE2] text-white shrink-0">
               {{ don.type }}
             </span>
           </div>
-          <div class="text-right">
+          <div class="text-right shrink-0">
             <span class="text-base font-bold text-[#11458B]">
               +{{ formatAmount(don.amount) }} FCFA
             </span>
@@ -91,43 +102,31 @@
 
         <!-- CARD MIDDLE ROW -->
         <div class="flex justify-between items-center">
-          <span class="text-sm text-[#434656]">
-            {{ don.dateString }}
-          </span>
+          <span class="text-sm text-[#434656]">{{ don.dateString }}</span>
 
           <!-- STATUS BADGE -->
           <div [class]="don.status === 'SUCCESS' ? 'bg-[#e6fcf5] text-[#0ca678]' : 'bg-[#FFFBEB] text-[#D97706]'"
             class="px-3 py-1 rounded-full text-xs font-medium tracking-wide inline-flex items-center gap-1.5">
-            <!-- SVG Status Placeholders -->
-            <svg *ngIf="don.status === 'SUCCESS'" width="12" height="12" viewBox="0 0 12 12" fill="none"
-              xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M5.01667 8.51667L9.12917 4.40417L8.3125 3.5875L5.01667 6.88333L3.35417 5.22083L2.5375 6.0375L5.01667 8.51667ZM5.83333 11.6667C5.02639 11.6667 4.26806 11.5135 3.55833 11.2073C2.84861 10.901 2.23125 10.4854 1.70625 9.96042C1.18125 9.43542 0.765625 8.81806 0.459375 8.10833C0.153125 7.39861 0 6.64028 0 5.83333C0 5.02639 0.153125 4.26806 0.459375 3.55833C0.765625 2.84861 1.18125 2.23125 1.70625 1.70625C2.23125 1.18125 2.84861 0.765625 3.55833 0.459375C4.26806 0.153125 5.02639 0 5.83333 0C6.64028 0 7.39861 0.153125 8.10833 0.459375C8.81806 0.765625 9.43542 1.18125 9.96042 1.70625C10.4854 2.23125 10.901 2.84861 11.2073 3.55833C11.5135 4.26806 11.6667 5.02639 11.6667 5.83333C11.6667 6.64028 11.5135 7.39861 11.2073 8.10833C10.901 8.81806 10.4854 9.43542 9.96042 9.96042C9.43542 10.4854 8.81806 10.901 8.10833 11.2073C7.39861 11.5135 6.64028 11.6667 5.83333 11.6667ZM5.83333 10.5C7.13611 10.5 8.23958 10.0479 9.14375 9.14375C10.0479 8.23958 10.5 7.13611 10.5 5.83333C10.5 4.53056 10.0479 3.42708 9.14375 2.52292C8.23958 1.61875 7.13611 1.16667 5.83333 1.16667C4.53056 1.16667 3.42708 1.61875 2.52292 2.52292C1.61875 3.42708 1.16667 4.53056 1.16667 5.83333C1.16667 7.13611 1.61875 8.23958 2.52292 9.14375C3.42708 10.0479 4.53056 10.5 5.83333 10.5Z"
-                fill="#059669" />
+            <svg *ngIf="don.status === 'SUCCESS'" width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M5.01667 8.51667L9.12917 4.40417L8.3125 3.5875L5.01667 6.88333L3.35417 5.22083L2.5375 6.0375L5.01667 8.51667ZM5.83333 11.6667C5.02639 11.6667 4.26806 11.5135 3.55833 11.2073C2.84861 10.901 2.23125 10.4854 1.70625 9.96042C1.18125 9.43542 0.765625 8.81806 0.459375 8.10833C0.153125 7.39861 0 6.64028 0 5.83333C0 5.02639 0.153125 4.26806 0.459375 3.55833C0.765625 2.84861 1.18125 2.23125 1.70625 1.70625C2.23125 1.18125 2.84861 0.765625 3.55833 0.459375C4.26806 0.153125 5.02639 0 5.83333 0C6.64028 0 7.39861 0.153125 8.10833 0.459375C8.81806 0.765625 9.43542 1.18125 9.96042 1.70625C10.4854 2.23125 10.901 2.84861 11.2073 3.55833C11.5135 4.26806 11.6667 5.02639 11.6667 5.83333C11.6667 6.64028 11.5135 7.39861 11.2073 8.10833C10.901 8.81806 10.4854 9.43542 9.96042 9.96042C9.43542 10.4854 8.81806 10.901 8.10833 11.2073C7.39861 11.5135 6.64028 11.6667 5.83333 11.6667ZM5.83333 10.5C7.13611 10.5 8.23958 10.0479 9.14375 9.14375C10.0479 8.23958 10.5 7.13611 10.5 5.83333C10.5 4.53056 10.0479 3.42708 9.14375 2.52292C8.23958 1.61875 7.13611 1.16667 5.83333 1.16667C4.53056 1.16667 3.42708 1.61875 2.52292 2.52292C1.61875 3.42708 1.16667 4.53056 1.16667 5.83333C1.16667 7.13611 1.61875 8.23958 2.52292 9.14375C3.42708 10.0479 4.53056 10.5 5.83333 10.5Z" fill="#059669" />
             </svg>
-            <svg *ngIf="don.status !== 'SUCCESS'" width="12" height="12" viewBox="0 0 12 12" fill="none"
-              xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M7.75833 8.575L8.575 7.75833L6.41667 5.6V2.91667H5.25V6.06667L7.75833 8.575ZM5.83333 11.6667C5.02639 11.6667 4.26806 11.5135 3.55833 11.2073C2.84861 10.901 2.23125 10.4854 1.70625 9.96042C1.18125 9.43542 0.765625 8.81806 0.459375 8.10833C0.153125 7.39861 0 6.64028 0 5.83333C0 5.02639 0.153125 4.26806 0.459375 3.55833C0.765625 2.84861 1.18125 2.23125 1.70625 1.70625C2.23125 1.18125 2.84861 0.765625 3.55833 0.459375C4.26806 0.153125 5.02639 0 5.83333 0C6.64028 0 7.39861 0.153125 8.10833 0.459375C8.81806 0.765625 9.43542 1.18125 9.96042 1.70625C10.4854 2.23125 10.901 2.84861 11.2073 3.55833C11.5135 4.26806 11.6667 5.02639 11.6667 5.83333C11.6667 6.64028 11.5135 7.39861 11.2073 8.10833C10.901 8.81806 10.4854 9.43542 9.96042 9.96042C9.43542 10.4854 8.81806 10.901 8.10833 11.2073C7.39861 11.5135 6.64028 11.6667 5.83333 11.6667ZM5.83333 10.5C7.12639 10.5 8.22743 10.0455 9.13646 9.13646C10.0455 8.22743 10.5 7.12639 10.5 5.83333C10.5 4.54028 10.0455 3.43924 9.13646 2.53021C8.22743 1.62118 7.12639 1.16667 5.83333 1.16667C4.54028 1.16667 3.43924 1.62118 2.53021 2.53021C1.62118 3.43924 1.16667 4.54028 1.16667 5.83333C1.16667 7.12639 1.62118 8.22743 2.53021 9.13646C3.43924 10.0455 4.54028 10.5 5.83333 10.5Z"
-                fill="#D97706" />
+            <svg *ngIf="don.status !== 'SUCCESS'" width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M7.75833 8.575L8.575 7.75833L6.41667 5.6V2.91667H5.25V6.06667L7.75833 8.575ZM5.83333 11.6667C5.02639 11.6667 4.26806 11.5135 3.55833 11.2073C2.84861 10.901 2.23125 10.4854 1.70625 9.96042C1.18125 9.43542 0.765625 8.81806 0.459375 8.10833C0.153125 7.39861 0 6.64028 0 5.83333C0 5.02639 0.153125 4.26806 0.459375 3.55833C0.765625 2.84861 1.18125 2.23125 1.70625 1.70625C2.23125 1.18125 2.84861 0.765625 3.55833 0.459375C4.26806 0.153125 5.02639 0 5.83333 0C6.64028 0 7.39861 0.153125 8.10833 0.459375C8.81806 0.765625 9.43542 1.18125 9.96042 1.70625C10.4854 2.23125 10.901 2.84861 11.2073 3.55833C11.5135 4.26806 11.6667 5.02639 11.6667 5.83333C11.6667 6.64028 11.5135 7.39861 11.2073 8.10833C10.901 8.81806 10.4854 9.43542 9.96042 9.96042C9.43542 10.4854 8.81806 10.901 8.10833 11.2073C7.39861 11.5135 6.64028 11.6667 5.83333 11.6667ZM5.83333 10.5C7.12639 10.5 8.22743 10.0455 9.13646 9.13646C10.0455 8.22743 10.5 7.12639 10.5 5.83333C10.5 4.54028 10.0455 3.43924 9.13646 2.53021C8.22743 1.62118 7.12639 1.16667 5.83333 1.16667C4.54028 1.16667 3.43924 1.62118 2.53021 2.53021C1.62118 3.43924 1.16667 4.54028 1.16667 5.83333C1.16667 7.12639 1.62118 8.22743 2.53021 9.13646C3.43924 10.0455 4.54028 10.5 5.83333 10.5Z" fill="#D97706" />
             </svg>
-            <span>
-              {{ don.status === 'SUCCESS' ? 'Complété' : 'En traitement' }}
-            </span>
+            <span>{{ don.status === 'SUCCESS' ? 'Complété' : 'En traitement' }}</span>
           </div>
         </div>
 
         <!-- CARD BOTTOM ROW -->
         <div class="text-xs font-medium text-[#11458B] tracking-wide">
-          Traitement: {{ don.treatment }}
+          Traitement : {{ don.treatment }}
         </div>
 
       </div>
-
     </div>
 
     <!-- EMPTY STATE -->
-    <div *ngIf="filteredDonations.length === 0"
+    <div *ngIf="!isLoading && filteredDonations.length === 0"
       class="bg-white rounded-2xl border border-gray-100 py-16 text-center text-gray-400 shadow-sm">
       <div class="flex flex-col items-center justify-center space-y-3">
         <svg class="w-12 h-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -135,6 +134,50 @@
             d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
         <span class="text-sm font-semibold">Aucune contribution trouvée pour cette période.</span>
+      </div>
+    </div>
+
+    <!-- PAGINATION -->
+    <div *ngIf="!isLoading && totalPages > 1"
+      class="flex items-center justify-between pt-2">
+
+      <!-- Info page -->
+      <span class="text-xs text-gray-400 font-medium">
+        Page {{ currentPage }} sur {{ totalPages }}
+      </span>
+
+      <!-- Contrôles -->
+      <div class="flex items-center gap-1">
+
+        <!-- Précédent -->
+        <button (click)="prevPage()" [disabled]="currentPage === 1"
+          class="w-9 h-9 rounded-lg flex items-center justify-center border text-[#11458B] transition"
+          [class]="currentPage === 1 ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-[#8BBAE2] hover:bg-[#F4F8FE] cursor-pointer'">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+
+        <!-- Numéros de pages -->
+        <ng-container *ngFor="let p of pageNumbers">
+          <button (click)="goToPage(p)"
+            [class]="p === currentPage
+              ? 'bg-[#11458B] text-white border-[#11458B]'
+              : 'bg-white text-[#11458B] border-[#8BBAE2] hover:bg-[#F4F8FE]'"
+            class="w-9 h-9 rounded-lg flex items-center justify-center border text-xs font-bold transition cursor-pointer">
+            {{ p }}
+          </button>
+        </ng-container>
+
+        <!-- Suivant -->
+        <button (click)="nextPage()" [disabled]="currentPage === totalPages"
+          class="w-9 h-9 rounded-lg flex items-center justify-center border transition"
+          [class]="currentPage === totalPages ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-[#8BBAE2] text-[#11458B] hover:bg-[#F4F8FE] cursor-pointer'">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+
       </div>
     </div>
 

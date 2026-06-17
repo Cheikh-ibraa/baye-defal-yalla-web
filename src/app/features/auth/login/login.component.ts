@@ -23,7 +23,11 @@ export class LoginComponent implements OnInit {
   showPassword = false;
   isLoading = false;
   errorMessage = '';
-  isMobileOnly = false; // true quand un patient se connecte (interface mobile uniquement)
+  isMobileOnly = false;
+
+  isAlreadyLoggedIn = false;
+  currentUserName = '';
+  currentDashboardUrl = '';
 
   private returnUrl = '';
 
@@ -56,6 +60,41 @@ export class LoginComponent implements OnInit {
 
   ngOnInit() {
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '';
+    this.checkAlreadyLoggedIn();
+  }
+
+  private checkAlreadyLoggedIn() {
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (payload?.exp && Date.now() / 1000 > payload.exp) {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        return;
+      }
+      const roles: string[] = payload?.realm_access?.roles ?? [];
+      const priority = [
+        'admin', 'doctor', 'pharmacist', 'hospital',
+        'lab-technician', 'radiologist', 'supplier',
+        'donor-individual', 'donor-organization', 'patient',
+      ];
+      const role = priority.find(r => roles.includes(r)) ?? '';
+      if (!role) return;
+
+      this.isAlreadyLoggedIn = true;
+      const firstName = payload.given_name ?? '';
+      const lastName  = payload.family_name ?? '';
+      this.currentUserName = `${firstName} ${lastName}`.trim() || payload.preferred_username || '';
+      this.currentDashboardUrl = this.ROLE_ROUTES[role] ?? '/';
+    } catch { /* token malformé */ }
+  }
+
+  logout() {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user_data');
+    this.isAlreadyLoggedIn = false;
   }
 
   togglePasswordVisibility() {

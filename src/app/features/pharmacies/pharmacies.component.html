@@ -1,276 +1,235 @@
 <div class="min-h-screen bg-[#f5f7fa]">
 
-  <!-- Header -->
-  <div class="flex items-center justify-between mb-8">
+  <!-- ── Header ─────────────────────────────────────────────────────────────── -->
+  <div class="flex items-center justify-between mb-6">
     <div>
-      <h1 class="text-xl sm:text-3xl font-semibold text-[#343A40] mb-1">Pharmacies</h1>
-      <p class="text-[#343A40] text-sm md:text-base">Gestion des pharmacies partenaires</p>
+      <h1 class="text-xl font-semibold text-[#343A40]">Suivi des pharmacies</h1>
+      <p class="text-sm text-gray-500 mt-0.5">Créer et gérer la performances des pharmacies partenaires</p>
     </div>
-    <button (click)="openModal()"
-            class="flex items-center gap-2 bg-[#1A3C6E] text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-[#153264] transition-colors">
+    <button (click)="goNew()"
+      class="flex items-center gap-2 bg-[#1A3C6E] text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-[#153264] transition-colors">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
       </svg>
-      Nouvelle pharmacie
+      + Pharmacie
     </button>
   </div>
 
-  <!-- Stats rapides -->
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-    <div class="bg-white rounded-xl shadow-sm p-5">
-      <p class="text-xs text-gray-500 mb-1">Total</p>
-      <p class="text-2xl font-bold text-gray-900">{{ allPharmacies.length }}</p>
-    </div>
-    <div class="bg-white rounded-xl shadow-sm p-5">
-      <p class="text-xs text-gray-500 mb-1">Ouvertes</p>
-      <p class="text-2xl font-bold text-green-600">{{ totalActive }}</p>
-    </div>
-    <div class="bg-white rounded-xl shadow-sm p-5">
-      <p class="text-xs text-gray-500 mb-1">Fermées</p>
-      <p class="text-2xl font-bold text-red-500">{{ totalInactive }}</p>
-    </div>
-    <div class="bg-white rounded-xl shadow-sm p-5">
-      <p class="text-xs text-gray-500 mb-1">Avec pharmacien</p>
-      <p class="text-2xl font-bold text-blue-600">{{ totalWithPharmacist }}</p>
-    </div>
+  <!-- ── Chargement ─────────────────────────────────────────────────────────── -->
+  <div *ngIf="loading" class="flex items-center justify-center py-24">
+    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-[#1A3C6E]"></div>
   </div>
 
-  <!-- Tableau principal -->
-  <div class="bg-white rounded-xl shadow-sm p-6">
-    <!-- Barre de recherche -->
-    <div class="flex items-center justify-between mb-6">
-      <div class="relative flex-1 max-w-sm">
-        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-        </svg>
-        <input type="text" [(ngModel)]="searchTerm" (input)="onSearchChange()" placeholder="Rechercher une pharmacie…"
-               class="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#1A3C6E] focus:border-transparent">
-      </div>
-      <button (click)="loadPharmacies()" class="ml-3 p-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" title="Rafraîchir">
-        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-        </svg>
-      </button>
-    </div>
+  <!-- ── Erreur ──────────────────────────────────────────────────────────────── -->
+  <div *ngIf="!loading && loadError" class="text-center py-16 text-red-500 text-sm">{{ loadError }}</div>
 
-    <!-- Chargement -->
-    <div *ngIf="loading" class="flex items-center justify-center py-12 gap-3 text-gray-500">
-      <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-      </svg>
-      Chargement…
-    </div>
+  <ng-container *ngIf="!loading && !loadError">
 
-    <!-- Erreur -->
-    <div *ngIf="loadError && !loading" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4 text-sm text-red-700">
-      {{ loadError }}
-    </div>
-
-    <!-- Tableau -->
-    <div *ngIf="!loading" class="overflow-x-auto">
-      <table class="w-full">
-        <thead class="bg-gray-50 border-b border-gray-200">
-          <tr>
-            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pharmacie</th>
-            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Région</th>
-            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Téléphone</th>
-            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pharmacien lié</th>
-            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr *ngIf="paginatedPharmacies.length === 0">
-            <td colspan="5" class="px-4 py-10 text-center text-gray-400 text-sm">
-              Aucune pharmacie trouvée. Cliquez sur « Nouvelle pharmacie » pour en créer une.
-            </td>
-          </tr>
-          <tr *ngFor="let p of paginatedPharmacies; let i = index" class="hover:bg-gray-50 transition-colors">
-            <td class="px-4 py-4">
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-md flex items-center justify-center text-xs font-bold flex-shrink-0"
-                     [ngClass]="getInitialsColor(i)">
-                  {{ getPharmacieInitials(p.name) }}
-                </div>
-                <div>
-                  <p class="text-sm font-medium text-gray-900">{{ p.name }}</p>
-                  <p class="text-xs text-gray-500">{{ p.address }}</p>
-                </div>
-              </div>
-            </td>
-            <td class="px-4 py-4 text-sm text-gray-600">{{ p.region || '—' }}</td>
-            <td class="px-4 py-4 text-sm text-gray-600">{{ p.phone || '—' }}</td>
-            <td class="px-4 py-4">
-              <span *ngIf="p.pharmacistId" class="text-xs font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">Lié</span>
-              <span *ngIf="!p.pharmacistId" class="text-xs text-gray-400">Disponible</span>
-            </td>
-            <td class="px-4 py-4">
-              <span class="text-xs font-semibold px-2.5 py-1 rounded-full"
-                    [class.bg-green-100]="p.isOpen" [class.text-green-700]="p.isOpen"
-                    [class.bg-red-100]="!p.isOpen"  [class.text-red-700]="!p.isOpen">
-                {{ p.isOpen ? 'Ouverte' : 'Fermée' }}
-              </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Pagination -->
-    <div *ngIf="!loading && filteredPharmacies.length > 0" class="flex items-center justify-between mt-6 gap-4">
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500">Lignes par page :</span>
-        <select [(ngModel)]="itemsPerPage" (change)="onItemsPerPageChange()"
-                class="border border-gray-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-[#1A3C6E]">
-          <option [value]="5">5</option>
-          <option [value]="10">10</option>
-          <option [value]="20">20</option>
-        </select>
-      </div>
-      <div class="flex items-center gap-2 text-sm text-gray-500">
-        <span>{{ (currentPage - 1) * itemsPerPage + 1 }}–{{ Math.min(currentPage * itemsPerPage, filteredPharmacies.length) }} sur {{ filteredPharmacies.length }}</span>
-        <button (click)="previousPage()" [disabled]="currentPage === 1"
-                class="p-1.5 rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+    <!-- ── 4 Stat Cards ──────────────────────────────────────────────────────── -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div *ngFor="let c of statsCards"
+        class="bg-white rounded-xl shadow-sm p-5 flex items-start justify-between">
+        <div>
+          <p class="text-xs text-gray-500 mb-1">{{ c.label }}</p>
+          <p class="text-2xl font-bold text-gray-900">{{ c.value }}</p>
+          <p *ngIf="c.sub" class="text-xs mt-0.5" [class]="c.subClass || 'text-gray-400'">{{ c.sub }}</p>
+        </div>
+        <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" [class]="c.iconBg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="c.icon"/>
           </svg>
-        </button>
-        <button (click)="nextPage()" [disabled]="currentPage === totalPages"
-                class="p-1.5 rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-          </svg>
-        </button>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- ════ MODAL Nouvelle pharmacie ════ -->
-<div *ngIf="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+    <!-- ── 2 Charts ──────────────────────────────────────────────────────────── -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
 
-    <!-- En-tête modal -->
-    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-      <h2 class="text-lg font-bold text-gray-900">Nouvelle pharmacie</h2>
-      <button (click)="closeModal()" class="p-2 rounded-lg hover:bg-gray-100 text-gray-400">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-      </button>
+      <!-- Performance mensuelle -->
+      <div class="bg-white rounded-xl shadow-sm p-5">
+        <h2 class="text-sm font-semibold text-gray-800 mb-4">Performance mensuelle</h2>
+        <div class="relative h-52">
+          <canvas #perfChart></canvas>
+        </div>
+      </div>
+
+      <!-- Top 5 pharmacies -->
+      <div class="bg-white rounded-xl shadow-sm p-5">
+        <h2 class="text-sm font-semibold text-gray-800 mb-4">Top 5 pharmacies</h2>
+        <div class="relative h-52">
+          <canvas #top5Chart></canvas>
+        </div>
+      </div>
+
     </div>
 
-    <!-- Corps modal -->
-    <div class="px-6 py-5 space-y-4">
+    <!-- ── Table + Alertes ───────────────────────────────────────────────────── -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-      <!-- Erreur -->
-      <div *ngIf="saveError" class="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
-        {{ saveError }}
-      </div>
+      <!-- Table -->
+      <div class="lg:col-span-2 bg-white rounded-xl shadow-sm overflow-hidden">
 
-      <!-- Nom -->
-      <div class="space-y-1">
-        <label class="text-sm font-medium text-gray-700">Nom de la pharmacie <span class="text-red-500">*</span></label>
-        <input type="text" [(ngModel)]="pharmacyForm.name" placeholder="ex. Pharmacie Centrale"
-               class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#1A3C6E] focus:border-transparent">
-      </div>
-
-      <!-- Adresse -->
-      <div class="space-y-1">
-        <label class="text-sm font-medium text-gray-700">Adresse complète <span class="text-red-500">*</span></label>
-        <input type="text" [(ngModel)]="pharmacyForm.address" placeholder="ex. Rue 10 x 23, Médina, Dakar"
-               class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#1A3C6E] focus:border-transparent">
-      </div>
-
-      <!-- Téléphone + Email -->
-      <div class="grid grid-cols-2 gap-4">
-        <div class="space-y-1">
-          <label class="text-sm font-medium text-gray-700">Téléphone</label>
-          <input type="tel" [(ngModel)]="pharmacyForm.phone" placeholder="77 000 00 00"
-                 class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#1A3C6E] focus:border-transparent">
-        </div>
-        <div class="space-y-1">
-          <label class="text-sm font-medium text-gray-700">Email</label>
-          <input type="email" [(ngModel)]="pharmacyForm.email" placeholder="contact@pharmacie.sn"
-                 class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#1A3C6E] focus:border-transparent">
-        </div>
-      </div>
-
-      <!-- Coordonnées GPS -->
-      <div class="grid grid-cols-2 gap-4">
-        <div class="space-y-1">
-          <label class="text-sm font-medium text-gray-700">Latitude</label>
-          <input type="number" [(ngModel)]="pharmacyForm.latitude" placeholder="14.6928" step="0.0001"
-                 class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#1A3C6E] focus:border-transparent">
-        </div>
-        <div class="space-y-1">
-          <label class="text-sm font-medium text-gray-700">Longitude</label>
-          <input type="number" [(ngModel)]="pharmacyForm.longitude" placeholder="-17.4467" step="0.0001"
-                 class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#1A3C6E] focus:border-transparent">
-        </div>
-      </div>
-
-      <!-- Horaires -->
-      <div class="space-y-1">
-        <label class="text-sm font-medium text-gray-700">Horaires d'ouverture</label>
-        <input type="text" [(ngModel)]="pharmacyForm.openingHours" placeholder="ex. Lun-Sam 08h-21h"
-               class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#1A3C6E] focus:border-transparent">
-      </div>
-
-      <!-- Statut ouvert -->
-      <div class="flex items-center gap-3">
-        <input type="checkbox" id="isOpen" [(ngModel)]="pharmacyForm.isOpen"
-               class="w-4 h-4 rounded text-[#00B894] border-gray-300">
-        <label for="isOpen" class="text-sm font-medium text-gray-700">Pharmacie ouverte (disponible pour les commandes)</label>
-      </div>
-
-      <!-- Logo -->
-      <div class="space-y-2">
-        <label class="text-sm font-medium text-gray-700">Logo de la pharmacie</label>
-
-        <!-- Prévisualisation -->
-        <div *ngIf="logoPreview" class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
-          <img [src]="logoPreview" alt="Logo" class="w-12 h-12 object-contain rounded-md border border-gray-200 bg-white">
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium text-gray-700 truncate">{{ logoFile?.name }}</p>
-            <p class="text-xs text-gray-400">{{ logoFile ? (logoFile.size < 1048576 ? (logoFile.size / 1024 | number:'1.0-0') + ' Ko' : (logoFile.size / 1048576 | number:'1.1-1') + ' Mo') : '' }}</p>
+        <!-- Table header -->
+        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+          <h2 class="text-sm font-semibold text-gray-800">Performances des pharmacies</h2>
+          <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400"
+              fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input type="text" [(ngModel)]="searchTerm" (input)="onSearchChange()"
+              placeholder="Rechercher id..."
+              class="pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#1A3C6E] w-44"/>
           </div>
-          <button type="button" (click)="removeLogo()" class="text-red-400 hover:text-red-600 flex-shrink-0">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-            </svg>
-          </button>
         </div>
 
-        <!-- Bouton upload -->
-        <label *ngIf="!logoPreview" class="flex items-center gap-2 cursor-pointer w-fit">
-          <span class="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors">
-            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-            </svg>
-            Choisir un logo
-          </span>
-          <input type="file" accept=".png,.jpg,.jpeg,.webp" class="hidden" (change)="onLogoSelect($event)">
-        </label>
-        <p class="text-xs text-gray-400">PNG, JPG, WEBP — max 2 Mo</p>
+        <!-- Table body -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-gray-100">
+                <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">Nom</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Ordonnances traitées</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Disponibilité</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Délai moyen</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Statut</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Action</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+
+              <tr *ngIf="paginatedPharmacies.length === 0">
+                <td colspan="6" class="py-10 text-center text-gray-400 text-sm">
+                  Aucune pharmacie trouvée
+                </td>
+              </tr>
+
+              <tr *ngFor="let p of paginatedPharmacies; let i = index"
+                class="hover:bg-gray-50 transition-colors">
+
+                <!-- Nom + adresse -->
+                <td class="px-5 py-3">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
+                      [ngClass]="initialsClass((currentPage-1)*itemsPerPage + i)">
+                      {{ initials(p.name) }}
+                    </div>
+                    <div class="min-w-0">
+                      <p class="text-sm font-medium text-gray-900 truncate max-w-[140px]">{{ p.name }}</p>
+                      <p class="text-xs text-gray-400 truncate max-w-[140px]">{{ p.address || p.region || '—' }}</p>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Ordonnances -->
+                <td class="px-4 py-3 text-gray-700 font-medium">{{ p.ordresTraites }}</td>
+
+                <!-- Disponibilité -->
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-2">
+                    <div class="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div class="h-full rounded-full"
+                        [class]="p.disponibilite >= 90 ? 'bg-green-500' : p.disponibilite >= 70 ? 'bg-yellow-400' : 'bg-red-400'"
+                        [style.width.%]="p.disponibilite"></div>
+                    </div>
+                    <span class="text-xs text-gray-600">{{ p.disponibilite }}%</span>
+                  </div>
+                </td>
+
+                <!-- Délai moyen -->
+                <td class="px-4 py-3 text-gray-600 text-sm">{{ p.delaiMoyen || '—' }} min</td>
+
+                <!-- Statut -->
+                <td class="px-4 py-3">
+                  <span class="px-2.5 py-0.5 rounded text-xs font-medium"
+                    [class]="p.statut === 'Normal'
+                      ? 'bg-green-50 text-green-700 border border-green-200'
+                      : 'bg-red-50 text-red-600 border border-red-200'">
+                    {{ p.statut }}
+                  </span>
+                </td>
+
+                <!-- Action -->
+                <td class="px-4 py-3">
+                  <button (click)="viewDetail(p)" title="Voir le détail"
+                    class="p-1.5 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="flex items-center justify-between px-5 py-3 border-t border-gray-100">
+          <div class="flex items-center gap-2 text-xs text-gray-500">
+            <span>éléments par page :</span>
+            <select [(ngModel)]="itemsPerPage" (change)="onItemsPerPageChange()"
+              class="border border-gray-200 rounded px-1.5 py-0.5 text-xs focus:outline-none">
+              <option [value]="5">5</option>
+              <option [value]="10">10</option>
+              <option [value]="20">20</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-2 text-xs text-gray-500">
+            <span>{{ startItem }} – {{ endItem }} sur {{ filteredPharmacies.length }}</span>
+            <button (click)="previousPage()" [disabled]="currentPage === 1"
+              class="p-1 rounded hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+              </svg>
+            </button>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages"
+              class="p-1 rounded hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+        </div>
       </div>
+
+      <!-- ── Alertes retards ─────────────────────────────────────────────────── -->
+      <div class="bg-white rounded-xl shadow-sm p-5">
+        <h2 class="text-sm font-semibold text-gray-800 mb-4">
+          Alertes retards
+          <span *ngIf="alertPharmacies.length > 0"
+            class="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-100 text-red-600 text-xs font-bold">
+            {{ alertPharmacies.length }}
+          </span>
+        </h2>
+
+        <div *ngIf="alertPharmacies.length === 0" class="text-center py-8 text-gray-400 text-sm">
+          Aucune alerte
+        </div>
+
+        <div class="space-y-3">
+          <div *ngFor="let p of alertPharmacies"
+            class="flex items-start gap-3 p-3 rounded-lg bg-red-50 border border-red-100">
+            <div class="w-9 h-9 rounded-full bg-white border border-red-200 flex items-center justify-center text-xs font-bold text-red-600 flex-shrink-0">
+              {{ initials(p.name) }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-gray-900 truncate">{{ p.name }}</p>
+              <p class="text-xs text-gray-500 truncate">{{ p.region || p.address || 'Dakar' }}</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <p class="text-sm font-bold text-red-500">{{ p.delaiMoyen }} min</p>
+              <p class="text-xs text-gray-400">Délai moyen</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
-    <!-- Pied modal -->
-    <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100">
-      <button (click)="closeModal()" class="px-4 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-        Annuler
-      </button>
-      <button (click)="createPharmacy()"
-              [disabled]="!pharmacyForm.name || !pharmacyForm.address || saving"
-              class="flex items-center gap-2 bg-[#1A3C6E] text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-[#153264] transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-        <svg *ngIf="saving" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-        </svg>
-        <span>{{ saving ? 'Création…' : 'Créer la pharmacie' }}</span>
-      </button>
-    </div>
-
-  </div>
+  </ng-container>
 </div>

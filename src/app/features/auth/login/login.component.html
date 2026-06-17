@@ -9,8 +9,42 @@
     <p class="text-gray-600">Accédez à votre espace personnel</p>
   </div>
 
+  <!-- Déjà connecté -->
+  <div *ngIf="isAlreadyLoggedIn" class="rounded-xl border border-amber-200 bg-amber-50 p-6 text-center space-y-4">
+    <div class="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mx-auto">
+      <svg class="w-8 h-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+      </svg>
+    </div>
+    <div>
+      <p class="font-semibold text-amber-900 text-lg">Vous êtes déjà connecté</p>
+      <p class="text-amber-700 text-sm mt-1">
+        Connecté en tant que <strong>{{ currentUserName }}</strong>.<br>
+        Déconnectez-vous d'abord pour accéder avec un autre compte.
+      </p>
+    </div>
+    <div class="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+      <a [routerLink]="currentDashboardUrl"
+        class="inline-flex items-center justify-center gap-2 bg-[#1A3C6E] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#142f58] transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+        </svg>
+        Aller à mon tableau de bord
+      </a>
+      <button type="button" (click)="logout()"
+        class="inline-flex items-center justify-center gap-2 border border-red-300 text-red-600 px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-red-50 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+        </svg>
+        Se déconnecter et changer de compte
+      </button>
+    </div>
+  </div>
+
   <!-- Erreur -->
-  <div *ngIf="errorMessage" class="p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
+  <div *ngIf="errorMessage && !isAlreadyLoggedIn" class="p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
     <svg class="w-5 h-5 text-red-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
       <path fill-rule="evenodd"
         d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
@@ -63,7 +97,7 @@
   </div>
 
   <!-- Formulaire -->
-  <form *ngIf="!isMobileOnly" [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-5">
+  <form *ngIf="!isMobileOnly && !isAlreadyLoggedIn" [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-5">
 
     <!-- Identifiant -->
     <div>
@@ -153,7 +187,7 @@
   </form>
 
   <!-- Lien inscription -->
-  <div *ngIf="!isMobileOnly" class="text-center pt-2">
+  <div *ngIf="!isMobileOnly && !isAlreadyLoggedIn" class="text-center pt-2">
     <p class="text-sm text-gray-600">
       Vous n'avez pas de compte ?
       <a routerLink="/register" class="font-medium text-[#00B894] hover:text-[#00A085] transition-colors ml-1">
@@ -163,7 +197,7 @@
   </div>
 
   <!-- Reset discret -->
-  <div *ngIf="!isMobileOnly && loginForm.dirty" class="text-center">
+  <div *ngIf="!isMobileOnly && !isAlreadyLoggedIn && loginForm.dirty" class="text-center">
     <button type="button" (click)="resetForm()" class="text-xs text-gray-400 hover:text-gray-600 transition-colors">
       Réinitialiser le formulaire
     </button>

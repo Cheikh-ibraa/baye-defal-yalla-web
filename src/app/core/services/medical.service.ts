@@ -43,6 +43,9 @@ export interface Prescription {
   consultationId: string;
   doctorId: string;
   patientId: string;
+  patientName?: string;
+  doctorName?: string;
+  doctorSpecialty?: string;
   expiryDate: string;
   diagnosis: string;
   items: PrescriptionItem[];

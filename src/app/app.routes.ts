@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
@@ -22,6 +23,7 @@ export const routes: Routes = [
 
   {
     path: '',
+    canActivate: [authGuard],
     loadComponent: () => import('./features/layouts/main-layout/main-layout.component').then(m => m.MainLayoutComponent),
     children: [
       { path: '', redirectTo: 'portail', pathMatch: 'full' },
@@ -49,6 +51,7 @@ export const routes: Routes = [
       { path: 'pharmacist/finance-transactions',     canActivate: [roleGuard(['pharmacist', 'admin'])], loadChildren: () => import('./features/finance-transactions/finance-transactions.routes').then(m => m.FINANCETRANSACTIONSROUTES) },
       { path: 'pharmacist/finance-retraits',         canActivate: [roleGuard(['pharmacist', 'admin'])], loadChildren: () => import('./features/finance-retraits/finance-retraits.routes').then(m => m.FINANCERETRAITSROUTES) },
       { path: 'pharmacist/parametre-bancaire',       canActivate: [roleGuard(['pharmacist', 'admin'])], loadChildren: () => import('./features/parametre-bancaire/parametre-bancaire.routes').then(m => m.PARAMETREBANCAIREROUTES) },
+      { path: 'pharmacist/scanner',                  canActivate: [roleGuard(['pharmacist'])],          loadComponent: () => import('./features/pharmacist-scanner/pharmacist-scanner.component').then(m => m.PharmacistScannerComponent) },
 
       { path: 'commande',     redirectTo: 'pharmacist/commande',   pathMatch: 'full' },
       { path: 'demande-complement',     redirectTo: 'pharmacist/demande-complement',   pathMatch: 'full' },
@@ -64,7 +67,7 @@ export const routes: Routes = [
       { path: 'organization/budget',             canActivate: [roleGuard(['admin', 'donor-organization'])], loadComponent: () => import('./features/budget/budget.component').then(m => m.BudgetComponent) },
       { path: 'organization/demande',            canActivate: [roleGuard(['admin', 'donor-organization'])], loadComponent: () => import('./features/demande-organisation/demande-organisation.component').then(m => m.DemandeOrganisationComponent) },
       { path: 'organization/demande/:id',        canActivate: [roleGuard(['admin', 'donor-organization'])], loadComponent: () => import('./features/demande-organisation/detail-demande-organisation.component').then(m => m.DetailDemandeOrganisationComponent) },
-      { path: 'organization/demande/:id/devis',  canActivate: [roleGuard(['admin', 'donor-organization'])], loadComponent: () => import('./features/demande-organisation/detail-devis-organisation.component').then(m => m.DetailDevisOrganisationComponent) },
+      { path: 'organization/demande/:id/devis/:quoteId', canActivate: [roleGuard(['admin', 'donor-organization'])], loadComponent: () => import('./features/demande-organisation/detail-devis-organisation.component').then(m => m.DetailDevisOrganisationComponent) },
 
       // ================= ASSOCIATION ROUTES =================
       { path: 'association/dashboard', canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) },
@@ -88,6 +91,9 @@ export const routes: Routes = [
       { path: 'admin/imageries',                 canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/imageries/imageries.component').then(m => m.ImageriesComponent) },
       { path: 'admin/imageries/new',             canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/imageries/imagerie-form/imagerie-form.component').then(m => m.ImagerieFormComponent) },
       { path: 'admin/imageries/detail/:id',      canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/imageries/detail/imagerie-detail.component').then(m => m.ImagerieDetailComponent) },
+      { path: 'admin/hospitals',              canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/hospitals/hospitals.component').then(m => m.HospitalsComponent) },
+      { path: 'admin/hospitals/new',          canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/hospitals/hospital-form/hospital-form.component').then(m => m.HospitalFormComponent) },
+      { path: 'admin/hospitals/detail/:id',   canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/hospitals/hospital-detail/hospital-detail.component').then(m => m.HospitalDetailComponent) },
       { path: 'admin/livreurs',       canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/livreurs/livreurs.component').then(m => m.LivreursComponent) },
       { path: 'admin/patients',       canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/patientmanage/patientmanage.component').then(m => m.PatientsComponent) },
       { path: 'admin/paiements-help', canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/paiements-help/paiements-help.component').then(m => m.PaiementsHelpComponent) },
@@ -153,6 +159,11 @@ export const routes: Routes = [
       { path: 'donor/dons-historique',canActivate: [roleGuard(['donor-individual', 'donor-organization'])], loadComponent: () => import('./features/dons/dons-historique.component').then(m => m.DonsHistoriqueComponent) },
       { path: 'donor/detail-don/:id', canActivate: [roleGuard(['donor-individual', 'donor-organization'])], loadComponent: () => import('./features/dons/dons-detail.component').then(m => m.DonsDetailComponent) },
       { path: 'donor/account',        canActivate: [roleGuard(['donor-individual', 'donor-organization'])], loadComponent: () => import('./features/comptes/medical-account.component').then(m => m.MedicalAccountComponent) },
+      // Budget solidaire (donor-individual)
+      { path: 'donor/budget',         canActivate: [roleGuard(['donor-individual'])], loadComponent: () => import('./features/donor-budget/donor-budget-list.component').then(m => m.DonorBudgetListComponent) },
+      { path: 'donor/budget/new',     canActivate: [roleGuard(['donor-individual'])], loadComponent: () => import('./features/donor-budget/donor-budget-form.component').then(m => m.DonorBudgetFormComponent) },
+      { path: 'donor/budget/:id',     canActivate: [roleGuard(['donor-individual'])], loadComponent: () => import('./features/donor-budget/donor-budget-detail.component').then(m => m.DonorBudgetDetailComponent) },
+      { path: 'donor/budget/:id/edit',canActivate: [roleGuard(['donor-individual'])], loadComponent: () => import('./features/donor-budget/donor-budget-form.component').then(m => m.DonorBudgetFormComponent) },
 
       // ================= COMPATIBILITY REDIRECTS =================
       { path: 'dashboard-med', redirectTo: 'doctor/dashboard', pathMatch: 'full' },
@@ -198,7 +209,7 @@ export const routes: Routes = [
       { path: 'budget', redirectTo: 'organization/budget', pathMatch: 'full' },
       { path: 'demande-organisation', redirectTo: 'organization/demande', pathMatch: 'full' },
       { path: 'demande-organisation/:id', redirectTo: 'organization/demande/:id', pathMatch: 'full' },
-      { path: 'demande-organisation/:id/devis', redirectTo: 'organization/demande/:id/devis', pathMatch: 'full' },
+      { path: 'demande-organisation/:id/devis/:quoteId', redirectTo: 'organization/demande/:id/devis/:quoteId', pathMatch: 'full' },
 
       { path: 'demandes-fournisseur', redirectTo: 'fournisseur/demandes', pathMatch: 'full' },
       { path: 'demandes-fournisseur/:id', redirectTo: 'fournisseur/demandes/:id', pathMatch: 'full' },

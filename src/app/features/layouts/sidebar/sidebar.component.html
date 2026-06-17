@@ -27,7 +27,7 @@
     <ng-container *ngIf="isAdmin">
 
       <!-- Tableau Admin -->
-      <a routerLink="/dashboard-admin"
+      <a routerLink="/admin/dashboard"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         #rlaAdmin="routerLinkActive"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
@@ -94,6 +94,19 @@
         <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Imageries</span>
       </a>
 
+      <!-- Hôpitaux -->
+      <a routerLink="/admin/hospitals"
+        routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
+        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        <div class="flex items-center justify-center w-8 h-8">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+          </svg>
+        </div>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Hôpitaux</span>
+      </a>
+
       <!-- Livreurs -->
 <!--      <a routerLink="/livreurs"-->
 <!--        routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"-->
@@ -114,7 +127,7 @@
 <!--      </a>-->
 
       <!-- Patients -->
-      <a routerLink="/patientmanage"
+      <a routerLink="/admin/patients"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
@@ -129,7 +142,7 @@
 
 
       <!-- Paiements & help -->
-      <a routerLink="/paiements-help"
+      <a routerLink="/admin/paiements-help"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
@@ -146,7 +159,7 @@
       </a>
 
       <!-- Administration -->
-      <a routerLink="/administration"
+      <a routerLink="/admin/administration"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
@@ -189,21 +202,21 @@
       <div *ngIf="financeOpen" class="ml-10 mt-2 flex flex-col gap-3">
 
         <!-- Tableau de bord -->
-        <a routerLink="/finance-dashboard" routerLinkActive="!text-[#11458B]"
+        <a routerLink="/admin/finance-dashboard" routerLinkActive="!text-[#11458B]"
           class="flex items-center gap-2 cursor-pointer text-gray-600 hover:text-[#11458B] transition-colors duration-200">
           <span class="w-2 h-2 rounded-full bg-current"></span>
           <span class="text-sm">Tableau de bord</span>
         </a>
 
         <!-- Pharmacies -->
-        <a routerLink="/finance-pharmacies" routerLinkActive="!text-[#11458B]"
+        <a routerLink="/admin/finance-pharmacies" routerLinkActive="!text-[#11458B]"
           class="flex items-center gap-2 cursor-pointer text-gray-600 hover:text-[#11458B] transition-colors duration-200">
           <span class="w-2 h-2 rounded-full bg-current"></span>
           <span class="text-sm">Pharmacies</span>
         </a>
 
         <!-- Demandes de virement -->
-        <a routerLink="/finance-virements" routerLinkActive="!text-[#11458B]"
+        <a routerLink="/admin/finance-virements" routerLinkActive="!text-[#11458B]"
           class="flex items-center gap-2 cursor-pointer text-gray-600 hover:text-[#11458B] transition-colors duration-200">
           <span class="w-2 h-2 rounded-full bg-current"></span>
           <span class="text-sm">Demandes de virement</span>
@@ -216,7 +229,7 @@
     <!-- DOCTOR -->
     <ng-container *ngIf="isDoctor">
       <!-- Tableau Med -->
-      <a routerLink="/dashboard-med"
+      <a routerLink="/doctor/dashboard"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         #rlaMed="routerLinkActive"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
@@ -246,7 +259,7 @@
       </div> -->
 
       <!-- Mes ordonnances -->
-      <a routerLink="/ordonnances"
+      <a routerLink="/doctor/ordonnances"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
@@ -261,7 +274,7 @@
       </a>
 
       <!-- PATIENTS -->
-      <a routerLink="/patients"
+      <a routerLink="/doctor/patients"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
@@ -279,7 +292,7 @@
     <ng-container *ngIf="isPharmacy">
 
       <!-- Tableau de bord -->
-      <a routerLink="/dashboard"
+      <a routerLink="/pharmacist/dashboard"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         #rlaPharma="routerLinkActive"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
@@ -293,7 +306,7 @@
       </a>
 
       <!-- Commandes reçues -->
-      <a routerLink="/commande"
+      <a routerLink="/pharmacist/commande"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
@@ -307,6 +320,7 @@
         </div>
         <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Commandes reçues</span>
       </a>
+
 
       <!-- Gestion stock
       <a routerLink="/gestion-stock"
@@ -327,7 +341,7 @@
       </a> -->
 
       <!-- Demandes complément -->
-      <a routerLink="/demande-complement"
+      <a routerLink="/pharmacist/demande-complement"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
@@ -364,7 +378,7 @@
       </div>
       <!-- Sous-menus Gestion financière pharmacie -->
       <div *ngIf="financeOpen" class="ml-10 mt-2 flex flex-col gap-3">
-        <a routerLink="/finance-dashboardpharmacie" routerLinkActive="!text-[#11458B]"
+        <a routerLink="/pharmacist/finance-dashboardpharmacie" routerLinkActive="!text-[#11458B]"
           #dashboardFinanceRla="routerLinkActive"
           class="flex items-center gap-2 cursor-pointer text-gray-600 hover:text-[#11458B] transition-colors duration-200">
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -383,7 +397,7 @@
         </a>
         -->
 
-        <a routerLink="/finance-retraits" routerLinkActive="!text-[#11458B]" #retraitsFinanceRla="routerLinkActive"
+        <a routerLink="/pharmacist/finance-retraits" routerLinkActive="!text-[#11458B]" #retraitsFinanceRla="routerLinkActive"
           class="flex items-center gap-2 cursor-pointer text-gray-600 hover:text-[#11458B] transition-colors duration-200">
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="5" cy="5" r="4" stroke="#343A40" stroke-width="2" />
@@ -392,7 +406,7 @@
           </svg>
           <span class="text-sm">Retraits</span>
         </a>
-        <a routerLink="/parametre-bancaire" routerLinkActive="!text-[#11458B]" #paramBankFinanceRla="routerLinkActive"
+        <a routerLink="/pharmacist/parametre-bancaire" routerLinkActive="!text-[#11458B]" #paramBankFinanceRla="routerLinkActive"
           class="flex items-center gap-2 cursor-pointer text-gray-600 hover:text-[#11458B] transition-colors duration-200">
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="5" cy="5" r="4" stroke="#343A40" stroke-width="2" />
@@ -459,7 +473,7 @@
     <ng-container *ngIf="isImagerie">
 
       <!-- Tableau Imagerie -->
-      <a routerLink="/dashboard-imagerie"
+      <a routerLink="/imaging/dashboard"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         #rlaImagerie="routerLinkActive"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
@@ -473,7 +487,7 @@
       </a>
 
       <!-- Examens Imagerie -->
-      <a routerLink="/examens-imagerie"
+      <a routerLink="/imaging/examens"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
@@ -495,7 +509,7 @@
       </a>
 
       <!-- Demandes Imagerie -->
-      <a routerLink="/demande-imagerie"
+      <a routerLink="/imaging/demandes"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
@@ -517,7 +531,7 @@
     <ng-container *ngIf="isHospital">
 
       <!-- Tableau de bord -->
-      <a routerLink="/dashboard-hospital"
+      <a routerLink="/hospital/dashboard"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         #rlaHospital="routerLinkActive"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
@@ -531,7 +545,7 @@
       </a>
 
       <!-- Demandes -->
-      <a routerLink="/demandes-medicales"
+      <a routerLink="/hospital/demandes"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
@@ -546,7 +560,7 @@
       </a>
 
       <!-- Patients -->
-      <a routerLink="/patients-hospital"
+      <a routerLink="/hospital/patients"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
@@ -560,7 +574,7 @@
       </a>
 
       <!-- Hospitalisations -->
-      <a routerLink="/hospitalisations"
+      <a routerLink="/hospital/hospitalisations"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
@@ -575,7 +589,7 @@
       </a>
 
       <!-- Chirurgie -->
-      <a routerLink="/chirurgie"
+      <a routerLink="/hospital/chirurgie"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
@@ -590,7 +604,7 @@
       </a>
 
       <!-- Demande de matériels -->
-      <a routerLink="/demande-materiels"
+      <a routerLink="/hospital/demande-materiels"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
@@ -605,7 +619,7 @@
       </a>
 
       <!-- Paiements -->
-      <a routerLink="/paiements-hospital"
+      <a routerLink="/hospital/paiements"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
@@ -626,7 +640,7 @@
 
       <!-- Tableau de bord -->
       <!-- Tableau de bord -->
-      <a routerLink="/dashboard-fournisseur"
+      <a routerLink="/fournisseur/dashboard"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         #rlaFournisseur="routerLinkActive"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
@@ -641,7 +655,7 @@
       </a>
 
       <!-- Demandes -->
-      <a routerLink="/demandes-fournisseur"
+      <a routerLink="/fournisseur/demandes"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
@@ -656,7 +670,7 @@
       </a>
 
       <!-- Devis -->
-      <a routerLink="/devis-fournisseur"
+      <a routerLink="/fournisseur/devis"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
@@ -675,7 +689,7 @@
     <!-- SIDEBAR DONOR / DONATEUR -->
     <ng-container *ngIf="isDonor">
       <!-- Dons -->
-      <a routerLink="/dons"
+      <a routerLink="/donor/dons"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
@@ -692,8 +706,21 @@
         <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Dons</span>
       </a>
 
+      <!-- Budget solidaire -->
+      <a routerLink="/donor/budget"
+        routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
+        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        <div class="flex items-center justify-center w-8 h-8">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9.73 9.48C9.56702 9.2277 9.34116 9.02218 9.07464 8.88366C8.80813 8.74514 8.51014 8.6784 8.21 8.69C7.80234 8.65652 7.39784 8.78449 7.08362 9.04634C6.76939 9.30819 6.57058 9.68299 6.53 10.09C6.56812 10.4988 6.76588 10.8761 7.08038 11.1401C7.39488 11.404 7.80077 11.5334 8.21 11.5C8.62087 11.4639 9.02934 11.5919 9.34605 11.8562C9.66275 12.1204 9.86193 12.4993 9.9 12.91C9.85946 13.3189 9.65923 13.6953 9.3428 13.9574C9.02637 14.2195 8.6193 14.3462 8.21 14.31C7.91033 14.3187 7.61341 14.2507 7.3474 14.1124C7.08139 13.9742 6.8551 13.7702 6.69 13.52M8.21 14.31V15.25M8.21 8.69V7.75M14 15.25V12.25M17.5 15.25V9.25M1.5 0.75H22.5C22.5 0.75 23.25 0.75 23.25 1.5V4C23.25 4 23.25 4.75 22.5 4.75H1.5C1.5 4.75 0.75 4.75 0.75 4V1.5C0.75 1.5 0.75 0.75 1.5 0.75Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M12 22.25V18M12 22.25C12.83 22.25 13.5 22.7 13.5 23.25M12 22.25C11.17 22.25 10.5 22.7 10.5 23.25M0.75 18H23.25M2.25 4.75H21.75V18H2.25V4.75Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Budget</span>
+      </a>
+
       <!-- Historique -->
-      <a routerLink="/dons-historique"
+      <a routerLink="/donor/dons-historique"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
@@ -712,7 +739,7 @@
     <!-- SIDEBAR ORGANISATION -->
     <ng-container *ngIf="isOrganisation">
       <!-- Rapport -->
-      <a routerLink="/rapport"
+      <a routerLink="/organization/rapport"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
@@ -729,7 +756,7 @@
       </a>
 
       <!-- Budget -->
-      <a routerLink="/budget"
+      <a routerLink="/organization/budget"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
@@ -746,7 +773,7 @@
       </a>
 
       <!-- Demande -->
-      <a routerLink="/demande-organisation"
+      <a routerLink="/organization/demande"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">

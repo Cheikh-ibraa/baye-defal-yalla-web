@@ -1,0 +1,4 @@
+/* html5-qrcode override — fond blanc, pas de bouton "Stop" affiché */
+#qr-region video { object-fit: cover; width: 100% !important; height: 100% !important; }
+#qr-region__dashboard { display: none !important; }
+#qr-region__scan_region { background: #000 !important; }

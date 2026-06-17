@@ -1,202 +1,185 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { BaseChartDirective } from 'ng2-charts';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
+import { catchError, of } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 Chart.register(...registerables);
 
-interface StatCard {
-  title: string;
-  value: string;
-  badge?: string;
-  badgeClass?: string;
-  icon: 'users' | 'requests' | 'critical' | 'money';
+interface DashboardData {
+  totalPatients:   number;
+  pendingRequests: number;
+  urgentCases:     number;
+  totalCollected:  number;
+  recentActivity:  { type: string; description: string; date: string }[];
+  monthlyChart:    { month: string; count: number }[];
+  viewByService:   { service: string; count: number }[];
 }
 
-interface ActivityItem {
-  title: string;
-  subtitle: string;
-  meta: string;
-  time: string;
-  icon: 'admission' | 'validation' | 'payment';
-}
+const SERVICE_ICONS: Record<string, string> = {
+  pharmacy:   'pharmacy',
+  pharmacie:  'pharmacy',
+  laboratory: 'laboratory',
+  laboratoire:'laboratory',
+  imagerie:           'imagerie',
+  'imagerie médicale':'imagerie',
+  chirurgie:          'imagerie',
+};
 
-interface ServiceItem {
-  name: string;
-  count: number;
-  progress: number;
-  barClass: string;
-  icon: 'pharmacy' | 'laboratory' | 'imagerie';
-}
+const SERVICE_COLORS: string[] = [
+  'bg-blue-900','bg-blue-500','bg-blue-400','bg-teal-500','bg-indigo-500',
+];
 
 @Component({
   selector: 'app-dashboard-hospital',
   standalone: true,
   imports: [CommonModule, BaseChartDirective],
   templateUrl: './dashboard-hospital.component.html',
-  styleUrls: ['./dashboard-hospital.component.css']
+  styleUrls: ['./dashboard-hospital.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DashboardHospitalComponent {
-  readonly selectedPeriod = 'Ce-mois';
+export class DashboardHospitalComponent implements OnInit {
 
-  readonly evolutionChartData: ChartConfiguration<'line'>['data'] = {
-    labels: ['JAN', 'FÉV', 'MAR', 'AVR', 'MAI', 'JUIN', 'JUIL', 'AOÛT', 'SEP', 'OCT', 'NOV', 'DÉC'],
-    datasets: [
-      {
-        data: [8, 18, 34, 40, 42, 50, 52, 53, 52, 56, 62, 71],
-        borderColor: '#2F7BF0',
-        backgroundColor: 'rgba(219, 234, 254, 0.7)',
-        fill: true,
-        tension: 0.42,
-        pointRadius: 4,
-        pointHoverRadius: 5,
-        pointBackgroundColor: '#FFFFFF',
-        pointBorderColor: '#2F7BF0',
-        pointBorderWidth: 3,
-        borderWidth: 3
-      }
-    ]
+  loading   = true;
+  loadError = '';
+
+  totalPatients   = 0;
+  pendingRequests = 0;
+  urgentCases     = 0;
+  totalCollected  = 0;
+
+  recentActivity: { type: string; description: string; date: string }[] = [];
+  viewByService:  { service: string; count: number; progress: number; barClass: string; icon: string }[] = [];
+
+  alertes: { label: string; sub: string }[] = [];
+
+  private readonly api = environment.baseUrl;
+
+  evolutionChartData: ChartConfiguration<'line'>['data'] = {
+    labels: ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'],
+    datasets: [{
+      data: new Array(12).fill(0),
+      borderColor: '#2F7BF0',
+      backgroundColor: 'rgba(219,234,254,0.7)',
+      fill: true,
+      tension: 0.42,
+      pointRadius: 4,
+      pointHoverRadius: 5,
+      pointBackgroundColor: '#FFFFFF',
+      pointBorderColor: '#2F7BF0',
+      pointBorderWidth: 3,
+      borderWidth: 3,
+    }],
   };
 
   readonly evolutionChartOptions: ChartConfiguration<'line'>['options'] = {
     responsive: true,
     maintainAspectRatio: false,
-    animation: {
-      duration: 400
-    },
+    animation: { duration: 400 },
     plugins: {
-      legend: {
-        display: false
-      },
-      tooltip: {
-        enabled: false
-      }
+      legend: { display: false },
+      tooltip: { enabled: true },
     },
-    layout: {
-      padding: {
-        top: 6,
-        right: 12,
-        bottom: 0,
-        left: 0
-      }
-    },
+    layout: { padding: { top: 6, right: 12, bottom: 0, left: 0 } },
     scales: {
       x: {
-        grid: {
-          display: false
-        },
-        border: {
-          display: false
-        },
-        ticks: {
-          color: '#6B7280',
-          font: {
-            size: 12,
-            weight: 600
-          },
-          padding: 14
-        }
+        grid: { display: false },
+        border: { display: false },
+        ticks: { color: '#6B7280', font: { size: 12, weight: 600 }, padding: 14 },
       },
       y: {
         display: false,
         beginAtZero: true,
-        grid: {
-          display: false
-        },
-        border: {
-          display: false
-        }
-      }
-    }
+        grid: { display: false },
+        border: { display: false },
+      },
+    },
   };
 
-  readonly statCards: StatCard[] = [
-    {
-      title: 'TOTAL PATIENTS',
-      value: '1,284',
-      badge: '+4.2%',
-      badgeClass: 'bg-emerald-50 text-emerald-500',
-      icon: 'users'
-    },
-    {
-      title: 'DEMANDES EN COURS',
-      value: '45',
-      badge: 'EN DIRECT',
-      badgeClass: 'text-[#94A3B8]',
-      icon: 'requests'
-    },
-    {
-      title: 'CAS CRITIQUES',
-      value: '12',
-      badge: '! URGENT',
-      badgeClass: 'bg-[#BA1A1A0D] text-[#BA1A1A]',
-      icon: 'critical'
-    },
-    {
-      title: 'TOTAL COLLECTÉ',
-      value: '45.2M CFA',
-      icon: 'money'
-    }
-  ];
+  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
 
-  readonly recentActivities: ActivityItem[] = [
-    {
-      title: 'Admission patient: Marie Diallo',
-      subtitle: 'Unité de Soins Intensifs',
-      meta: 'Chambre 204',
-      time: 'IL Y A 10 MIN',
-      icon: 'admission'
-    },
-    {
-      title: 'Demande validée: PT-2024-882',
-      subtitle: 'Service de Radiologie',
-      meta: 'Par Dr. Sow',
-      time: 'IL Y A 45 MIN',
-      icon: 'validation'
-    },
-    {
-      title: 'Paiement reçu: 850,000 CFA',
-      subtitle: 'Facture #F-9921',
-      meta: 'Assurance AXA',
-      time: 'IL Y A 2H',
-      icon: 'payment'
-    }
-  ];
+  ngOnInit(): void { this.load(); }
 
-  readonly serviceItems: ServiceItem[] = [
-    { name: 'Pharmacie', count: 128, progress: 76, barClass: 'bg-blue-900', icon: 'pharmacy' },
-    { name: 'Laboratoire', count: 56, progress: 46, barClass: 'bg-blue-500', icon: 'laboratory' },
-    { name: 'Imagerie', count: 24, progress: 22, barClass: 'bg-blue-400', icon: 'imagerie' }
-  ];
-
-  readonly quickMetrics = [
-    { label: 'Admissions', value: '18' },
-    { label: 'Urgences', value: '04' },
-    { label: 'Sorties', value: '11' },
-    { label: 'Taux d’occupation', value: '84%' }
-  ];
-
-  readonly hospitalMenuItems = [
-    { label: 'Tableau de bord', route: '/dashboard-hospital', active: true },
-    { label: 'Demandes', route: '/demandes-medicales' },
-    { label: 'Patients', route: '/patients-hospital' },
-    { label: 'Hospitalisations', route: '/hospitalisations' },
-    { label: 'Chirurgie', route: '/chirurgie' },
-    { label: 'Matériels', route: '/demande-materiels' },
-    { label: 'Paiements', route: '/paiements-hospital' }
-  ];
-
-  readonly timelineItems = [
-    { label: 'Admissions du jour', value: '24', color: '#104382' },
-    { label: 'Sorties validées', value: '16', color: '#0F9D8A' },
-    { label: 'Dossiers en attente', value: '09', color: '#F59E0B' }
-  ];
-
-  exportData(): void {
-    return;
+  private load(): void {
+    this.http.get<DashboardData>(`${this.api}/hospital/dashboard`)
+      .pipe(catchError(() => of(null)))
+      .subscribe(data => {
+        if (data) this.applyData(data);
+        else       this.loadError = 'Impossible de charger le tableau de bord.';
+        this.loading = false;
+        this.cdr.markForCheck();
+      });
   }
 
-  getProgressWidth(progress: number): string {
-    return `${progress}%`;
+  private applyData(d: DashboardData): void {
+    this.totalPatients   = d.totalPatients;
+    this.pendingRequests = d.pendingRequests;
+    this.urgentCases     = d.urgentCases;
+    this.totalCollected  = d.totalCollected;
+    this.recentActivity  = d.recentActivity ?? [];
+
+    // Graphique mensuel
+    if (d.monthlyChart?.length) {
+      this.evolutionChartData = {
+        ...this.evolutionChartData,
+        labels:   d.monthlyChart.map(m => m.month),
+        datasets: [{
+          ...this.evolutionChartData.datasets[0],
+          data: d.monthlyChart.map(m => m.count),
+        }],
+      };
+    }
+
+    // Vue par service
+    const maxCount = Math.max(1, ...d.viewByService.map(s => s.count));
+    this.viewByService = d.viewByService.map((s, i) => ({
+      service:  s.service,
+      count:    s.count,
+      progress: Math.round((s.count / maxCount) * 100),
+      barClass: SERVICE_COLORS[i % SERVICE_COLORS.length],
+      icon:     SERVICE_ICONS[s.service.toLowerCase()] ?? 'pharmacy',
+    }));
+
+    // Alertes dynamiques
+    this.alertes = [];
+    if (d.pendingRequests > 0) {
+      this.alertes.push({
+        label: `${d.pendingRequests} demande${d.pendingRequests > 1 ? 's' : ''} en attente de validation`,
+        sub: 'À traiter pour assurer la continuité des soins',
+      });
+    }
+    if (d.urgentCases > 0) {
+      this.alertes.push({
+        label: `${d.urgentCases} cas critique${d.urgentCases > 1 ? 's' : ''} actif${d.urgentCases > 1 ? 's' : ''}`,
+        sub: 'Patients en statut URGENT',
+      });
+    }
   }
+
+  formatCollected(amount: number): string {
+    if (amount >= 1_000_000) return (amount / 1_000_000).toFixed(1) + 'M';
+    if (amount >= 1_000)     return (amount / 1_000).toFixed(0) + 'K';
+    return amount.toFixed(0);
+  }
+
+  activityIcon(type: string): 'admission' | 'validation' | 'payment' {
+    if (type === 'admission') return 'admission';
+    if (type === 'payment')   return 'payment';
+    return 'validation';
+  }
+
+  timeAgo(dateStr: string): string {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const min  = Math.floor(diff / 60_000);
+    const h    = Math.floor(diff / 3_600_000);
+    const d    = Math.floor(diff / 86_400_000);
+    if (min < 1)  return 'À l\'instant';
+    if (min < 60) return `Il y a ${min} min`;
+    if (h   < 24) return `Il y a ${h}h`;
+    return `Il y a ${d}j`;
+  }
+
+  getProgressWidth(p: number): string { return `${p}%`; }
 }

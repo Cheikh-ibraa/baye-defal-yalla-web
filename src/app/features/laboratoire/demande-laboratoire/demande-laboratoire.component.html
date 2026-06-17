@@ -65,7 +65,7 @@
 
     </div>
 
-    <!-- ── FILTRE STATUT ────────────────────────────────────────────────────── -->
+    <!-- ── FILTRE STATUT + RECHERCHE ───────────────────────────────────────── -->
     <div class="flex items-center gap-3 flex-wrap">
 
       <!-- Dropdown statut -->
@@ -90,8 +90,16 @@
         </div>
       </div>
 
+      <!-- Champ de recherche -->
+      <div class="relative flex-1 min-w-[200px] max-w-xs">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" [(ngModel)]="searchQuery" (input)="onSearchInput()"
+          placeholder="Référence, patient…"
+          class="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#104382] shadow-sm">
+      </div>
+
       <!-- Compteur -->
-      <span class="text-sm text-gray-500 ml-auto">{{ demandes.length }} demande{{ demandes.length > 1 ? 's' : '' }}</span>
+      <span class="text-sm text-gray-500 ml-auto">{{ total }} demande{{ total > 1 ? 's' : '' }}</span>
     </div>
 
     <!-- ── LOADING ─────────────────────────────────────────────────────────── -->
@@ -153,6 +161,32 @@
       </div>
 
     </div>
+
+    <!-- ── PAGINATION ──────────────────────────────────────────────────────── -->
+    <div *ngIf="!loading && totalPages > 1" class="flex items-center justify-center gap-1.5 py-4">
+      <button (click)="goToPage(page - 1)" [disabled]="page === 1"
+        class="px-3 py-2 rounded-lg border border-gray-200 bg-white text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+        ‹
+      </button>
+      <ng-container *ngFor="let p of pageNumbers">
+        <button (click)="goToPage(p)"
+          class="px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors"
+          [class.bg-[#104382]]="p === page"
+          [class.text-white]="p === page"
+          [class.border-[#104382]]="p === page"
+          [class.bg-white]="p !== page"
+          [class.text-gray-600]="p !== page"
+          [class.border-gray-200]="p !== page"
+          [class.hover:bg-gray-50]="p !== page">
+          {{ p }}
+        </button>
+      </ng-container>
+      <button (click)="goToPage(page + 1)" [disabled]="page === totalPages"
+        class="px-3 py-2 rounded-lg border border-gray-200 bg-white text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+        ›
+      </button>
+    </div>
+
   </div>
 </div>
 

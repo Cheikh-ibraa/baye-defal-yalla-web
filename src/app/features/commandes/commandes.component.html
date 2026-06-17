@@ -549,6 +549,16 @@
               </div>
               <div><p class="text-xs text-[#647480] mb-1">Date</p><p class="text-sm font-semibold text-[#111827]">{{ formatDate(selectedOrder.createdAt) }}</p></div>
               <div><p class="text-xs text-[#647480] mb-1">Médicaments</p><p class="text-sm font-semibold text-[#111827]">{{ selectedOrder.items.length }}</p></div>
+              <!-- Traité par : quel pharmacien a validé en premier -->
+              <div *ngIf="getValidatorDisplay(selectedOrder)" class="col-span-2">
+                <p class="text-xs text-[#647480] mb-1">Traité par</p>
+                <div class="flex items-center gap-2">
+                  <div class="w-6 h-6 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 text-xs font-bold flex-shrink-0">
+                    {{ getValidatorDisplay(selectedOrder).charAt(0) }}
+                  </div>
+                  <p class="text-sm font-semibold text-[#111827]">{{ getValidatorDisplay(selectedOrder) }}</p>
+                </div>
+              </div>
             </div>
           </ng-container>
 

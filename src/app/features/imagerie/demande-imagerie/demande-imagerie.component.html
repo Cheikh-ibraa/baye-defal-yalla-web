@@ -13,85 +13,116 @@
       <div class="bg-white rounded-2xl p-5 shadow-sm flex items-start justify-between">
         <div class="flex flex-col gap-3">
           <p class="text-sm text-[#6B7280]">Demandes disponibles</p>
-          <p class="text-4xl font-semibold text-[#111827]">24</p>
-          <p class="text-xs text-[#104382]">↑ +12% vs hier</p>
+          <p class="text-4xl font-semibold text-[#111827]">{{ loading ? '…' : pendingCount }}</p>
+          <p class="text-xs text-[#104382]">En attente de traitement</p>
         </div>
         <div class="w-11 h-11 rounded-xl border border-gray-100 flex items-center justify-center shrink-0">
-<svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M5.5 11.5H5.646C7.852 11.5 10.027 12.014 12 13C13.973 13.986 16.148 14.5 18.354 14.5H19.5M6.5 0.5H15.5V0.75L14.793 1.722C13.8453 3.02452 13.3939 4.62265 13.52 6.22851C13.6461 7.83437 14.3416 9.34242 15.481 10.481L21.5 16.5C21.5 18.5 20.5 20 18.5 21.5H3.5C1.5 20 0.5 18.5 0.5 16.5L6.52 10.48C7.65903 9.34135 8.3541 7.83344 8.48005 6.22781C8.606 4.62217 8.15455 3.02433 7.207 1.722L6.5 0.75V0.5Z" stroke="#2C7BE5"/>
-</svg>
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <path d="M5.5 11.5H5.646C7.852 11.5 10.027 12.014 12 13C13.973 13.986 16.148 14.5 18.354 14.5H19.5M6.5 0.5H15.5V0.75L14.793 1.722C13.8453 3.02452 13.3939 4.62265 13.52 6.22851C13.6461 7.83437 14.3416 9.34242 15.481 10.481L21.5 16.5C21.5 18.5 20.5 20 18.5 21.5H3.5C1.5 20 0.5 18.5 0.5 16.5L6.52 10.48C7.65903 9.34135 8.3541 7.83344 8.48005 6.22781C8.606 4.62217 8.15455 3.02433 7.207 1.722L6.5 0.75V0.5Z" stroke="#2C7BE5"/>
+          </svg>
         </div>
       </div>
 
       <div class="bg-white rounded-2xl p-5 shadow-sm flex items-start justify-between">
         <div class="flex flex-col gap-3">
           <p class="text-sm text-[#6B7280]">Demandes acceptées</p>
-          <p class="text-4xl font-semibold text-[#111827]">158</p>
-          <p class="text-xs text-[#104382]">↑ +5.4% ce mois</p>
+          <p class="text-4xl font-semibold text-[#111827]">{{ loading ? '…' : acceptedCount }}</p>
+          <p class="text-xs text-[#104382]">En cours de traitement</p>
         </div>
         <div class="w-11 h-11 rounded-xl border border-gray-100 flex items-center justify-center shrink-0">
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M21.7987 10.0005C22.2554 12.2418 21.9299 14.5719 20.8765 16.6023C19.8231 18.6326 18.1056 20.2405 16.0102 21.1578C13.9148 22.0751 11.5683 22.2463 9.36196 21.6428C7.15563 21.0394 5.22285 19.6979 3.88593 17.8419C2.54902 15.9859 1.88878 13.7277 2.01532 11.4439C2.14186 9.16001 3.04754 6.98857 4.58131 5.29165C6.11508 3.59473 8.18424 2.47491 10.4437 2.11893C12.7032 1.76295 15.0164 2.19234 16.9977 3.33548" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M9 11L12 14L22 4" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M21.7987 10.0005C22.2554 12.2418 21.9299 14.5719 20.8765 16.6023C19.8231 18.6326 18.1056 20.2405 16.0102 21.1578C13.9148 22.0751 11.5683 22.2463 9.36196 21.6428C7.15563 21.0394 5.22285 19.6979 3.88593 17.8419C2.54902 15.9859 1.88878 13.7277 2.01532 11.4439C2.14186 9.16001 3.04754 6.98857 4.58131 5.29165C6.11508 3.59473 8.18424 2.47491 10.4437 2.11893C12.7032 1.76295 15.0164 2.19234 16.9977 3.33548" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 11L12 14L22 4" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </div>
       </div>
 
       <div class="bg-white rounded-2xl p-5 shadow-sm flex items-start justify-between">
         <div class="flex flex-col gap-3">
           <p class="text-sm text-[#6B7280]">Analyses réalisées</p>
-          <p class="text-4xl font-semibold text-[#111827]">1 402</p>
-          <p class="text-xs text-[#104382]">↑ +22 depuis lundi</p>
+          <p class="text-4xl font-semibold text-[#111827]">{{ loading ? '…' : completedCount }}</p>
+          <p class="text-xs text-[#104382]">Examens terminés</p>
         </div>
         <div class="w-11 h-11 rounded-xl border border-gray-100 flex items-center justify-center shrink-0">
-<svg width="14" height="19" viewBox="0 0 14 19" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M0 19V17H5V15C3.61667 15 2.4375 14.5125 1.4625 13.5375C0.4875 12.5625 0 11.3833 0 10C0 8.98333 0.279167 8.05833 0.8375 7.225C1.39583 6.39167 2.15 5.78333 3.1 5.4C3.23333 4.83333 3.52917 4.375 3.9875 4.025C4.44583 3.675 4.96667 3.5 5.55 3.5L5 1.95L5.95 1.6L5.6 0.7L7.5 0L7.8 0.95L8.75 0.6L11.5 8.1L10.55 8.45L10.9 9.4L9 10.1L8.7 9.15L7.75 9.5L7.15 7.85C6.9 8.08333 6.6125 8.25833 6.2875 8.375C5.9625 8.49167 5.63333 8.53333 5.3 8.5C4.93333 8.46667 4.59167 8.35417 4.275 8.1625C3.95833 7.97083 3.68333 7.73333 3.45 7.45C3 7.71667 2.64583 8.075 2.3875 8.525C2.12917 8.975 2 9.46667 2 10C2 10.8333 2.29167 11.5417 2.875 12.125C3.45833 12.7083 4.16667 13 5 13H13V15H8V17H14V19H0ZM8.65 7.55L9.55 7.2L7.85 2.5L6.9 2.85L8.65 7.55ZM5.5 7C5.78333 7 6.02083 6.90417 6.2125 6.7125C6.40417 6.52083 6.5 6.28333 6.5 6C6.5 5.71667 6.40417 5.47917 6.2125 5.2875C6.02083 5.09583 5.78333 5 5.5 5C5.21667 5 4.97917 5.09583 4.7875 5.2875C4.59583 5.47917 4.5 5.71667 4.5 6C4.5 6.28333 4.59583 6.52083 4.7875 6.7125C4.97917 6.90417 5.21667 7 5.5 7Z" fill="#9333EA"/>
-</svg>
+          <svg width="14" height="19" viewBox="0 0 14 19" fill="none">
+            <path d="M0 19V17H5V15C3.61667 15 2.4375 14.5125 1.4625 13.5375C0.4875 12.5625 0 11.3833 0 10C0 8.98333 0.279167 8.05833 0.8375 7.225C1.39583 6.39167 2.15 5.78333 3.1 5.4C3.23333 4.83333 3.52917 4.375 3.9875 4.025C4.44583 3.675 4.96667 3.5 5.55 3.5L5 1.95L5.95 1.6L5.6 0.7L7.5 0L7.8 0.95L8.75 0.6L11.5 8.1L10.55 8.45L10.9 9.4L9 10.1L8.7 9.15L7.75 9.5L7.15 7.85C6.9 8.08333 6.6125 8.25833 6.2875 8.375C5.9625 8.49167 5.63333 8.53333 5.3 8.5C4.93333 8.46667 4.59167 8.35417 4.275 8.1625C3.95833 7.97083 3.68333 7.73333 3.45 7.45C3 7.71667 2.64583 8.075 2.3875 8.525C2.12917 8.975 2 9.46667 2 10C2 10.8333 2.29167 11.5417 2.875 12.125C3.45833 12.7083 4.16667 13 5 13H13V15H8V17H14V19H0ZM8.65 7.55L9.55 7.2L7.85 2.5L6.9 2.85L8.65 7.55ZM5.5 7C5.78333 7 6.02083 6.90417 6.2125 6.7125C6.40417 6.52083 6.5 6.28333 6.5 6C6.5 5.71667 6.40417 5.47917 6.2125 5.2875C6.02083 5.09583 5.78333 5 5.5 5C5.21667 5 4.97917 5.09583 4.7875 5.2875C4.59583 5.47917 4.5 5.71667 4.5 6C4.5 6.28333 4.59583 6.52083 4.7875 6.7125C4.97917 6.90417 5.21667 7 5.5 7Z" fill="#9333EA"/>
+          </svg>
         </div>
       </div>
 
       <div class="bg-white rounded-2xl p-5 shadow-sm flex items-start justify-between">
         <div class="flex flex-col gap-3">
-          <p class="text-sm text-[#6B7280]">Revenus du mois</p>
-          <p class="text-4xl font-semibold text-[#111827]">2.2M <span class="text-base font-medium text-[#6B7280]">FCFA</span></p>
-          <p class="text-xs text-red-500">↓ -2.1% prévision</p>
+          <p class="text-sm text-[#6B7280]">Total demandes</p>
+          <p class="text-4xl font-semibold text-[#111827]">{{ loading ? '…' : (pendingCount + acceptedCount + completedCount) }}</p>
+          <p class="text-xs text-[#6B7280]">Toutes périodes confondues</p>
         </div>
         <div class="w-11 h-11 rounded-xl border border-gray-100 flex items-center justify-center shrink-0">
-<svg width="22" height="16" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M13 9C12.1667 9 11.4583 8.70833 10.875 8.125C10.2917 7.54167 10 6.83333 10 6C10 5.16667 10.2917 4.45833 10.875 3.875C11.4583 3.29167 12.1667 3 13 3C13.8333 3 14.5417 3.29167 15.125 3.875C15.7083 4.45833 16 5.16667 16 6C16 6.83333 15.7083 7.54167 15.125 8.125C14.5417 8.70833 13.8333 9 13 9ZM6 12C5.45 12 4.97917 11.8042 4.5875 11.4125C4.19583 11.0208 4 10.55 4 10V2C4 1.45 4.19583 0.979167 4.5875 0.5875C4.97917 0.195833 5.45 0 6 0H20C20.55 0 21.0208 0.195833 21.4125 0.5875C21.8042 0.979167 22 1.45 22 2V10C22 10.55 21.8042 11.0208 21.4125 11.4125C21.0208 11.8042 20.55 12 20 12H6ZM8 10H18C18 9.45 18.1958 8.97917 18.5875 8.5875C18.9792 8.19583 19.45 8 20 8V4C19.45 4 18.9792 3.80417 18.5875 3.4125C18.1958 3.02083 18 2.55 18 2H8C8 2.55 7.80417 3.02083 7.4125 3.4125C7.02083 3.80417 6.55 4 6 4V8C6.55 8 7.02083 8.19583 7.4125 8.5875C7.80417 8.97917 8 9.45 8 10ZM19 16H2C1.45 16 0.979167 15.8042 0.5875 15.4125C0.195833 15.0208 0 14.55 0 14V3H2V14H19V16ZM6 10V2V10Z" fill="#CA8A04"/>
-</svg>
+          <svg width="22" height="16" viewBox="0 0 22 16" fill="none">
+            <path d="M13 9C12.1667 9 11.4583 8.70833 10.875 8.125C10.2917 7.54167 10 6.83333 10 6C10 5.16667 10.2917 4.45833 10.875 3.875C11.4583 3.29167 12.1667 3 13 3C13.8333 3 14.5417 3.29167 15.125 3.875C15.7083 4.45833 16 5.16667 16 6C16 6.83333 15.7083 7.54167 15.125 8.125C14.5417 8.70833 13.8333 9 13 9ZM6 12C5.45 12 4.97917 11.8042 4.5875 11.4125C4.19583 11.0208 4 10.55 4 10V2C4 1.45 4.19583 0.979167 4.5875 0.5875C4.97917 0.195833 5.45 0 6 0H20C20.55 0 21.0208 0.195833 21.4125 0.5875C21.8042 0.979167 22 1.45 22 2V10C22 10.55 21.8042 11.0208 21.4125 11.4125C21.0208 11.8042 20.55 12 20 12H6ZM8 10H18C18 9.45 18.1958 8.97917 18.5875 8.5875C18.9792 8.19583 19.45 8 20 8V4C19.45 4 18.9792 3.80417 18.5875 3.4125C18.1958 3.02083 18 2.55 18 2H8C8 2.55 7.80417 3.02083 7.4125 3.4125C7.02083 3.80417 6.55 4 6 4V8C6.55 8 7.02083 8.19583 7.4125 8.5875C7.80417 8.97917 8 9.45 8 10ZM19 16H2C1.45 16 0.979167 15.8042 0.5875 15.4125C0.195833 15.0208 0 14.55 0 14V3H2V14H19V16ZM6 10V2V10Z" fill="#CA8A04"/>
+          </svg>
         </div>
       </div>
 
     </div>
 
+    <!-- ── LOADING ───────────────────────────────────────────────────────── -->
+    <div *ngIf="loading" class="flex items-center justify-center py-16 gap-3">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2C7BE5]"></div>
+      <span class="text-sm text-gray-500">Chargement des demandes…</span>
+    </div>
+
+    <!-- ── EMPTY ─────────────────────────────────────────────────────────── -->
+    <div *ngIf="!loading && demandes.length === 0"
+      class="bg-white rounded-2xl p-12 text-center shadow-sm">
+      <p class="text-lg font-semibold text-gray-400">Aucune demande en attente</p>
+      <p class="text-sm text-gray-400 mt-1">Toutes les demandes ont été traitées.</p>
+    </div>
+
     <!-- ── GRILLE DEMANDES ────────────────────────────────────────────────── -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+    <div *ngIf="!loading && demandes.length > 0"
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
 
       <div *ngFor="let demande of demandes"
         class="bg-white rounded-2xl p-5 shadow-sm flex flex-col gap-4 hover:shadow-md transition-shadow">
 
+        <!-- Top row: priority + time -->
         <div class="flex items-center justify-between">
           <span class="px-2.5 py-1 rounded text-xs font-semibold tracking-wide"
             [ngClass]="getPriorityClass(demande.priority)">
             {{ getPriorityLabel(demande.priority) }}
           </span>
           <span class="flex items-center gap-1 text-xs text-[#94A3B8]">
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" stroke="#94A3B8" stroke-width="1.2"/><path d="M6.5 3.5v3l2 1.5" stroke="#94A3B8" stroke-width="1.2" stroke-linecap="round"/></svg>
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+              <circle cx="6.5" cy="6.5" r="5.5" stroke="#94A3B8" stroke-width="1.2"/>
+              <path d="M6.5 3.5v3l2 1.5" stroke="#94A3B8" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
             {{ demande.timeAgo }}
           </span>
         </div>
 
+        <!-- Title + description -->
         <div>
-          <h3 class="text-base font-bold text-[#1E293B] mb-1.5">{{ demande.title }}</h3>
+          <h3 class="text-base font-bold text-[#1E293B] mb-1.5">{{ demande.title || 'Examen d\'imagerie' }}</h3>
           <p class="text-sm text-[#64748B] leading-relaxed line-clamp-3">{{ demande.description }}</p>
         </div>
 
+        <!-- Patient info (replaces distance/lieu) -->
         <div class="flex items-center gap-1.5 text-sm text-[#64748B]">
-          <svg width="12" height="15" viewBox="0 0 12 15" fill="none"><path d="M6 7.5C6.4125 7.5 6.76562 7.35312 7.05937 7.05937C7.35312 6.76562 7.5 6.4125 7.5 6C7.5 5.5875 7.35312 5.23438 7.05937 4.94063C6.76562 4.64688 6.4125 4.5 6 4.5C5.5875 4.5 5.23438 4.64688 4.94063 4.94063C4.64688 5.23438 4.5 5.5875 4.5 6C4.5 6.4125 4.64688 6.76562 4.94063 7.05937C5.23438 7.35312 5.5875 7.5 6 7.5ZM6 13.0125C7.525 11.6125 8.65625 10.3406 9.39375 9.19687C10.1313 8.05312 10.5 7.0375 10.5 6.15C10.5 4.7875 10.0656 3.67188 9.19687 2.80312C8.32812 1.93437 7.2625 1.5 6 1.5C4.7375 1.5 3.67188 1.93437 2.80312 2.80312C1.93437 3.67188 1.5 4.7875 1.5 6.15C1.5 7.0375 1.86875 8.05312 2.60625 9.19687C3.34375 10.3406 4.475 11.6125 6 13.0125ZM6 15C3.9875 13.2875 2.48438 11.6969 1.49063 10.2281C0.496875 8.75937 0 7.4 0 6.15C0 4.275 0.603125 2.78125 1.80938 1.66875C3.01562 0.55625 4.4125 0 6 0C7.5875 0 8.98438 0.55625 10.1906 1.66875C11.3969 2.78125 12 4.275 12 6.15C12 7.4 11.5031 8.75937 10.5094 10.2281C9.51562 11.6969 8.0125 13.2875 6 15Z" fill="#104382"/></svg>
-          <span>{{ demande.distance }} • {{ demande.lieu }}</span>
+          <svg width="12" height="15" viewBox="0 0 24 24" fill="none" stroke="#104382" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+          <span class="truncate">{{ demande.patientName }} • {{ demande.patientRef }}</span>
         </div>
 
+        <!-- Doctor info -->
+        <div class="flex items-center gap-1.5 text-sm text-[#64748B]">
+          <svg width="12" height="15" viewBox="0 0 24 24" fill="none" stroke="#104382" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+          <span class="truncate">{{ demande.doctorName }}</span>
+        </div>
+
+        <!-- Buttons -->
         <div class="flex items-center gap-3 mt-auto pt-1">
           <button (click)="accepter(demande)"
             class="flex-1 py-2.5 bg-[#104382] hover:bg-[#0D3568] text-white rounded-lg text-sm font-semibold transition-colors">
@@ -118,9 +149,9 @@
     <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100">
       <div class="flex items-center gap-3">
         <div class="w-9 h-9 rounded-lg bg-[#1E4D9B1A] flex items-center justify-center">
-         <svg width="20" height="18" viewBox="0 0 20 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M2 18C1.45 18 0.979167 17.8042 0.5875 17.4125C0.195833 17.0208 0 16.55 0 16V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H18C18.55 0 19.0208 0.195833 19.4125 0.5875C19.8042 0.979167 20 1.45 20 2V16C20 16.55 19.8042 17.0208 19.4125 17.4125C19.0208 17.8042 18.55 18 18 18H2ZM2 16H18V2H2V16ZM3 14H8V12H3V14ZM12.55 12L17.5 7.05L16.075 5.625L12.55 9.175L11.125 7.75L9.725 9.175L12.55 12ZM3 10H8V8H3V10ZM3 6H8V4H3V6ZM2 16V2V16Z" fill="#00367C"/>
-</svg>
+          <svg width="20" height="18" viewBox="0 0 20 18" fill="none">
+            <path d="M2 18C1.45 18 0.979167 17.8042 0.5875 17.4125C0.195833 17.0208 0 16.55 0 16V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H18C18.55 0 19.0208 0.195833 19.4125 0.5875C19.8042 0.979167 20 1.45 20 2V16C20 16.55 19.8042 17.0208 19.4125 17.4125C19.0208 17.8042 18.55 18 18 18H2ZM2 16H18V2H2V16ZM3 14H8V12H3V14ZM12.55 12L17.5 7.05L16.075 5.625L12.55 9.175L11.125 7.75L9.725 9.175L12.55 12ZM3 10H8V8H3V10ZM3 6H8V4H3V6ZM2 16V2V16Z" fill="#00367C"/>
+          </svg>
         </div>
         <h2 class="text-xl sm:text-2xl font-bold text-[#00367C]">Accepter la demande</h2>
       </div>
@@ -140,19 +171,20 @@
           <!-- Patient -->
           <div class="flex items-center gap-3">
             <div class="w-12 h-12 rounded-full bg-gray-300 overflow-hidden shrink-0">
-              <div class="w-full h-full bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center text-white text-sm font-semibold">FD</div>
+              <div class="w-full h-full bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center text-white text-sm font-semibold">
+                {{ getSelectedInitials() }}
+              </div>
             </div>
             <div>
               <p class="text-xs text-[#737782] uppercase tracking-wider mb-0.5">Patient</p>
-              <p class="text-sm sm:text-base text-[#131B2E]">Fatou Diop</p>
-              <p class="text-sm sm:text-base text-[#434751]">Réf: #MED-92831</p>
+              <p class="text-sm sm:text-base text-[#131B2E]">{{ selectedDemande?.patientName }}</p>
+              <p class="text-sm sm:text-base text-[#434751]">Réf: {{ selectedDemande?.patientRef }}</p>
             </div>
           </div>
           <!-- Médecin -->
           <div class="text-right">
             <p class="text-xs text-[#737782] uppercase tracking-wider mb-0.5">Médecin prescripteur</p>
-            <p class="text-sm sm:text-base text-[#131B2E]">Dr Mamadou Ndiaye</p>
-            <p class="text-sm text-[#434751]">Clinique de l'Espoir</p>
+            <p class="text-sm sm:text-base text-[#131B2E]">{{ selectedDemande?.doctorName }}</p>
           </div>
         </div>
 
@@ -160,8 +192,13 @@
         <div>
           <p class="text-xs text-[#737782] uppercase tracking-wider mb-2">Examens demandés</p>
           <div class="flex flex-wrap gap-2">
-            <span class="px-3 py-1 bg-[#2C7BE51A] text-[#00367C] text-sm rounded-full">IRM</span>
-            <span class="px-3 py-1 bg-[#2C7BE51A] text-[#00367C] text-sm rounded-full">Scanner thoraciques</span>
+            <ng-container *ngIf="selectedDemande?.examTypes?.length; else titleFallback">
+              <span *ngFor="let ex of selectedDemande?.examTypes"
+                class="px-3 py-1 bg-[#2C7BE51A] text-[#00367C] text-sm rounded-full">{{ ex }}</span>
+            </ng-container>
+            <ng-template #titleFallback>
+              <span class="px-3 py-1 bg-[#2C7BE51A] text-[#00367C] text-sm rounded-full">{{ selectedDemande?.title }}</span>
+            </ng-template>
           </div>
         </div>
       </div>
@@ -180,17 +217,13 @@
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="block text-sm font-semibold text-[#1E293B] mb-2">Date du rendez-vous</label>
-          <div class="relative">
-            <input type="date" [(ngModel)]="form.date"
-              class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#104382]">
-          </div>
+          <input type="date" [(ngModel)]="form.date"
+            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#104382]">
         </div>
         <div>
           <label class="block text-sm font-semibold text-[#1E293B] mb-2">Heure</label>
-          <div class="relative">
-            <input type="time" [(ngModel)]="form.heure"
-              class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#104382]">
-          </div>
+          <input type="time" [(ngModel)]="form.heure"
+            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#104382]">
         </div>
       </div>
 
@@ -205,16 +238,20 @@
 
     <!-- Footer -->
     <div class="flex items-center gap-4 px-6 py-4 border-t border-gray-100">
-      <button (click)="fermerModal()"
-        class="flex-1 py-3 border border-gray-200 rounded-xl text-base font-semibold text-[#434751] hover:bg-gray-50 transition-colors">
+      <button (click)="fermerModal()" [disabled]="isSaving"
+        class="flex-1 py-3 border border-gray-200 rounded-xl text-base font-semibold text-[#434751] hover:bg-gray-50 transition-colors disabled:opacity-50">
         Annuler
       </button>
-      <button (click)="confirmerAcceptation()"
-        class="flex-1 py-3 bg-[#104382] hover:bg-[#0D3568] text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-colors">
-       <svg width="22" height="21" viewBox="0 0 22 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M7.6 21L5.7 17.8L2.1 17L2.45 13.3L0 10.5L2.45 7.7L2.1 4L5.7 3.2L7.6 0L11 1.45L14.4 0L16.3 3.2L19.9 4L19.55 7.7L22 10.5L19.55 13.3L19.9 17L16.3 17.8L14.4 21L11 19.55L7.6 21ZM8.45 18.45L11 17.35L13.6 18.45L15 16.05L17.75 15.4L17.5 12.6L19.35 10.5L17.5 8.35L17.75 5.55L15 4.95L13.55 2.55L11 3.65L8.4 2.55L7 4.95L4.25 5.55L4.5 8.35L2.65 10.5L4.5 12.6L4.25 15.45L7 16.05L8.45 18.45ZM9.95 14.05L15.6 8.4L14.2 6.95L9.95 11.2L7.8 9.1L6.4 10.5L9.95 14.05Z" fill="white"/>
-</svg>
-        Confirmer l'acceptation
+      <button (click)="confirmerAcceptation()" [disabled]="isSaving || !form.montant || !form.date || !form.heure"
+        class="flex-1 py-3 bg-[#104382] hover:bg-[#0D3568] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-colors">
+        <div *ngIf="isSaving" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+        <span *ngIf="isSaving">Envoi…</span>
+        <ng-container *ngIf="!isSaving">
+          <svg width="22" height="21" viewBox="0 0 22 21" fill="none">
+            <path d="M7.6 21L5.7 17.8L2.1 17L2.45 13.3L0 10.5L2.45 7.7L2.1 4L5.7 3.2L7.6 0L11 1.45L14.4 0L16.3 3.2L19.9 4L19.55 7.7L22 10.5L19.55 13.3L19.9 17L16.3 17.8L14.4 21L11 19.55L7.6 21ZM9.95 14.05L15.6 8.4L14.2 6.95L9.95 11.2L7.8 9.1L6.4 10.5L9.95 14.05Z" fill="white"/>
+          </svg>
+          Confirmer l'acceptation
+        </ng-container>
       </button>
     </div>
 
@@ -224,12 +261,11 @@
 <!-- ── SUCCESS : Demande acceptée ────────────────────────────────────────── -->
 <div *ngIf="showSuccessModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
   <div class="bg-white rounded-2xl shadow-xl px-10 py-8 flex flex-col items-center gap-3 max-w-xl w-full">
-    <!-- Icône check dans carré pointillé -->
-      <div class="flex items-center justify-center">
-       <svg width="95" height="95" viewBox="0 0 95 95" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M70.2452 34.0264C70.9107 34.7294 71.27 35.6677 71.2443 36.6353C71.2186 37.6029 70.81 38.5208 70.1082 39.1875L43.3438 64.7644C42.6518 65.4153 41.736 65.7751 40.7861 65.7692C39.8501 65.7728 38.9494 65.4125 38.2741 64.7644L24.8918 51.976C24.5207 51.6521 24.2188 51.2566 24.0044 50.8131C23.79 50.3696 23.6675 49.8874 23.6442 49.3954C23.6209 48.9033 23.6973 48.4117 23.8689 47.9499C24.0405 47.4882 24.3037 47.0659 24.6426 46.7085C24.9816 46.3511 25.3893 46.0659 25.8413 45.87C26.2932 45.6742 26.7801 45.5718 27.2727 45.5689C27.7653 45.566 28.2534 45.6628 28.7076 45.8534C29.1618 46.0439 29.5728 46.3244 29.9159 46.6779L40.7861 57.0457L65.0841 33.8894C65.7871 33.224 66.7254 32.8646 67.693 32.8903C68.6606 32.916 69.5785 33.3246 70.2452 34.0264ZM95 47.5C95 56.8946 92.2142 66.0782 86.9948 73.8896C81.7754 81.7009 74.357 87.7891 65.6775 91.3843C56.998 94.9794 47.4473 95.9201 38.2332 94.0873C29.0191 92.2545 20.5554 87.7305 13.9124 81.0876C7.26945 74.4446 2.74552 65.9809 0.91272 56.7668C-0.920077 47.5527 0.020581 38.002 3.61574 29.3225C7.2109 20.643 13.2991 13.2246 21.1104 8.00519C28.9218 2.78583 38.1054 0 47.5 0C60.0904 0.0241427 72.1582 5.03634 81.0609 13.9391C89.9637 22.8418 94.9759 34.9096 95 47.5ZM87.6923 47.5C87.6923 39.5507 85.3351 31.7799 80.9187 25.1703C76.5023 18.5608 70.2251 13.4092 62.8809 10.3671C55.5368 7.32509 47.4554 6.52915 39.6589 8.07997C31.8623 9.6308 24.7008 13.4587 19.0798 19.0797C13.4588 24.7007 9.63082 31.8623 8.08 39.6589C6.52917 47.4554 7.32511 55.5367 10.3672 62.8809C13.4092 70.2251 18.5608 76.5023 25.1704 80.9187C31.78 85.3351 39.5507 87.6923 47.5 87.6923C58.156 87.6802 68.372 83.4418 75.9069 75.9069C83.4418 68.372 87.6802 58.1559 87.6923 47.5Z" fill="#00B894"/>
-</svg>
-      </div>
+    <div class="flex items-center justify-center">
+      <svg width="95" height="95" viewBox="0 0 95 95" fill="none">
+        <path d="M70.2452 34.0264C70.9107 34.7294 71.27 35.6677 71.2443 36.6353C71.2186 37.6029 70.81 38.5208 70.1082 39.1875L43.3438 64.7644C42.6518 65.4153 41.736 65.7751 40.7861 65.7692C39.8501 65.7728 38.9494 65.4125 38.2741 64.7644L24.8918 51.976C24.5207 51.6521 24.2188 51.2566 24.0044 50.8131C23.79 50.3696 23.6675 49.8874 23.6442 49.3954C23.6209 48.9033 23.6973 48.4117 23.8689 47.9499C24.0405 47.4882 24.3037 47.0659 24.6426 46.7085C24.9816 46.3511 25.3893 46.0659 25.8413 45.87C26.2932 45.6742 26.7801 45.5718 27.2727 45.5689C27.7653 45.566 28.2534 45.6628 28.7076 45.8534C29.1618 46.0439 29.5728 46.3244 29.9159 46.6779L40.7861 57.0457L65.0841 33.8894C65.7871 33.224 66.7254 32.8646 67.693 32.8903C68.6606 32.916 69.5785 33.3246 70.2452 34.0264ZM95 47.5C95 56.8946 92.2142 66.0782 86.9948 73.8896C81.7754 81.7009 74.357 87.7891 65.6775 91.3843C56.998 94.9794 47.4473 95.9201 38.2332 94.0873C29.0191 92.2545 20.5554 87.7305 13.9124 81.0876C7.26945 74.4446 2.74552 65.9809 0.91272 56.7668C-0.920077 47.5527 0.020581 38.002 3.61574 29.3225C7.2109 20.643 13.2991 13.2246 21.1104 8.00519C28.9218 2.78583 38.1054 0 47.5 0C60.0904 0.0241427 72.1582 5.03634 81.0609 13.9391C89.9637 22.8418 94.9759 34.9096 95 47.5ZM87.6923 47.5C87.6923 39.5507 85.3351 31.7799 80.9187 25.1703C76.5023 18.5608 70.2251 13.4092 62.8809 10.3671C55.5368 7.32509 47.4554 6.52915 39.6589 8.07997C31.8623 9.6308 24.7008 13.4587 19.0798 19.0797C13.4588 24.7007 9.63082 31.8623 8.08 39.6589C6.52917 47.4554 7.32511 55.5367 10.3672 62.8809C13.4092 70.2251 18.5608 76.5023 25.1704 80.9187C31.78 85.3351 39.5507 87.6923 47.5 87.6923C58.156 87.6802 68.372 83.4418 75.9069 75.9069C83.4418 68.372 87.6802 58.1559 87.6923 47.5Z" fill="#00B894"/>
+      </svg>
+    </div>
     <p class="mt-3 text-xl font-semibold text-[#231F20] text-center">Demande acceptée</p>
   </div>
 </div>

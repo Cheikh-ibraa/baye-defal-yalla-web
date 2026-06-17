@@ -13,9 +13,9 @@
         </button>
         <div>
           <h1 class="text-2xl font-bold tracking-tight text-[#0F172A] sm:text-3xl">
-            {{ detail?.titre ?? '—' }}
+            {{ titre }}
           </h1>
-          <p class="mt-1 text-sm text-[#64748B]">{{ detail?.description }}</p>
+          <p class="mt-1 text-sm text-[#64748B]">{{ description }}</p>
         </div>
       </div>
 
@@ -95,7 +95,7 @@
 
     <!-- Cartes fournisseurs -->
     <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-      <article *ngFor="let f of detail?.fournisseurs"
+      <article *ngFor="let f of fournisseurs"
         class="flex flex-col rounded-2xl bg-white p-6 ring-1 ring-slate-100 transition hover:shadow-sm">
 
         <!-- Nom + note -->
@@ -166,7 +166,7 @@
           </div>
         </div>
 
-        <button (click)="openDevis(f.slug)"
+        <button (click)="openDevis(f.id)"
           class="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border border-[#00339E] py-3 text-sm font-bold text-[#00339E] transition hover:bg-[#EFF6FF]">
           Voir détail
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">

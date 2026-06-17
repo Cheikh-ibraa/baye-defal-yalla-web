@@ -86,11 +86,12 @@ export class DashboardLabComponent implements OnInit {
   ngOnInit(): void {
     forkJoin({
       dashboard: this.http.get<LabDashboard>(`${this.api}/diagnostic/lab/dashboard`),
-      orders:    this.http.get<any[]>(`${this.api}/diagnostic/lab-orders/all`)
+      orders:    this.http.get<any>(`${this.api}/diagnostic/lab-orders/all`, { params: { page: '1', limit: '10' } })
     }).subscribe({
       next: ({ dashboard, orders }) => {
         this.applyDashboard(dashboard);
-        this.resolveNamesAndApplyOrders(orders);
+        const list = Array.isArray(orders) ? orders : (orders?.data ?? []);
+        this.resolveNamesAndApplyOrders(list);
       },
       error: () => {
         this.loading = false;
@@ -196,7 +197,7 @@ export class DashboardLabComponent implements OnInit {
       URGENT:   'Urgent',
     };
 
-    this.examens = (orders ?? []).slice(0, 10).map(o => {
+    this.examens = (orders ?? []).map(o => {
       const patientName = names[o.patientId] ?? `Patient ${(o.patientId ?? '').slice(-6).toUpperCase()}`;
       const doctorName  = names[o.doctorId]  ? `Dr. ${names[o.doctorId]}` : `Dr. ${(o.doctorId ?? '').slice(-6).toUpperCase()}`;
       const type  = o.categories?.length > 0 ? o.categories.join(', ') : (o.tests?.[0]?.testName ?? 'Bilan');

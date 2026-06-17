@@ -1,6 +1,24 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
+
+interface NeedTypeItem   { type: string; count: number; amount: number; }
+interface BeneficiaryItem { type: string; count: number; }
+
+interface ReportDetail {
+  period: string;
+  label:  string;
+  totalAllocated:      number;
+  usedAmount:          number;
+  remaining:           number;
+  beneficiairesAides:  number;
+  livesChanged:        number;
+  needTypeBreakdown:   NeedTypeItem[];
+  beneficiaryBreakdown: BeneficiaryItem[];
+  activities:          { completed: number; inProgress: number; pending: number };
+}
 
 @Component({
   selector: 'app-detail-rapport',
@@ -10,46 +28,55 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
   styleUrls: ['./detail-rapport.component.css']
 })
 export class DetailRapportComponent implements OnInit {
-  rapportId: string | null = null;
-  moisRapport = 'Avril 2026';
+  period = '';
+  report: ReportDetail | null = null;
+  isLoading = true;
+  error: string | null = null;
 
-  // KPI states matching the screenshot (defaulting to April 2026)
-  budgetUtilise = '425 000 FCFA';
-  budgetRestant = '3 575 000 FCFA';
-  beneficiairesAides = '3 575 000 FCFA'; // Mocked typo exactly from the image
+  private get authHeaders() {
+    const token = localStorage.getItem('access_token');
+    return { Authorization: `Bearer ${token}` };
+  }
 
   constructor(
-    private route: ActivatedRoute,
-    private location: Location
+    private route:    ActivatedRoute,
+    private location: Location,
+    private http:     HttpClient,
   ) {}
 
   ngOnInit(): void {
-    this.rapportId = this.route.snapshot.paramMap.get('id');
-    if (this.rapportId) {
-      const idNum = parseInt(this.rapportId, 10);
-      const months = ['Avril 2026', 'Mars 2026', 'Février 2026', 'Janvier 2026', 'Décembre 2025', 'Novembre 2025'];
-      if (idNum >= 1 && idNum <= 6) {
-        this.moisRapport = months[idNum - 1];
-      }
-
-      // Dynamize the numbers depending on selection to feel more alive
-      if (idNum === 2) {
-        this.budgetUtilise = '2 500 000 FCFA';
-        this.budgetRestant = '5 000 000 FCFA';
-        this.beneficiairesAides = '5 000 000 FCFA';
-      } else if (idNum === 3) {
-        this.budgetUtilise = '500 000 FCFA';
-        this.budgetRestant = '7 500 000 FCFA';
-        this.beneficiairesAides = '7 500 000 FCFA';
-      } else if (idNum >= 4) {
-        this.budgetUtilise = '2 000 000 FCFA';
-        this.budgetRestant = '8 000 000 FCFA';
-        this.beneficiairesAides = '8 000 000 FCFA';
-      }
-    }
+    this.period = this.route.snapshot.paramMap.get('id') ?? '';
+    if (this.period) this.load();
   }
 
-  goBack(): void {
-    this.location.back();
+  private load(): void {
+    this.isLoading = true;
+    this.http.get<ReportDetail>(
+      `${environment.baseUrl}/organization/reports/${this.period}`,
+      { headers: this.authHeaders }
+    ).subscribe({
+      next: (res) => { this.report = res; this.isLoading = false; },
+      error: () => { this.error = 'Impossible de charger ce rapport.'; this.isLoading = false; },
+    });
   }
+
+  formatAmount(n: number): string {
+    return (n ?? 0).toLocaleString('fr-FR');
+  }
+
+  needTypeLabel(type: string): string {
+    const map: Record<string, string> = {
+      ORDONNANCE:  'Ordonnances',
+      ANALYSE:     'Analyses médicales',
+      IMAGERIE:    'Imagerie médicale',
+      EQUIPEMENT:  'Équipements',
+    };
+    return map[type] ?? type;
+  }
+
+  getBeneficiaryCount(type: string): number {
+    return this.report?.beneficiaryBreakdown?.find(b => b.type === type)?.count ?? 0;
+  }
+
+  goBack(): void { this.location.back(); }
 }

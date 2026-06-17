@@ -68,6 +68,14 @@ export class DemandeLaboratoireComponent implements OnInit {
   statusLabel    = 'Tous les statuts';
   showStatusMenu = false;
 
+  // ── Recherche & pagination ─────────────────────────────────────────────────
+  searchQuery  = '';
+  page         = 1;
+  limit        = 12;
+  total        = 0;
+  totalPages   = 1;
+  private searchTimer: any;
+
   statusOptions: FilterOption[] = [
     { label: 'Tous les statuts', value: null          },
     { label: 'En attente',       value: 'PENDING'     },
@@ -86,18 +94,18 @@ export class DemandeLaboratoireComponent implements OnInit {
 
   ngOnInit(): void {
     forkJoin({
-      orders:    this.http.get<any[]>(`${this.api}/diagnostic/lab-orders/all`),
+      orders:    this.http.get<any>(`${this.api}/diagnostic/lab-orders/all`, { params: { page: '1', limit: String(this.limit) } }),
       dashboard: this.http.get<any>(`${this.api}/diagnostic/lab/dashboard`),
     }).subscribe({
       next: ({ orders, dashboard }) => {
         this.statDisponibles = dashboard?.newRequests ?? 0;
         this.statAcceptees   = dashboard?.accepted    ?? 0;
         this.statRealisees   = dashboard?.completed   ?? 0;
-        this.resolveNames(orders);
+        this.applyPaginated(orders);
       },
       error: () => {
-        this.http.get<any[]>(`${this.api}/diagnostic/lab-orders/all`).subscribe({
-          next:  (orders) => this.resolveNames(orders),
+        this.http.get<any>(`${this.api}/diagnostic/lab-orders/all`, { params: { page: '1', limit: String(this.limit) } }).subscribe({
+          next:  (res) => this.applyPaginated(res),
           error: () => { this.loading = false; this.cdr.markForCheck(); },
         });
       },
@@ -106,20 +114,49 @@ export class DemandeLaboratoireComponent implements OnInit {
 
   private loadDemandes(): void {
     this.loading = true;
-    const params: Record<string, string> = {};
+    const params: Record<string, string> = { page: String(this.page), limit: String(this.limit) };
     if (this.selectedStatus) params['status'] = this.selectedStatus;
+    if (this.searchQuery.trim()) params['search'] = this.searchQuery.trim();
 
-    this.http.get<any[]>(`${this.api}/diagnostic/lab-orders/all`, { params }).subscribe({
-      next:  (orders) => this.resolveNames(orders),
+    this.http.get<any>(`${this.api}/diagnostic/lab-orders/all`, { params }).subscribe({
+      next:  (res) => this.applyPaginated(res),
       error: () => { this.loading = false; this.cdr.markForCheck(); },
     });
+  }
+
+  private applyPaginated(res: any): void {
+    const orders = Array.isArray(res) ? res : (res?.data ?? []);
+    this.total      = res?.total ?? orders.length;
+    this.page       = res?.page  ?? this.page;
+    this.totalPages = Math.max(1, Math.ceil(this.total / this.limit));
+    this.resolveNames(orders);
   }
 
   setStatus(opt: FilterOption): void {
     this.selectedStatus = opt.value;
     this.statusLabel    = opt.label;
     this.showStatusMenu = false;
+    this.page = 1;
     this.loadDemandes();
+  }
+
+  onSearchInput(): void {
+    clearTimeout(this.searchTimer);
+    this.searchTimer = setTimeout(() => { this.page = 1; this.loadDemandes(); }, 400);
+  }
+
+  goToPage(p: number): void {
+    if (p < 1 || p > this.totalPages || p === this.page) return;
+    this.page = p;
+    this.loadDemandes();
+  }
+
+  get pageNumbers(): number[] {
+    const range: number[] = [];
+    const start = Math.max(1, this.page - 2);
+    const end   = Math.min(this.totalPages, this.page + 2);
+    for (let i = start; i <= end; i++) range.push(i);
+    return range;
   }
 
   private resolveNames(orders: any[]): void {
