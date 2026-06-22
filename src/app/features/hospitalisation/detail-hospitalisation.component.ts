@@ -1,187 +1,108 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { catchError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import Swal from 'sweetalert2';
 
-interface HospitalizationApi {
+interface ReqDetail {
   id: string;
-  admissionRef: string;
+  reference: string;
   patientName: string;
-  patientAge: number;
-  patientRef: string;
+  patientAge: number | null;
+  referentDoctorName: string;
   service: string;
-  room: string;
-  bed: string;
-  treatingDoctorName: string;
-  bloodGroup: string;
-  admissionDate: string;
-  expectedDischargeDate: string;
-  actualDischargeDate: string;
-  lastObservation: string;
-  stateEvolution: string;
-  recoveryPercent: number;
+  actType: string;
+  serviceUnit: string;
+  serviceFloor: string;
+  serviceChief: string;
+  description: string;
+  priority: string;
+  status: string;
   totalAmount: number;
-  fundingStatus: string;
-  careJourney: Array<{
-    step: string;
-    status: 'done' | 'in_progress' | 'pending';
-    date?: string;
-    description?: string;
-    location?: string;
-    tags?: string[];
-  }>;
-  status: 'ADMITTED' | 'IN_PROGRESS' | 'URGENT' | 'DISCHARGED';
+  fundedAmount: number;
+  documents: { name: string; size: string; url: string }[];
+  actionHistory: { action: string; description: string; actor?: string; date: string }[];
+  createdAt: string;
 }
 
-interface StayInfoField {
-  icon: 'calendar' | 'service' | 'room' | 'doctor';
-  label: string;
-  value: string;
-}
+const STATUS_LABELS: Record<string, string> = {
+  PENDING:    'En attente',
+  VALIDATED:  'Acceptée',
+  PAID:       'Financée',
+  TERMINATED: 'Terminée',
+  REJECTED:   'Rejetée',
+};
 
-interface TimelineStep {
-  status: 'completed' | 'active' | 'pending';
-  title: string;
-  subtitle: string;
-  note?: string;
-  tags?: string[];
-}
-
-interface HospDetail {
-  fullname: string;
-  displayId: string;
-  statusLabel: string;
-  statusBadgeClass: string;
-  age: number;
-  bloodGroup: string;
-  stayInfo: StayInfoField[];
-  lastObservation: { badge: string; text: string };
-  evolution: { status: string; text: string; recoveryPercent: number };
-  financial: { totalAmount: string; fundingStatus: string };
-  timeline: TimelineStep[];
-  canDischarge: boolean;
-}
+const PRIORITY_LABELS: Record<string, string> = {
+  NORMAL:      'Routine',
+  URGENT:      'Urgent',
+  HIGH_URGENT: 'Prioritaire',
+};
 
 @Component({
   selector: 'app-detail-hospitalisation',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './detail-hospitalisation.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DetailHospitalisationComponent implements OnInit {
-  private readonly route = inject(ActivatedRoute);
+  private readonly route  = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly http = inject(HttpClient);
-  private readonly cdr = inject(ChangeDetectorRef);
-  private readonly api = environment.baseUrl;
+  private readonly http   = inject(HttpClient);
+  private readonly cdr    = inject(ChangeDetectorRef);
+  private readonly api    = environment.baseUrl;
 
-  hospitalisationId = '';
+  id      = '';
   loading = true;
-  detail: HospDetail | null = null;
+  detail: ReqDetail | null = null;
+
+  // ── Accept modal ──────────────────────────────────────────────────────────
+  showAcceptModal = false;
+  acceptPrice     = '';
+  acceptNote      = '';
+  isAccepting     = false;
+  acceptError     = '';
 
   ngOnInit(): void {
-    this.hospitalisationId = this.route.snapshot.paramMap.get('id') ?? '';
-    this.loadDetail();
+    this.id = this.route.snapshot.paramMap.get('id') ?? '';
+    this.load();
   }
 
-  private loadDetail(): void {
-    this.http.get<HospitalizationApi>(`${this.api}/hospital/hospitalizations/${this.hospitalisationId}`).subscribe({
-      next: h => {
-        this.detail = this.mapDetail(h);
+  private load(): void {
+    this.http.get<any>(`${this.api}/hospital/requests/${this.id}`)
+      .pipe(catchError(() => of(null)))
+      .subscribe(r => {
+        this.detail  = r ? this.map(r) : null;
         this.loading = false;
         this.cdr.markForCheck();
-      },
-      error: () => {
-        this.loading = false;
-        this.cdr.markForCheck();
-      },
-    });
+      });
   }
 
-  private mapDetail(h: HospitalizationApi): HospDetail {
-    const statusLabelMap: Record<string, string> = {
-      ADMITTED:    'En cours',
-      IN_PROGRESS: 'En cours',
-      URGENT:      'Urgent',
-      DISCHARGED:  'Sorti',
-    };
-    const statusBadgeMap: Record<string, string> = {
-      ADMITTED:    'bg-[#FFF3E8] text-[#F97316]',
-      IN_PROGRESS: 'bg-[#FFF3E8] text-[#F97316]',
-      URGENT:      'bg-[#FEE2E2] text-[#DC2626]',
-      DISCHARGED:  'bg-[#ECFDF5] text-[#059669]',
-    };
-
-    const admDate = new Date(h.admissionDate);
-    const admLabel = admDate.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-
-    const chambre = [h.room, h.bed].filter(Boolean).join(' / ') || '—';
-
-    const stayInfo: StayInfoField[] = [
-      { icon: 'calendar', label: "Date d'admission", value: admLabel },
-      { icon: 'service',  label: 'Service',          value: h.service ?? '—' },
-      { icon: 'room',     label: 'Chambre / Lit',    value: chambre },
-      { icon: 'doctor',   label: 'Médecin traitant', value: h.treatingDoctorName ?? '—' },
-    ];
-
-    const timeline: TimelineStep[] = (h.careJourney ?? []).map(e => ({
-      status:   e.status === 'done' ? 'completed' : e.status === 'in_progress' ? 'active' : 'pending',
-      title:    e.step,
-      subtitle: e.date
-        ? new Date(e.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-        : (e.location ?? ''),
-      note:  e.description,
-      tags:  [],
-    }));
-
-    // Ajouter étape "Sortie prévue" si pas encore sorti
-    if (h.status !== 'DISCHARGED' && h.expectedDischargeDate) {
-      timeline.push({
-        status:   'pending',
-        title:    'Sortie prévue',
-        subtitle: 'Date estimée : ' + new Date(h.expectedDischargeDate).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }),
-      });
-    }
-    if (h.status === 'DISCHARGED' && h.actualDischargeDate) {
-      timeline.push({
-        status:   'completed',
-        title:    'Sortie effective',
-        subtitle: new Date(h.actualDischargeDate).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
-      });
-    }
-
-    const totalAmountFmt = h.totalAmount
-      ? Number(h.totalAmount).toLocaleString('fr-FR') + ' FCFA'
-      : '—';
-
-    const fundingLabel = h.fundingStatus ?? (h.totalAmount ? 'Pris en charge' : 'Non renseigné');
-
+  private map(r: any): ReqDetail {
     return {
-      fullname:         h.patientName ?? '—',
-      displayId:        h.admissionRef ?? h.patientRef ?? '—',
-      statusLabel:      statusLabelMap[h.status] ?? h.status,
-      statusBadgeClass: statusBadgeMap[h.status] ?? 'bg-slate-100 text-slate-600',
-      age:              h.patientAge ?? 0,
-      bloodGroup:       h.bloodGroup ?? '—',
-      stayInfo,
-      lastObservation: {
-        badge: h.status === 'DISCHARGED' ? 'Sorti' : h.status === 'URGENT' ? 'Urgent' : 'En cours',
-        text:  h.lastObservation ?? 'Aucune observation enregistrée.',
-      },
-      evolution: {
-        status:          h.stateEvolution ?? (h.status === 'DISCHARGED' ? 'Rétablissement complet' : 'Suivi en cours'),
-        text:            h.stateEvolution ?? '',
-        recoveryPercent: h.recoveryPercent ?? 0,
-      },
-      financial: {
-        totalAmount:   totalAmountFmt,
-        fundingStatus: fundingLabel,
-      },
-      timeline,
-      canDischarge: h.status !== 'DISCHARGED',
+      id:               r.id,
+      reference:        r.reference ?? ('HOSP-' + r.id.slice(0, 8).toUpperCase()),
+      patientName:      r.patientName  ?? '—',
+      patientAge:       r.patientAge   ?? null,
+      referentDoctorName: r.referentDoctorName ?? '—',
+      service:          r.service      ?? '—',
+      actType:          r.actType      ?? '',
+      serviceUnit:      r.serviceUnit  ?? '',
+      serviceFloor:     r.serviceFloor ?? '',
+      serviceChief:     r.serviceChief ?? '',
+      description:      r.description  ?? '',
+      priority:         r.priority     ?? 'NORMAL',
+      status:           r.status       ?? 'PENDING',
+      totalAmount:      Number(r.totalAmount  ?? 0),
+      fundedAmount:     Number(r.fundedAmount ?? 0),
+      documents:        Array.isArray(r.documents) ? r.documents : [],
+      actionHistory:    Array.isArray(r.actionHistory) ? r.actionHistory : [],
+      createdAt:        r.createdAt    ?? '',
     };
   }
 
@@ -189,42 +110,109 @@ export class DetailHospitalisationComponent implements OnInit {
     this.router.navigate(['/hospital/hospitalisations']);
   }
 
-  dischargePatient(): void {
-    if (!this.detail) return;
-    Swal.fire({
-      title: 'Autoriser la sortie',
-      html: `<p style="color:#6B7280;font-size:14px">Confirmer la sortie de <strong style="color:#191B23">${this.detail.fullname}</strong> ?<br>Cette action ne peut pas être annulée.</p>`,
-      confirmButtonText: 'Confirmer la sortie',
-      cancelButtonText: 'Annuler',
-      showCancelButton: true,
-      confirmButtonColor: '#059669',
-      icon: 'warning',
-    }).then(result => {
-      if (!result.isConfirmed) return;
-      this.http.patch<HospitalizationApi>(`${this.api}/hospital/hospitalizations/${this.hospitalisationId}/discharge`, {}).subscribe({
-        next: h => {
-          this.detail = this.mapDetail(h);
-          this.cdr.markForCheck();
-          Swal.fire({ icon: 'success', title: 'Patient sorti', timer: 1500, showConfirmButton: false });
-        },
-        error: () => Swal.fire({ icon: 'error', title: 'Erreur', text: 'Impossible d\'autoriser la sortie.' }),
-      });
+  initials(name: string): string {
+    return (name || '?').split(' ').slice(0, 2).map(p => p[0]).join('').toUpperCase();
+  }
+
+  statusLabel(s: string):   string { return STATUS_LABELS[s]   ?? s; }
+  priorityLabel(p: string): string { return PRIORITY_LABELS[p] ?? p; }
+
+  statusBadgeClass(s: string): string {
+    if (s === 'PENDING')   return 'bg-[#FFF3E8] text-[#F97316]';
+    if (s === 'VALIDATED') return 'bg-[#E8F5E9] text-[#2E7D32]';
+    if (s === 'PAID')      return 'bg-[#E3F2FD] text-[#1565C0]';
+    if (s === 'REJECTED')  return 'bg-[#FEE2E2] text-[#DC2626]';
+    return 'bg-gray-100 text-gray-500';
+  }
+
+  priorityBadgeClass(p: string): string {
+    if (p === 'URGENT')      return 'bg-[#FEE2E2] text-[#DC2626]';
+    if (p === 'HIGH_URGENT') return 'bg-[#FDF4FF] text-[#9333EA]';
+    return 'bg-[#EEF2FF] text-[#3949AB]';
+  }
+
+  priorityAlertClass(p: string): string {
+    if (p === 'HIGH_URGENT') return 'border-[#9333EA] bg-[#FDF4FF] text-[#9333EA]';
+    return 'border-[#DC2626] bg-[#FEF2F2] text-[#DC2626]';
+  }
+
+  fundingPercent(d: ReqDetail): number {
+    if (!d.totalAmount) return 0;
+    return Math.min(100, Math.round((d.fundedAmount / d.totalAmount) * 100));
+  }
+
+  formatAmount(n: number): string {
+    return Number(n).toLocaleString('fr-FR');
+  }
+
+  formatDate(d: string): string {
+    if (!d) return '—';
+    return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  formatDateTime(d: string): string {
+    if (!d) return '—';
+    return new Date(d).toLocaleString('fr-FR', {
+      day: '2-digit', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
     });
   }
 
-  stepIconClass(status: string): string {
-    switch (status) {
-      case 'completed': return 'bg-[#1E6B34] text-white';
-      case 'active':    return 'bg-[#00339E] text-white';
-      default:          return 'bg-[#CBD5E1] text-[#94A3B8]';
-    }
+  // ── Accept ────────────────────────────────────────────────────────────────
+
+  openAccept(): void {
+    this.acceptPrice = '';
+    this.acceptNote  = '';
+    this.acceptError = '';
+    this.showAcceptModal = true;
+    this.cdr.markForCheck();
   }
 
-  stepTitleClass(status: string): string {
-    switch (status) {
-      case 'completed': return 'text-[#0F172A] font-bold';
-      case 'active':    return 'text-[#00339E] font-bold';
-      default:          return 'text-[#94A3B8] font-bold';
+  closeAcceptModal(): void {
+    this.showAcceptModal = false;
+    this.cdr.markForCheck();
+  }
+
+  confirmerAcceptation(): void {
+    const price = parseFloat(this.acceptPrice);
+    if (!this.acceptPrice || isNaN(price) || price <= 0) {
+      this.acceptError = 'Veuillez saisir un montant valide.';
+      this.cdr.markForCheck();
+      return;
     }
+    this.isAccepting = true;
+    this.acceptError = '';
+
+    this.http.patch(
+      `${this.api}/hospital/requests/${this.id}/hospitalization/accept`,
+      { price, note: this.acceptNote || undefined },
+    ).subscribe({
+      next: (r: any) => {
+        this.isAccepting     = false;
+        this.showAcceptModal = false;
+        this.detail          = this.map(r);
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.isAccepting = false;
+        this.acceptError = err?.error?.message ?? 'Erreur lors de l\'acceptation.';
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  // ── Reject ────────────────────────────────────────────────────────────────
+
+  rejectRequest(): void {
+    if (!this.detail) return;
+    if (!confirm(`Refuser la demande d'hospitalisation de ${this.detail.patientName} ?`)) return;
+    this.http.patch(
+      `${this.api}/hospital/requests/${this.id}/hospitalization/reject`,
+      {},
+    ).pipe(catchError(() => of(null)))
+     .subscribe(r => {
+       if (r) this.detail = this.map(r);
+       this.cdr.markForCheck();
+     });
   }
 }
