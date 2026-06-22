@@ -143,49 +143,70 @@ export class DetailDemandeMedicaleComponent implements OnInit {
     });
   }
 
-  admitPatient() {
+  // ── Modal admission avec code de présence ────────────────────────────────
+  showAdmitModal = false;
+  admitCode      = '';
+  admitCodeError = '';
+  admitRoom      = '';
+  admitDoctor    = '';
+  isAdmitting    = false;
+
+  openAdmitModal(): void {
+    this.admitCode      = '';
+    this.admitCodeError = '';
+    this.admitRoom      = '';
+    this.admitDoctor    = '';
+    this.showAdmitModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeAdmitModal(): void {
+    this.showAdmitModal = false;
+    this.cdr.markForCheck();
+  }
+
+  confirmerAdmission(): void {
     if (!this.request) return;
-    Swal.fire({
-      title: 'Admettre le patient',
-      html: `
-        <p style="margin-bottom:16px;color:#6B7280;font-size:14px">
-          Confirmer l'admission de <strong style="color:#191B23">${this.request.patientName}</strong>
-          en <strong style="color:#191B23">${this.request.service || 'service non précisé'}</strong>.
-        </p>
-        <div style="margin-bottom:12px;text-align:left">
-          <label style="font-size:13px;color:#374151;font-weight:500">Chambre / Lit (optionnel)</label>
-          <input id="swal-room" type="text" class="swal2-input" placeholder="ex: 402-A" style="margin-top:6px">
-        </div>
-        <div style="text-align:left">
-          <label style="font-size:13px;color:#374151;font-weight:500">Médecin responsable (optionnel)</label>
-          <input id="swal-doctor" type="text" class="swal2-input" placeholder="Dr. Nom Prénom" style="margin-top:6px">
-        </div>
-      `,
-      confirmButtonText: 'Admettre',
-      cancelButtonText: 'Annuler',
-      showCancelButton: true,
-      confirmButtonColor: '#124A92',
-      preConfirm: () => ({
-        room:               (document.getElementById('swal-room')   as HTMLInputElement)?.value  || undefined,
-        treatingDoctorName: (document.getElementById('swal-doctor') as HTMLInputElement)?.value  || undefined,
-      }),
-    }).then(result => {
-      if (!result.isConfirmed || !this.request) return;
-      const dto = {
-        patientId:          this.request.patientId,
-        patientName:        this.request.patientName,
-        service:            this.request.service || undefined,
-        admissionDate:      new Date().toISOString(),
-        room:               result.value.room,
-        treatingDoctorName: result.value.treatingDoctorName,
-      };
-      this.http.post<{ id: string }>(`${this.api}/hospital/hospitalizations`, dto).subscribe({
-        next: () => {
-          Swal.fire({ icon: 'success', title: 'Patient admis', text: 'L\'hospitalisation a été créée.', timer: 1800, showConfirmButton: false });
-          this.router.navigate(['/hospital/hospitalisations']);
-        },
-        error: () => Swal.fire({ icon: 'error', title: 'Erreur', text: 'Impossible de créer l\'hospitalisation.' }),
-      });
+    const code = this.admitCode.trim();
+    if (code.length !== 6 || !/^\d{6}$/.test(code)) {
+      this.admitCodeError = 'Le code doit comporter exactement 6 chiffres.';
+      this.cdr.markForCheck();
+      return;
+    }
+    this.admitCodeError = '';
+    this.isAdmitting = true;
+    this.cdr.markForCheck();
+
+    this.http.patch(`${this.api}/hospitalizations/verify-presence`, { code }).subscribe({
+      next: () => {
+        const dto = {
+          patientId:          this.request!.patientId,
+          patientName:        this.request!.patientName,
+          service:            this.request!.service || undefined,
+          admissionDate:      new Date().toISOString(),
+          room:               this.admitRoom || undefined,
+          treatingDoctorName: this.admitDoctor || undefined,
+        };
+        this.http.post<{ id: string }>(`${this.api}/hospital/hospitalizations`, dto).subscribe({
+          next: () => {
+            this.isAdmitting    = false;
+            this.showAdmitModal = false;
+            this.cdr.markForCheck();
+            Swal.fire({ icon: 'success', title: 'Patient admis', text: 'L\'hospitalisation a été créée.', timer: 1800, showConfirmButton: false });
+            this.router.navigate(['/hospital/hospitalisations']);
+          },
+          error: () => {
+            this.isAdmitting = false;
+            this.cdr.markForCheck();
+            Swal.fire({ icon: 'error', title: 'Erreur', text: 'Impossible de créer l\'hospitalisation.' });
+          },
+        });
+      },
+      error: (err) => {
+        this.isAdmitting    = false;
+        this.admitCodeError = err?.error?.message ?? 'Code invalide ou introuvable.';
+        this.cdr.markForCheck();
+      },
     });
   }
 

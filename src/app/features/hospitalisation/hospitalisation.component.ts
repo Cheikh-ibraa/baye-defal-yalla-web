@@ -146,4 +146,5 @@ export class HospitalisationComponent implements OnInit {
     event.stopPropagation();
     this.router.navigate(['/hospital/hospitalisations', patient.id]);
   }
+
 }

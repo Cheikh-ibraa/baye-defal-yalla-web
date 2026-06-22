@@ -1262,10 +1262,12 @@ export class PatientsComponent implements OnInit {
   // === Examens & Analyses (résultats biologiques) ===
   labResults: Array<{ date: string; examen: string; valeur: string; reference: string; etat: 'Normal' | 'Anormal' | 'Critique' }> = [];
   loadingLabResults = false;
+  pendingLabOrders: any[] = [];
 
   // === Imagerie médicale ===
   imagingOrders: any[] = [];
   loadingImaging = false;
+  pendingImagingOrders: any[] = [];
 
   certificats: MedicalCertificate[] = [];
 
@@ -2075,6 +2077,9 @@ export class PatientsComponent implements OnInit {
       next: (orders) => {
         this.loadingLabResults = false;
         this.labResults = [];
+        this.pendingLabOrders = (orders || []).filter((o: any) =>
+          ['ACCEPTED', 'FUNDED', 'IN_PROGRESS'].includes(o.status) && o.presenceCode
+        );
         for (const order of (orders || [])) {
           const dateStr = order.createdAt
             ? new Date(order.createdAt).toLocaleDateString('fr-FR')
@@ -2104,6 +2109,9 @@ export class PatientsComponent implements OnInit {
       next: (orders) => {
         this.loadingImaging = false;
         this.imagingOrders = (orders || []).filter(o => o.observations || o.reportTitle || o.imageUrls?.length);
+        this.pendingImagingOrders = (orders || []).filter((o: any) =>
+          ['ACCEPTED', 'FUNDED', 'IN_PROGRESS'].includes(o.status) && o.presenceCode
+        );
       },
       error: () => { this.loadingImaging = false; }
     });

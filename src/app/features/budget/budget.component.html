@@ -1,6 +1,28 @@
 <div class="min-h-screen bg-[#F8F9FA]">
   <div class="max-w-6xl mx-auto space-y-8">
 
+    <!-- BANNIÈRE RETOUR PAIEMENT -->
+    <div *ngIf="paymentStatus === 'success'"
+      class="flex items-start gap-3 bg-green-50 border border-green-200 rounded-2xl px-5 py-4">
+      <svg class="w-5 h-5 text-green-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <p class="text-sm text-green-700 font-medium flex-1">{{ paymentMessage }}</p>
+      <button (click)="paymentStatus = null" class="text-green-400 hover:text-green-600">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div *ngIf="paymentStatus === 'error'"
+      class="flex items-start gap-3 bg-red-50 border border-red-200 rounded-2xl px-5 py-4">
+      <svg class="w-5 h-5 text-red-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <p class="text-sm text-red-700 font-medium flex-1">{{ paymentMessage }}</p>
+      <button (click)="paymentStatus = null" class="text-red-400 hover:text-red-600">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
     <!-- PAGE HEADER -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div class="space-y-1">
@@ -307,16 +329,31 @@
         </div>
 
         <div class="flex gap-3 bg-[#EEF4FF] border-l-4 border-[#104382] rounded-r-xl p-4">
+          <svg class="w-4 h-4 text-[#104382] mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
           <p class="text-xs text-[#104382] font-medium leading-relaxed">
-            Une fois confirmé, cet engagement sera actif et les demandes correspondant à vos critères vous seront notifiées.
+            Vous serez redirigé vers TouchPay pour finaliser le paiement. Une fois confirmé, votre budget sera activé automatiquement.
           </p>
         </div>
 
         <div class="grid grid-cols-2 gap-4 pt-2">
-          <button (click)="confirmBudget()" [disabled]="isSaving"
-            class="bg-[#11458B] hover:bg-[#0c336b] text-white font-semibold py-3.5 rounded-xl transition-all cursor-pointer text-sm flex items-center justify-center shadow-xs disabled:opacity-60">
-            <span *ngIf="!isSaving">Confirmer le budget</span>
-            <span *ngIf="isSaving">Enregistrement…</span>
+          <button (click)="payBudget()" [disabled]="isSaving"
+            class="bg-[#11458B] hover:bg-[#0c336b] text-white font-semibold py-3.5 rounded-xl transition-all cursor-pointer text-sm flex items-center justify-center gap-2 shadow-xs disabled:opacity-60">
+            <ng-container *ngIf="!isSaving">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                <line x1="1" y1="10" x2="23" y2="10"/>
+              </svg>
+              Payer via TouchPay
+            </ng-container>
+            <ng-container *ngIf="isSaving">
+              <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+              </svg>
+              Redirection…
+            </ng-container>
           </button>
           <button (click)="closeModal()" [disabled]="isSaving"
             class="bg-[#F2F4F7] hover:bg-slate-200 text-[#344054] font-semibold py-3.5 rounded-xl transition-all cursor-pointer text-sm flex items-center justify-center">

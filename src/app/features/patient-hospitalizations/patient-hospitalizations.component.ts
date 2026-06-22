@@ -17,6 +17,7 @@ interface PatientHospitalization {
   referentDoctorName: string;
   room: string;
   bed: string;
+  presenceCode?: string;
 }
 
 @Component({

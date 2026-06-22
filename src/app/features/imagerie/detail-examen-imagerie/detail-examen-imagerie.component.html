@@ -495,8 +495,17 @@
     </div>
 
     <p class="text-sm text-gray-500 mb-4">
-      Confirmez que le patient s'est présenté au centre d'imagerie. L'examen va démarrer.
+      Saisissez le code de présence à 6 chiffres du patient pour confirmer son arrivée.
     </p>
+
+    <!-- Code de présence -->
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-[#1E293B] mb-1.5">Code de présence <span class="text-red-500">*</span></label>
+      <input type="text" [(ngModel)]="arriveeCode" placeholder="000000" maxlength="6" inputmode="numeric"
+        class="w-full text-center text-2xl font-mono font-bold tracking-[0.35em] border-2 border-gray-200 rounded-xl py-3 focus:outline-none focus:border-[#104382] transition"
+        (keyup.enter)="confirmerArriveePatient()" />
+      <p *ngIf="arriveeCodeError" class="mt-1.5 text-xs text-red-500">{{ arriveeCodeError }}</p>
+    </div>
 
     <div class="mb-5">
       <label class="block text-sm font-medium text-[#1E293B] mb-1.5">Note (optionnel)</label>
@@ -510,8 +519,12 @@
         Annuler
       </button>
       <button (click)="confirmerArriveePatient()" [disabled]="isSaving"
-        class="flex-1 px-4 py-2.5 bg-[#00B894] hover:bg-[#00a382] disabled:opacity-60 text-white rounded-lg text-sm font-semibold transition">
-        {{ isSaving ? 'Confirmation…' : 'Confirmer l\'arrivée' }}
+        class="flex-1 px-4 py-2.5 bg-[#00B894] hover:bg-[#00a382] disabled:opacity-60 text-white rounded-lg text-sm font-semibold transition flex items-center justify-center gap-2">
+        <svg *ngIf="isSaving" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+        </svg>
+        {{ isSaving ? 'Vérification…' : 'Confirmer l\'arrivée' }}
       </button>
     </div>
   </div>

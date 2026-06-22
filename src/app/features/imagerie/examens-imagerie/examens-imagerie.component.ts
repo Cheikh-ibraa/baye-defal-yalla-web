@@ -217,4 +217,47 @@ export class ExamensImagerieComponent implements OnInit {
     };
     return m[s] ?? 'bg-gray-100 text-gray-500';
   }
+
+  // ── Verify presence ───────────────────────────────────────────────────────────
+  showVerifyModal = false;
+  verifyCode      = '';
+  verifyLoading   = false;
+  verifyResult:   any = null;
+  verifyError     = '';
+
+  openVerifyModal(): void {
+    this.showVerifyModal = true;
+    this.verifyCode      = '';
+    this.verifyResult    = null;
+    this.verifyError     = '';
+    this.cdr.markForCheck();
+  }
+
+  closeVerifyModal(): void {
+    this.showVerifyModal = false;
+    this.cdr.markForCheck();
+  }
+
+  verifyPresence(): void {
+    const code = this.verifyCode.trim();
+    if (code.length !== 6 || !/^\d{6}$/.test(code)) {
+      this.verifyError = 'Le code doit comporter exactement 6 chiffres.';
+      return;
+    }
+    this.verifyLoading = true;
+    this.verifyError   = '';
+    this.verifyResult  = null;
+    this.http.patch<any>(`${this.api}/diagnostic/imaging-orders/verify-presence`, { code }).subscribe({
+      next: (res) => {
+        this.verifyResult  = res;
+        this.verifyLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.verifyError   = err?.error?.message ?? 'Code invalide ou introuvable.';
+        this.verifyLoading = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
 }

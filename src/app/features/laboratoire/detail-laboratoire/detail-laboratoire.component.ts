@@ -244,28 +244,48 @@ export class DetailLaboratoireComponent implements OnInit, OnDestroy {
   closeValidationDemandeSuccess(): void { this.showValidationDemandeSuccess = false; }
 
   // ── modal: confirmer arrivée patient ──────────────────────────────────────
+  arriveeCode      = '';
+  arriveeCodeError = '';
+
   openArriveePatient(): void {
-    this.arriveeNote = '';
+    this.arriveeNote      = '';
+    this.arriveeCode      = '';
+    this.arriveeCodeError = '';
     this.showArriveePatientModal = true;
   }
 
   closeArriveePatient(): void { this.showArriveePatientModal = false; }
 
   confirmerArriveePatient(): void {
+    const code = this.arriveeCode.trim();
+    if (code.length !== 6 || !/^\d{6}$/.test(code)) {
+      this.arriveeCodeError = 'Le code doit comporter exactement 6 chiffres.';
+      return;
+    }
+    this.arriveeCodeError = '';
     this.isSaving = true;
-    this.http.patch(`${this.api}/diagnostic/lab-orders/${this.orderId}/start`, {
-      appointmentDate: new Date().toISOString(),
-      notes: this.arriveeNote || undefined
-    }).subscribe({
+
+    this.http.patch(`${this.api}/diagnostic/lab-orders/verify-presence`, { code }).subscribe({
       next: () => {
-        this.isSaving = false;
-        this.showArriveePatientModal = false;
-        this.showArriveePatientSuccess = true;
-        setTimeout(() => { this.showArriveePatientSuccess = false; this.loadExamen(this.orderId); }, 2000);
+        this.http.patch(`${this.api}/diagnostic/lab-orders/${this.orderId}/start`, {
+          appointmentDate: new Date().toISOString(),
+          notes: this.arriveeNote || undefined
+        }).subscribe({
+          next: () => {
+            this.isSaving = false;
+            this.showArriveePatientModal = false;
+            this.showArriveePatientSuccess = true;
+            setTimeout(() => { this.showArriveePatientSuccess = false; this.loadExamen(this.orderId); }, 2000);
+          },
+          error: (err) => {
+            this.isSaving = false;
+            this.showErrorToast(err?.error?.message ?? 'Erreur lors de la confirmation');
+          }
+        });
       },
       error: (err) => {
         this.isSaving = false;
-        this.showErrorToast(err?.error?.message ?? 'Erreur lors de la confirmation');
+        this.arriveeCodeError = err?.error?.message ?? 'Code invalide ou introuvable.';
       }
     });
   }

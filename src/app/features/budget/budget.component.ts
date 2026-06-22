@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
@@ -38,6 +38,10 @@ export class BudgetComponent implements OnInit {
   isModalOpen = false;
   modalStep: 'form' | 'summary' = 'form';
 
+  // Retour paiement
+  paymentStatus: 'success' | 'error' | null = null;
+  paymentMessage = '';
+
   // Form fields
   newAmount: number | null = null;
   newType: 'MENSUEL' | 'ANNUEL' = 'MENSUEL';
@@ -59,10 +63,57 @@ export class BudgetComponent implements OnInit {
     return { Authorization: `Bearer ${token}` };
   }
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private route: ActivatedRoute,
+    private router: Router,
+  ) {}
 
   ngOnInit(): void {
+    this.handlePaymentReturn();
     this.load();
+  }
+
+  private handlePaymentReturn(): void {
+    const params    = this.route.snapshot.queryParamMap;
+    const errorCode = params.get('errorCode');
+    const reference = params.get('reference');
+
+    if (!errorCode && !reference) return;
+
+    // Nettoyage de l'URL
+    this.router.navigate([], { replaceUrl: true, queryParams: {} });
+
+    if (errorCode === '200' && reference) {
+      sessionStorage.removeItem('bdy_budget_ref');
+      const transactionId = params.get('num_transaction_from_gu')
+        ?? params.get('num_command') ?? '';
+      this.http.post(
+        `${environment.baseUrl}/payments/confirm`,
+        { reference, transactionId },
+        { headers: this.authHeaders },
+      ).subscribe({
+        next: () => {
+          this.paymentStatus  = 'success';
+          this.paymentMessage = 'Votre budget a été activé avec succès.';
+        },
+        error: () => {
+          this.paymentStatus  = 'success';
+          this.paymentMessage = 'Paiement reçu. Votre budget sera activé sous peu.';
+        },
+      });
+    } else if (errorCode && errorCode !== '200') {
+      sessionStorage.removeItem('bdy_budget_ref');
+      if (reference) {
+        this.http.post(
+          `${environment.baseUrl}/payments/cancel`,
+          { reference },
+          { headers: this.authHeaders },
+        ).subscribe();
+      }
+      this.paymentStatus  = 'error';
+      this.paymentMessage = 'Paiement annulé ou refusé. Veuillez réessayer.';
+    }
   }
 
   private load(): void {
@@ -137,7 +188,7 @@ export class BudgetComponent implements OnInit {
     this.modalStep = 'summary';
   }
 
-  confirmBudget(): void {
+  payBudget(): void {
     if (!this.newAmount || this.newAmount <= 0) return;
     this.isSaving = true;
 
@@ -150,27 +201,30 @@ export class BudgetComponent implements OnInit {
       return map[n] ?? n.toUpperCase();
     });
 
-    const dto = {
+    const returnUrl = `${window.location.origin}/organization/budget`;
+
+    const body = {
       amount:           this.newAmount,
       type:             this.newType,
       beneficiaryTypes: this.getBeneficiaryKeys(),
       medicalNeedTypes,
+      returnUrl,
     };
 
-    this.http.post<any>(
-      `${environment.baseUrl}/organization/budgets`,
-      dto,
-      { headers: this.authHeaders }
+    this.http.post<{ transactionId: string; paymentUrl: string }>(
+      `${environment.baseUrl}/payments/initiate-budget`,
+      body,
+      { headers: this.authHeaders },
     ).subscribe({
-      next: (created) => {
-        this.engagements = [this.mapBudget(created), ...this.engagements];
-        this.totalAllocated += this.newAmount!;
+      next: ({ transactionId, paymentUrl }) => {
         this.isSaving = false;
-        this.closeModal();
+        sessionStorage.setItem('bdy_budget_ref', transactionId);
+        window.location.href = paymentUrl;
       },
-      error: () => {
-        alert("Erreur lors de la création du budget. Veuillez réessayer.");
+      error: (err: any) => {
         this.isSaving = false;
+        const msg = err?.error?.message;
+        alert(Array.isArray(msg) ? msg.join(', ') : (msg ?? 'Erreur lors de la préparation du paiement.'));
       },
     });
   }
@@ -195,5 +249,11 @@ export class BudgetComponent implements OnInit {
 
   getActiveCount(): number {
     return this.engagements.filter(e => e.status === 'ACTIF').length;
+  }
+
+  dismissPaymentStatus(): void {
+    this.paymentStatus = null;
+    this.paymentMessage = '';
+    if (this.paymentStatus === 'success') this.load();
   }
 }

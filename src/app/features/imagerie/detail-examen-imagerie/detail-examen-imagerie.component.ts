@@ -300,8 +300,13 @@ export class DetailExamenImagerieComponent implements OnInit, OnDestroy {
   closeValidationDemandeSuccess(): void { this.showValidationDemandeSuccess = false; this.cdr.markForCheck(); }
 
   // ── MODAL : PATIENT ARRIVÉ (FUNDED → IN_PROGRESS) ─────────────────────────
+  arriveeCode      = '';
+  arriveeCodeError = '';
+
   openArriveePatient(): void {
-    this.arriveeNote = '';
+    this.arriveeNote      = '';
+    this.arriveeCode      = '';
+    this.arriveeCodeError = '';
     this.showArriveePatientModal = true;
     this.cdr.markForCheck();
   }
@@ -312,22 +317,39 @@ export class DetailExamenImagerieComponent implements OnInit, OnDestroy {
   }
 
   confirmerArriveePatient(): void {
+    const code = this.arriveeCode.trim();
+    if (code.length !== 6 || !/^\d{6}$/.test(code)) {
+      this.arriveeCodeError = 'Le code doit comporter exactement 6 chiffres.';
+      this.cdr.markForCheck();
+      return;
+    }
+    this.arriveeCodeError = '';
     this.isSaving = true;
     this.cdr.markForCheck();
 
-    this.http.patch(`${this.api}/diagnostic/imaging-orders/${this.examId}/start`, {
-      appointmentDate: new Date().toISOString(),
-      notes: this.arriveeNote || undefined
-    }).pipe(finalize(() => { this.isSaving = false; this.cdr.markForCheck(); }))
+    this.http.patch(`${this.api}/diagnostic/imaging-orders/verify-presence`, { code })
       .subscribe({
         next: () => {
-          this.showArriveePatientModal  = false;
-          this.showArriveePatientSuccess = true;
-          this.cdr.markForCheck();
-          setTimeout(() => { this.showArriveePatientSuccess = false; this.loadExamen(this.examId); }, 2000);
+          this.http.patch(`${this.api}/diagnostic/imaging-orders/${this.examId}/start`, {
+            appointmentDate: new Date().toISOString(),
+            notes: this.arriveeNote || undefined
+          }).pipe(finalize(() => { this.isSaving = false; this.cdr.markForCheck(); }))
+            .subscribe({
+              next: () => {
+                this.showArriveePatientModal  = false;
+                this.showArriveePatientSuccess = true;
+                this.cdr.markForCheck();
+                setTimeout(() => { this.showArriveePatientSuccess = false; this.loadExamen(this.examId); }, 2000);
+              },
+              error: (err) => {
+                this.showErrorToast(err?.error?.message ?? 'Erreur lors de la confirmation');
+              }
+            });
         },
         error: (err) => {
-          this.showErrorToast(err?.error?.message ?? 'Erreur lors de la confirmation');
+          this.isSaving = false;
+          this.arriveeCodeError = err?.error?.message ?? 'Code invalide ou introuvable.';
+          this.cdr.markForCheck();
         }
       });
   }
