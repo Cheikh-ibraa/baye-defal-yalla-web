@@ -24,6 +24,8 @@ interface Order {
   patientId:       string;
   pharmacistId:    string;   // pharmacien qui a TRAITÉ la commande (validatedBy)
   pharmacyId:      string;
+  campaignId:      string;   // 'direct' = sans donation, 'pending' = donation en cours, UUID = donation complète
+  parentOrderId?:  string | null;
   items:           OrderItem[];
   status:          string;
   timeline:        { status: string; changedAt: string; pharmacistId?: string }[];
@@ -121,10 +123,12 @@ export class CommandesComponent implements OnInit, OnDestroy {
         }),
       )
       .subscribe(data => {
-        this.orders = data.map(o => ({
-          ...o,
-          items: o.items.map(i => ({ ...i, unitPrice: i.unitPrice ?? 0 })),
-        }));
+        this.orders = data
+          .filter(o => !o.parentOrderId)
+          .map(o => ({
+            ...o,
+            items: o.items.map(i => ({ ...i, unitPrice: i.unitPrice ?? 0 })),
+          }));
         this.filteredOrders = [...this.orders];
         this.totalItems     = this.orders.length;
         this.updatePagination();
@@ -180,7 +184,7 @@ export class CommandesComponent implements OnInit, OnDestroy {
       .pipe(catchError(() => of([] as Order[])))
       .subscribe(data => {
         if (!data.length) return;
-        this.orders = data.map(o => ({ ...o, items: o.items.map(i => ({ ...i, unitPrice: i.unitPrice ?? 0 })) }));
+        this.orders = data.filter(o => !o.parentOrderId).map(o => ({ ...o, items: o.items.map(i => ({ ...i, unitPrice: i.unitPrice ?? 0 })) }));
         this.filteredOrders = [...this.orders];
         this.totalItems = this.orders.length;
         this.updatePagination();
@@ -540,6 +544,11 @@ export class CommandesComponent implements OnInit, OnDestroy {
   getTotalPages(): number  { return this.totalPages; }
   getStartIndex(): number  { return this.totalItems === 0 ? 0 : (this.currentPage - 1) * this.itemsPerPage + 1; }
   getEndIndex(): number    { return Math.min(this.currentPage * this.itemsPerPage, this.totalItems); }
+
+  // ── Donation helpers ──────────────────────────────────────────────────────
+  isDonationPending(order: Order | null): boolean {
+    return order?.campaignId === 'pending';
+  }
 
   // ── Status helpers ────────────────────────────────────────────────────────────
   getStatusClass(status: string): string {

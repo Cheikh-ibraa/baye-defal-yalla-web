@@ -4,6 +4,7 @@ import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
+import { AuthService } from '../../../core/services/auth.service';
 
 interface LoginResponse {
   accessToken: string;
@@ -49,7 +50,8 @@ export class LoginComponent implements OnInit {
     private fb: FormBuilder,
     private http: HttpClient,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private authService: AuthService,
   ) {
     this.loginForm = this.fb.group({
       identifier: ['', [Validators.required]],
@@ -143,7 +145,7 @@ export class LoginComponent implements OnInit {
         };
         try {
           const payload = JSON.parse(atob(res.accessToken.split('.')[1]));
-          localStorage.setItem('user_data', JSON.stringify({
+          const userData = {
             id: 0,
             nom:       payload.family_name ?? '',
             prenom:    payload.given_name  ?? '',
@@ -153,7 +155,10 @@ export class LoginComponent implements OnInit {
             lat: null,
             lon: null,
             profil: PROFIL_MAP[role] ?? role.toUpperCase(),
-          }));
+          };
+          localStorage.setItem('user_data', JSON.stringify(userData));
+          this.authService.updateUser(userData);
+          this.authService.scheduleProactiveRefresh(res.accessToken);
         } catch { /* token malformé */ }
 
         // Le patient utilise uniquement l'application mobile

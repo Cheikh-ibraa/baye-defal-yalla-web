@@ -160,6 +160,24 @@
         <div *ngIf="selectedOrder" class="p-4 sm:p-6">
 
           <!-- ══════════════════════════════════════════════════════ -->
+          <!-- Bannière donation en attente                          -->
+          <!-- ══════════════════════════════════════════════════════ -->
+          <div *ngIf="isDonationPending(selectedOrder)"
+               class="flex items-start gap-3 bg-amber-50 border border-amber-300 rounded-xl px-4 py-3 mb-5">
+            <svg class="w-5 h-5 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            </svg>
+            <div>
+              <p class="text-sm font-bold text-amber-800">Collecte de fonds en cours</p>
+              <p class="text-xs text-amber-700 mt-0.5">
+                La donation pour cette ordonnance n'est pas encore complète.
+                Vous pourrez préparer la commande une fois la collecte finalisée.
+              </p>
+            </div>
+          </div>
+
+          <!-- ══════════════════════════════════════════════════════ -->
           <!-- Boutons EN_PREPARATION (en haut)                      -->
           <!-- ══════════════════════════════════════════════════════ -->
           <div *ngIf="selectedOrder.status === 'IN_PREPARATION'" class="flex flex-wrap justify-center gap-3 mb-5">
@@ -170,8 +188,13 @@
               </svg>
               Demande de complément
             </button>
-            <button (click)="marquerCommandePretePourLivraison()" [disabled]="loading"
-                    class="flex items-center gap-2 px-5 py-2 bg-[#4FBFA5] hover:bg-[#3FA892] text-white rounded-lg text-sm transition-colors">
+            <button (click)="marquerCommandePretePourLivraison()"
+                    [disabled]="loading || isDonationPending(selectedOrder)"
+                    [title]="isDonationPending(selectedOrder) ? 'En attente de financement de la donation' : ''"
+                    class="flex items-center gap-2 px-5 py-2 rounded-lg text-sm transition-colors text-white"
+                    [ngClass]="isDonationPending(selectedOrder)
+                      ? 'bg-gray-300 cursor-not-allowed opacity-60'
+                      : 'bg-[#4FBFA5] hover:bg-[#3FA892]'">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
               </svg>

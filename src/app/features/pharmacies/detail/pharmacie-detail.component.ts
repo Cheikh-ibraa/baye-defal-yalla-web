@@ -39,6 +39,11 @@ export class PharmacieDetailComponent implements OnInit {
   pharmacyRow:     any   = null;
   pharmacistUsers: any[] = [];   // liste de tous les pharmaciens liés
   recentOrders:    any[] = [];
+  paginatedOrders: any[] = [];
+  itemsPerPage = 10;
+  currentPage = 1;
+  totalPages = 1;
+  Math = Math;
 
   initials    = '';
   displayName = '';
@@ -89,6 +94,8 @@ export class PharmacieDetailComponent implements OnInit {
             this.pharmacistUsers = [detail.pharmacistUser];
           }
           this.applyRow();
+          this.currentPage = 1;
+          this.updatePagination();
           this.loading = false;
         } else {
           this.loadPharmacistList();
@@ -137,6 +144,28 @@ export class PharmacieDetailComponent implements OnInit {
       : name.substring(0, 2).toUpperCase();
     this.displayName = name;
     this.isActive    = r.isActive ?? r.isOpen ?? false;
+  }
+
+  private updatePagination(): void {
+    const total = this.recentOrders.length;
+    this.totalPages = Math.max(1, Math.ceil(total / this.itemsPerPage));
+    if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    this.paginatedOrders = this.recentOrders.slice(start, start + this.itemsPerPage);
+  }
+
+  previousPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.updatePagination();
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.updatePagination();
+    }
   }
 
   // ── Gestion des pharmaciens liés ─────────────────────────────────────────────

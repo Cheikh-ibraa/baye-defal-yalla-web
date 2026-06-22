@@ -9,6 +9,7 @@ export interface User {
   lon: number | null;
   profil: string;
   pharmacyId?: number | null;
+  avatar?: string | null;
 }
 
 export interface AuthResult {

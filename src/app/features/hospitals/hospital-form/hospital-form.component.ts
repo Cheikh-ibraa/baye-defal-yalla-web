@@ -88,6 +88,15 @@ const SENEGAL: Region[] = [
 
 export const HOSPITAL_TYPES = ['CHU', 'CHR', 'Hôpital de district', 'Clinique privée', 'Polyclinique', 'Centre de santé'];
 
+export const HOSPITAL_SERVICES = [
+  'Médecine générale',
+  'Pédiatrie',
+  'Maternité',
+  'Chirurgie',
+  'Cardiologie',
+  'Urgences 24/7',
+];
+
 @Component({
   selector: 'app-hospital-form',
   standalone: true,
@@ -100,6 +109,7 @@ export class HospitalFormComponent {
   private readonly api = environment.baseUrl;
   readonly regions     = SENEGAL;
   readonly types       = HOSPITAL_TYPES;
+  readonly allServices = HOSPITAL_SERVICES;
 
   form = {
     name:       '',
@@ -112,6 +122,8 @@ export class HospitalFormComponent {
     address:    '',
     isActive:   true,
   };
+
+  selectedServices: Set<string> = new Set();
 
   saving    = false;
   saveError = '';
@@ -128,10 +140,15 @@ export class HospitalFormComponent {
   onRegionChange(): void { this.form.department = ''; this.form.commune = ''; }
   onDeptChange():   void { this.form.commune = ''; }
 
+  toggleService(s: string): void {
+    if (this.selectedServices.has(s)) this.selectedServices.delete(s);
+    else this.selectedServices.add(s);
+  }
+
   annuler(): void { this.router.navigate(['/admin/hospitals']); }
 
   enregistrer(): void {
-    if (!this.form.name.trim()) return;
+    if (!this.form.name.trim() || !this.form.email.trim()) return;
     this.saving    = true;
     this.saveError = '';
     this.cdr.markForCheck();
@@ -141,15 +158,16 @@ export class HospitalFormComponent {
 
     const payload: Record<string, any> = {
       name:     this.form.name.trim(),
+      email:    this.form.email.trim(),
       isActive: this.form.isActive,
     };
-    if (this.form.type)       payload['type']    = this.form.type;
-    if (this.form.email)      payload['email']   = this.form.email.trim();
-    if (this.form.phone)      payload['phone']   = this.form.phone.trim();
-    if (adresse)              payload['address'] = adresse;
-    if (this.form.region)     payload['region']  = this.form.region;
+    if (this.form.type)    payload['type']    = this.form.type;
+    if (this.form.phone)   payload['phone']   = this.form.phone.trim();
+    if (adresse)           payload['address'] = adresse;
+    if (this.form.region)  payload['region']  = this.form.region;
+    if (this.selectedServices.size > 0) payload['services'] = Array.from(this.selectedServices);
 
-    this.http.post(`${this.api}/admin/hospitals`, payload)
+    this.http.post(`${this.api}/auth/admin/register-hospital`, payload)
       .pipe(finalize(() => { this.saving = false; this.cdr.markForCheck(); }))
       .subscribe({
         next:  () => this.router.navigate(['/admin/hospitals']),

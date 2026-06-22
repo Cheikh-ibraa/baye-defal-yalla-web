@@ -39,7 +39,7 @@ export const routes: Routes = [
       { path: 'doctor/certificat-medical',canActivate: [roleGuard(['doctor'])],          loadComponent: () => import('./features/patients/certificat-medical/certificat-medical.component').then(m => m.CertificatMedicalComponent) },
       { path: 'doctor/analyses-medical',          canActivate: [roleGuard(['doctor'])], loadComponent: () => import('./features/patients/analyses-medical/analyses-medical.component').then(m => m.AnalysesMedicalComponent) },
       { path: 'doctor/imagerie-medical',          canActivate: [roleGuard(['doctor'])], loadComponent: () => import('./features/patients/imagerie-medical/imagerie-medical.component').then(m => m.ImagerieMedicalComponent) },
-      { path: 'doctor/nouvelle-hospitalisation',  canActivate: [roleGuard(['doctor'])], loadComponent: () => import('./features/patients/hospitalisation/hospitalisation.component').then(m => m.HospitalisationComponent) },
+      { path: 'doctor/hospitalisation',  canActivate: [roleGuard(['doctor'])], loadComponent: () => import('./features/patients/hospitalisation/hospitalisation.component').then(m => m.HospitalisationComponent) },
 
       // ================= PHARMACIST ROUTES =================
       { path: 'pharmacist/dashboard',                canActivate: [roleGuard(['pharmacist', 'admin'])], loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) },
@@ -74,8 +74,10 @@ export const routes: Routes = [
       { path: 'association/account',   canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/comptes/organization-account.component').then(m => m.OrganizationAccountComponent) },
 
       // ================= PATIENT ROUTES =================
-      { path: 'patient/dashboard', canActivate: [roleGuard(['patient'])], loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) },
-      { path: 'patient/account',   canActivate: [roleGuard(['patient'])], loadComponent: () => import('./features/comptes/medical-account.component').then(m => m.MedicalAccountComponent) },
+      { path: 'patient/dashboard',              canActivate: [roleGuard(['patient'])], loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) },
+      { path: 'patient/account',                canActivate: [roleGuard(['patient'])], loadComponent: () => import('./features/comptes/medical-account.component').then(m => m.MedicalAccountComponent) },
+      { path: 'patient/hospitalizations',       canActivate: [roleGuard(['patient'])], loadComponent: () => import('./features/patient-hospitalizations/patient-hospitalizations.component').then(m => m.PatientHospitalizationsComponent) },
+      { path: 'patient/hospitalizations/:id',   canActivate: [roleGuard(['patient'])], loadComponent: () => import('./features/patient-hospitalizations/detail/patient-hospitalization-detail.component').then(m => m.PatientHospitalizationDetailComponent) },
 
       // ================= ADMIN ROUTES =================
       { path: 'admin/dashboard',      canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/dashboard-admin/dashboard-admin.component').then(m => m.DashboardAdminComponent) },
@@ -94,8 +96,10 @@ export const routes: Routes = [
       { path: 'admin/hospitals',              canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/hospitals/hospitals.component').then(m => m.HospitalsComponent) },
       { path: 'admin/hospitals/new',          canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/hospitals/hospital-form/hospital-form.component').then(m => m.HospitalFormComponent) },
       { path: 'admin/hospitals/detail/:id',   canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/hospitals/hospital-detail/hospital-detail.component').then(m => m.HospitalDetailComponent) },
-      { path: 'admin/livreurs',       canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/livreurs/livreurs.component').then(m => m.LivreursComponent) },
-      { path: 'admin/patients',       canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/patientmanage/patientmanage.component').then(m => m.PatientsComponent) },
+      { path: 'admin/livreurs',          canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/livreurs/livreurs.component').then(m => m.LivreursComponent) },
+      { path: 'admin/fournisseurs',     canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/fournisseurs/fournisseurs.component').then(m => m.FournisseursComponent) },
+      { path: 'admin/fournisseurs/new', canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/fournisseurs/fournisseur-form/fournisseur-form.component').then(m => m.FournisseurFormComponent) },
+      { path: 'admin/patients',          canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/patientmanage/patientmanage.component').then(m => m.PatientsComponent) },
       { path: 'admin/paiements-help', canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/paiements-help/paiements-help.component').then(m => m.PaiementsHelpComponent) },
       { path: 'admin/administration', canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/administration/administration.component').then(m => m.AdministrationComponent) },
       {
@@ -192,7 +196,7 @@ export const routes: Routes = [
       { path: 'analyses-medical',       redirectTo: 'doctor/analyses-medical',     pathMatch: 'full' },
       { path: 'imagerie-medical',       redirectTo: 'doctor/imagerie-medical',     pathMatch: 'full' },
       { path: 'certificat-medical',     redirectTo: 'doctor/certificat-medical',   pathMatch: 'full' },
-      { path: 'nouvelle-hospitalisation', redirectTo: 'doctor/nouvelle-hospitalisation', pathMatch: 'full' },
+      { path: 'hospitalisation', redirectTo: 'doctor/hospitalisation', pathMatch: 'full' },
 
       { path: 'examens-laboratoire', redirectTo: 'laboratory/examens', pathMatch: 'full' },
       { path: 'demande-laboratoire', redirectTo: 'laboratory/demandes', pathMatch: 'full' },

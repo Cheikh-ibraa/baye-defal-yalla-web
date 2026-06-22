@@ -1,6 +1,8 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
+import { PatientService } from './patient.service';
 import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
@@ -35,7 +37,7 @@ interface CommandeStats {
 @Component({
   selector: 'app-patients-suivi',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HttpClientModule],
   templateUrl: './patientmanage.component.html',
   styleUrls: ['./patientmanage.component.css']
 })
@@ -152,8 +154,49 @@ export class PatientsComponent implements OnInit, AfterViewInit {
   evolutionChart: any;
   commandesChart: any;
 
+  constructor(private patientService: PatientService) {}
+
   ngOnInit() {
-    this.filterPatients();
+    this.loadPatients();
+    this.loadStats();
+  }
+
+  private loadPatients() {
+    this.patientService.getPatients().subscribe({
+      next: (res: any) => {
+        // Expect res to be an array of patients
+        if (Array.isArray(res)) {
+          this.allPatients = res.map((p: any) => ({
+            id: p.keycloakId ?? p.id ?? '',
+            initial: ((p.firstName || '').charAt(0) + (p.lastName || '').charAt(0)).toUpperCase(),
+            name: [p.firstName, p.lastName].filter(Boolean).join(' ') || p.email || '—',
+            email: p.email || '—',
+            commandes: p.commandesCount ?? 0,
+            achatRecent: p.lastPurchaseAmount ? `${p.lastPurchaseAmount} F` : '—',
+            derniereCommande: p.lastPurchaseDate ?? '',
+            avatarColor: 'bg-blue-100 text-blue-700',
+          }));
+          this.filterPatients();
+        }
+      },
+      error: () => {
+        // keep static data on error
+      }
+    });
+  }
+
+  private loadStats() {
+    this.patientService.getPatientsStats().subscribe({
+      next: (s: any) => {
+        if (s) {
+          this.statsCards[0].value = (s.totalPatients ?? this.statsCards[0].value).toString();
+          this.statsCards[1].value = (s.activePatients ?? this.statsCards[1].value).toString();
+          this.statsCards[2].value = (s.totalOrders ?? this.statsCards[2].value).toString();
+          this.statsCards[3].value = (s.totalAid ? `${s.totalAid} F` : this.statsCards[3].value).toString();
+        }
+      },
+      error: () => {}
+    });
   }
 
   ngAfterViewInit() {

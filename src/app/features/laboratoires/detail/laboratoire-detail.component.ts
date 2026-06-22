@@ -37,6 +37,23 @@ export class LaboratoireDetailComponent implements OnInit {
   technicianUsers: any[] = [];
   recentExamens:   any[] = [];
 
+  currentPageExamens = 0;
+  pageSizeExamens    = 10;
+
+  get recentExamensPage(): any[] {
+    const start = this.currentPageExamens * this.pageSizeExamens;
+    return this.recentExamens.slice(start, start + this.pageSizeExamens);
+  }
+
+  get totalPagesExamens(): number {
+    return Math.max(1, Math.ceil(this.recentExamens.length / this.pageSizeExamens));
+  }
+
+  changePageExamens(page: number): void {
+    if (page < 0 || page >= this.totalPagesExamens) return;
+    this.currentPageExamens = page;
+  }
+
   initials    = '';
   displayName = '';
   isActive    = false;

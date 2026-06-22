@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd, RouterLink, RouterLinkActive } from '@angular/router';
 import { User } from '../../../core/auth.types';
 import { Subscription, filter } from 'rxjs';
+import { AuthService } from '../../../core/services/auth.service';
 
 export interface MenuItem {
   id: string;
@@ -40,9 +41,11 @@ export class SidebarComponent implements OnInit, OnDestroy {
   isFournisseur = false; // FOURNISSEUR
   isDonor = false;       // DONOR / DONATEUR
   isOrganisation = false; // ORGANISATION
+  isPatient = false;     // PATIENT
 
 
   financeOpen: boolean = false;
+  demandesOpen: boolean = false;
 
   toggleFinanceMenu() {
     this.financeOpen = !this.financeOpen;
@@ -55,6 +58,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   private userSubscription?: Subscription;
   private routerSubscription?: Subscription;
+  private userSub?: Subscription;
   private readonly mockCurrentUser: User = {
     id: 1,
     nom: 'Ndiaye',
@@ -67,12 +71,15 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   // Menus DOCTOR
   doctorMenuItems: MenuItem[] = [
-    { id: 'dashboard-med',      label: 'Tableau de bord',       route: '/doctor/dashboard' },
-    { id: 'create-ordonnance',  label: 'Créer une ordonnance',  route: '/doctor/create-ordonnance' },
-    { id: 'ordonnances',        label: 'Mes ordonnances',        route: '/doctor/ordonnances' },
-    { id: 'patients',           label: 'Patients',              route: '/doctor/patients' },
-    { id: 'planings',           label: 'Plannings',             route: '/doctor/planings' },
-    { id: 'comptes',            label: 'Mon compte',            route: '/doctor/account' },
+    { id: 'dashboard-med',           label: 'Tableau de bord',       route: '/doctor/dashboard' },
+    { id: 'demandes-parent',         label: 'Mes demandes' },
+    { id: 'ordonnances',             label: 'Ordonnances',            route: '/doctor/ordonnances' },
+    { id: 'analyses-medical',        label: 'Analyses médicales', route: '/doctor/analyses-medical' },
+    { id: 'imagerie-medical',        label: 'Imagerie médicale',  route: '/doctor/imagerie-medical' },
+    { id: 'nouvelle-hospitalisation',label: 'Hospitalisation',        route: '/doctor/nouvelle-hospitalisation' },
+    { id: 'patients',                label: 'Patients',               route: '/doctor/patients' },
+    { id: 'planings',                label: 'Plannings',              route: '/doctor/planings' },
+    { id: 'comptes',                 label: 'Mon compte',             route: '/doctor/account' },
   ];
 
   // Menus ADMIN
@@ -82,7 +89,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
     { id: 'pharmacies',         label: 'Gestion des pharmacies', route: '/admin/pharmacies' },
     { id: 'laboratoires',       label: 'Gestion des laboratoires', route: '/admin/laboratoires' },
     { id: 'imageries',          label: "Gestion des imageries",  route: '/admin/imageries' },
-    { id: 'livreurs',           label: 'Gestion des livreurs',   route: '/admin/livreurs' },
+    { id: 'livreurs',           label: 'Gestion des livreurs',      route: '/admin/livreurs' },
+    { id: 'fournisseurs',       label: 'Gestion des fournisseurs', route: '/admin/fournisseurs' },
     { id: 'patientmanage',      label: 'Gestion des patients',   route: '/admin/patients' },
     { id: 'paiements-help',     label: 'Paiements & Aide',       route: '/admin/paiements-help' },
     { id: 'administration',     label: 'Administration',         route: '/admin/administration' },
@@ -158,6 +166,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
     { id: 'comptes',  label: 'Mon compte', route: '/organization/account'  },
   ];
 
+  // Menus PATIENT
+  patientMenuItems: MenuItem[] = [
+    { id: 'patient-dashboard',        label: 'Tableau de bord',    route: '/patient/dashboard'          },
+    { id: 'patient-hospitalizations', label: 'Mes hospitalisations', route: '/patient/hospitalizations' },
+    { id: 'comptes',                  label: 'Mon compte',         route: '/patient/account'            },
+  ];
 
   menuItems: MenuItem[] = [];
   // Mode sandbox: on expose tous les groupes pour garder la navigation libre.
@@ -171,11 +185,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
     ...this.hospitalMenuItems,
     ...this.fournisseurMenuItems,
     ...this.donateurMenuItems,
-    ...this.organisationMenuItems
+    ...this.organisationMenuItems,
+    ...this.patientMenuItems,
   ];
 
   constructor(
-    private router: Router,
+    private router:      Router,
+    private authService: AuthService,
   ) { }
 
   @HostListener('window:resize')
@@ -194,11 +210,23 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.routerSubscription = this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe(() => this.setActiveItemFromCurrentRoute());
+
+    // Réagir aux changements de profil sans navigation (refresh token, mise à jour profil)
+    this.userSub = this.authService.user$.subscribe(user => {
+      if (user) {
+        this.currentUser = { ...user };
+        const url = this.router.url;
+        const detectedProfile = this.detectProfileFromUrl(url);
+        if (detectedProfile) this.currentUser.profil = detectedProfile;
+        this.updateMenuBasedOnProfile();
+      }
+    });
   }
 
   ngOnDestroy(): void {
     this.userSubscription?.unsubscribe();
     this.routerSubscription?.unsubscribe();
+    this.userSub?.unsubscribe();
   }
 
   private updateMenuBasedOnProfile(): void {
@@ -213,6 +241,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.isFournisseur = profile === 'FOURNISSEUR' || profile === 'SUPPLIER';
     this.isDonor = profile === 'DONOR' || profile === 'DONATEUR';
     this.isOrganisation = profile === 'ORGANISATION' || profile === 'ORGANIZATION';
+    this.isPatient = profile === 'PATIENT';
 
     if (this.isAdmin) {
       this.menuItems = [...this.adminMenuItems];
@@ -232,6 +261,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.menuItems = [...this.donateurMenuItems];
     } else if (this.isOrganisation) {
       this.menuItems = [...this.organisationMenuItems];
+    } else if (this.isPatient) {
+      this.menuItems = [...this.patientMenuItems];
     } else {
       this.menuItems = [...this.pharmacyMenuItems]; // fallback
     }
@@ -248,6 +279,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     if (url.startsWith('/fournisseur/')) return 'FOURNISSEUR';
     if (url.startsWith('/donor/'))      return 'DONATEUR';
     if (url.startsWith('/organization/') || url.startsWith('/organisation/')) return 'ORGANISATION';
+    if (url.startsWith('/patient/'))    return 'PATIENT';
 
     // Legacy / compat redirect paths still in use by other menus
     if (url.startsWith('/dashboard-admin'))   return 'ADMIN';
@@ -280,6 +312,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
     if (item) {
       this.activeItem = item.id;
+      if (this.isDoctor && ['ordonnances', 'analyses-medical', 'imagerie-medical', 'nouvelle-hospitalisation'].includes(item.id)) {
+        this.demandesOpen = true;
+      }
       return;
     }
 
@@ -349,6 +384,11 @@ export class SidebarComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (id === 'demandes-parent') {
+      this.demandesOpen = !this.demandesOpen;
+      return;
+    }
+
     const item = this.menuItems.find(i => i.id === id);
     if (item?.route) this.router.navigate([item.route]);
 
@@ -356,8 +396,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   logout(): void {
-    localStorage.clear();
+    this.authService.logout();
     this.currentUser = null;
-    this.router.navigate(['/portail']);
   }
 }

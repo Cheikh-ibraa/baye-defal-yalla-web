@@ -55,7 +55,11 @@ export class DonsComponent implements OnInit, OnDestroy {
   ];
 
   activeFilter = 'all';
+  searchQuery   = '';
+  currentPage   = 1;
+  readonly pageSize = 6;
 
+  private allDonations: DonationItem[] = [];
   donations: DonationItem[] = [];
   filteredDonations: DonationItem[] = [];
   selectedDonation: DonationItem | null = null;
@@ -88,28 +92,85 @@ export class DonsComponent implements OnInit, OnDestroy {
     return { Authorization: `Bearer ${token}` };
   }
 
-  private loadCampaigns(type?: string): void {
+  private loadCampaigns(): void {
     this.isLoadingDons = true;
     this.donsError = null;
 
-    let url = `${environment.baseUrl}/campaigns?limit=20`;
-    if (type && type !== 'all') url += `&type=${type}`;
+    const url = `${environment.baseUrl}/campaigns?limit=100`;
 
     this.http.get<any>(url, { headers: this.authHeaders }).subscribe({
       next: (res) => {
         const raw: any[] = res.data ?? res ?? [];
-        this.donations = raw.map(c => this.mapCampaign(c));
-        this.filteredDonations = [...this.donations];
+        this.allDonations = raw.map(c => this.mapCampaign(c));
         this.isLoadingDons = false;
+        this.applyFilters();
       },
       error: () => {
-        this.donsError = null;
-        this.donations = STATIC_DONATIONS;
-        this.filteredDonations = [...this.donations];
+        this.allDonations = STATIC_DONATIONS;
         this.isLoadingDons = false;
+        this.applyFilters();
       },
     });
   }
+
+  private applyFilters(): void {
+    const TYPE_MAP: Record<string, string> = {
+      ORDONNANCE: 'Ordonnance',
+      ANALYSE:    'Analyse médicale',
+      IMAGERIE:   'Imagerie médicale',
+    };
+    const q = this.searchQuery.trim().toLowerCase();
+
+    this.filteredDonations = this.allDonations.filter(d => {
+      const matchType = this.activeFilter === 'all' || d.type === (TYPE_MAP[this.activeFilter] ?? this.activeFilter);
+      if (!matchType) return false;
+      if (!q) return true;
+      return (
+        d.patientName.toLowerCase().includes(q) ||
+        d.doctorName.toLowerCase().includes(q) ||
+        d.type.toLowerCase().includes(q) ||
+        d.description.toLowerCase().includes(q) ||
+        d.indication.toLowerCase().includes(q)
+      );
+    });
+
+    this.donations = [...this.filteredDonations];
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredDonations.length / this.pageSize));
+  }
+
+  get paginatedDonations(): DonationItem[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredDonations.slice(start, start + this.pageSize);
+  }
+
+  get visiblePages(): (number | '...')[] {
+    const total = this.totalPages;
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    const cur   = this.currentPage;
+    const pages: (number | '...')[] = [1];
+    if (cur > 3)           pages.push('...');
+    for (let p = Math.max(2, cur - 1); p <= Math.min(total - 1, cur + 1); p++) pages.push(p);
+    if (cur < total - 2)   pages.push('...');
+    pages.push(total);
+    return pages;
+  }
+
+  onSearch(event: Event): void {
+    this.searchQuery = (event.target as HTMLInputElement).value;
+    this.currentPage = 1;
+    this.applyFilters();
+  }
+
+  goToPage(page: number | '...'): void {
+    if (page === '...' || page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+  }
+
+  get pageStart(): number { return (this.currentPage - 1) * this.pageSize + 1; }
+  get pageEnd(): number   { return Math.min(this.currentPage * this.pageSize, this.filteredDonations.length); }
 
   private mapCampaign(c: any): DonationItem {
     const TYPE_LABEL: Record<string, string> = {
@@ -145,12 +206,12 @@ export class DonsComponent implements OnInit, OnDestroy {
       urgencyColor:  'text-white',
       urgencyBg:     URGENCY_BG[c.urgency] ?? 'bg-gray-400',
       patientName:   c.patientName ?? 'Patient',
-      patientAge:    c.patientAge  ?? 0,
+      patientAge:    c.patientAge ?? c.age ?? 0,
       indication:    c.treatment   ?? '',
       patientPhoto:  c.patientPhotoUrl ?? undefined,
       doctorPhoto:   c.doctorPhotoUrl  ?? undefined,
-      doctorName:    c.doctorName  ?? '',
-      doctorSpecialty: c.doctorSpecialty ?? '',
+      doctorName:    c.doctorName ?? c.doctor?.name ?? '',
+      doctorSpecialty: c.doctorSpecialty ?? c.doctor?.specialty ?? '',
       description:   c.description ?? '',
       objectif,
       collected,
@@ -169,7 +230,8 @@ export class DonsComponent implements OnInit, OnDestroy {
 
   setFilter(value: string): void {
     this.activeFilter = value;
-    this.loadCampaigns(value);
+    this.currentPage  = 1;
+    this.applyFilters();
   }
 
   formatAmount(amount: number): string {

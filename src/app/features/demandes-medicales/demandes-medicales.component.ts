@@ -5,6 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { catchError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import Swal from 'sweetalert2';
 
 interface MedicalRequest {
   id:             string;
@@ -217,5 +218,115 @@ export class DemandesMedicalesComponent implements OnInit {
 
   openDetail(id: string): void {
     this.router.navigate(['/hospital/demandes', id]);
+  }
+
+  // ── Modals Valider / Rejeter ──────────────────────────────────────────────────
+
+  selectedRow: MedicalRequest | null = null;
+
+  showValidateModal = false;
+  validateDate  = '';
+  validateTime  = '';
+  validatePrice = '';
+  validateNote  = '';
+
+  showRejectModal = false;
+  rejectReason = '';
+
+  isSubmitting = false;
+
+  isPending(row: MedicalRequest): boolean { return row.status === 'PENDING'; }
+
+  openValidate(row: MedicalRequest, event: Event): void {
+    event.stopPropagation();
+    this.selectedRow   = row;
+    this.validateDate  = '';
+    this.validateTime  = '';
+    this.validatePrice = '';
+    this.validateNote  = '';
+    this.showValidateModal = true;
+  }
+
+  openReject(row: MedicalRequest, event: Event): void {
+    event.stopPropagation();
+    this.selectedRow  = row;
+    this.rejectReason = '';
+    this.showRejectModal = true;
+  }
+
+  closeModals(): void {
+    this.showValidateModal = false;
+    this.showRejectModal   = false;
+    this.selectedRow       = null;
+    this.isSubmitting      = false;
+    this.cdr.markForCheck();
+  }
+
+  confirmValidate(): void {
+    if (!this.selectedRow) return;
+    const row = this.selectedRow;
+
+    if (row.type === 'HOSPITALIZATION') {
+      const price = parseFloat(this.validatePrice);
+      if (!this.validatePrice || isNaN(price) || price <= 0) {
+        Swal.fire({ title: 'Montant requis', text: 'Veuillez saisir un montant valide.', icon: 'warning', confirmButtonColor: '#124A92', width: '400px' });
+        return;
+      }
+      this.isSubmitting = true;
+      this.http.patch(`${this.api}/hospital/requests/${row.id}/hospitalization/accept`, {
+        price,
+        note: this.validateNote || undefined,
+      }).subscribe({
+        next: () => {
+          this.closeModals();
+          Swal.fire({ title: 'Demande acceptée !', text: 'La demande d\'hospitalisation a été validée.', icon: 'success', confirmButtonColor: '#124A92', width: '420px' });
+          this.loadStats();
+          this.loadRows();
+        },
+        error: (err) => {
+          this.isSubmitting = false;
+          this.cdr.markForCheck();
+          Swal.fire({ title: 'Erreur', text: err?.error?.message ?? 'Impossible de valider la demande.', icon: 'error', confirmButtonColor: '#124A92', width: '400px' });
+        },
+      });
+    } else {
+      this.isSubmitting = true;
+      this.http.patch(`${this.api}/hospital/requests/${row.id}/validate`, {}).subscribe({
+        next: () => {
+          this.closeModals();
+          Swal.fire({ title: 'Demande validée !', icon: 'success', confirmButtonColor: '#124A92', width: '400px' });
+          this.loadStats();
+          this.loadRows();
+        },
+        error: (err) => {
+          this.isSubmitting = false;
+          this.cdr.markForCheck();
+          Swal.fire({ title: 'Erreur', text: err?.error?.message ?? 'Impossible de valider la demande.', icon: 'error', confirmButtonColor: '#124A92', width: '400px' });
+        },
+      });
+    }
+  }
+
+  confirmReject(): void {
+    if (!this.selectedRow) return;
+    const row = this.selectedRow;
+    const url = row.type === 'HOSPITALIZATION'
+      ? `${this.api}/hospital/requests/${row.id}/hospitalization/reject`
+      : `${this.api}/hospital/requests/${row.id}/reject`;
+
+    this.isSubmitting = true;
+    this.http.patch(url, { reason: this.rejectReason || undefined }).subscribe({
+      next: () => {
+        this.closeModals();
+        Swal.fire({ title: 'Demande rejetée', icon: 'info', confirmButtonColor: '#124A92', width: '400px' });
+        this.loadStats();
+        this.loadRows();
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        this.cdr.markForCheck();
+        Swal.fire({ title: 'Erreur', text: err?.error?.message ?? 'Impossible de rejeter la demande.', icon: 'error', confirmButtonColor: '#124A92', width: '400px' });
+      },
+    });
   }
 }

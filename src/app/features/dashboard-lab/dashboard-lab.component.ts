@@ -8,7 +8,7 @@ import { environment } from '../../../environments/environment';
 // ── Interfaces ────────────────────────────────────────────────────────────────
 
 type Priority   = 'Urgent' | 'Prioritaire' | 'Normal';
-type ExamStatus = 'En attente' | 'En cours' | 'Validé' | 'Annulé';
+type ExamStatus = 'En attente' | 'Accepté' | 'Financé' | 'En cours' | 'Validé' | 'Annulé' | 'Expiré';
 
 interface ExamRow {
   id: string;
@@ -184,12 +184,12 @@ export class DashboardLabComponent implements OnInit {
   private applyOrders(orders: any[], names: Record<string, string>): void {
     const STATUS_MAP: Record<string, ExamStatus> = {
       PENDING:     'En attente',
-      ACCEPTED:    'En attente',
-      FUNDED:      'En attente',
+      ACCEPTED:    'Accepté',
+      FUNDED:      'Financé',
       IN_PROGRESS: 'En cours',
       COMPLETED:   'Validé',
       REJECTED:    'Annulé',
-      EXPIRED:     'Annulé',
+      EXPIRED:     'Expiré',
     };
     const PRIORITY_MAP: Record<string, Priority> = {
       NORMAL:   'Normal',
@@ -221,9 +221,13 @@ export class DashboardLabComponent implements OnInit {
   getStatusClass(status: ExamStatus): string {
     switch (status) {
       case 'En attente': return 'bg-yellow-100 text-yellow-700';
-      case 'En cours':   return 'bg-blue-100 text-blue-700';
+      case 'Accepté':    return 'bg-blue-100 text-blue-700';
+      case 'Financé':    return 'bg-purple-100 text-purple-700';
+      case 'En cours':   return 'bg-indigo-100 text-indigo-700';
       case 'Validé':     return 'bg-green-100 text-[#00B894]';
       case 'Annulé':     return 'bg-red-100 text-red-600';
+      case 'Expiré':     return 'bg-gray-100 text-gray-500';
+      default:           return 'bg-gray-100 text-gray-500';
     }
   }
 

@@ -226,16 +226,39 @@
               </td>
 
               <!-- Actions -->
-              <td class="px-4 py-4 pr-6 text-center">
-                <a [routerLink]="['/hospital/demandes', row.id]"
-                  class="inline-flex h-8 w-8 items-center justify-center rounded-full transition hover:bg-slate-100 text-[#1F2937]"
-                  aria-label="Voir le détail">
-                  <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-                      d="M2.5 12s3.5-6.5 9.5-6.5 9.5 6.5 9.5 6.5-3.5 6.5-9.5 6.5S2.5 12 2.5 12Z"></path>
-                    <circle cx="12" cy="12" r="2.5" stroke-width="1.8"></circle>
-                  </svg>
-                </a>
+              <td class="px-4 py-4 pr-6">
+                <div class="flex items-center justify-center gap-1">
+                  <!-- Voir le détail -->
+                  <a [routerLink]="['/hospital/demandes', row.id]"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-full transition hover:bg-slate-100 text-[#6B7280]"
+                    title="Voir le détail">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                        d="M2.5 12s3.5-6.5 9.5-6.5 9.5 6.5 9.5 6.5-3.5 6.5-9.5 6.5S2.5 12 2.5 12Z"></path>
+                      <circle cx="12" cy="12" r="2.5" stroke-width="1.8"></circle>
+                    </svg>
+                  </a>
+
+                  <!-- Valider (PENDING uniquement) -->
+                  <button *ngIf="isPending(row)" type="button"
+                    (click)="openValidate(row, $event)"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-full transition hover:bg-green-50 text-[#16A34A]"
+                    title="Valider">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                  </button>
+
+                  <!-- Rejeter (PENDING uniquement) -->
+                  <button *ngIf="isPending(row)" type="button"
+                    (click)="openReject(row, $event)"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-full transition hover:bg-red-50 text-[#DC2626]"
+                    title="Rejeter">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -289,5 +312,117 @@
       </div>
 
     </section>
+  </div>
+</div>
+
+<!-- ── Modal Valider ──────────────────────────────────────────────────────── -->
+<div *ngIf="showValidateModal"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+  (click)="closeModals()">
+  <div class="w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl" (click)="$event.stopPropagation()">
+
+    <!-- Icône -->
+    <div class="mb-5 flex justify-center">
+      <svg width="72" height="72" viewBox="0 0 95 95" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M51.2402 58.166L43.8184 58.166L43.8184 28.4785L51.2402 28.4785L51.2402 58.166Z" fill="#EFBD8E"/>
+        <path d="M47.5 65.291C45.3685 65.291 43.6406 67.0189 43.6406 69.1504C43.6406 71.2819 45.3685 73.0098 47.5 73.0098C49.6315 73.0098 51.3594 71.2819 51.3594 69.1504C51.3594 67.0189 49.6315 65.291 47.5 65.291Z" fill="#EFBD8E"/>
+        <path d="M47.5 94.9776C59.6972 95.3703 71.5436 90.595 80.446 81.6968C89.3483 72.7986 94.5815 60.5025 95 47.5C94.5815 34.4975 89.3483 22.2014 80.446 13.3032C71.5436 4.40504 59.6972 -0.370316 47.5 0.0224457C35.3028 -0.370316 23.4564 4.40504 14.554 13.3032C5.65166 22.2014 0.418472 34.4975 0 47.5C0.418472 60.5025 5.65166 72.7986 14.554 81.6968C23.4564 90.595 35.3028 95.3703 47.5 94.9776ZM47.5 7.93537C57.7293 7.54133 67.6886 11.4827 75.1994 18.8972C82.7101 26.3117 87.1609 36.5959 87.5781 47.5C87.1609 58.4041 82.7101 68.6883 75.1994 76.1028C67.6886 83.5174 57.7293 87.4587 47.5 87.0646C37.2707 87.4587 27.3114 83.5174 19.8006 76.1028C12.2899 68.6883 7.83908 58.4041 7.42188 47.5C7.83908 36.5959 12.2899 26.3117 19.8006 18.8972C27.3114 11.4827 37.2707 7.54133 47.5 7.93537Z" fill="#EFBD8E"/>
+      </svg>
+    </div>
+
+    <h2 class="mb-2 text-center text-xl font-semibold text-[#1F2937]">Valider la demande</h2>
+    <p class="mb-6 text-center text-sm text-[#6B7280]">
+      <ng-container *ngIf="selectedRow?.type === 'HOSPITALIZATION'">
+        Proposez une <strong>date</strong>, une <strong>heure</strong> et un <strong>montant</strong>. Le patient recevra une notification automatique.
+      </ng-container>
+      <ng-container *ngIf="selectedRow?.type !== 'HOSPITALIZATION'">
+        Confirmez la validation de cette demande.
+      </ng-container>
+    </p>
+
+    <!-- Date + Heure (hospitalisation) -->
+    <div *ngIf="selectedRow?.type === 'HOSPITALIZATION'" class="mb-4 grid grid-cols-2 gap-4">
+      <div>
+        <label class="mb-1 block text-sm font-medium text-[#374151]">Date du rendez-vous</label>
+        <input type="date" [(ngModel)]="validateDate"
+          class="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm text-[#334155] outline-none transition focus:border-[#124A92]"/>
+      </div>
+      <div>
+        <label class="mb-1 block text-sm font-medium text-[#374151]">Heure</label>
+        <input type="time" [(ngModel)]="validateTime"
+          class="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm text-[#334155] outline-none transition focus:border-[#124A92]"/>
+      </div>
+    </div>
+
+    <!-- Montant (hospitalisation) -->
+    <div *ngIf="selectedRow?.type === 'HOSPITALIZATION'" class="mb-4">
+      <label class="mb-1 block text-sm font-medium text-[#374151]">
+        Montant (FCFA) <span class="text-red-500">*</span>
+      </label>
+      <input type="number" [(ngModel)]="validatePrice" placeholder="ex: 25000" min="1"
+        class="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm text-[#334155] outline-none transition focus:border-[#124A92] placeholder:text-[#9CA3AF]"/>
+    </div>
+
+    <!-- Notes -->
+    <div class="mb-6">
+      <label class="mb-1 block text-sm font-medium text-[#374151]">Notes complémentaires (optionnel)</label>
+      <textarea [(ngModel)]="validateNote" rows="3"
+        placeholder="Instructions particulières pour le patient"
+        class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-[#334155] outline-none transition resize-none focus:border-[#124A92] placeholder:text-[#9CA3AF]"></textarea>
+    </div>
+
+    <!-- Boutons -->
+    <div class="flex gap-3">
+      <button type="button" (click)="confirmValidate()" [disabled]="isSubmitting"
+        class="flex-1 rounded-xl bg-[#124A92] py-3 text-sm font-semibold text-white transition hover:bg-[#0F3E79] disabled:opacity-60">
+        {{ isSubmitting ? 'En cours…' : 'Valider' }}
+      </button>
+      <button type="button" (click)="closeModals()" [disabled]="isSubmitting"
+        class="flex-1 rounded-xl border border-slate-200 bg-slate-50 py-3 text-sm font-semibold text-[#374151] transition hover:bg-slate-100 disabled:opacity-60">
+        Annuler
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal Rejeter ──────────────────────────────────────────────────────── -->
+<div *ngIf="showRejectModal"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+  (click)="closeModals()">
+  <div class="w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl" (click)="$event.stopPropagation()">
+
+    <!-- Icône -->
+    <div class="mb-5 flex justify-center">
+      <div class="flex h-16 w-16 items-center justify-center rounded-full border-2 border-[#DC2626]">
+        <svg class="h-7 w-7 text-[#DC2626]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </div>
+    </div>
+
+    <h2 class="mb-2 text-center text-xl font-semibold text-[#1F2937]">Rejeter la demande</h2>
+    <p class="mb-6 text-center text-sm text-[#6B7280]">
+      Indiquez le motif du rejet. Le patient sera informé automatiquement.
+    </p>
+
+    <!-- Motif -->
+    <div class="mb-6">
+      <label class="mb-1 block text-sm font-medium text-[#374151]">Motif du rejet (optionnel)</label>
+      <textarea [(ngModel)]="rejectReason" rows="4"
+        placeholder="Ex : capacité insuffisante, dossier incomplet…"
+        class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-[#334155] outline-none transition resize-none focus:border-[#DC2626] placeholder:text-[#9CA3AF]"></textarea>
+    </div>
+
+    <!-- Boutons -->
+    <div class="flex gap-3">
+      <button type="button" (click)="confirmReject()" [disabled]="isSubmitting"
+        class="flex-1 rounded-xl bg-[#DC2626] py-3 text-sm font-semibold text-white transition hover:bg-[#B91C1C] disabled:opacity-60">
+        {{ isSubmitting ? 'En cours…' : 'Confirmer le rejet' }}
+      </button>
+      <button type="button" (click)="closeModals()" [disabled]="isSubmitting"
+        class="flex-1 rounded-xl border border-slate-200 bg-slate-50 py-3 text-sm font-semibold text-[#374151] transition hover:bg-slate-100 disabled:opacity-60">
+        Annuler
+      </button>
+    </div>
   </div>
 </div>

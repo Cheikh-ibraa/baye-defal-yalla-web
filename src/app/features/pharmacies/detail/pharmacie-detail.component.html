@@ -299,7 +299,7 @@
                   </td>
                 </tr>
 
-                <tr *ngFor="let o of recentOrders" class="hover:bg-gray-50 transition-colors">
+                <tr *ngFor="let o of paginatedOrders" class="hover:bg-gray-50 transition-colors">
                   <td class="px-6 py-3 font-medium text-gray-800 font-mono text-xs">
                     {{ o.id?.substring(0, 8).toUpperCase() }}
                   </td>
@@ -316,6 +316,13 @@
 
               </tbody>
             </table>
+            <div class="px-6 py-4 flex items-center justify-between border-t border-gray-100">
+              <div class="text-sm text-gray-600">Affichage {{ (recentOrders.length === 0) ? 0 : ((currentPage-1)*itemsPerPage + 1) }} - {{ Math.min(currentPage*itemsPerPage, recentOrders.length) }} sur {{ recentOrders.length }}</div>
+              <div class="flex items-center gap-2">
+                <button (click)="previousPage()" class="px-3 py-1 rounded border" [disabled]="currentPage===1">Préc</button>
+                <button (click)="nextPage()" class="px-3 py-1 rounded border" [disabled]="currentPage===totalPages">Suiv</button>
+              </div>
+            </div>
           </div>
 
           <!-- Tab : Performances -->

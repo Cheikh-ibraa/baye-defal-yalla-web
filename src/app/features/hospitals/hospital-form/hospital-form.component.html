@@ -1,5 +1,4 @@
-<div class="min-h-screen bg-[#F4F6F9] p-6">
-  <div class="max-w-2xl mx-auto space-y-6">
+<div>
 
     <!-- ── HEADER ─────────────────────────────────────────────────────────── -->
     <div class="flex items-center gap-3">
@@ -8,49 +7,85 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
       </button>
       <div>
-        <h1 class="text-xl font-bold text-[#1E293B]">Ajouter un hôpital</h1>
+        <h1 class="text-xl font-bold text-[#1E293B]">Nouveau hôpital</h1>
         <p class="text-sm text-[#64748B]">Enregistrez un nouvel établissement hospitalier.</p>
       </div>
     </div>
 
-    <!-- ── FORMULAIRE ─────────────────────────────────────────────────────── -->
+    <!-- ── INFORMATIONS GÉNÉRALES ─────────────────────────────────────────── -->
     <div class="bg-white rounded-2xl shadow-sm p-6 space-y-5">
-
-      <!-- Nom -->
-      <div>
-        <label class="block text-sm font-semibold text-[#1E293B] mb-1.5">Nom de l'établissement <span class="text-red-500">*</span></label>
-        <input type="text" [(ngModel)]="form.name" placeholder="Ex : Hôpital Principal de Dakar"
-          class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#104382]">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#104382" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </span>
+        <span class="text-sm font-semibold text-[#1E293B]">Informations générales</span>
       </div>
 
-      <!-- Type -->
-      <div>
-        <label class="block text-sm font-semibold text-[#1E293B] mb-1.5">Type d'établissement</label>
-        <select [(ngModel)]="form.type"
-          class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#104382] bg-white">
-          <option value="">— Sélectionner un type —</option>
-          <option *ngFor="let t of types" [value]="t">{{ t }}</option>
-        </select>
-      </div>
-
-      <!-- Email / Téléphone -->
+      <!-- Nom / Type -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-semibold text-[#1E293B] mb-1.5">Email</label>
-          <input type="email" [(ngModel)]="form.email" placeholder="contact@hopital.sn"
+          <label class="block text-sm font-semibold text-[#1E293B] mb-1.5">Nom de l'établissement <span class="text-red-500">*</span></label>
+          <input type="text" [(ngModel)]="form.name" placeholder="ex: Hôpital Principal de Dakar"
             class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#104382]">
         </div>
+        <div>
+          <label class="block text-sm font-semibold text-[#1E293B] mb-1.5">Type d'établissement</label>
+          <select [(ngModel)]="form.type"
+            class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#104382] bg-white">
+            <option value="">Sélectionner un type</option>
+            <option *ngFor="let t of types" [value]="t">{{ t }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Téléphone / Email -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label class="block text-sm font-semibold text-[#1E293B] mb-1.5">Téléphone</label>
-          <input type="tel" [(ngModel)]="form.phone" placeholder="+221 33 xxx xx xx"
-            class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#104382]">
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.59 9.09 19.79 19.79 0 01.5 0.5a2 2 0 012-2.18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.91 6.37a16 16 0 006.72 6.72l1.06-1.06a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+            </span>
+            <input type="tel" [(ngModel)]="form.phone" placeholder="+221 33 000 00 00"
+              class="w-full border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-sm text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#104382]">
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-[#1E293B] mb-1.5">Email de contact <span class="text-red-500">*</span></label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </span>
+            <input type="email" [(ngModel)]="form.email" placeholder="contact@etablissement.sn"
+              class="w-full border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-sm text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#104382]">
+          </div>
+          <p class="text-xs text-[#64748B] mt-1">Les identifiants de connexion seront envoyés à cette adresse.</p>
         </div>
       </div>
 
-      <!-- Région / Département -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <!-- Adresse -->
+      <div>
+        <label class="block text-sm font-semibold text-[#1E293B] mb-1.5">Adresse complète</label>
+        <textarea [(ngModel)]="form.address" rows="3" placeholder="Indiquez l'adresse physique précise..."
+          class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#104382] resize-none"></textarea>
+      </div>
+    </div>
+
+    <!-- ── LOCALISATION GÉOGRAPHIQUE ──────────────────────────────────────── -->
+    <div class="bg-white rounded-2xl shadow-sm p-6 space-y-5">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#104382" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </span>
+        <span class="text-sm font-semibold text-[#1E293B]">Localisation géographique</span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
-          <label class="block text-sm font-semibold text-[#1E293B] mb-1.5">Région</label>
+          <label class="block text-sm font-semibold text-[#1E293B] mb-1.5">
+            Région
+            <span class="ml-1 w-4 h-4 inline-flex items-center justify-center rounded-full bg-green-500 text-white text-[9px]">✓</span>
+          </label>
           <select [(ngModel)]="form.region" (change)="onRegionChange()"
             class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#104382] bg-white">
             <option value="">— Région —</option>
@@ -58,51 +93,86 @@
           </select>
         </div>
         <div>
-          <label class="block text-sm font-semibold text-[#1E293B] mb-1.5">Département</label>
+          <label class="block text-sm font-semibold text-[#1E293B] mb-1.5">
+            Département
+            <span class="ml-1 w-4 h-4 inline-flex items-center justify-center rounded-full bg-green-500 text-white text-[9px]">✓</span>
+          </label>
           <select [(ngModel)]="form.department" (change)="onDeptChange()" [disabled]="!form.region"
             class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#104382] bg-white disabled:opacity-60">
             <option value="">— Département —</option>
             <option *ngFor="let d of departments" [value]="d.name">{{ d.name }}</option>
           </select>
         </div>
-      </div>
-
-      <!-- Commune -->
-      <div>
-        <label class="block text-sm font-semibold text-[#1E293B] mb-1.5">Commune</label>
-        <select [(ngModel)]="form.commune" [disabled]="!form.department"
-          class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#104382] bg-white disabled:opacity-60">
-          <option value="">— Commune —</option>
-          <option *ngFor="let c of communes" [value]="c">{{ c }}</option>
-        </select>
-      </div>
-
-      <!-- Adresse libre -->
-      <div>
-        <label class="block text-sm font-semibold text-[#1E293B] mb-1.5">Adresse complète</label>
-        <input type="text" [(ngModel)]="form.address" placeholder="Ex : Avenue Cheikh Anta Diop, Dakar"
-          class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#104382]">
-        <p class="text-xs text-gray-400 mt-1">Laissez vide pour utiliser Région / Commune.</p>
-      </div>
-
-      <!-- Statut -->
-      <div class="flex items-center justify-between p-4 bg-[#F8FAFC] rounded-xl border border-gray-100">
         <div>
-          <p class="text-sm font-semibold text-[#1E293B]">Établissement actif</p>
-          <p class="text-xs text-[#64748B]">Visible et opérationnel sur la plateforme.</p>
+          <label class="block text-sm font-semibold text-[#1E293B] mb-1.5">Commune</label>
+          <select [(ngModel)]="form.commune" [disabled]="!form.department"
+            class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#104382] bg-white disabled:opacity-60">
+            <option value="">Sélectionner</option>
+            <option *ngFor="let c of communes" [value]="c">{{ c }}</option>
+          </select>
         </div>
-        <button type="button" (click)="form.isActive = !form.isActive"
-          class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none"
-          [class.bg-[#104382]]="form.isActive" [class.bg-gray-300]="!form.isActive">
-          <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform"
-            [class.translate-x-6]="form.isActive" [class.translate-x-1]="!form.isActive"></span>
-        </button>
       </div>
+    </div>
 
-      <!-- Erreur -->
-      <div *ngIf="saveError" class="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-600">
-        {{ saveError }}
+    <!-- ── SERVICES DISPONIBLES ───────────────────────────────────────────── -->
+    <div class="bg-white rounded-2xl shadow-sm p-6">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#104382" stroke-width="2.5"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 6v4l3 3"/></svg>
+        </span>
+        <span class="text-sm font-semibold text-[#1E293B]">Services disponibles</span>
       </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <label *ngFor="let s of allServices"
+          class="flex items-center gap-2 cursor-pointer select-none">
+          <div class="relative flex-shrink-0">
+            <input type="checkbox"
+              [checked]="selectedServices.has(s)"
+              (change)="toggleService(s)"
+              class="sr-only">
+            <div class="w-4 h-4 rounded border-2 flex items-center justify-center transition-colors"
+              [class.bg-[#104382]]="selectedServices.has(s)"
+              [class.border-[#104382]]="selectedServices.has(s)"
+              [class.border-gray-300]="!selectedServices.has(s)">
+              <svg *ngIf="selectedServices.has(s)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+          </div>
+          <span class="text-sm text-[#1E293B]">{{ s }}</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- ── STATUT DE MISE EN LIGNE ─────────────────────────────────────────── -->
+    <div class="bg-white rounded-2xl shadow-sm p-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="relative">
+            <button type="button" (click)="form.isActive = !form.isActive"
+              class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none"
+              [class.bg-[#104382]]="form.isActive" [class.bg-gray-300]="!form.isActive">
+              <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform"
+                [class.translate-x-6]="form.isActive" [class.translate-x-1]="!form.isActive"></span>
+            </button>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-[#1E293B]">Statut de mise en ligne</p>
+            <p class="text-xs text-[#64748B]">Une fois actif, l'établissement sera visible par les donateurs et les patients sur l'application publique.</p>
+          </div>
+        </div>
+        <div class="flex gap-1">
+          <span class="px-3 py-1 rounded-lg text-xs font-semibold transition-colors"
+            [class.bg-[#104382]]="form.isActive" [class.text-white]="form.isActive"
+            [class.bg-gray-100]="!form.isActive" [class.text-gray-400]="!form.isActive">Actif</span>
+          <span class="px-3 py-1 rounded-lg text-xs font-semibold transition-colors"
+            [class.bg-gray-200]="form.isActive" [class.text-gray-400]="form.isActive"
+            [class.bg-gray-700]="!form.isActive" [class.text-white]="!form.isActive">Inactif</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ERREUR ─────────────────────────────────────────────────────────── -->
+    <div *ngIf="saveError" class="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-600">
+      {{ saveError }}
     </div>
 
     <!-- ── ACTIONS ─────────────────────────────────────────────────────────── -->
@@ -111,15 +181,14 @@
         class="px-5 py-2.5 border border-gray-200 bg-white rounded-xl text-sm font-semibold text-[#475569] hover:bg-gray-50 transition-colors">
         Annuler
       </button>
-      <button (click)="enregistrer()" [disabled]="saving || !form.name.trim()"
+      <button (click)="enregistrer()" [disabled]="saving || !form.name.trim() || !form.email.trim()"
         class="flex items-center gap-2 px-6 py-2.5 bg-[#104382] hover:bg-[#0D3568] text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
         <svg *ngIf="saving" class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
         </svg>
-        {{ saving ? 'Enregistrement…' : 'Enregistrer l\'hôpital' }}
+        <svg *ngIf="!saving" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        {{ saving ? 'Enregistrement…' : 'Enregistrer hôpital' }}
       </button>
     </div>
-
-  </div>
 </div>

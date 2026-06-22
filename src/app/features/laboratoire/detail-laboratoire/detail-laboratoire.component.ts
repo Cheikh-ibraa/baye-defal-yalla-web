@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -22,7 +22,7 @@ interface Toast { id: number; message: string; }
   templateUrl: './detail-laboratoire.component.html',
   styleUrl: './detail-laboratoire.component.css'
 })
-export class DetailLaboratoireComponent implements OnInit {
+export class DetailLaboratoireComponent implements OnInit, OnDestroy {
 
   private readonly api = environment.baseUrl;
 
@@ -35,6 +35,7 @@ export class DetailLaboratoireComponent implements OnInit {
 
   toasts: Toast[] = [];
   private toastIdCounter = 0;
+  private pollInterval: any = null;
 
   ongletActif: 'resultats' | 'compte-rendu' = 'resultats';
 
@@ -86,6 +87,31 @@ export class DetailLaboratoireComponent implements OnInit {
     if (id) this.loadExamen(id);
   }
 
+  ngOnDestroy(): void {
+    this.stopPolling();
+  }
+
+  private startPolling(): void {
+    this.stopPolling();
+    this.pollInterval = setInterval(() => {
+      if (this.examen.statut !== 'ACCEPTED') { this.stopPolling(); return; }
+      this.http.get<any>(`${this.api}/diagnostic/lab-orders/${this.orderId}`).subscribe({
+        next: (order) => {
+          if (order?.status !== 'ACCEPTED') {
+            this.examApi = order;
+            this.examen.statut = order.status;
+            this.stopPolling();
+          }
+        },
+        error: () => {}
+      });
+    }, 8000);
+  }
+
+  private stopPolling(): void {
+    if (this.pollInterval) { clearInterval(this.pollInterval); this.pollInterval = null; }
+  }
+
   loadExamen(id: string): void {
     this.loading = true;
     this.orderId = id;
@@ -100,6 +126,9 @@ export class DetailLaboratoireComponent implements OnInit {
           urgence: order.urgency === 'URGENT',
           statut:  order.status
         };
+
+        if (order.status === 'ACCEPTED') this.startPolling();
+        else this.stopPolling();
 
         this.prescription = {
           typeExamen:    (order.categories ?? []).join(', '),
@@ -291,23 +320,41 @@ export class DetailLaboratoireComponent implements OnInit {
   closeValidateCompteRendu(): void { this.showValidateCompteRenduModal = false; }
 
   confirmerPublierCompteRendu(): void {
-
     this.isSaving = true;
-    const payload: any = { structuredResults: this.resultats };
-    if (this.compteRenduForm.description) payload.observations = this.compteRenduForm.description;
-    this.http.patch(`${this.api}/diagnostic/lab-orders/${this.orderId}/results`, payload).subscribe({
-      next: () => {
-        this.isSaving = false;
-        this.examApi = { ...this.examApi, status: 'COMPLETED' };
-        this.showValidateCompteRenduModal = false;
-        this.showValidateCompteRenduSuccess = true;
-        setTimeout(() => { this.showValidateCompteRenduSuccess = false; this.loadExamen(this.orderId); }, 2000);
-      },
-      error: (err) => {
-        this.isSaving = false;
-        this.showErrorToast(err?.error?.message ?? 'Erreur lors de la publication');
-      }
-    });
+
+    const doSubmit = (resultFileUrl?: string) => {
+      const payload: any = { structuredResults: this.resultats };
+      if (this.compteRenduForm.description) payload.observations  = this.compteRenduForm.description;
+      if (resultFileUrl)                    payload.resultFileUrl = resultFileUrl;
+
+      this.http.patch(`${this.api}/diagnostic/lab-orders/${this.orderId}/results`, payload).subscribe({
+        next: () => {
+          this.isSaving = false;
+          this.examApi = { ...this.examApi, status: 'COMPLETED' };
+          this.showValidateCompteRenduModal  = false;
+          this.showValidateCompteRenduSuccess = true;
+          setTimeout(() => { this.showValidateCompteRenduSuccess = false; this.loadExamen(this.orderId); }, 2000);
+        },
+        error: (err) => {
+          this.isSaving = false;
+          this.showErrorToast(err?.error?.message ?? 'Erreur lors de la publication');
+        },
+      });
+    };
+
+    if (this.compteRenduFile) {
+      const formData = new FormData();
+      formData.append('file', this.compteRenduFile);
+      this.http.post<{ resultFileUrl: string }>(
+        `${this.api}/diagnostic/lab-orders/${this.orderId}/report-file`,
+        formData,
+      ).subscribe({
+        next:  (res) => doSubmit(res?.resultFileUrl),
+        error: ()    => doSubmit(),
+      });
+    } else {
+      doSubmit();
+    }
   }
 
   closeCompteRenduSuccess(): void   { this.showValidateCompteRenduSuccess = false; }

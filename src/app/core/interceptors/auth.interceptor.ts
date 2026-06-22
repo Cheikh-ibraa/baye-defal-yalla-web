@@ -6,6 +6,7 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, switchMap, throwError, BehaviorSubject, filter, take } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { AuthService } from '../services/auth.service';
 
 let isRefreshing = false;
 const refreshDone$ = new BehaviorSubject<string | null>(null);
@@ -15,10 +16,10 @@ function withBearer(req: HttpRequest<unknown>, token: string): HttpRequest<unkno
 }
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const router  = inject(Router);
-  // Use HttpBackend to bypass interceptors (avoids circular dep + infinite loop)
-  const backend = inject(HttpBackend);
-  const rawHttp = new HttpClient(backend);
+  const router      = inject(Router);
+  const authService = inject(AuthService);
+  const backend     = inject(HttpBackend);
+  const rawHttp     = new HttpClient(backend);
 
   const token = localStorage.getItem('access_token');
   const authedReq = token ? withBearer(req, token) : req;
@@ -53,13 +54,17 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           localStorage.setItem('refresh_token', res.refreshToken);
           isRefreshing = false;
           refreshDone$.next(res.accessToken);
+
+          // Mettre à jour user_data et déclencher le prochain refresh proactif
+          const user = authService.parseUserData(res.accessToken);
+          if (user) authService.updateUser(user);
+          authService.scheduleProactiveRefresh(res.accessToken);
+
           return next(withBearer(req, res.accessToken));
         }),
         catchError(refreshErr => {
           isRefreshing = false;
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
-          router.navigate(['/login']);
+          authService.logout();
           return throwError(() => refreshErr);
         })
       );

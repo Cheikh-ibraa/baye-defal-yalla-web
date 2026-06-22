@@ -42,10 +42,11 @@ export class BudgetComponent implements OnInit {
   newAmount: number | null = null;
   newType: 'MENSUEL' | 'ANNUEL' = 'MENSUEL';
   newBeneficiaries: { [key: string]: boolean } = {
-    'Nouveau-nés': true,
-    'Personnes âgées': true,
+    'Tous': true,
+    'Nouveau-nés': false,
     'Enfants': false,
     'Adultes': false,
+    'Personnes âgées': false,
   };
   newNeeds: { [key: string]: boolean } = {
     'Analyses': true,
@@ -120,7 +121,7 @@ export class BudgetComponent implements OnInit {
   openModal(): void {
     this.newAmount = null;
     this.newType   = 'MENSUEL';
-    this.newBeneficiaries = { 'Nouveau-nés': true, 'Personnes âgées': true, 'Enfants': false, 'Adultes': false };
+    this.newBeneficiaries = { 'Tous': true, 'Nouveau-nés': false, 'Enfants': false, 'Adultes': false, 'Personnes âgées': false };
     this.newNeeds         = { 'Analyses': true, 'Imagerie': true, 'Ordonnances': false };
     this.modalStep = 'form';
     this.isModalOpen = true;

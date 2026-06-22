@@ -1,6 +1,26 @@
 <div class="min-h-[calc(100vh-4rem)] bg-[#F4F6F9]">
   <div class="mx-auto max-w-[1200px]">
 
+    <!-- Chargement -->
+    <div *ngIf="loading" class="flex justify-center py-24">
+      <svg class="h-8 w-8 animate-spin text-[#124A92]" viewBox="0 0 24 24" fill="none">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+      </svg>
+    </div>
+
+    <!-- Patient introuvable -->
+    <div *ngIf="!loading && !patient" class="mt-24 flex flex-col items-center gap-3 text-[#94A3B8]">
+      <svg class="h-12 w-12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <circle cx="12" cy="12" r="10" stroke-width="1.5"></circle>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4m0 4h.01"></path>
+      </svg>
+      <p class="text-sm font-medium">Patient introuvable</p>
+      <button (click)="back()" class="text-sm text-[#124A92] underline">Retour à la liste</button>
+    </div>
+
+    <ng-container *ngIf="!loading && patient">
+
     <!-- En-tête -->
     <div class="mb-6 flex items-center gap-4">
       <button type="button" (click)="back()"
@@ -12,9 +32,9 @@
       </button>
       <div>
         <h1 class="text-2xl font-semibold tracking-tight text-[#343A40] sm:text-[28px]">
-          {{ patient?.fullname ?? '—' }}
+          {{ patient.fullname }}
         </h1>
-        <p class="mt-0.5 text-sm text-[#94A3B8]">ID: {{ patient?.patientId ?? patientId }}</p>
+        <p class="mt-0.5 text-sm text-[#94A3B8]">ID: {{ patient.patientId }}</p>
       </div>
     </div>
 
@@ -41,9 +61,9 @@
           <!-- Photo + âge / sexe / groupe sanguin -->
           <div class="flex gap-4">
             <div class="h-[88px] w-[88px] shrink-0 overflow-hidden">
-              <img *ngIf="patient?.photoUrl" [src]="patient!.photoUrl!" [alt]="patient!.fullname"
+              <img *ngIf="patient.photoUrl" [src]="patient.photoUrl" [alt]="patient.fullname"
                 class="h-full w-full object-cover" />
-              <div *ngIf="!patient?.photoUrl" class="flex h-full w-full items-center justify-center text-[#94A3B8]">
+              <div *ngIf="!patient.photoUrl" class="flex h-full w-full items-center justify-center text-[#94A3B8]">
                 <img src="assets/images/persona.jpg" class="h-22 w-22 ronded-lg object-cover" />
               </div>
             </div>
@@ -52,12 +72,12 @@
               <div>
                 <p class="text-xs font-semibold uppercase tracking-wide text-[#747686]">Âge &amp; Sexe</p>
                 <p class="text-sm sm:text-base font-semibold text-[#0F172A]">
-                  {{ patient?.age ?? '—' }} ans, {{ patient?.genderLabel ?? '—' }}
+                  {{ patient.age }} ans, {{ patient.genderLabel }}
                 </p>
               </div>
               <div>
                 <p class="text-xs font-semibold uppercase tracking-wide text-[#747686]">Groupe Sanguin</p>
-                <p class="text-sm sm:text-base font-semibold text-[#BA1A1A]">{{ patient?.bloodGroup ?? '—' }}</p>
+                <p class="text-sm sm:text-base font-semibold text-[#BA1A1A]">{{ patient.bloodGroup }}</p>
               </div>
             </div>
           </div>
@@ -73,7 +93,7 @@
                 </svg>
 
               </span>
-              <span class="min-w-0 break-words">{{ patient?.phone ?? '—' }}</span>
+              <span class="min-w-0 break-words">{{ patient.phone }}</span>
             </div>
 
             <div class="flex items-center gap-3 text-sm text-[#191B23]">
@@ -84,7 +104,7 @@
                     fill="#747686" />
                 </svg>
               </span>
-              <span class="min-w-0 break-all">{{ patient?.email ?? '—' }}</span>
+              <span class="min-w-0 break-all">{{ patient.email }}</span>
             </div>
 
             <div class="flex items-center gap-2 text-sm text-[#191B23]">
@@ -95,7 +115,7 @@
                     fill="#747686" />
                 </svg>
               </span>
-              <span class="min-w-0 break-words leading-relaxed">{{ patient?.address ?? '—' }}</span>
+              <span class="min-w-0 break-words leading-relaxed">{{ patient.address   }}</span>
             </div>
           </div>
 
@@ -198,7 +218,7 @@
                   <td class="px-6 py-4 text-[#475569]">{{ d.montant }}</td>
                   <td class="px-6 py-4 text-[#475569]">{{ d.service }}</td>
                   <td class="px-6 py-4">
-                    <button type="button"
+                    <button type="button" (click)="viewDemande(d.id)"
                       class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F1F5F9] text-[#64748B] transition hover:bg-[#EAF2FF] hover:text-[#2563EB]"
                       aria-label="Voir le détail">
                       <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -293,5 +313,6 @@
       </div>
     </section>
 
+    </ng-container>
   </div>
 </div>

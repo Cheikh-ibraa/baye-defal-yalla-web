@@ -6,6 +6,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===== Responsive root font-size (scales all rem/Tailwind sizes) ===== */
+html {
+  font-size: 14px; /* ≥1280px: default */
+}
+@media (max-width: 1279px) {
+  html { font-size: 12px; } /* 1025–1279px */
+}
+@media (max-width: 1024px) {
+  html { font-size: 11px; } /* ≤1024px */
+}
+
 /* ===== OTP patient input boxes ===== */
 .otp-patient-box {
   width: 56px !important;

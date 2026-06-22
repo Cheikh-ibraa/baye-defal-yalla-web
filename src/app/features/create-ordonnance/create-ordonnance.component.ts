@@ -283,7 +283,7 @@ export class CreateOrdonnanceComponent implements OnInit, OnDestroy {
   fermerEtRediriger(): void {
     this.showSuccessModal = false;
     this.showQrModal = false;
-    this.router.navigate(['/doctor/ordonnances']);
+    this.router.navigate(['/doctor/patients'], { queryParams: { tab: 'ordonnances' } });
   }
 
   partagerWhatsApp(): void {

@@ -1,5 +1,5 @@
 import {
-  Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef
+  Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef
 } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -39,7 +39,7 @@ interface ExamData {
   styleUrl: './detail-examen-imagerie.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DetailExamenImagerieComponent implements OnInit {
+export class DetailExamenImagerieComponent implements OnInit, OnDestroy {
 
   private readonly api      = environment.baseUrl;
   private readonly filesBase = environment.filesUrl;
@@ -58,6 +58,7 @@ export class DetailExamenImagerieComponent implements OnInit {
   loading  = false;
   isSaving = false;
   error    = '';
+  private pollInterval: any = null;
 
   // ── TABS ───────────────────────────────────────────────────────────────────
   ongletActif: 'images' | 'compte-rendu' = 'images';
@@ -222,7 +223,33 @@ export class DetailExamenImagerieComponent implements OnInit {
 
     this.loading = false;
     this.cdr.markForCheck();
+
+    if (data.status === 'ACCEPTED') {
+      this.startPolling();
+    } else {
+      this.stopPolling();
+    }
   }
+
+  private startPolling(): void {
+    if (this.pollInterval) return;
+    this.pollInterval = setInterval(() => {
+      this.http.get<any>(`${this.api}/diagnostic/imaging-orders/${this.examId}`)
+        .pipe(catchError(() => of(null)))
+        .subscribe(d => {
+          if (d && d.status !== 'ACCEPTED') {
+            this.stopPolling();
+            this.resolveNames(d);
+          }
+        });
+    }, 10_000);
+  }
+
+  private stopPolling(): void {
+    if (this.pollInterval) { clearInterval(this.pollInterval); this.pollInterval = null; }
+  }
+
+  ngOnDestroy(): void { this.stopPolling(); }
 
   // ── GUARDS ─────────────────────────────────────────────────────────────────
   get examenStatus(): string { return this.examApi?.status as string ?? ''; }
@@ -438,23 +465,40 @@ export class DetailExamenImagerieComponent implements OnInit {
     this.isSaving = true;
     this.cdr.markForCheck();
 
-    const body: Record<string, string> = { observations: this.compteRenduForm.description };
-    if (this.examApi.imagingOrderRef) body['reportTitle'] = this.examApi.imagingOrderRef;
+    const doComplete = (resultFileUrl?: string) => {
+      const body: Record<string, string> = { observations: this.compteRenduForm.description };
+      if (this.examApi.imagingOrderRef) body['reportTitle'] = this.examApi.imagingOrderRef;
+      if (resultFileUrl)                body['resultFileUrl'] = resultFileUrl;
 
-    this.http.patch(`${this.api}/diagnostic/imaging-orders/${this.examId}/complete`, body)
-      .pipe(finalize(() => { this.isSaving = false; this.cdr.markForCheck(); }))
-      .subscribe({
-        next: () => {
-          this.examApi = { ...this.examApi, status: 'COMPLETED' };
-          this.showValidateCompteRenduModal  = false;
-          this.showValidateCompteRenduSuccess = true;
-          this.cdr.markForCheck();
-          setTimeout(() => { this.showValidateCompteRenduSuccess = false; this.loadExamen(this.examId); }, 2000);
-        },
-        error: (err) => {
-          this.showErrorToast(err?.error?.message ?? 'Erreur lors de la publication du compte rendu');
-        }
+      this.http.patch(`${this.api}/diagnostic/imaging-orders/${this.examId}/complete`, body)
+        .pipe(finalize(() => { this.isSaving = false; this.cdr.markForCheck(); }))
+        .subscribe({
+          next: () => {
+            this.examApi = { ...this.examApi, status: 'COMPLETED' };
+            this.showValidateCompteRenduModal  = false;
+            this.showValidateCompteRenduSuccess = true;
+            this.cdr.markForCheck();
+            setTimeout(() => { this.showValidateCompteRenduSuccess = false; this.loadExamen(this.examId); }, 2000);
+          },
+          error: (err) => {
+            this.showErrorToast(err?.error?.message ?? 'Erreur lors de la publication du compte rendu');
+          },
+        });
+    };
+
+    if (this.compteRenduFile) {
+      const formData = new FormData();
+      formData.append('file', this.compteRenduFile);
+      this.http.post<{ resultFileUrl: string }>(
+        `${this.api}/diagnostic/imaging-orders/${this.examId}/report-file`,
+        formData,
+      ).subscribe({
+        next:  (res) => doComplete(res?.resultFileUrl),
+        error: ()    => doComplete(),
       });
+    } else {
+      doComplete();
+    }
   }
 
   getCurrentDate(): string {

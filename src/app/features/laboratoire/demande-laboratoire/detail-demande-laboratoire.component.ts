@@ -50,12 +50,15 @@ export class DetailDemandeLaboratoireComponent implements OnInit {
   private location = inject(Location);
   private api      = environment.baseUrl;
 
-  detail:  DetailDemande | null = null;
+  detail:      DetailDemande | null = null;
+  orderStatus: string = '';
   loading  = true;
 
   showAccepterModal = false;
   showSuccessModal  = false;
   form: AccepterForm = { montant: null, date: '', heure: '', note: '' };
+
+  get isPending(): boolean { return this.orderStatus === 'PENDING'; }
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id') ?? '';
@@ -84,6 +87,7 @@ export class DetailDemandeLaboratoireComponent implements OnInit {
   }
 
   private build(order: any, names: Record<string, string>): void {
+    this.orderStatus = order.status ?? '';
     const pName = names[order.patientId] || `Patient ${(order.patientId ?? '').slice(-6).toUpperCase()}`;
     const dName = names[order.doctorId] ? `Dr. ${names[order.doctorId]}` : 'Médecin';
     const cats  = (order.categories ?? []) as string[];

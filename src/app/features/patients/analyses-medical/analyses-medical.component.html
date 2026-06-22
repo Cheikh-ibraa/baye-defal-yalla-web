@@ -1,226 +1,479 @@
 <div class="min-h-screen px-2 py-4">
-  <div class="max-w-6xl mx-auto">
+  <div class="mx-auto">
 
-    <!-- Header -->
-    <div class="mb-6 flex flex-row items-center gap-4">
-      <button (click)="goBack()"
-        class="inline-flex items-center justify-center p-4 bg-white rounded-md shadow-sm hover:bg-gray-50 transition-colors mb-2">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M20 12H4M4 12L10 6M4 12L10 18" stroke="#2B3674" stroke-width="1.5" stroke-linecap="round"
-            stroke-linejoin="round" />
-        </svg>
-      </button>
-      <div>
-        <h1 class="text-3xl font-semibold text-[#343A40]">Nouvelle demande d'analyses biologiques</h1>
-        <p class="text-xs text-[#343A40] mt-1">Le laboratoire le plus proche du patient sera automatiquement sélectionné.</p>
+    <!-- ═══════════════════ VUE LISTE ═══════════════════ -->
+    <ng-container *ngIf="viewMode === 'list'">
+
+      <div class="mb-4 flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-semibold text-[#343A40]">Mes demandes d'analyses</h1>
+          <p class="text-xs text-gray-500 mt-1">Historique de toutes vos demandes d'analyses biologiques</p>
+        </div>
+<!--        <button (click)="openCreate()"-->
+<!--          class="flex items-center gap-2 px-4 py-2.5 bg-[#104382] text-white text-sm font-medium rounded-md hover:bg-[#0d3468] transition-colors">-->
+<!--          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">-->
+<!--            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>-->
+<!--          </svg>-->
+<!--          Nouvelle demande-->
+<!--        </button>-->
       </div>
-    </div>
 
-    <div class="bg-white rounded-md shadow-sm">
-      <form (ngSubmit)="onSubmit()">
+      <!-- barre de recherche -->
+      <div class="mb-4">
+        <div class="relative max-w-sm">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+          </svg>
+          <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearch()"
+            placeholder="Rechercher par référence, patient, statut..."
+            class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none"/>
+        </div>
+      </div>
 
-        <!-- Informations Patient -->
-        <div class="border-b border-gray-200">
-          <button type="button" (click)="toggleSection('patient')"
-            class="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
-            <h2 class="text-xl font-semibold text-[#2C3E50]">Informations Patient</h2>
-            <svg class="w-5 h-5 text-gray-500 transition-transform" [class.rotate-180]="!patientInfoExpanded"
-              fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
+      <!-- chargement -->
+      <div *ngIf="loadingList" class="flex justify-center py-16">
+        <svg class="animate-spin w-8 h-8 text-[#104382]" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+        </svg>
+      </div>
 
-          <div *ngIf="patientInfoExpanded" class="px-6 pb-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- erreur -->
+      <div *ngIf="!loadingList && listError" class="bg-red-50 border border-red-200 rounded-md px-6 py-4 text-sm text-red-700">
+        {{ listError }}
+        <button (click)="loadList()" class="ml-3 underline font-medium">Réessayer</button>
+      </div>
+
+      <!-- vide -->
+      <div *ngIf="!loadingList && !listError && filteredOrders.length === 0"
+        class="bg-white rounded-md shadow-sm px-6 py-16 text-center">
+        <svg class="mx-auto w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        <p class="text-gray-500 mb-4">{{ searchQuery ? 'Aucun résultat pour cette recherche.' : 'Aucune demande d\'analyses pour le moment.' }}</p>
+        <button *ngIf="!searchQuery" (click)="openCreate()"
+          class="px-4 py-2 bg-[#104382] text-white text-sm rounded-md hover:bg-[#0d3468] transition-colors">
+          Créer une première demande
+        </button>
+      </div>
+
+      <!-- tableau -->
+      <div *ngIf="!loadingList && !listError && filteredOrders.length > 0" class="bg-white rounded-md shadow-sm overflow-hidden">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th class="px-4 py-3 text-left font-medium text-gray-600">Référence</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-600">Patient</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-600">Catégories</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-600">Urgence</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-600">Statut</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-600">Date</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr *ngFor="let order of paginatedOrders"
+              (click)="openDetail(order)"
+              class="hover:bg-blue-50 transition-colors cursor-pointer">
+              <td class="px-4 py-3 font-mono text-xs text-[#104382] font-semibold">{{ order.labOrderRef ?? '—' }}</td>
+              <td class="px-4 py-3 font-medium text-gray-800">{{ order.patientName ?? '—' }}</td>
+              <td class="px-4 py-3 text-gray-600 max-w-[200px] truncate">{{ (order.categories ?? []).join(', ') || '—' }}</td>
+              <td class="px-4 py-3">
+                <span class="px-2 py-0.5 rounded-full text-xs font-medium"
+                  [ngClass]="{
+                    'bg-red-100 text-red-700': order.urgency === 'URGENT',
+                    'bg-orange-100 text-orange-700': order.urgency === 'PRIORITY',
+                    'bg-gray-100 text-gray-700': order.urgency === 'NORMAL' || !order.urgency
+                  }">
+                  {{ urgencyLabel(order.urgency) }}
+                </span>
+              </td>
+              <td class="px-4 py-3">
+                <span class="px-2 py-0.5 rounded-full text-xs font-medium" [ngClass]="statusInfo(order.status).color">
+                  {{ statusInfo(order.status).label }}
+                </span>
+              </td>
+              <td class="px-4 py-3 text-gray-500 text-xs">{{ order.createdAt | date:'dd/MM/yyyy' }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- pagination -->
+        <div *ngIf="totalPages > 1" class="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-gray-50">
+          <p class="text-xs text-gray-500">
+            {{ (currentPage - 1) * pageSize + 1 }}–{{ minVal(currentPage * pageSize, filteredOrders.length) }} sur {{ filteredOrders.length }} résultats
+          </p>
+          <div class="flex items-center gap-1">
+            <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1"
+              class="px-2 py-1 rounded text-xs border border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white transition-colors">
+              &laquo;
+            </button>
+            <ng-container *ngFor="let p of pageNumbers">
+              <button (click)="goToPage(p)"
+                class="px-2.5 py-1 rounded text-xs border transition-colors"
+                [ngClass]="p === currentPage ? 'bg-[#104382] text-white border-[#104382]' : 'border-gray-300 hover:bg-white'">
+                {{ p }}
+              </button>
+            </ng-container>
+            <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages"
+              class="px-2 py-1 rounded text-xs border border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white transition-colors">
+              &raquo;
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
+
+    <!-- ═══════════════════ VUE DÉTAIL ═══════════════════ -->
+    <ng-container *ngIf="viewMode === 'detail' && selectedOrder">
+
+      <!-- Header -->
+      <div class="mb-4 flex items-center gap-4">
+        <button (click)="goBack()"
+          class="inline-flex items-center justify-center p-3 bg-white rounded-md shadow-sm hover:bg-gray-50 transition-colors">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M20 12H4M4 12L10 6M4 12L10 18" stroke="#2B3674" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="flex-1">
+          <h1 class="text-2xl font-semibold text-[#343A40]">Détail de la demande</h1>
+          <p class="text-xs text-gray-500 mt-0.5">Référence : <span class="font-mono font-semibold text-[#104382]">{{ selectedOrder.labOrderRef ?? '—' }}</span></p>
+        </div>
+        <button (click)="printOrder()"
+          class="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50 transition-colors shadow-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+          </svg>
+          Télécharger / Imprimer
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+        <!-- Col principale -->
+        <div class="lg:col-span-2 space-y-4">
+
+          <!-- Infos patient -->
+          <div class="bg-white rounded-md shadow-sm p-5">
+            <h2 class="text-sm font-semibold text-[#104382] uppercase tracking-wide mb-3">Patient</h2>
+            <div class="grid grid-cols-2 gap-3 text-sm">
               <div>
-                <label class="block text-sm font-medium text-[#333333] mb-2">N° Référence</label>
-                <input type="text" [value]="patientReference" readonly
-                  class="w-full px-4 py-3 border border-gray-300 rounded-md bg-gray-50 text-gray-600 cursor-not-allowed text-sm" />
+                <p class="text-xs text-gray-500">Nom complet</p>
+                <p class="font-medium text-gray-800 mt-0.5">{{ selectedOrder.patientName ?? '—' }}</p>
               </div>
               <div>
-                <label class="block text-sm font-medium text-[#333333] mb-2">Nom du patient</label>
-                <input type="text" [value]="patientName" readonly
-                  class="w-full px-4 py-3 border border-gray-300 rounded-md bg-gray-50 text-gray-600 cursor-not-allowed text-sm" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-[#333333] mb-2">Assurance</label>
-                <input type="text" [value]="patientInsurance || '—'" readonly
-                  class="w-full px-4 py-3 border border-gray-300 rounded-md bg-gray-50 text-gray-600 cursor-not-allowed text-sm" />
-              </div>
-            </div>
-
-            <!-- Acheminement automatique -->
-            <div class="mt-4 flex items-start gap-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
-              <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              <div>
-                <p class="text-sm font-medium text-blue-800">Acheminement automatique</p>
-                <p class="text-xs text-blue-600 mt-0.5">La demande sera envoyée au laboratoire le plus proche de l'adresse du patient.</p>
+                <p class="text-xs text-gray-500">Assurance</p>
+                <p class="font-medium text-gray-800 mt-0.5">{{ selectedOrder.patientInsurance ?? '—' }}</p>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Types d'examens (checkboxes) -->
-        <div class="border-b border-gray-200">
-          <button type="button" (click)="toggleSection('examens')"
-            class="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
-            <h2 class="text-xl font-semibold text-[#2C3E50]">
-              Types d'examens <span class="text-red-500">*</span>
-            </h2>
-            <svg class="w-5 h-5 text-gray-500 transition-transform" [class.rotate-180]="!examensExpanded" fill="none"
-              stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-
-          <div *ngIf="examensExpanded" class="px-6 pb-6">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <label *ngFor="let cat of categories"
-                class="flex items-center gap-3 px-4 py-3 border-2 rounded-md cursor-pointer transition-all"
-                [class.border-[#104382]]="selectedCats.has(cat)"
-                [class.bg-[#10438214]]="selectedCats.has(cat)"
-                [class.border-gray-200]="!selectedCats.has(cat)"
-                [class.hover:border-gray-400]="!selectedCats.has(cat)">
-                <input type="checkbox"
-                  [checked]="selectedCats.has(cat)"
-                  (change)="toggleCategory(cat)"
-                  class="w-4 h-4 text-[#104382] border-gray-300 rounded focus:ring-[#104382]" />
-                <span class="text-sm font-medium"
-                  [class.text-[#104382]]="selectedCats.has(cat)"
-                  [class.text-gray-700]="!selectedCats.has(cat)">
+          <!-- Analyses prescrites -->
+          <div class="bg-white rounded-md shadow-sm p-5">
+            <h2 class="text-sm font-semibold text-[#104382] uppercase tracking-wide mb-3">Analyses prescrites</h2>
+            <div class="mb-3">
+              <p class="text-xs text-gray-500 mb-1">Catégories</p>
+              <div class="flex flex-wrap gap-2">
+                <span *ngFor="let cat of (selectedOrder.categories ?? [])"
+                  class="px-2.5 py-1 bg-blue-50 text-blue-700 text-xs rounded-full border border-blue-200">
                   {{ cat }}
                 </span>
-              </label>
+                <span *ngIf="(selectedOrder.categories ?? []).length === 0" class="text-gray-400 text-sm">—</span>
+              </div>
             </div>
-
-            <p *ngIf="selectedCats.size > 0" class="mt-3 text-xs text-gray-500">
-              {{ selectedCats.size }} catégorie(s) sélectionnée(s) :
-              <span class="font-medium text-[#104382]">{{ selectedCatsList.join(', ') }}</span>
-            </p>
+            <div class="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <p class="text-xs text-gray-500">Indication clinique</p>
+                <p class="font-medium text-gray-800 mt-0.5">{{ selectedOrder.clinicalIndication ?? '—' }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500">À jeun</p>
+                <p class="font-medium text-gray-800 mt-0.5">{{ selectedOrder.fasting ? 'Oui' : 'Non' }}</p>
+              </div>
+            </div>
           </div>
+
+          <!-- Fichier résultat (si uploadé) -->
+          <div *ngIf="selectedOrder.resultFileUrl" class="bg-white rounded-md shadow-sm p-5">
+            <h2 class="text-sm font-semibold text-[#104382] uppercase tracking-wide mb-3">Compte rendu / Fichier résultat</h2>
+            <a [href]="selectedOrder.resultFileUrl" target="_blank" rel="noopener"
+              class="inline-flex items-center gap-2 px-4 py-2.5 bg-[#104382] text-white text-sm font-medium rounded-md hover:bg-[#0d3468] transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+              </svg>
+              Ouvrir le fichier résultat
+            </a>
+            <p class="text-xs text-gray-400 mt-2">{{ selectedOrder.resultFileUrl }}</p>
+          </div>
+
+          <!-- Résultats (si disponibles) -->
+          <div *ngIf="selectedOrder.observations || selectedOrder.structuredResults?.length" class="bg-white rounded-md shadow-sm p-5">
+            <h2 class="text-sm font-semibold text-[#104382] uppercase tracking-wide mb-3">Résultats</h2>
+            <p *ngIf="selectedOrder.observations" class="text-sm text-gray-700 mb-3">{{ selectedOrder.observations }}</p>
+            <table *ngIf="selectedOrder.structuredResults?.length" class="w-full text-xs border-collapse">
+              <thead>
+                <tr class="bg-gray-50">
+                  <th class="px-3 py-2 text-left border border-gray-200 font-medium text-gray-600">Paramètre</th>
+                  <th class="px-3 py-2 text-left border border-gray-200 font-medium text-gray-600">Valeur</th>
+                  <th class="px-3 py-2 text-left border border-gray-200 font-medium text-gray-600">Unité</th>
+                  <th class="px-3 py-2 text-left border border-gray-200 font-medium text-gray-600">Référence</th>
+                  <th class="px-3 py-2 text-left border border-gray-200 font-medium text-gray-600">État</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let r of selectedOrder.structuredResults" class="border border-gray-200">
+                  <td class="px-3 py-2">{{ r.parametre }}</td>
+                  <td class="px-3 py-2 font-semibold">{{ r.valeur }}</td>
+                  <td class="px-3 py-2 text-gray-500">{{ r.unite }}</td>
+                  <td class="px-3 py-2 text-gray-500">{{ r.reference }}</td>
+                  <td class="px-3 py-2">
+                    <span class="px-2 py-0.5 rounded-full font-medium"
+                      [ngClass]="{
+                        'bg-red-100 text-red-700': r.etat === 'Critique',
+                        'bg-orange-100 text-orange-700': r.etat === 'Anormal',
+                        'bg-green-100 text-green-700': r.etat === 'Normal'
+                      }">{{ r.etat }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
         </div>
 
-        <!-- Indication Clinique -->
-        <div class="border-b border-gray-200">
-          <button type="button" (click)="toggleSection('indication')"
-            class="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
-            <h2 class="text-xl font-semibold text-[#2C3E50]">Indication Clinique</h2>
-            <svg class="w-5 h-5 text-gray-500 transition-transform" [class.rotate-180]="!indicationExpanded" fill="none"
-              stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
+        <!-- Col latérale -->
+        <div class="space-y-4">
 
-          <div *ngIf="indicationExpanded" class="px-6 pb-6">
-            <textarea [(ngModel)]="clinicalIndication" name="clinicalIndication" rows="3"
-              placeholder="Contexte médical, suspicion diagnostique, traitement en cours..."
-              class="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none transition-all resize-none text-sm"></textarea>
+          <!-- Statut & priorité -->
+          <div class="bg-white rounded-md shadow-sm p-5">
+            <h2 class="text-sm font-semibold text-[#104382] uppercase tracking-wide mb-3">Statut</h2>
+            <div class="space-y-3 text-sm">
+              <div>
+                <p class="text-xs text-gray-500 mb-1">Statut actuel</p>
+                <span class="px-3 py-1 rounded-full text-xs font-semibold" [ngClass]="statusInfo(selectedOrder.status).color">
+                  {{ statusInfo(selectedOrder.status).label }}
+                </span>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500 mb-1">Urgence</p>
+                <span class="px-3 py-1 rounded-full text-xs font-semibold"
+                  [ngClass]="{
+                    'bg-red-100 text-red-700': selectedOrder.urgency === 'URGENT',
+                    'bg-orange-100 text-orange-700': selectedOrder.urgency === 'PRIORITY',
+                    'bg-gray-100 text-gray-700': selectedOrder.urgency === 'NORMAL' || !selectedOrder.urgency
+                  }">
+                  {{ urgencyLabel(selectedOrder.urgency) }}
+                </span>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500">Date création</p>
+                <p class="font-medium text-gray-800 mt-0.5">{{ selectedOrder.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
+              </div>
+              <div *ngIf="selectedOrder.appointmentDate">
+                <p class="text-xs text-gray-500">Date RDV</p>
+                <p class="font-medium text-[#104382] mt-0.5">{{ selectedOrder.appointmentDate | date:'dd/MM/yyyy HH:mm' }}</p>
+              </div>
+            </div>
+          </div>
 
-            <div class="flex flex-wrap gap-2 mt-3">
-              <button *ngFor="let ind of indicationsPredefinies" type="button"
-                (click)="addIndicationTag(ind)"
-                class="inline-flex items-center px-3 py-1.5 text-xs border border-[#CBD5E1] text-gray-700 rounded-full hover:bg-gray-50 transition-colors">
-                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          <!-- Centre labo (si accepté) -->
+          <div *ngIf="selectedOrder.acceptedCenterName" class="bg-white rounded-md shadow-sm p-5">
+            <h2 class="text-sm font-semibold text-[#104382] uppercase tracking-wide mb-3">Centre d'analyses</h2>
+            <div class="space-y-2 text-sm">
+              <div>
+                <p class="text-xs text-gray-500">Nom</p>
+                <p class="font-medium text-gray-800 mt-0.5">{{ selectedOrder.acceptedCenterName }}</p>
+              </div>
+              <div *ngIf="selectedOrder.acceptedCenterAddress">
+                <p class="text-xs text-gray-500">Adresse</p>
+                <p class="font-medium text-gray-800 mt-0.5">{{ selectedOrder.acceptedCenterAddress }}</p>
+              </div>
+              <div *ngIf="selectedOrder.acceptedPrice">
+                <p class="text-xs text-gray-500">Coût estimé</p>
+                <p class="font-semibold text-[#104382] mt-0.5">{{ selectedOrder.acceptedPrice | number:'1.0-0' }} FCFA</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Prescripteur -->
+          <div class="bg-white rounded-md shadow-sm p-5">
+            <h2 class="text-sm font-semibold text-[#104382] uppercase tracking-wide mb-3">Prescripteur</h2>
+            <div class="space-y-2 text-sm">
+              <div>
+                <p class="text-xs text-gray-500">Médecin</p>
+                <p class="font-medium text-gray-800 mt-0.5">{{ selectedOrder.doctorName ?? '—' }}</p>
+              </div>
+              <div *ngIf="selectedOrder.doctorSpecialty">
+                <p class="text-xs text-gray-500">Spécialité</p>
+                <p class="font-medium text-gray-800 mt-0.5">{{ selectedOrder.doctorSpecialty }}</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </ng-container>
+
+    <!-- ═══════════════════ VUE FORMULAIRE ═══════════════════ -->
+    <ng-container *ngIf="viewMode === 'create'">
+
+      <!-- Header -->
+      <div class="mb-6 flex flex-row items-center gap-4">
+        <button (click)="goBack()"
+          class="inline-flex items-center justify-center p-4 bg-white rounded-md shadow-sm hover:bg-gray-50 transition-colors mb-2">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M20 12H4M4 12L10 6M4 12L10 18" stroke="#2B3674" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div>
+          <h1 class="text-3xl font-semibold text-[#343A40]">Nouvelle demande d'analyses biologiques</h1>
+          <p class="text-xs text-[#343A40] mt-1">Le laboratoire le plus proche du patient sera automatiquement sélectionné.</p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-md shadow-sm">
+        <form (ngSubmit)="onSubmit()">
+
+          <!-- Recherche patient -->
+          <div class="border-b border-gray-200 px-6 py-4">
+            <h2 class="text-xl font-semibold text-[#2C3E50] mb-4">Informations Patient</h2>
+
+            <div *ngIf="!patientId" class="relative mb-4">
+              <label class="block text-sm font-medium text-[#333333] mb-2">
+                Rechercher un patient <span class="text-red-500">*</span>
+              </label>
+              <input type="text" [(ngModel)]="patientSearch" name="patientSearch"
+                (input)="searchPatient(patientSearch)"
+                placeholder="Nom, prénom ou téléphone..."
+                class="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none text-sm"/>
+              <div *ngIf="patientSearchLoading" class="absolute right-3 top-10">
+                <svg class="animate-spin w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
                 </svg>
-                {{ ind }}
+              </div>
+              <div *ngIf="patientSearchResults.length > 0"
+                class="absolute z-10 w-full bg-white border border-gray-200 rounded-md shadow-lg mt-1 max-h-52 overflow-y-auto">
+                <div *ngFor="let p of patientSearchResults"
+                  (mousedown)="selectPatient(p)"
+                  class="px-4 py-3 cursor-pointer hover:bg-[#F4F6F9] text-sm border-b border-gray-100 last:border-0">
+                  <span class="font-medium text-gray-800">{{ (p.firstName ?? p.prenom ?? '') }} {{ (p.lastName ?? p.nom ?? '') }}</span>
+                  <span class="text-gray-500 ml-2 text-xs">{{ p.email }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="patientId" class="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <svg class="w-5 h-5 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+              <span class="text-sm font-medium text-blue-800">{{ patientName }}</span>
+              <button type="button" (click)="patientId = ''; patientName = ''; patientSearch = ''"
+                class="ml-auto text-xs text-blue-600 underline">Changer</button>
+            </div>
+          </div>
+
+          <!-- Examens -->
+          <div class="border-b border-gray-200">
+            <button type="button" (click)="toggleSection('examens')"
+              class="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+              <h2 class="text-xl font-semibold text-[#2C3E50]">Types d'examens</h2>
+              <svg class="w-5 h-5 text-gray-500 transition-transform" [class.rotate-180]="!examensExpanded" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div *ngIf="examensExpanded" class="px-6 pb-6">
+              <div class="flex flex-wrap gap-2">
+                <button type="button" *ngFor="let cat of categories"
+                  (click)="toggleCategory(cat)"
+                  class="px-3 py-1.5 rounded-full border text-sm transition-all"
+                  [ngClass]="selectedCats.has(cat)
+                    ? 'bg-[#104382] text-white border-[#104382]'
+                    : 'border-gray-300 text-gray-700 hover:border-[#104382] hover:text-[#104382]'">
+                  {{ cat }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Indication -->
+          <div class="border-b border-gray-200">
+            <button type="button" (click)="toggleSection('indication')"
+              class="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+              <h2 class="text-xl font-semibold text-[#2C3E50]">Indication clinique</h2>
+              <svg class="w-5 h-5 text-gray-500 transition-transform" [class.rotate-180]="!indicationExpanded" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div *ngIf="indicationExpanded" class="px-6 pb-6 space-y-3">
+              <div class="flex flex-wrap gap-2">
+                <button type="button" *ngFor="let tag of indicationsPredefinies"
+                  (click)="addIndicationTag(tag)"
+                  class="px-3 py-1 border border-gray-300 rounded-full text-xs text-gray-600 hover:bg-gray-50 transition-colors">
+                  + {{ tag }}
+                </button>
+              </div>
+              <textarea [(ngModel)]="clinicalIndication" name="clinicalIndication" rows="3"
+                placeholder="Décrivez l'indication clinique..."
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#104382] outline-none resize-none text-sm"></textarea>
+            </div>
+          </div>
+
+          <!-- Paramètres -->
+          <div class="border-b border-gray-200">
+            <button type="button" (click)="toggleSection('parametres')"
+              class="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+              <h2 class="text-xl font-semibold text-[#2C3E50]">Paramètres</h2>
+              <svg class="w-5 h-5 text-gray-500 transition-transform" [class.rotate-180]="!parametresExpanded" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div *ngIf="parametresExpanded" class="px-6 pb-6 space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-[#333333] mb-2">Niveau d'urgence</label>
+                <div class="flex gap-3">
+                  <button type="button" (click)="urgency = 'NORMAL'"
+                    class="flex-1 py-2.5 border-2 rounded-md text-sm font-medium transition-all"
+                    [ngClass]="urgency === 'NORMAL' ? 'border-[#104382] bg-blue-50 text-[#104382]' : 'border-gray-300 text-gray-700'">Normal</button>
+                  <button type="button" (click)="urgency = 'PRIORITY'"
+                    class="flex-1 py-2.5 border-2 rounded-md text-sm font-medium transition-all"
+                    [ngClass]="urgency === 'PRIORITY' ? 'border-orange-500 bg-orange-50 text-orange-600' : 'border-gray-300 text-gray-700'">Prioritaire</button>
+                  <button type="button" (click)="urgency = 'URGENT'"
+                    class="flex-1 py-2.5 border-2 rounded-md text-sm font-medium transition-all"
+                    [ngClass]="urgency === 'URGENT' ? 'border-red-500 bg-red-50 text-red-600' : 'border-gray-300 text-gray-700'">Urgent</button>
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <input type="checkbox" id="fasting" [(ngModel)]="fasting" name="fasting"
+                  class="w-4 h-4 text-[#104382] border-gray-300 rounded focus:ring-[#104382]"/>
+                <label for="fasting" class="text-sm text-gray-700">Patient à jeun requis</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Boutons -->
+          <div class="px-6 py-6">
+            <div class="flex flex-col sm:flex-row gap-3">
+              <button type="submit" [disabled]="isSaving"
+                class="px-6 py-3 bg-[#104382] text-white font-medium rounded-md focus:outline-none transition-colors text-sm disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2">
+                <svg *ngIf="isSaving" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                </svg>
+                {{ isSaving ? 'Envoi en cours...' : 'Envoyer la demande' }}
+              </button>
+              <button type="button" (click)="goBack()"
+                class="px-6 py-3 bg-white text-gray-700 font-medium border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-sm">
+                Annuler
               </button>
             </div>
           </div>
-        </div>
 
-        <!-- Paramètres & Urgence -->
-        <div class="border-b border-gray-200">
-          <button type="button" (click)="toggleSection('parametres')"
-            class="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
-            <h2 class="text-xl font-semibold text-[#2C3E50]">Paramètres & Urgence</h2>
-            <svg class="w-5 h-5 text-gray-500 transition-transform" [class.rotate-180]="!parametresExpanded" fill="none"
-              stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
+        </form>
+      </div>
 
-          <div *ngIf="parametresExpanded" class="px-6 pb-6 space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    </ng-container>
 
-              <!-- Patient à jeun -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-3">Patient à jeun ?</label>
-                <div class="flex gap-3">
-                  <label class="relative flex items-center justify-center px-6 py-2.5 border-2 rounded-md cursor-pointer transition-all flex-1"
-                    [class.border-[#104382]]="fasting === true"
-                    [class.bg-[#10438214]]="fasting === true"
-                    [class.border-gray-300]="fasting !== true">
-                    <input type="radio" name="fasting" [value]="true" [(ngModel)]="fasting" class="sr-only" />
-                    <span class="text-sm font-medium"
-                      [class.text-[#104382]]="fasting === true"
-                      [class.text-gray-700]="fasting !== true">Oui</span>
-                    <svg *ngIf="fasting === true" class="absolute right-3 w-5 h-5 text-[#104382]" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                    </svg>
-                  </label>
-                  <label class="relative flex items-center justify-center px-6 py-2.5 border-2 rounded-md cursor-pointer transition-all flex-1"
-                    [class.border-[#104382]]="fasting === false"
-                    [class.bg-[#10438214]]="fasting === false"
-                    [class.border-gray-300]="fasting !== false">
-                    <input type="radio" name="fasting" [value]="false" [(ngModel)]="fasting" class="sr-only" />
-                    <span class="text-sm font-medium"
-                      [class.text-[#104382]]="fasting === false"
-                      [class.text-gray-700]="fasting !== false">Non</span>
-                    <svg *ngIf="fasting === false" class="absolute right-3 w-5 h-5 text-[#104382]" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                    </svg>
-                  </label>
-                </div>
-              </div>
-
-              <!-- Niveau d'urgence -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-3">Niveau d'urgence</label>
-                <div class="flex gap-3">
-                  <label *ngFor="let lvl of [['NORMAL','Normal'],['PRIORITY','Prioritaire'],['URGENT','Urgent']]"
-                    class="relative flex items-center justify-center px-4 py-2.5 border-2 rounded-md cursor-pointer transition-all flex-1"
-                    [class.border-[#104382]]="urgency === lvl[0]"
-                    [class.bg-[#10438214]]="urgency === lvl[0]"
-                    [class.border-gray-300]="urgency !== lvl[0]">
-                    <input type="radio" name="urgency" [value]="lvl[0]" [(ngModel)]="urgency" class="sr-only" />
-                    <span class="text-sm font-medium"
-                      [class.text-[#104382]]="urgency === lvl[0]"
-                      [class.text-gray-700]="urgency !== lvl[0]">{{ lvl[1] }}</span>
-                    <svg *ngIf="urgency === lvl[0]" class="absolute right-2 w-4 h-4 text-[#104382]" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                    </svg>
-                  </label>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-        <!-- Boutons -->
-        <div class="px-6 py-6">
-          <div class="flex flex-col sm:flex-row gap-3">
-            <button type="submit" [disabled]="isSaving"
-              class="px-6 py-3 bg-[#104382] text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-[#104382] focus:ring-offset-2 transition-colors text-sm disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2">
-              <svg *ngIf="isSaving" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-              </svg>
-              {{ isSaving ? 'Envoi en cours...' : 'Envoyer la demande' }}
-            </button>
-            <button type="button" (click)="goBack()"
-              class="px-6 py-3 bg-white text-gray-700 font-medium border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none transition-colors text-sm">
-              Annuler
-            </button>
-          </div>
-        </div>
-
-      </form>
-    </div>
   </div>
 </div>
