@@ -1,6 +1,7 @@
 export const environment = {
   production: true,
-  baseUrl: 'https://api.bdy.innovimpactdev.cloud/api',
+  ALLOWED_ORIGINS: "https://bdy.innovimpactdev.cloud,https://bdy1.innovimpactdev.cloud",
+baseUrl: 'https://api.bdy.innovimpactdev.cloud/api',
   filesUrl: 'https://minio.innovimpactdev.cloud/baye-defal-yalla',
   touchpay: {
     agencyCode: 'SOLI26685',
