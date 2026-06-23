@@ -145,7 +145,7 @@ export class DemandesMedicalesComponent implements OnInit {
 
   loadRows(): void {
     this.loading = true;
-    const params: any = { page: this.page, limit: this.limit };
+    const params: any = { page: this.page, limit: this.limit, excludeType: 'HOSPITALIZATION' };
     if (this.searchQuery)  params.search = this.searchQuery;
     if (this.statusFilter) params.status = this.statusFilter;
     if (this.typeFilter)   params.type   = this.typeFilter;

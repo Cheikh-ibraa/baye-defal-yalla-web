@@ -291,6 +291,7 @@ ${h.medicalObservations ? `<h2>Observations</h2><p>${h.medicalObservations}</p>`
       nom:       p.lastName  ?? p.nom    ?? '',
       prenom:    p.firstName ?? p.prenom ?? '',
       telephone: p.phone     ?? p.telephone ?? '',
+      age:       p.age       ?? null,
     };
     this.formData.patientId = String(id);
     this.patientSearch = this.getPatientFullName();
@@ -366,6 +367,7 @@ ${h.medicalObservations ? `<h2>Observations</h2><p>${h.medicalObservations}</p>`
     const payload: Record<string, any> = {
       patientId:            this.formData.patientId,
       patientName:          this.getPatientFullName() || undefined,
+      patientAge:           this.selectedPatient?.age ?? undefined,
       hospitalId:           this.hospitalKeycloakId || undefined,
       establishmentName:    this.formData.facilityName,
       department:           this.formData.departmentName,

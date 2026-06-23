@@ -76,12 +76,24 @@ export class HospitalisationComponent implements OnInit {
   private searchTimer: any;
 
   // ── Modal Accepter ──────────────────────────────────────────────────────────
-  showAcceptModal  = false;
-  acceptingRow:    HospRequest | null = null;
-  acceptPrice      = '';
-  acceptNote       = '';
-  isAccepting      = false;
-  acceptError      = '';
+  showAcceptModal   = false;
+  acceptingRow:     HospRequest | null = null;
+  fraisAdmission    = '';
+  tarifJournalier   = '';
+  nbJours           = '';
+  chambreProposee   = '';
+  dateEntree        = '';
+  heureAdmission    = '';
+  acceptNote        = '';
+  isAccepting       = false;
+  acceptError       = '';
+
+  get estimationTotale(): number {
+    const fa = parseFloat(this.fraisAdmission) || 0;
+    const tj = parseFloat(this.tarifJournalier) || 0;
+    const nj = parseFloat(this.nbJours) || 0;
+    return fa + tj * nj;
+  }
 
   ngOnInit(): void {
     this.loadStats();
@@ -188,7 +200,12 @@ export class HospitalisationComponent implements OnInit {
   openAccept(r: HospRequest, event: Event): void {
     event.stopPropagation();
     this.acceptingRow   = r;
-    this.acceptPrice    = '';
+    this.fraisAdmission = '';
+    this.tarifJournalier = '';
+    this.nbJours        = '';
+    this.chambreProposee = '';
+    this.dateEntree     = '';
+    this.heureAdmission = '';
     this.acceptNote     = '';
     this.acceptError    = '';
     this.showAcceptModal = true;
@@ -202,9 +219,21 @@ export class HospitalisationComponent implements OnInit {
   }
 
   confirmerAcceptation(): void {
-    const price = parseFloat(this.acceptPrice);
-    if (!this.acceptPrice || isNaN(price) || price <= 0) {
-      this.acceptError = 'Veuillez saisir un montant valide.';
+    const fa = parseFloat(this.fraisAdmission);
+    const tj = parseFloat(this.tarifJournalier);
+    const nj = parseFloat(this.nbJours);
+    if (!this.fraisAdmission || isNaN(fa) || fa < 0) {
+      this.acceptError = 'Veuillez saisir les frais d\'admission.';
+      this.cdr.markForCheck();
+      return;
+    }
+    if (!this.tarifJournalier || isNaN(tj) || tj < 0) {
+      this.acceptError = 'Veuillez saisir le tarif journalier.';
+      this.cdr.markForCheck();
+      return;
+    }
+    if (!this.nbJours || isNaN(nj) || nj <= 0) {
+      this.acceptError = 'Veuillez saisir le nombre de jours.';
       this.cdr.markForCheck();
       return;
     }
@@ -214,7 +243,15 @@ export class HospitalisationComponent implements OnInit {
 
     this.http.patch(
       `${this.api}/hospital/requests/${this.acceptingRow.id}/hospitalization/accept`,
-      { price, note: this.acceptNote || undefined },
+      {
+        fraisAdmission:  fa,
+        tarifJournalier: tj,
+        nbJours:         nj,
+        chambreProposee: this.chambreProposee || undefined,
+        dateEntree:      this.dateEntree      || undefined,
+        heureAdmission:  this.heureAdmission  || undefined,
+        note:            this.acceptNote      || undefined,
+      },
     ).subscribe({
       next: () => {
         this.isAccepting     = false;

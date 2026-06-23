@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { VersementsEtablissementComponent } from '../finance-versements/versements-etablissement.component';
 import { Chart, registerables, ChartConfiguration } from 'chart.js';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
@@ -46,7 +47,7 @@ interface User {
 @Component({
   selector: 'app-finance-dashboardpharmacie',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, VersementsEtablissementComponent],
   templateUrl: './finance-dashboardpharmacie.component.html',
   styleUrls: ['./finance-dashboardpharmacie.component.css']
 })

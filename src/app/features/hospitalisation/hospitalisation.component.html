@@ -1,66 +1,94 @@
-<div class="min-h-screen bg-[#F4F6F9] p-6">
+<div class="min-h-screen bg-[#F4F6F9] p-5">
 
-  <!-- Header -->
-  <div class="flex items-center justify-between mb-6">
-    <div>
-      <h1 class="text-2xl font-bold text-[#0A2240]">Hospitalisations</h1>
-      <p class="text-sm text-gray-500 mt-0.5">Demandes d'hospitalisation reçues</p>
-    </div>
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <div class="mb-5">
+    <h1 class="text-xl font-bold text-[#0A2240]">Demande d'Hospitalisation</h1>
+    <p class="text-sm text-gray-500 mt-0.5">Gérez et suivez les demandes d'hospitalisations des patients</p>
   </div>
 
-  <!-- Stats cards -->
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-    <div class="bg-white rounded-xl p-4 shadow-sm">
-      <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Total demandes</p>
-      <p class="text-2xl font-bold text-[#0A2240]">{{ totalReqs }}</p>
-    </div>
-    <div class="bg-white rounded-xl p-4 shadow-sm">
-      <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">En attente</p>
-      <p class="text-2xl font-bold text-[#F97316]">{{ pendingReqs }}</p>
-    </div>
-    <div class="bg-white rounded-xl p-4 shadow-sm">
-      <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Acceptées</p>
-      <p class="text-2xl font-bold text-[#2E7D32]">{{ validatedReqs }}</p>
-    </div>
-    <div class="bg-white rounded-xl p-4 shadow-sm">
-      <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Budget financé</p>
-      <p class="text-2xl font-bold text-[#104382]">{{ formatRevenue(monthRevenue) }} <span class="text-sm font-normal text-gray-400">FCFA</span></p>
-    </div>
-  </div>
+  <!-- ── Stats ──────────────────────────────────────────────────────────── -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
 
-  <!-- Search + Filters -->
-  <div class="bg-white rounded-xl shadow-sm p-4 mb-6">
-    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-      <!-- Search -->
-      <div class="relative flex-1 max-w-sm">
-        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+    <div class="bg-white rounded-xl p-4 shadow-sm flex items-start gap-3">
+      <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#EEF4FF]">
+        <svg class="w-5 h-5 text-[#104382]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
         </svg>
-        <input
-          type="text"
-          [(ngModel)]="searchQuery"
-          (ngModelChange)="onSearch()"
-          placeholder="Rechercher patient, médecin, service…"
-          class="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#104382]"
-        />
       </div>
+      <div>
+        <p class="text-xs text-gray-500">Demandes reçues</p>
+        <p class="text-2xl font-bold text-[#0A2240] leading-tight">{{ totalReqs }}</p>
+      </div>
+    </div>
 
-      <!-- Priority filter tabs -->
-      <div class="flex gap-1 flex-wrap">
-        <button
-          *ngFor="let f of filters"
-          (click)="setFilter(f.id)"
-          [class]="activeFilter === f.id
-            ? 'px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#104382] text-white transition-colors'
-            : 'px-3 py-1.5 text-xs font-semibold rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors'"
-        >
-          {{ f.label }}
-        </button>
+    <div class="bg-white rounded-xl p-4 shadow-sm flex items-start gap-3">
+      <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#FFF3E8]">
+        <svg class="w-5 h-5 text-[#F97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
       </div>
+      <div>
+        <p class="text-xs text-gray-500">En attente</p>
+        <p class="text-2xl font-bold text-[#F97316] leading-tight">{{ pendingReqs }}</p>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl p-4 shadow-sm flex items-start gap-3">
+      <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#E8F5E9]">
+        <svg class="w-5 h-5 text-[#2E7D32]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div>
+        <p class="text-xs text-gray-500">Acceptées</p>
+        <p class="text-2xl font-bold text-[#2E7D32] leading-tight">{{ validatedReqs }}</p>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl p-4 shadow-sm flex items-start gap-3">
+      <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#FDF4FF]">
+        <svg class="w-5 h-5 text-[#9333EA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div>
+        <p class="text-xs text-gray-500">Revenus du mois</p>
+        <p class="text-2xl font-bold text-[#0A2240] leading-tight">
+          {{ formatRevenue(monthRevenue) }}<span class="text-sm font-normal text-gray-400 ml-1">FCFA</span>
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Search + Filters ───────────────────────────────────────────────── -->
+  <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-5">
+    <div class="relative flex-1">
+      <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="onSearch()"
+        placeholder="Rechercher une demande…"
+        class="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:border-[#104382] placeholder:text-gray-400"
+      />
+    </div>
+    <div class="flex gap-1.5">
+      <button
+        *ngFor="let f of filters"
+        (click)="setFilter(f.id)"
+        [class]="activeFilter === f.id
+          ? 'px-4 py-2 text-sm font-semibold rounded-xl bg-[#104382] text-white shadow-sm transition-colors'
+          : 'px-4 py-2 text-sm font-semibold rounded-xl bg-white text-gray-600 border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors'"
+      >
+        {{ f.label }}
+      </button>
     </div>
   </div>
 
-  <!-- Loading -->
+  <!-- ── Loading ────────────────────────────────────────────────────────── -->
   <div *ngIf="loading" class="flex justify-center py-16">
     <svg class="animate-spin w-8 h-8 text-[#104382]" fill="none" viewBox="0 0 24 24">
       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
@@ -68,7 +96,7 @@
     </svg>
   </div>
 
-  <!-- Empty state -->
+  <!-- ── Empty ──────────────────────────────────────────────────────────── -->
   <div *ngIf="!loading && rows.length === 0" class="flex flex-col items-center py-20 text-gray-400">
     <svg class="w-14 h-14 mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -77,196 +105,262 @@
     <p class="text-sm font-medium">Aucune demande d'hospitalisation</p>
   </div>
 
-  <!-- Cards grid -->
-  <div *ngIf="!loading && rows.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+  <!-- ── Cards grid ─────────────────────────────────────────────────────── -->
+  <div *ngIf="!loading && rows.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
     <div
       *ngFor="let r of rows"
       (click)="viewDetail(r)"
       class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-[#104382]/20 transition-all cursor-pointer flex flex-col"
     >
-      <!-- Card header -->
-      <div class="p-4 border-b border-gray-100">
-        <div class="flex items-start justify-between gap-2">
-          <div class="flex-1 min-w-0">
-            <p class="font-semibold text-[#0A2240] truncate">{{ r.patientName }}</p>
-            <p class="text-xs text-gray-400 mt-0.5">{{ r.reference }}</p>
-          </div>
-          <div class="flex flex-col items-end gap-1 shrink-0">
-            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full" [ngClass]="priorityBadgeClass(r.priority)">
-              {{ priorityLabel(r.priority) }}
-            </span>
-            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full" [ngClass]="statusBadgeClass(r.status)">
-              {{ statusLabel(r.status) }}
-            </span>
-          </div>
+
+      <!-- Status row -->
+      <div class="px-4 pt-4 pb-2 flex items-center justify-between">
+        <span class="text-xs font-bold px-2.5 py-1 rounded-full" [ngClass]="statusBadgeClass(r.status)">
+          {{ statusLabel(r.status) | uppercase }}
+        </span>
+        <span class="text-xs text-gray-400 font-medium">Réf. {{ r.reference }}</span>
+      </div>
+
+      <!-- Patient name + doctor -->
+      <div class="px-4 pb-2">
+        <p class="text-base font-bold text-[#0A2240]">{{ r.patientName || '—' }}</p>
+        <p class="text-sm text-gray-500 mt-0.5">Demandé par : {{ r.referentDoctorName || '—' }}</p>
+        <div class="mt-2">
+          <span class="text-xs font-bold px-2.5 py-1 rounded-full" [ngClass]="priorityBadgeClass(r.priority)">
+            {{ priorityLabel(r.priority) | uppercase }}
+          </span>
         </div>
       </div>
 
-      <!-- Card body -->
-      <div class="p-4 flex-1 space-y-2">
-        <div class="flex items-center gap-2 text-sm text-gray-600">
-          <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-          </svg>
-          <span class="truncate">Dr. {{ r.referentDoctorName || '—' }}</span>
+      <!-- Motive + Service -->
+      <div class="px-4 pb-3 mt-1 grid grid-cols-2 gap-3 flex-1">
+        <div>
+          <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Motif</p>
+          <p class="text-sm text-gray-700 truncate">{{ r.description || '—' }}</p>
         </div>
-        <div *ngIf="r.service" class="flex items-center gap-2 text-sm text-gray-600">
-          <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-          </svg>
-          <span class="truncate">{{ r.service }}</span>
+        <div>
+          <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Service</p>
+          <p class="text-sm font-medium text-[#104382] truncate">{{ r.service || '—' }}</p>
         </div>
-        <div *ngIf="r.description" class="text-xs text-gray-500 line-clamp-2 mt-1">
-          {{ r.description }}
-        </div>
-
-        <div *ngIf="r.totalAmount" class="pt-1">
-          <div class="flex justify-between text-xs text-gray-500 mb-1">
-            <span>Financé</span>
-            <span>{{ formatAmount(r.fundedAmount || 0) }} / {{ formatAmount(r.totalAmount) }} FCFA</span>
-          </div>
-          <div class="w-full bg-gray-100 rounded-full h-1.5">
-            <div
-              class="h-1.5 rounded-full bg-[#104382] transition-all"
-              [style.width.%]="r.totalAmount ? ((r.fundedAmount || 0) / r.totalAmount * 100) : 0"
-            ></div>
-          </div>
-        </div>
-
-        <div class="text-xs text-gray-400 pt-1">{{ formatDate(r.createdAt) }}</div>
       </div>
 
-      <!-- Card footer actions -->
-      <div class="p-3 border-t border-gray-100 flex gap-2">
+      <!-- Actions -->
+      <div class="px-3 pb-3 pt-2 border-t border-gray-100 flex gap-2" (click)="$event.stopPropagation()">
         <ng-container *ngIf="isPending(r); else nonPendingActions">
           <button
             (click)="openAccept(r, $event)"
-            class="flex-1 py-1.5 text-xs font-semibold bg-[#104382] text-white rounded-lg hover:bg-[#0D3468] transition-colors"
+            class="flex-1 py-2 text-sm font-semibold bg-[#104382] text-white rounded-xl hover:bg-[#0D3468] transition-colors"
           >
             Accepter et proposer un prix
           </button>
           <button
-            (click)="rejectRequest(r, $event)"
-            class="px-3 py-1.5 text-xs font-semibold text-[#DC2626] border border-[#DC2626]/30 rounded-lg hover:bg-[#FEE2E2] transition-colors"
+            (click)="viewDetail(r)"
+            class="px-4 py-2 text-sm font-semibold text-[#104382] border border-[#104382]/30 rounded-xl hover:bg-[#EEF4FF] transition-colors"
           >
-            Refuser
+            Détails
           </button>
         </ng-container>
         <ng-template #nonPendingActions>
           <button
-            (click)="viewDetail(r); $event.stopPropagation()"
-            class="flex-1 py-1.5 text-xs font-semibold text-[#104382] border border-[#104382]/30 rounded-lg hover:bg-[#EEF2FF] transition-colors"
+            (click)="viewDetail(r)"
+            class="flex-1 py-2 text-sm font-semibold text-[#104382] border border-[#104382]/30 rounded-xl hover:bg-[#EEF4FF] transition-colors"
           >
-            Voir les détails
+            Détails
           </button>
         </ng-template>
       </div>
+
     </div>
   </div>
 
-  <!-- Pagination -->
+  <!-- ── Pagination ──────────────────────────────────────────────────────── -->
   <div *ngIf="!loading && totalPages > 1" class="flex items-center justify-center gap-1 mt-8">
     <button
       (click)="goToPage(page - 1)"
       [disabled]="page === 1"
       class="px-3 py-1.5 text-sm rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50 transition-colors"
-    >
-      &#8249;
-    </button>
+    >&#8249;</button>
     <button
       *ngFor="let p of pageNumbers"
       (click)="goToPage(p)"
       [class]="p === page
         ? 'px-3 py-1.5 text-sm rounded-lg bg-[#104382] text-white font-semibold'
         : 'px-3 py-1.5 text-sm rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors'"
-    >
-      {{ p }}
-    </button>
+    >{{ p }}</button>
     <button
       (click)="goToPage(page + 1)"
       [disabled]="page === totalPages"
       class="px-3 py-1.5 text-sm rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50 transition-colors"
-    >
-      &#8250;
-    </button>
+    >&#8250;</button>
   </div>
+
 </div>
 
 <!-- ══════════════════════════════════════════
-     MODAL : Valider la demande
+     MODAL : Accepter la demande
      ══════════════════════════════════════════ -->
 <div *ngIf="showAcceptModal"
   class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
   (click)="closeAcceptModal()">
 
-  <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl" (click)="$event.stopPropagation()">
+  <div class="relative w-full max-w-lg rounded-2xl bg-white shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+    (click)="$event.stopPropagation()">
 
-    <div class="mb-2 flex justify-center">
-      <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[#E8F5E9]">
-        <svg class="h-6 w-6 text-[#2E7D32]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <!-- Header modal -->
+    <div class="flex items-center gap-3 px-6 pt-5 pb-4 border-b border-gray-100">
+      <div class="flex h-9 w-9 items-center justify-center rounded-full bg-[#E8F5E9] shrink-0">
+        <svg class="h-5 w-5 text-[#2E7D32]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
         </svg>
       </div>
+      <div class="flex-1 min-w-0">
+        <h2 class="text-base font-semibold text-[#1F2937]">Accepter la demande</h2>
+        <p class="text-xs text-[#6B7280] truncate">Établir l'offre d'admission pour <strong>{{ acceptingRow?.patientName }}</strong></p>
+      </div>
+      <button (click)="closeAcceptModal()" class="p-1 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
     </div>
 
-    <h2 class="mb-1 text-center text-xl font-semibold text-[#1F2937]">Valider la demande</h2>
-    <p class="mb-6 text-center text-sm text-[#6B7280]">
-      Indiquez le montant total pour l'hospitalisation de <strong>{{ acceptingRow?.patientName }}</strong>.
-    </p>
+    <!-- Body scrollable -->
+    <div class="overflow-y-auto px-6 py-4 space-y-5">
 
-    <!-- Montant -->
-    <div class="mb-4">
-      <label class="mb-1 block text-sm font-medium text-[#374151]">
-        Montant (FCFA) <span class="text-red-500">*</span>
-      </label>
-      <input
-        type="number"
-        [(ngModel)]="acceptPrice"
-        placeholder="ex: 150000"
-        min="1"
-        class="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm text-[#334155] outline-none transition focus:border-[#124A92] placeholder:text-[#9CA3AF]"
-      />
+      <!-- Section Détails Financiers -->
+      <div>
+        <h3 class="text-xs font-bold text-[#104382] uppercase tracking-widest mb-3">Détails Financiers</h3>
+        <div class="grid grid-cols-2 gap-3">
+
+          <div>
+            <label class="mb-1 block text-xs font-medium text-[#374151]">
+              Frais d'admission (FCFA) <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="number"
+              [(ngModel)]="fraisAdmission"
+              placeholder="5 000"
+              min="0"
+              class="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm text-[#334155] outline-none transition focus:border-[#124A92] placeholder:text-[#9CA3AF]"
+            />
+          </div>
+
+          <div>
+            <label class="mb-1 block text-xs font-medium text-[#374151]">
+              Tarif journalier (FCFA) <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="number"
+              [(ngModel)]="tarifJournalier"
+              placeholder="10 000"
+              min="0"
+              class="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm text-[#334155] outline-none transition focus:border-[#124A92] placeholder:text-[#9CA3AF]"
+            />
+          </div>
+
+          <div>
+            <label class="mb-1 block text-xs font-medium text-[#374151]">
+              Nombre de jours prévus <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="number"
+              [(ngModel)]="nbJours"
+              placeholder="5"
+              min="1"
+              class="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm text-[#334155] outline-none transition focus:border-[#124A92] placeholder:text-[#9CA3AF]"
+            />
+          </div>
+
+          <!-- Estimation totale -->
+          <div class="flex items-end">
+            <div class="w-full rounded-xl bg-[#EEF4FF] border border-[#104382]/20 px-4 py-2.5">
+              <p class="text-[10px] font-bold text-[#104382] uppercase tracking-wide">Estimation totale</p>
+              <p class="text-base font-bold text-[#104382] mt-0.5">
+                {{ formatAmount(estimationTotale) }} FCFA
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Section Logistique & Planning -->
+      <div>
+        <h3 class="text-xs font-bold text-[#104382] uppercase tracking-widest mb-3">Logistique & Planning</h3>
+        <div class="grid grid-cols-2 gap-3">
+
+          <div>
+            <label class="mb-1 block text-xs font-medium text-[#374151]">Date d'entrée disponible</label>
+            <input
+              type="date"
+              [(ngModel)]="dateEntree"
+              class="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm text-[#334155] outline-none transition focus:border-[#124A92]"
+            />
+          </div>
+
+          <div>
+            <label class="mb-1 block text-xs font-medium text-[#374151]">Heure d'admission</label>
+            <input
+              type="time"
+              [(ngModel)]="heureAdmission"
+              class="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm text-[#334155] outline-none transition focus:border-[#124A92]"
+            />
+          </div>
+
+          <div class="col-span-2">
+            <label class="mb-1 block text-xs font-medium text-[#374151]">Chambre proposée</label>
+            <input
+              type="text"
+              [(ngModel)]="chambreProposee"
+              placeholder="ex: Chambre 302 (Standard - Nord)"
+              class="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm text-[#334155] outline-none transition focus:border-[#124A92] placeholder:text-[#9CA3AF]"
+            />
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Commentaires -->
+      <div>
+        <label class="mb-1 block text-xs font-medium text-[#374151]">Commentaires additionnels</label>
+        <textarea
+          [(ngModel)]="acceptNote"
+          rows="3"
+          placeholder="Précisions sur le matériel nécessaire ou restrictions alimentaires…"
+          class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-[#334155] outline-none transition resize-none focus:border-[#124A92] placeholder:text-[#9CA3AF]"
+        ></textarea>
+      </div>
+
+      <!-- Erreur -->
+      <div *ngIf="acceptError" class="rounded-lg bg-[#FEE2E2] px-3 py-2 text-sm text-[#DC2626]">
+        {{ acceptError }}
+      </div>
+
     </div>
 
-    <!-- Note -->
-    <div class="mb-6">
-      <label class="mb-1 block text-sm font-medium text-[#374151]">Notes complémentaires (optionnel)</label>
-      <textarea
-        [(ngModel)]="acceptNote"
-        rows="3"
-        placeholder="Instructions particulières pour le patient"
-        class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-[#334155] outline-none transition resize-none focus:border-[#124A92] placeholder:text-[#9CA3AF]"
-      ></textarea>
-    </div>
-
-    <!-- Erreur -->
-    <div *ngIf="acceptError" class="mb-4 rounded-lg bg-[#FEE2E2] px-3 py-2 text-sm text-[#DC2626]">
-      {{ acceptError }}
-    </div>
-
-    <div class="flex gap-3">
+    <!-- Footer -->
+    <div class="flex gap-3 px-6 py-4 border-t border-gray-100">
+      <button
+        type="button"
+        (click)="closeAcceptModal()"
+        [disabled]="isAccepting"
+        class="flex-1 rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-[#374151] transition hover:bg-slate-50 disabled:opacity-60"
+      >
+        Annuler
+      </button>
       <button
         type="button"
         (click)="confirmerAcceptation()"
-        [disabled]="isAccepting"
-        class="flex-1 rounded-xl bg-[#124A92] py-3 text-sm font-semibold text-white transition hover:bg-[#0F3E79] disabled:opacity-60 flex items-center justify-center gap-2"
+        [disabled]="isAccepting || estimationTotale <= 0"
+        class="flex-1 rounded-xl bg-[#124A92] py-2.5 text-sm font-semibold text-white transition hover:bg-[#0F3E79] disabled:opacity-60 flex items-center justify-center gap-2"
       >
         <svg *ngIf="isAccepting" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
         </svg>
-        {{ isAccepting ? 'En cours…' : 'Valider' }}
-      </button>
-      <button
-        type="button"
-        (click)="closeAcceptModal()"
-        [disabled]="isAccepting"
-        class="flex-1 rounded-xl border border-slate-200 py-3 text-sm font-semibold text-[#374151] transition hover:bg-slate-50 disabled:opacity-60"
-      >
-        Annuler
+        {{ isAccepting ? 'En cours…' : 'Confirmer la demande' }}
       </button>
     </div>
+
   </div>
 </div>

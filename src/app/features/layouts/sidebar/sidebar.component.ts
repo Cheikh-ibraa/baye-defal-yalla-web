@@ -134,9 +134,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
   // Menus HOSPITAL
   hospitalMenuItems: MenuItem[] = [
     { id: 'dashboard-hospital', label: 'Tableau de bord',     route: '/hospital/dashboard'      },
-    { id: 'demandes',           label: 'Demandes médicales',  route: '/hospital/demandes'       },
-    { id: 'patients-hospital',  label: 'Patients',            route: '/hospital/patients'       },
     { id: 'hospitalisations',   label: 'Hospitalisations',    route: '/hospital/hospitalisations'},
+    { id: 'patients-hospital',  label: 'Patients',            route: '/hospital/patients'       },
     { id: 'chirurgie',          label: 'Chirurgie',           route: '/hospital/chirurgie'      },
     { id: 'demande-materiels',  label: 'Demande de matériels',route: '/hospital/demande-materiels'},
     { id: 'paiements-hospital', label: 'Paiements',           route: '/hospital/paiements'      },
