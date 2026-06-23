@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
+import { Component, HostListener, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { User } from '../../../core/auth.types';
@@ -12,6 +12,7 @@ import { Subscription, filter } from 'rxjs';
     styleUrls: ['./header.component.css']
 })
 export class HeaderComponent implements OnInit, OnDestroy {
+  @Output() toggleSidebar = new EventEmitter<void>();
   // Menu states
   isUserMenuOpen = false;
   isMobileMenuOpen = false;

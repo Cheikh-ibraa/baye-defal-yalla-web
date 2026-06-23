@@ -15,5 +15,5 @@ import { HeaderComponent } from '../header/header.component';
   ]
 })
 export class MainLayoutComponent {
-  // Votre code ici
+  isMobileMenuOpen = false;
 }
