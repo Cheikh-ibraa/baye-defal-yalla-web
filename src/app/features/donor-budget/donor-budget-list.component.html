@@ -1,15 +1,15 @@
-<div class="min-h-screen bg-[#F8FAFC] p-6">
+<div class="min-h-screen">
 
   <!-- Header -->
   <div class="flex items-center justify-between mb-6">
     <div>
-      <h1 class="text-2xl font-bold text-[#11458B]">Mes budgets solidaires</h1>
-      <p class="text-sm text-gray-500 mt-1">Suivez et gérez tous vos budgets de dons automatisés</p>
+      <h1 class="text-2xl lg:text-3xl font-bold text-[#343A40]">Mes budgets</h1>
+      <p class="text-sm text-[#64748B] mt-1">Suivez et gérez tous vos budgets de dons automatisés</p>
     </div>
     <button (click)="createBudget()"
-      class="flex items-center gap-2 bg-[#11458B] text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#0d3672] transition">
+      class="flex items-center gap-2 bg-[#11458B] text-white px-5 py-3 rounded-xl text-sm font-medium hover:bg-[#0d3672] transition">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M12 5v14M5 12h14" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M12 5v14M5 12h14" stroke-linecap="round" stroke-linejoin="round" />
       </svg>
       Nouveau budget
     </button>
@@ -17,37 +17,44 @@
 
   <!-- Stats -->
   <div class="grid grid-cols-3 gap-4 mb-8">
-    <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center gap-4">
-      <div class="w-11 h-11 bg-[#EEF2FF] rounded-xl flex items-center justify-center">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#11458B" stroke-width="2">
-          <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+    <div class="bg-white rounded-2xl px-6 py-6 sm:py-12 shadow-sm border border-gray-100 flex items-center gap-4">
+      <div class="w-12 h-12 bg-[#EEF2FF] rounded-xl flex items-center justify-center">
+        <svg width="24" height="19" viewBox="0 0 24 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M1.16797 7.0013H22.168M5.83464 12.8346H7.0013M11.668 12.8346H12.8346M4.66797 17.5013H18.668C19.9558 17.5013 21.0013 16.4558 21.0013 15.168V3.5013C21.0013 2.2135 19.9558 1.16797 18.668 1.16797H4.66797C3.38017 1.16797 2.33464 2.2135 2.33464 3.5013V15.168C2.33464 16.4558 3.38017 17.5013 4.66797 17.5013L1.16797 7.0013"
+            stroke="#1D4ED8" stroke-width="2.33333" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       </div>
       <div>
-        <p class="text-2xl font-bold text-[#11458B]">{{ totalBudgets }}</p>
-        <p class="text-xs text-gray-500 uppercase tracking-wide mt-0.5">Total budgets créés</p>
+        <p class="text-2xl font-bold text-[#1E293B]">{{ totalBudgets }}</p>
+        <p class="text-xs sm:text-sm text-[#64748B] tracking-wide mt-1">Total budgets créés</p>
       </div>
     </div>
-    <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center gap-4">
-      <div class="w-11 h-11 bg-[#ECFDF5] rounded-xl flex items-center justify-center">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2">
-          <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zM12 6v6l4 2"/>
+    <div class="bg-white rounded-2xl px-6 py-6 sm:py-12 shadow-sm border border-gray-100 flex items-center gap-4">
+      <div class="w-12 h-12 bg-[#ECFDF5] rounded-xl flex items-center justify-center">
+        <svg width="24" height="21" viewBox="0 0 24 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M2.70568 2.70568C1.7211 3.69025 1.16797 5.02562 1.16797 6.41801C1.16797 7.81041 1.7211 9.14578 2.70568 10.1303L11.668 19.0927L20.6303 10.1303C22.6792 8.08145 22.6792 4.75457 20.6303 2.70568C18.5815 0.656788 15.2546 0.656788 13.2057 2.70568L11.668 4.24335L10.1303 2.70568C9.14578 1.7211 7.81041 1.16797 6.41801 1.16797C5.02562 1.16797 3.69025 1.7211 2.70568 2.70568V2.70568"
+            stroke="#059669" stroke-width="2.33333" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
+
       </div>
       <div>
-        <p class="text-2xl font-bold text-[#059669]">{{ formatAmount(totalEngaged) }}</p>
-        <p class="text-xs text-gray-500 uppercase tracking-wide mt-0.5">Total budgets engagé (FCFA)</p>
+        <p class="text-2xl font-bold text-[#1E293B]">{{ formatAmount(totalEngaged) }}</p>
+        <p class="text-xs sm:text-sm text-[#64748B] tracking-wide mt-1">Total budgets engagé (FCFA)</p>
       </div>
     </div>
-    <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center gap-4">
-      <div class="w-11 h-11 bg-[#FFF7ED] rounded-xl flex items-center justify-center">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    <div class="bg-white rounded-2xl px-6 py-6 sm:py-12 shadow-sm border border-gray-100 flex items-center gap-4">
+      <div class="w-12 h-12 bg-[#810C961A] rounded-xl flex items-center justify-center">
+        <svg width="20" height="19" viewBox="0 0 20 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M14 9C14.2833 9 14.5208 8.90417 14.7125 8.7125C14.9042 8.52083 15 8.28333 15 8C15 7.71667 14.9042 7.47917 14.7125 7.2875C14.5208 7.09583 14.2833 7 14 7C13.7167 7 13.4792 7.09583 13.2875 7.2875C13.0958 7.47917 13 7.71667 13 8C13 8.28333 13.0958 8.52083 13.2875 8.7125C13.4792 8.90417 13.7167 9 14 9ZM6 7H11V5H6V7ZM2.5 19C1.93333 17.1 1.375 15.2042 0.825 13.3125C0.275 11.4208 0 9.48333 0 7.5C0 5.96667 0.533333 4.66667 1.6 3.6C2.66667 2.53333 3.96667 2 5.5 2H10.5C10.9833 1.36667 11.5708 0.875 12.2625 0.525C12.9542 0.175 13.7 0 14.5 0C14.9167 0 15.2708 0.145833 15.5625 0.4375C15.8542 0.729167 16 1.08333 16 1.5C16 1.6 15.9875 1.7 15.9625 1.8C15.9375 1.9 15.9083 1.99167 15.875 2.075C15.8083 2.25833 15.7458 2.44583 15.6875 2.6375C15.6292 2.82917 15.5833 3.025 15.55 3.225L17.825 5.5H20V12.475L17.175 13.4L15.5 19H10V17H8V19H2.5ZM4 17H6V15H12V17H14L15.55 11.85L18 11.025V7.5H17L13.5 4C13.5 3.66667 13.5208 3.34583 13.5625 3.0375C13.6042 2.72917 13.6667 2.41667 13.75 2.1C13.2667 2.23333 12.8417 2.4625 12.475 2.7875C12.1083 3.1125 11.8417 3.51667 11.675 4H5.5C4.53333 4 3.70833 4.34167 3.025 5.025C2.34167 5.70833 2 6.53333 2 7.5C2 9.13333 2.225 10.7292 2.675 12.2875C3.125 13.8458 3.56667 15.4167 4 17Z"
+            fill="#810C96" />
         </svg>
       </div>
       <div>
-        <p class="text-2xl font-bold text-[#F59E0B]">{{ formatAmount(totalRestant) }}</p>
-        <p class="text-xs text-gray-500 uppercase tracking-wide mt-0.5">Total budgets restant (FCFA)</p>
+        <p class="text-2xl font-bold text-[#1E293B]">{{ formatAmount(totalRestant) }}</p>
+        <p class="text-xs sm:text-sm text-[#64748B] tracking-wide mt-1">Total budgets restant (FCFA)</p>
       </div>
     </div>
   </div>
@@ -62,7 +69,7 @@
     class="bg-white rounded-2xl p-12 text-center shadow-sm border border-gray-100">
     <div class="w-16 h-16 bg-[#EEF2FF] rounded-full flex items-center justify-center mx-auto mb-4">
       <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#11458B" stroke-width="1.5">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
       </svg>
     </div>
     <p class="text-gray-500 mb-4">Vous n'avez pas encore de budget solidaire</p>
@@ -73,14 +80,13 @@
   </div>
 
   <!-- Budget cards -->
-  <div *ngIf="!isLoading && budgets.length > 0" class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-    <div *ngFor="let b of budgets"
-      (click)="openDetail(b.id)"
+  <div *ngIf="!isLoading && budgets.length > 0" class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+    <div *ngFor="let b of budgets" (click)="openDetail(b.id)"
       class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md hover:border-[#11458B]/30 transition-all">
 
       <!-- Card header -->
       <div class="flex items-start justify-between mb-4">
-        <h3 class="font-bold text-[#11458B] text-base leading-snug max-w-[70%]">
+        <h3 class="font-bold text-[#00367C] text-base lg:text-lg leading-snug max-w-[70%]">
           {{ b.name || 'Budget solidaire' }}
         </h3>
         <span [class]="b.status === 'ACTIF'
@@ -93,28 +99,27 @@
       <!-- Amounts -->
       <div class="grid grid-cols-3 gap-3 mb-4">
         <div>
-          <p class="text-xs text-gray-400 mb-0.5">Total</p>
-          <p class="text-sm font-bold text-gray-800">{{ formatAmount(b.amount) }}k FCFA</p>
+          <p class="text-xs font-semibold text-[#434751] mb-0.5">Total</p>
+          <p class="text-sm font-bold text-[#434751]">{{ formatAmount(b.amount) }}k FCFA</p>
         </div>
         <div>
-          <p class="text-xs text-gray-400 mb-0.5">Utilisé</p>
-          <p class="text-sm font-bold text-[#F59E0B]">{{ formatAmount(b.usedAmount) }}k FCFA</p>
+          <p class="text-xs font-semibold text-[#434751] mb-0.5">Utilisé</p>
+          <p class="text-sm font-bold text-[#00B894]">{{ formatAmount(b.usedAmount) }}k FCFA</p>
         </div>
         <div>
-          <p class="text-xs text-gray-400 mb-0.5">Restant</p>
-          <p class="text-sm font-bold text-[#059669]">{{ formatAmount(b.amount - b.usedAmount) }}k FCFA</p>
+          <p class="text-xs font-semibold text-[#434751] mb-0.5">Restant</p>
+          <p class="text-sm font-bold text-[#00367C]">{{ formatAmount(b.amount - b.usedAmount) }}k FCFA</p>
         </div>
       </div>
 
       <!-- Progress -->
       <div class="mb-4">
         <div class="flex justify-between items-center mb-1">
-          <span class="text-xs text-gray-400">Utilisation du budget</span>
-          <span class="text-xs font-semibold text-[#11458B]">{{ usagePercent(b) }}%</span>
+          <span class="text-xs text-[#131B2E]">Utilisation du budget</span>
+          <span class="text-sm font-semibold text-[#00B894]">{{ usagePercent(b) }}%</span>
         </div>
         <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-          <div class="h-full bg-[#2AB396] rounded-full transition-all"
-            [style.width.%]="usagePercent(b)"></div>
+          <div class="h-full bg-[#2AB396] rounded-full transition-all" [style.width.%]="usagePercent(b)"></div>
         </div>
       </div>
 
@@ -127,9 +132,7 @@
           class="px-2.5 py-1 bg-[#FEF3C7] text-[#D97706] rounded-full text-xs font-medium">
           {{ p }}
         </span>
-        <span *ngIf="b.urgencyLevel"
-          class="px-2.5 py-1 rounded-full text-xs font-medium"
-          [class]="b.urgencyLevel === 'Critique' ? 'bg-red-100 text-red-600'
+        <span *ngIf="b.urgencyLevel" class="px-2.5 py-1 rounded-full text-xs font-medium" [class]="b.urgencyLevel === 'Critique' ? 'bg-red-100 text-red-600'
                  : b.urgencyLevel === 'Élevé'    ? 'bg-orange-100 text-orange-600'
                  : b.urgencyLevel === 'Moyen'    ? 'bg-yellow-100 text-yellow-600'
                  :                                 'bg-green-100 text-green-600'">
