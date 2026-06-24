@@ -5,6 +5,23 @@ module.exports = {
   ],
   theme: {
     extend: {
+      container: {
+        center: true,
+        padding: {
+          DEFAULT: '1rem',
+          sm: '1.5rem',
+          lg: '3.5rem',
+          xl: '5rem',
+          '2xl': '8rem',
+        },
+        screens: {
+          sm: '640px',
+          md: '768px',
+          lg: '1024px',
+          xl: '1280px',
+          '2xl': '1920px',
+        },
+      },
       colors: {
         primary: '#11458B',
         'primary-light': '#F4F6F9',
