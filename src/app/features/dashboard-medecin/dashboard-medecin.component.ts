@@ -42,6 +42,15 @@ interface RendezVous {
   statusLabel: string;
 }
 
+interface DemandeAcceptee {
+  patient: string;
+  type: string;
+  prestataire: string;
+  donPct: number;
+  donColor: string;
+  statut: 'Acceptée' | 'En cours' | 'Financée';
+}
+
 @Component({
   selector: 'app-dashboard-medecin',
   standalone: true,
@@ -67,6 +76,13 @@ export class DashboardMedecinComponent implements OnInit, AfterViewInit, OnDestr
   prochainsRendezVous: RendezVous[] = [];
   statusDistribution: StatusCount[] = [];
   weeklyData: WeeklyChartPoint[] = [];
+
+  readonly demandesAcceptees: DemandeAcceptee[] = [
+    { patient: 'Aissatou Faye',  type: 'Imagerie\n(IRM)',       prestataire: 'Clinique de\nl’Espoir', donPct: 60,  donColor: '#11458B', statut: 'Acceptée'  },
+    { patient: 'Moussa Niang',   type: 'Analyse\nSang',         prestataire: 'BioLab Dakar',          donPct: 25,  donColor: '#F59E0B', statut: 'En cours'  },
+    { patient: 'Fatou Binetou',  type: 'Ordonnance',            prestataire: 'Pharmacie\nNation',     donPct: 100, donColor: '#10B981', statut: 'Financée'  },
+    { patient: 'Idrissa Seck',   type: 'Hospitalisations',      prestataire: 'Hôpital\nPrincipal',    donPct: 80,  donColor: '#11458B', statut: 'Acceptée'  },
+  ];
 
   isLoading = true;
   loadingOrdonnances = true;

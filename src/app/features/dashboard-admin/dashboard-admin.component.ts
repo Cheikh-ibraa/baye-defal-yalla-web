@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
 import { Chart, registerables } from 'chart.js';
+import { BaseChartDirective } from 'ng2-charts';
+import { ChartConfiguration } from 'chart.js';
 import { environment } from '../../../environments/environment';
 
 Chart.register(...registerables);
@@ -25,10 +27,11 @@ interface Activity {
   time: string;
 }
 
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, BaseChartDirective],
   templateUrl: './dashboard-admin.component.html',
   styleUrls: ['./dashboard-admin.component.css']
 })
@@ -48,6 +51,67 @@ export class DashboardAdminComponent implements OnInit, AfterViewInit, OnDestroy
   ];
 
   activities: Activity[] = [];
+
+  readonly regionLabels = ['Dakar', 'Thiès', 'Saint-Louis', 'Diourbel'];
+  readonly regionTicks  = [0, 15, 30, 45];
+
+  hopitalChartData: ChartConfiguration<'bar'>['data'] = {
+    labels: this.regionLabels,
+    datasets: [{
+      data: [42, 28, 14, 27],
+      backgroundColor: '#4FC3F7',
+      borderRadius: 20,
+      borderSkipped: false,
+      barThickness: 22,
+    }],
+  };
+
+  pharmacieChartData: ChartConfiguration<'bar'>['data'] = {
+    labels: this.regionLabels,
+    datasets: [{
+      data: [45, 22, 29, 18],
+      backgroundColor: '#11458B',
+      borderRadius: 20,
+      borderSkipped: false,
+      barThickness: 22,
+    }],
+  };
+
+  readonly regionChartOptions: ChartConfiguration<'bar'>['options'] = {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: 'rgba(0,0,0,0.75)',
+        padding: 8,
+        titleFont: { size: 12 },
+        bodyFont: { size: 12 },
+      },
+    },
+    scales: {
+      x: {
+        min: 0,
+        max: 45,
+        ticks: {
+          stepSize: 15,
+          color: '#9CA3AF',
+          font: { size: 11 },
+        },
+        grid: {
+          color: '#E5E7EB',
+          lineWidth: 1,
+        },
+        border: { display: false, dash: [4, 4] },
+      },
+      y: {
+        ticks: { color: '#4B5563', font: { size: 12 } },
+        grid: { display: false },
+        border: { display: false },
+      },
+    },
+  };
 
   private statisticsChart: Chart | null = null;
   private chartLabels: string[] = [];
