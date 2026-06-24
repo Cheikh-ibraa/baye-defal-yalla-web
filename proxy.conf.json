@@ -6,8 +6,8 @@
     "logLevel": "debug"
   },
   "/api": {
-    "target": "http://localhost:3080",
-    "secure": false,
+    "target": "https://api.bdy.innovimpactdev.cloud",
+    "secure": true,
     "changeOrigin": true,
     "logLevel": "debug"
   }

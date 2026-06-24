@@ -3,19 +3,20 @@
   <div *ngFor="let toast of toasts"
     class="bg-red-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 min-w-[300px] max-w-[400px] animate-slide-in">
     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
     <span class="text-sm flex-1">{{ toast.message }}</span>
     <button (click)="removeToast(toast.id)" class="text-white hover:text-gray-200">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
       </svg>
     </button>
   </div>
 </div>
 
 <div class="min-h-screen bg-[#F4F6F9]">
-  <div class="max-w-7xl mx-auto space-y-5">
+  <div class="mx-auto space-y-5">
 
     <!-- ── HEADER ────────────────────────────────────────────────────────── -->
     <div class="flex items-center justify-between">
@@ -23,7 +24,8 @@
         <button (click)="goBack()"
           class="w-12 h-12 flex items-center justify-center rounded-xl bg-white hover:bg-gray-50 transition">
           <svg width="16" height="14" viewBox="0 0 14 11" fill="none">
-            <path d="M13.157 5.303H.586M.586 5.303L5.3.589M.586 5.303L5.3 10.017" stroke="#2B3674" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M13.157 5.303H.586M.586 5.303L5.3.589M.586 5.303L5.3 10.017" stroke="#2B3674" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </button>
         <h1 class="text-lg sm:text-xl font-semibold text-[#1E293B]" *ngIf="examen.code && patient.name">
@@ -72,17 +74,21 @@
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div class="relative">
-              <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-[#343A40] text-sm font-semibold">
+              <div
+                class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-[#343A40] text-sm font-semibold">
                 {{ getInitials(patient.name) }}
               </div>
-              <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white"></span>
+              <span
+                class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white"></span>
             </div>
             <div>
               <p class="text-sm font-semibold text-[#343A40]">{{ patient.name }}</p>
               <p class="text-xs text-gray-400">{{ patient.role }}</p>
             </div>
           </div>
-          <svg width="7" height="12" viewBox="0 0 7 12" fill="none"><path d="M1 1l5 5-5 5" stroke="#C4C4C4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg width="7" height="12" viewBox="0 0 7 12" fill="none">
+            <path d="M1 1l5 5-5 5" stroke="#C4C4C4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
         </div>
 
         <hr class="border-gray-100">
@@ -127,7 +133,10 @@
                 <p class="text-xs text-gray-400">{{ prescripteur.specialite }}</p>
               </div>
             </div>
-            <svg width="7" height="12" viewBox="0 0 7 12" fill="none"><path d="M1 1l5 5-5 5" stroke="#C4C4C4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg width="7" height="12" viewBox="0 0 7 12" fill="none">
+              <path d="M1 1l5 5-5 5" stroke="#C4C4C4" stroke-width="1.5" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
           </div>
         </div>
 
@@ -141,7 +150,9 @@
             class="border border-dashed border-gray-200 rounded-xl p-5 text-center space-y-2 bg-gray-50">
             <div class="w-10 h-10 mx-auto rounded-xl bg-blue-50 flex items-center justify-center">
               <svg width="18" height="18" viewBox="0 0 17 17" fill="none">
-                <path fill-rule="evenodd" clip-rule="evenodd" d="M3.75 0C4.095 0 4.375.28 4.375.625V1.875H11.875V.625C11.875.28 12.155 0 12.5 0s.625.28.625.625V1.875H13.75C15.13 1.875 16.25 2.994 16.25 4.375V13.75C16.25 15.13 15.13 16.25 13.75 16.25H2.5C1.119 16.25 0 15.13 0 13.75V4.375C0 2.994 1.119 1.875 2.5 1.875H3.125V.625C3.125.28 3.405 0 3.75 0ZM15 7.5C15 6.81 14.44 6.25 13.75 6.25H2.5C1.81 6.25 1.25 6.81 1.25 7.5V13.75C1.25 14.44 1.81 15 2.5 15H13.75C14.44 15 15 14.44 15 13.75V7.5Z" fill="#104382"/>
+                <path fill-rule="evenodd" clip-rule="evenodd"
+                  d="M3.75 0C4.095 0 4.375.28 4.375.625V1.875H11.875V.625C11.875.28 12.155 0 12.5 0s.625.28.625.625V1.875H13.75C15.13 1.875 16.25 2.994 16.25 4.375V13.75C16.25 15.13 15.13 16.25 13.75 16.25H2.5C1.119 16.25 0 15.13 0 13.75V4.375C0 2.994 1.119 1.875 2.5 1.875H3.125V.625C3.125.28 3.405 0 3.75 0ZM15 7.5C15 6.81 14.44 6.25 13.75 6.25H2.5C1.81 6.25 1.25 6.81 1.25 7.5V13.75C1.25 14.44 1.81 15 2.5 15H13.75C14.44 15 15 14.44 15 13.75V7.5Z"
+                  fill="#104382" />
               </svg>
             </div>
             <p class="text-xs font-semibold text-[#343A40]">Aucun rendez-vous enregistré</p>
@@ -184,13 +195,11 @@
 
         <!-- Onglets -->
         <div class="flex gap-6 border-b border-gray-100">
-          <button (click)="ongletActif = 'images'"
-            class="pb-3 text-sm font-medium border-b-2 transition-colors"
+          <button (click)="ongletActif = 'images'" class="pb-3 text-sm font-medium border-b-2 transition-colors"
             [ngClass]="ongletActif === 'images' ? 'border-[#104382] text-[#104382]' : 'border-transparent text-gray-500 hover:text-gray-700'">
             Images médicales
           </button>
-          <button (click)="ongletActif = 'compte-rendu'"
-            class="pb-3 text-sm font-medium border-b-2 transition-colors"
+          <button (click)="ongletActif = 'compte-rendu'" class="pb-3 text-sm font-medium border-b-2 transition-colors"
             [ngClass]="ongletActif === 'compte-rendu' ? 'border-[#104382] text-[#104382]' : 'border-transparent text-gray-500 hover:text-gray-700'">
             Compte rendu
           </button>
@@ -300,8 +309,10 @@
               </div>
             </div>
             <div class="flex items-start gap-2 text-xs text-gray-500 italic">
-              <svg class="w-4 h-4 mt-0.5 flex-shrink-0 text-[#104382]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              <svg class="w-4 h-4 mt-0.5 flex-shrink-0 text-[#104382]" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <span>Signé électroniquement par {{ prescripteur.name }} le {{ getCurrentDate() }}</span>
             </div>
@@ -336,7 +347,8 @@
                 <input type="file" #compteRenduFileInput hidden accept=".png,.jpg,.jpeg,.pdf" (change)="onCompteRenduFileSelected($event)"/>
                 <div class="w-12 h-12 mx-auto mb-3 flex items-center justify-center bg-[#104382]/10 rounded-full">
                   <svg class="w-6 h-6 text-[#104382]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                   </svg>
                 </div>
                 <button type="button" (click)="compteRenduFileInput.click()"
@@ -350,7 +362,8 @@
                 <div class="flex items-center gap-3">
                   <div class="w-10 h-10 rounded-lg bg-[#104382]/10 flex items-center justify-center">
                     <svg class="w-5 h-5 text-[#104382]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                   </div>
                   <div>
@@ -360,7 +373,8 @@
                 </div>
                 <button type="button" (click)="removeCompteRenduFile()" class="text-red-500 hover:text-red-600">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
                 </button>
               </div>
@@ -371,14 +385,15 @@
               <button type="button" (click)="genererAvecIA()"
                 class="flex items-center gap-2 px-4 py-2.5 border border-[#104382] text-[#104382] rounded-xl text-sm font-medium hover:bg-[#104382]/10">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
                 Générer avec IA
               </button>
               <button type="button" (click)="openValiderCompteRendu()" [disabled]="isSaving"
                 class="flex items-center gap-2 px-5 py-2.5 bg-[#104382] hover:bg-[#0D3568] disabled:opacity-60 text-white rounded-xl text-sm font-medium">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
                 Valider et publier
               </button>
@@ -460,7 +475,8 @@
     </div>
     <p class="text-2xl font-bold text-[#1E293B] mb-2">Rendez-vous confirmé</p>
     <p class="text-base text-[#475569] leading-relaxed">
-      Le rendez-vous pour <strong class="text-[#1E293B]">{{ patient.name }}</strong> a été <strong class="text-[#1E293B]">planifié</strong> avec succès.
+      Le rendez-vous pour <strong class="text-[#1E293B]">{{ patient.name }}</strong> a été <strong
+        class="text-[#1E293B]">planifié</strong> avec succès.
     </p>
   </div>
 </div>
@@ -555,13 +571,14 @@
       <button (click)="closeImportImage()" class="text-gray-400 hover:text-gray-600">✕</button>
     </div>
     <div class="border border-dashed rounded-xl p-6 text-center space-y-2">
-      <input type="file" multiple accept="image/*" hidden #fileInput (change)="onFilesSelected($event)"/>
-      <button type="button" (click)="fileInput.click()" class="px-4 py-2 bg-[#104382] text-white rounded-lg text-sm">Choisir des images</button>
+      <input type="file" multiple accept="image/*" hidden #fileInput (change)="onFilesSelected($event)" />
+      <button type="button" (click)="fileInput.click()"
+        class="px-4 py-2 bg-[#104382] text-white rounded-lg text-sm">Choisir des images</button>
       <p class="text-xs text-gray-500">PNG, JPG — sélection multiple autorisée</p>
     </div>
     <div *ngIf="previewUrls.length > 0" class="grid grid-cols-3 gap-4">
       <div *ngFor="let img of previewUrls; let i = index" class="relative group">
-        <img [src]="img" class="h-32 w-full object-cover rounded-lg border"/>
+        <img [src]="img" class="h-32 w-full object-cover rounded-lg border" />
         <button type="button" (click)="removeSelectedFile(i)"
           class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition">✕</button>
       </div>
@@ -618,17 +635,22 @@
 <!-- MODAL : Supprimer image -->
 <div *ngIf="showDeleteImageModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4"
   (click)="closeDeleteImage()">
-  <div class="bg-white rounded-2xl w-full max-w-[420px] p-6 text-center space-y-5 shadow-2xl" (click)="$event.stopPropagation()">
+  <div class="bg-white rounded-2xl w-full max-w-[420px] p-6 text-center space-y-5 shadow-2xl"
+    (click)="$event.stopPropagation()">
     <div class="w-16 h-16 mx-auto rounded-full bg-red-100 flex items-center justify-center">
       <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
       </svg>
     </div>
     <h3 class="text-lg font-semibold text-gray-900">Supprimer l'image</h3>
-    <p class="text-sm text-gray-600">Êtes-vous sûr ? <span class="text-red-600 font-medium">Cette action est irréversible.</span></p>
+    <p class="text-sm text-gray-600">Êtes-vous sûr ? <span class="text-red-600 font-medium">Cette action est
+        irréversible.</span></p>
     <div class="flex gap-3">
-      <button (click)="closeDeleteImage()" class="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg text-sm">Annuler</button>
-      <button (click)="confirmerDeleteImage()" class="flex-1 px-4 py-2.5 bg-red-500 text-white rounded-lg text-sm">Supprimer</button>
+      <button (click)="closeDeleteImage()"
+        class="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg text-sm">Annuler</button>
+      <button (click)="confirmerDeleteImage()"
+        class="flex-1 px-4 py-2.5 bg-red-500 text-white rounded-lg text-sm">Supprimer</button>
     </div>
   </div>
 </div>

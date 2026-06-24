@@ -1,12 +1,15 @@
 import {
   Component,
+  Input,
   Output,
   EventEmitter,
   OnInit,
   OnDestroy,
-  HostListener
+  HostListener,
+  PLATFORM_ID,
+  inject
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { Router, NavigationEnd, RouterLink, RouterLinkActive } from '@angular/router';
 import { User } from '../../../core/auth.types';
 import { Subscription, filter } from 'rxjs';
@@ -27,7 +30,11 @@ export interface MenuItem {
 })
 export class SidebarComponent implements OnInit, OnDestroy {
 
+  @Input() set isOpen(value: boolean) {
+    this.isMobileMenuOpen = value;
+  }
   @Output() menuItemClicked = new EventEmitter<string>();
+  @Output() closeSidebar = new EventEmitter<void>();
 
   activeItem = '';
   currentUser: User | null = null;
@@ -54,7 +61,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   // RESPONSIVE
   isMobileMenuOpen = false;
-  isDesktop = window.innerWidth >= 1024;
+  /** Safe default: false évite tout accès à `window` hors navigateur (SSR/SSG). */
+  isDesktop = false;
+
+  private readonly platformId = inject(PLATFORM_ID);
 
   private userSubscription?: Subscription;
   private routerSubscription?: Subscription;
@@ -195,12 +205,16 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   @HostListener('window:resize')
   onResize() {
+    if (!isPlatformBrowser(this.platformId)) return;
     this.isDesktop = window.innerWidth >= 1024;
     if (this.isDesktop) this.isMobileMenuOpen = false;
   }
 
   ngOnInit(): void {
-    this.onResize();
+    // Initialiser isDesktop côté navigateur uniquement
+    if (isPlatformBrowser(this.platformId)) {
+      this.isDesktop = window.innerWidth >= 1024;
+    }
 
     this.currentUser = this.getMockCurrentUser();
     this.updateMenuBasedOnProfile();
@@ -391,7 +405,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     const item = this.menuItems.find(i => i.id === id);
     if (item?.route) this.router.navigate([item.route]);
 
-    if (!this.isDesktop) this.isMobileMenuOpen = false;
+    if (!this.isDesktop) this.closeSidebar.emit();
   }
 
   logout(): void {

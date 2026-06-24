@@ -1,13 +1,13 @@
 <!-- OVERLAY MOBILE -->
 <div *ngIf="isMobileMenuOpen && !isDesktop" class="fixed inset-0 bg-black/40 z-40 lg:hidden"
-  (click)="isMobileMenuOpen = false"></div>
+  (click)="closeSidebar.emit()"></div>
 
 <!-- SIDEBAR -->
-<aside [class.translate-x-0]="isMobileMenuOpen || isDesktop" [class.-translate-x-full]="!isMobileMenuOpen && !isDesktop"
-  class="fixed inset-y-0 left-0 z-50 w-[270px] bg-white flex flex-col transition-transform duration-300 lg:translate-x-0">
+<aside [class.translate-x-0]="isMobileMenuOpen" [class.-translate-x-full]="!isMobileMenuOpen"
+  class="fixed inset-y-0 left-0 z-50 w-[220px] xl:w-[270px] bg-white flex flex-col transition-transform duration-300 lg:translate-x-0">
 
   <!-- HEADER -->
-  <div class="flex items-center flex-col justify-center mb-2">
+  <div class="flex items-center flex-col justify-center mb-4">
     <img src="assets/images/logo.png" alt="Logo Medical Link" class="
     h-20
     max-w-[260px]
@@ -18,7 +18,7 @@
   </div>
 
   <!-- MENU -->
-  <nav class="flex-1 px-4 pt-1 overflow-x-hidden" [ngClass]="{
+  <nav class="flex-1 px-4 pt-1 space-y-4 overflow-x-hidden" [ngClass]="{
     'overflow-y-auto': isAdmin,
     'sidebar-scrollbar-hidden': isAdmin
   }">
@@ -30,23 +30,21 @@
       <a routerLink="/admin/dashboard"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         #rlaAdmin="routerLinkActive"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
 
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M11.25 18C11.25 18.1989 11.329 18.3897 11.4697 18.5303C11.6103 18.671 11.8011 18.75 12 18.75C12.1989 18.75 12.3897 18.671 12.5303 18.5303C12.671 18.3897 12.75 18.1989 12.75 18V15C12.75 14.8011 12.671 14.6103 12.5303 14.4697C12.3897 14.329 12.1989 14.25 12 14.25C11.8011 14.25 11.6103 14.329 11.4697 14.4697C11.329 14.6103 11.25 14.8011 11.25 15V18Z"
-              [attr.fill]="rlaAdmin.isActive ? '#234078' : '#343A40'"/>
-            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 1.25C11.292 1.25 10.649 1.453 9.95 1.792C9.276 2.12 8.496 2.604 7.523 3.208L5.456 4.491C4.536 5.063 3.797 5.521 3.229 5.956C2.64 6.406 2.188 6.866 1.861 7.463C1.535 8.058 1.389 8.692 1.318 9.441C1.25 10.166 1.25 11.054 1.25 12.167V13.78C1.25 15.684 1.25 17.187 1.403 18.362C1.559 19.567 1.889 20.54 2.633 21.309C3.38 22.082 4.33 22.428 5.508 22.591C6.648 22.75 8.106 22.75 9.942 22.75H14.058C15.894 22.75 17.352 22.75 18.492 22.591C19.669 22.428 20.62 22.082 21.368 21.309C22.111 20.54 22.441 19.567 22.598 18.362C22.75 17.187 22.75 15.684 22.75 13.78V12.167C22.75 11.054 22.75 10.167 22.682 9.441C22.612 8.691 22.465 8.058 22.139 7.463C21.812 6.866 21.359 6.407 20.771 5.956C20.203 5.52 19.465 5.063 18.544 4.491L16.477 3.208C15.504 2.604 14.724 2.12 14.049 1.792C13.352 1.452 12.709 1.25 12 1.25ZM8.28 4.504C9.295 3.874 10.01 3.432 10.607 3.141C11.188 2.858 11.6 2.75 12 2.75C12.4 2.75 12.812 2.858 13.393 3.141C13.991 3.431 14.705 3.874 15.72 4.504L17.72 5.745C18.681 6.342 19.356 6.761 19.86 7.147C20.349 7.522 20.63 7.831 20.823 8.183C21.016 8.536 21.129 8.949 21.188 9.581C21.249 10.229 21.25 11.046 21.25 12.204V13.725C21.25 15.695 21.248 17.101 21.11 18.168C20.974 19.216 20.717 19.824 20.29 20.267C19.865 20.706 19.287 20.967 18.286 21.106C17.26 21.248 15.907 21.25 14 21.25H10C8.092 21.25 6.74 21.248 5.714 21.106C4.713 20.966 4.135 20.706 3.711 20.266C3.283 19.824 3.026 19.216 2.891 18.168C2.751 17.101 2.75 15.696 2.75 13.725V12.204C2.75 11.046 2.75 10.229 2.812 9.581C2.871 8.949 2.984 8.536 3.177 8.183C3.37 7.831 3.651 7.522 4.141 7.147C4.644 6.761 5.319 6.342 6.28 5.745L8.28 4.504Z"
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M0.52 5.823C0 6.77 0 7.915 0 10.203V11.725C0 15.625 -1.19209e-07 17.576 1.172 18.788C2.344 20 4.229 20 8 20H12C15.771 20 17.657 20 18.828 18.788C19.999 17.576 20 15.626 20 11.725V10.204C20 7.915 20 6.771 19.48 5.823C18.962 4.874 18.013 4.286 16.116 3.108L14.116 1.867C12.111 0.622 11.108 0 10 0C8.892 0 7.89 0.622 5.884 1.867L3.884 3.108C1.987 4.286 1.039 4.874 0.52 5.823ZM9.25 16C9.25 16.1989 9.32902 16.3897 9.46967 16.5303C9.61032 16.671 9.80109 16.75 10 16.75C10.1989 16.75 10.3897 16.671 10.5303 16.5303C10.671 16.3897 10.75 16.1989 10.75 16V13C10.75 12.8011 10.671 12.6103 10.5303 12.4697C10.3897 12.329 10.1989 12.25 10 12.25C9.80109 12.25 9.61032 12.329 9.46967 12.4697C9.32902 12.6103 9.25 12.8011 9.25 13V16Z"
               [attr.fill]="rlaAdmin.isActive ? '#234078' : '#343A40'"/>
           </svg>
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Tableau de bord</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Tableau de bord</span>
       </a>
 
       <!-- Médecins -->
       <a routerLink="/admin/medecins"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
           <svg width="19" height="21" viewBox="0 0 19 21" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -54,13 +52,13 @@
           </svg>
 
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Médecins</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Médecins</span>
       </a>
 
       <!-- Pharmacies -->
       <a routerLink="/admin/pharmacies"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
           <svg width="21" height="20" viewBox="0 0 21 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -68,20 +66,20 @@
           </svg>
 
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Pharmacies</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Pharmacies</span>
       </a>
 
       <!-- Laboratoires -->
       <a routerLink="/admin/laboratoires"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
               d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
           </svg>
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Laboratoires</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Laboratoires</span>
       </a>
 
       <!-- Imageries -->
@@ -94,7 +92,7 @@
               d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
           </svg>
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Imageries</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Imageries</span>
       </a>
 
       <!-- Hôpitaux -->
@@ -107,7 +105,7 @@
               d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
           </svg>
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Hôpitaux</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Hôpitaux</span>
       </a>
 
       <!-- Livreurs -->
@@ -126,7 +124,7 @@
 <!--          </svg>-->
 
 <!--        </div>-->
-<!--        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Livreurs</span>-->
+<!--        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Livreurs</span>-->
 <!--      </a>-->
 
       <!-- Fournisseurs -->
@@ -139,13 +137,13 @@
               d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
           </svg>
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Fournisseurs</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Fournisseurs</span>
       </a>
 
       <!-- Patients -->
       <a routerLink="/admin/patients"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -153,14 +151,14 @@
               stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Patients</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Patients</span>
       </a>
 
 
       <!-- Paiements & help -->
       <a routerLink="/admin/paiements-help"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
           <svg width="22" height="18" viewBox="0 0 22 18" fill="none" stroke="currentColor"
             xmlns="http://www.w3.org/2000/svg">
@@ -171,13 +169,13 @@
           </svg>
 
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Paiements & Aide</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Paiements & Aide</span>
       </a>
 
       <!-- Administration -->
       <a routerLink="/admin/administration"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -189,11 +187,10 @@
           </svg>
 
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Administration</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Administration</span>
       </a>
       <!-- Gestion financière -->
-      <div class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200"
-        [ngClass]="{
+      <div class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200" [ngClass]="{
          'border-l-[3px] border-[#11458B] rounded-l-[12px] bg-[#F4F6F9] text-[#11458B]': activeItem === 'finance-parent',
          'hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]': activeItem !== 'finance-parent'
        }" (click)="financeOpen = !financeOpen">
@@ -207,7 +204,7 @@
           </div>
         </div>
 
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Gestion financière</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Gestion financière</span>
 
         <svg class="ml-auto w-4 h-4 transition-transform" [ngClass]="financeOpen ? 'rotate-180' : ''"
           fill="currentColor" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -221,21 +218,21 @@
         <a routerLink="/admin/finance-dashboard" routerLinkActive="!text-[#11458B]"
           class="flex items-center gap-2 cursor-pointer text-gray-600 hover:text-[#11458B] transition-colors duration-200">
           <span class="w-2 h-2 rounded-full bg-current"></span>
-          <span class="text-[15px]">Tableau de bord</span>
+          <span class="text-sm">Tableau de bord</span>
         </a>
 
         <!-- Pharmacies -->
         <a routerLink="/admin/finance-pharmacies" routerLinkActive="!text-[#11458B]"
           class="flex items-center gap-2 cursor-pointer text-gray-600 hover:text-[#11458B] transition-colors duration-200">
           <span class="w-2 h-2 rounded-full bg-current"></span>
-          <span class="text-[14px]">Pharmacies</span>
+          <span class="text-sm">Pharmacies</span>
         </a>
 
         <!-- Demandes de virement -->
         <a routerLink="/admin/finance-virements" routerLinkActive="!text-[#11458B]"
           class="flex items-center gap-2 cursor-pointer text-gray-600 hover:text-[#11458B] transition-colors duration-200">
           <span class="w-2 h-2 rounded-full bg-current"></span>
-          <span class="text-[14px]">Demandes de virement</span>
+          <span class="text-sm">Demandes de virement</span>
         </a>
 
       </div>
@@ -248,16 +245,19 @@
       <a routerLink="/doctor/dashboard"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         #rlaMed="routerLinkActive"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M11.25 18C11.25 18.1989 11.329 18.3897 11.4697 18.5303C11.6103 18.671 11.8011 18.75 12 18.75C12.1989 18.75 12.3897 18.671 12.5303 18.5303C12.671 18.3897 12.75 18.1989 12.75 18V15C12.75 14.8011 12.671 14.6103 12.5303 14.4697C12.3897 14.329 12.1989 14.25 12 14.25C11.8011 14.25 11.6103 14.329 11.4697 14.4697C11.329 14.6103 11.25 14.8011 11.25 15V18Z"
-              [attr.fill]="rlaMed.isActive ? '#234078' : '#343A40'"/>
-            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 1.25C11.292 1.25 10.649 1.453 9.95 1.792C9.276 2.12 8.496 2.604 7.523 3.208L5.456 4.491C4.536 5.063 3.797 5.521 3.229 5.956C2.64 6.406 2.188 6.866 1.861 7.463C1.535 8.058 1.389 8.692 1.318 9.441C1.25 10.166 1.25 11.054 1.25 12.167V13.78C1.25 15.684 1.25 17.187 1.403 18.362C1.559 19.567 1.889 20.54 2.633 21.309C3.38 22.082 4.33 22.428 5.508 22.591C6.648 22.75 8.106 22.75 9.942 22.75H14.058C15.894 22.75 17.352 22.75 18.492 22.591C19.669 22.428 20.62 22.082 21.368 21.309C22.111 20.54 22.441 19.567 22.598 18.362C22.75 17.187 22.75 15.684 22.75 13.78V12.167C22.75 11.054 22.75 10.167 22.682 9.441C22.612 8.691 22.465 8.058 22.139 7.463C21.812 6.866 21.359 6.407 20.771 5.956C20.203 5.52 19.465 5.063 18.544 4.491L16.477 3.208C15.504 2.604 14.724 2.12 14.049 1.792C13.352 1.452 12.709 1.25 12 1.25ZM8.28 4.504C9.295 3.874 10.01 3.432 10.607 3.141C11.188 2.858 11.6 2.75 12 2.75C12.4 2.75 12.812 2.858 13.393 3.141C13.991 3.431 14.705 3.874 15.72 4.504L17.72 5.745C18.681 6.342 19.356 6.761 19.86 7.147C20.349 7.522 20.63 7.831 20.823 8.183C21.016 8.536 21.129 8.949 21.188 9.581C21.249 10.229 21.25 11.046 21.25 12.204V13.725C21.25 15.695 21.248 17.101 21.11 18.168C20.974 19.216 20.717 19.824 20.29 20.267C19.865 20.706 19.287 20.967 18.286 21.106C17.26 21.248 15.907 21.25 14 21.25H10C8.092 21.25 6.74 21.248 5.714 21.106C4.713 20.966 4.135 20.706 3.711 20.266C3.283 19.824 3.026 19.216 2.891 18.168C2.751 17.101 2.75 15.696 2.75 13.725V12.204C2.75 11.046 2.75 10.229 2.812 9.581C2.871 8.949 2.984 8.536 3.177 8.183C3.37 7.831 3.651 7.522 4.141 7.147C4.644 6.761 5.319 6.342 6.28 5.745L8.28 4.504Z"
-              [attr.fill]="rlaMed.isActive ? '#234078' : '#343A40'"/>
+            <path
+              d="M11.25 18C11.25 18.1989 11.329 18.3897 11.4697 18.5303C11.6103 18.671 11.8011 18.75 12 18.75C12.1989 18.75 12.3897 18.671 12.5303 18.5303C12.671 18.3897 12.75 18.1989 12.75 18V15C12.75 14.8011 12.671 14.6103 12.5303 14.4697C12.3897 14.329 12.1989 14.25 12 14.25C11.8011 14.25 11.6103 14.329 11.4697 14.4697C11.329 14.6103 11.25 14.8011 11.25 15V18Z"
+              fill="currentColor" />
+            <path fill-rule="evenodd" clip-rule="evenodd"
+              d="M12 1.25C11.292 1.25 10.649 1.453 9.95 1.792C9.276 2.12 8.496 2.604 7.523 3.208L5.456 4.491C4.536 5.063 3.797 5.521 3.229 5.956C2.64 6.406 2.188 6.866 1.861 7.463C1.535 8.058 1.389 8.692 1.318 9.441C1.25 10.166 1.25 11.054 1.25 12.167V13.78C1.25 15.684 1.25 17.187 1.403 18.362C1.559 19.567 1.889 20.54 2.633 21.309C3.38 22.082 4.33 22.428 5.508 22.591C6.648 22.75 8.106 22.75 9.942 22.75H14.058C15.894 22.75 17.352 22.75 18.492 22.591C19.669 22.428 20.62 22.082 21.368 21.309C22.111 20.54 22.441 19.567 22.598 18.362C22.75 17.187 22.75 15.684 22.75 13.78V12.167C22.75 11.054 22.75 10.167 22.682 9.441C22.612 8.691 22.465 8.058 22.139 7.463C21.812 6.866 21.359 6.407 20.771 5.956C20.203 5.52 19.465 5.063 18.544 4.491L16.477 3.208C15.504 2.604 14.724 2.12 14.049 1.792C13.352 1.452 12.709 1.25 12 1.25ZM8.28 4.504C9.295 3.874 10.01 3.432 10.607 3.141C11.188 2.858 11.6 2.75 12 2.75C12.4 2.75 12.812 2.858 13.393 3.141C13.991 3.431 14.705 3.874 15.72 4.504L17.72 5.745C18.681 6.342 19.356 6.761 19.86 7.147C20.349 7.522 20.63 7.831 20.823 8.183C21.016 8.536 21.129 8.949 21.188 9.581C21.249 10.229 21.25 11.046 21.25 12.204V13.725C21.25 15.695 21.248 17.101 21.11 18.168C20.974 19.216 20.717 19.824 20.29 20.267C19.865 20.706 19.287 20.967 18.286 21.106C17.26 21.248 15.907 21.25 14 21.25H10C8.092 21.25 6.74 21.248 5.714 21.106C4.713 20.966 4.135 20.706 3.711 20.266C3.283 19.824 3.026 19.216 2.891 18.168C2.751 17.101 2.75 15.696 2.75 13.725V12.204C2.75 11.046 2.75 10.229 2.812 9.581C2.871 8.949 2.984 8.536 3.177 8.183C3.37 7.831 3.651 7.522 4.141 7.147C4.644 6.761 5.319 6.342 6.28 5.745L8.28 4.504Z"
+              [attr.fill]="rlaMed.isActive ? '#234078' : '#343A40'" />
           </svg>
+
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Tableau de bord</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Tableau de bord</span>
       </a>
 
       <!-- Créer une ordonnance -->
@@ -273,7 +273,7 @@
                  'mask': 'url(assets/icones/ordonnance.png) center/contain no-repeat'
                }"></div>
         </div>
-        <span class="text-[#343A40] text-[15px] leading-5 tracking-[0] font-inter">Créer une ordonnance</span>
+        <span class="text-[#343A40] text-sm leading-[14px] tracking-[0] font-inter">Créer une ordonnance</span>
       </div> -->
 
       <!-- Mes demandes (accordion) -->
@@ -291,7 +291,7 @@
             <line x1="9" y1="16" x2="13" y2="16"/>
           </svg>
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Mes demandes</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Mes demandes</span>
         <svg class="ml-auto w-4 h-4 transition-transform" [ngClass]="demandesOpen ? 'rotate-180' : ''"
           fill="currentColor" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
@@ -302,29 +302,29 @@
         <a routerLink="/doctor/ordonnances" routerLinkActive="!text-[#11458B]"
           class="flex items-center gap-2 cursor-pointer text-gray-600 hover:text-[#11458B] transition-colors duration-200">
           <span class="w-2 h-2 rounded-full bg-current flex-shrink-0"></span>
-          <span class="text-[14px]">Ordonnances</span>
+          <span class="text-sm">Ordonnances</span>
         </a>
         <a routerLink="/doctor/analyses-medical" routerLinkActive="!text-[#11458B]"
           class="flex items-center gap-2 cursor-pointer text-gray-600 hover:text-[#11458B] transition-colors duration-200">
           <span class="w-2 h-2 rounded-full bg-current flex-shrink-0"></span>
-          <span class="text-[14px]">Analyses m&#233;dicales</span>
+          <span class="text-sm">Analyses m&#233;dicales</span>
         </a>
         <a routerLink="/doctor/imagerie-medical" routerLinkActive="!text-[#11458B]"
           class="flex items-center gap-2 cursor-pointer text-gray-600 hover:text-[#11458B] transition-colors duration-200">
           <span class="w-2 h-2 rounded-full bg-current flex-shrink-0"></span>
-          <span class="text-[14px]">Imagerie m&#233;dicale</span>
+          <span class="text-sm">Imagerie m&#233;dicale</span>
         </a>
         <a routerLink="/doctor/hospitalisation" routerLinkActive="!text-[#11458B]"
           class="flex items-center gap-2 cursor-pointer text-gray-600 hover:text-[#11458B] transition-colors duration-200">
           <span class="w-2 h-2 rounded-full bg-current flex-shrink-0"></span>
-          <span class="text-[14px]">Hospitalisation</span>
+          <span class="text-sm">Hospitalisation</span>
         </a>
       </div>
 
       <!-- PATIENTS -->
       <a routerLink="/doctor/patients"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -332,7 +332,7 @@
               stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Patients</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Patients</span>
       </a>
     </ng-container>
 
@@ -343,22 +343,24 @@
       <a routerLink="/pharmacist/dashboard"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         #rlaPharma="routerLinkActive"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M11.25 18C11.25 18.1989 11.329 18.3897 11.4697 18.5303C11.6103 18.671 11.8011 18.75 12 18.75C12.1989 18.75 12.3897 18.671 12.5303 18.5303C12.671 18.3897 12.75 18.1989 12.75 18V15C12.75 14.8011 12.671 14.6103 12.5303 14.4697C12.3897 14.329 12.1989 14.25 12 14.25C11.8011 14.25 11.6103 14.329 11.4697 14.4697C11.329 14.6103 11.25 14.8011 11.25 15V18Z"
-              [attr.fill]="rlaPharma.isActive ? '#234078' : '#343A40'"/>
-            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 1.25C11.292 1.25 10.649 1.453 9.95 1.792C9.276 2.12 8.496 2.604 7.523 3.208L5.456 4.491C4.536 5.063 3.797 5.521 3.229 5.956C2.64 6.406 2.188 6.866 1.861 7.463C1.535 8.058 1.389 8.692 1.318 9.441C1.25 10.166 1.25 11.054 1.25 12.167V13.78C1.25 15.684 1.25 17.187 1.403 18.362C1.559 19.567 1.889 20.54 2.633 21.309C3.38 22.082 4.33 22.428 5.508 22.591C6.648 22.75 8.106 22.75 9.942 22.75H14.058C15.894 22.75 17.352 22.75 18.492 22.591C19.669 22.428 20.62 22.082 21.368 21.309C22.111 20.54 22.441 19.567 22.598 18.362C22.75 17.187 22.75 15.684 22.75 13.78V12.167C22.75 11.054 22.75 10.167 22.682 9.441C22.612 8.691 22.465 8.058 22.139 7.463C21.812 6.866 21.359 6.407 20.771 5.956C20.203 5.52 19.465 5.063 18.544 4.491L16.477 3.208C15.504 2.604 14.724 2.12 14.049 1.792C13.352 1.452 12.709 1.25 12 1.25ZM8.28 4.504C9.295 3.874 10.01 3.432 10.607 3.141C11.188 2.858 11.6 2.75 12 2.75C12.4 2.75 12.812 2.858 13.393 3.141C13.991 3.431 14.705 3.874 15.72 4.504L17.72 5.745C18.681 6.342 19.356 6.761 19.86 7.147C20.349 7.522 20.63 7.831 20.823 8.183C21.016 8.536 21.129 8.949 21.188 9.581C21.249 10.229 21.25 11.046 21.25 12.204V13.725C21.25 15.695 21.248 17.101 21.11 18.168C20.974 19.216 20.717 19.824 20.29 20.267C19.865 20.706 19.287 20.967 18.286 21.106C17.26 21.248 15.907 21.25 14 21.25H10C8.092 21.25 6.74 21.248 5.714 21.106C4.713 20.966 4.135 20.706 3.711 20.266C3.283 19.824 3.026 19.216 2.891 18.168C2.751 17.101 2.75 15.696 2.75 13.725V12.204C2.75 11.046 2.75 10.229 2.812 9.581C2.871 8.949 2.984 8.536 3.177 8.183C3.37 7.831 3.651 7.522 4.141 7.147C4.644 6.761 5.319 6.342 6.28 5.745L8.28 4.504Z"
-              [attr.fill]="rlaPharma.isActive ? '#234078' : '#343A40'"/>
+            <path
+              d="M11.25 18C11.25 18.1989 11.329 18.3897 11.4697 18.5303C11.6103 18.671 11.8011 18.75 12 18.75C12.1989 18.75 12.3897 18.671 12.5303 18.5303C12.671 18.3897 12.75 18.1989 12.75 18V15C12.75 14.8011 12.671 14.6103 12.5303 14.4697C12.3897 14.329 12.1989 14.25 12 14.25C11.8011 14.25 11.6103 14.329 11.4697 14.4697C11.329 14.6103 11.25 14.8011 11.25 15V18Z"
+              fill="currentColor" />
+            <path fill-rule="evenodd" clip-rule="evenodd"
+              d="M12 1.25C11.292 1.25 10.649 1.453 9.95 1.792C9.276 2.12 8.496 2.604 7.523 3.208L5.456 4.491C4.536 5.063 3.797 5.521 3.229 5.956C2.64 6.406 2.188 6.866 1.861 7.463C1.535 8.058 1.389 8.692 1.318 9.441C1.25 10.166 1.25 11.054 1.25 12.167V13.78C1.25 15.684 1.25 17.187 1.403 18.362C1.559 19.567 1.889 20.54 2.633 21.309C3.38 22.082 4.33 22.428 5.508 22.591C6.648 22.75 8.106 22.75 9.942 22.75H14.058C15.894 22.75 17.352 22.75 18.492 22.591C19.669 22.428 20.62 22.082 21.368 21.309C22.111 20.54 22.441 19.567 22.598 18.362C22.75 17.187 22.75 15.684 22.75 13.78V12.167C22.75 11.054 22.75 10.167 22.682 9.441C22.612 8.691 22.465 8.058 22.139 7.463C21.812 6.866 21.359 6.407 20.771 5.956C20.203 5.52 19.465 5.063 18.544 4.491L16.477 3.208C15.504 2.604 14.724 2.12 14.049 1.792C13.352 1.452 12.709 1.25 12 1.25ZM8.28 4.504C9.295 3.874 10.01 3.432 10.607 3.141C11.188 2.858 11.6 2.75 12 2.75C12.4 2.75 12.812 2.858 13.393 3.141C13.991 3.431 14.705 3.874 15.72 4.504L17.72 5.745C18.681 6.342 19.356 6.761 19.86 7.147C20.349 7.522 20.63 7.831 20.823 8.183C21.016 8.536 21.129 8.949 21.188 9.581C21.249 10.229 21.25 11.046 21.25 12.204V13.725C21.25 15.695 21.248 17.101 21.11 18.168C20.974 19.216 20.717 19.824 20.29 20.267C19.865 20.706 19.287 20.967 18.286 21.106C17.26 21.248 15.907 21.25 14 21.25H10C8.092 21.25 6.74 21.248 5.714 21.106C4.713 20.966 4.135 20.706 3.711 20.266C3.283 19.824 3.026 19.216 2.891 18.168C2.751 17.101 2.75 15.696 2.75 13.725V12.204C2.75 11.046 2.75 10.229 2.812 9.581C2.871 8.949 2.984 8.536 3.177 8.183C3.37 7.831 3.651 7.522 4.141 7.147C4.644 6.761 5.319 6.342 6.28 5.745L8.28 4.504Z"
+              [attr.fill]="rlaPharma.isActive ? '#234078' : '#343A40'" />
           </svg>
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Tableau de bord</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Tableau de bord</span>
       </a>
 
       <!-- Commandes reçues -->
       <a routerLink="/pharmacist/commande"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
             xmlns="http://www.w3.org/2000/svg">
@@ -368,7 +370,7 @@
             <path d="M16 10a4 4 0 01-8 0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Commandes reçues</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Commandes reçues</span>
       </a>
 
 
@@ -387,13 +389,13 @@
             <line x1="12" y1="22.08" x2="12" y2="12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Gestion stock</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Gestion stock</span>
       </a> -->
 
       <!-- Demandes complément -->
       <a routerLink="/pharmacist/demande-complement"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
             <path fill="currentColor"
@@ -401,12 +403,11 @@
               stroke-width="0.2" stroke="currentColor" />
           </svg>
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Demande complément</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Demande complément</span>
       </a>
 
       <!-- Gestion financière pharmacie -->
-      <div class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200"
-        [ngClass]="{
+      <div class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200" [ngClass]="{
           'border-l-[3px] border-[#11458B] rounded-l-[12px] bg-[#F4F6F9] text-[#11458B]': activeItem === 'finance-parent',
           'hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px] text-gray-600': activeItem !== 'finance-parent'
         }" (click)="financeOpen = !financeOpen">
@@ -417,7 +418,7 @@
             'mask': 'url(assets/icones/finance.svg) center/contain no-repeat'
           }"></div>
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Gestion financière</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Gestion financière</span>
         <svg class="ml-auto w-4 h-4 transition-transform" [ngClass]="financeOpen ? '-rotate-90' : ''" width="8"
           height="13" viewBox="0 0 8 13" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -436,34 +437,36 @@
             <circle *ngIf="dashboardFinanceRla.isActive" cx="5" cy="5" r="4" fill="#11458B" stroke="#11458B"
               stroke-width="2" />
           </svg>
-          <span class="text-[15px]">Tableau de bord</span>
+          <span class="text-sm">Tableau de bord</span>
         </a>
 
         <!-- Transactions non présent sur le figma -->
         <!--  <a routerLink="/finance-transactions" routerLinkActive="!text-[#11458B]"
           class="flex items-center gap-2 cursor-pointer text-gray-600 hover:text-[#11458B] transition-colors duration-200">
           <span class="w-2 h-2 rounded-full bg-current"></span>
-          <span class="text-[14px]">Transactions</span>
+          <span class="text-sm">Transactions</span>
         </a>
         -->
 
-        <a routerLink="/pharmacist/finance-retraits" routerLinkActive="!text-[#11458B]" #retraitsFinanceRla="routerLinkActive"
+        <a routerLink="/pharmacist/finance-retraits" routerLinkActive="!text-[#11458B]"
+          #retraitsFinanceRla="routerLinkActive"
           class="flex items-center gap-2 cursor-pointer text-gray-600 hover:text-[#11458B] transition-colors duration-200">
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="5" cy="5" r="4" stroke="#343A40" stroke-width="2" />
             <circle *ngIf="retraitsFinanceRla.isActive" cx="5" cy="5" r="4" fill="#11458B" stroke="#11458B"
               stroke-width="2" />
           </svg>
-          <span class="text-[14px]">Retraits</span>
+          <span class="text-sm">Retraits</span>
         </a>
-        <a routerLink="/pharmacist/parametre-bancaire" routerLinkActive="!text-[#11458B]" #paramBankFinanceRla="routerLinkActive"
+        <a routerLink="/pharmacist/parametre-bancaire" routerLinkActive="!text-[#11458B]"
+          #paramBankFinanceRla="routerLinkActive"
           class="flex items-center gap-2 cursor-pointer text-gray-600 hover:text-[#11458B] transition-colors duration-200">
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="5" cy="5" r="4" stroke="#343A40" stroke-width="2" />
             <circle *ngIf="paramBankFinanceRla.isActive" cx="5" cy="5" r="4" fill="#11458B" stroke="#11458B"
               stroke-width="2" />
           </svg>
-          <span class="text-[14px]">Paramètres bancaires</span>
+          <span class="text-sm">Paramètres bancaires</span>
         </a>
       </div>
 
@@ -474,42 +477,40 @@
       <a routerLink="/laboratory/dashboard"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         #rlaLab="routerLinkActive"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M11.25 18C11.25 18.1989 11.329 18.3897 11.4697 18.5303C11.6103 18.671 11.8011 18.75 12 18.75C12.1989 18.75 12.3897 18.671 12.5303 18.5303C12.671 18.3897 12.75 18.1989 12.75 18V15C12.75 14.8011 12.671 14.6103 12.5303 14.4697C12.3897 14.329 12.1989 14.25 12 14.25C11.8011 14.25 11.6103 14.329 11.4697 14.4697C11.329 14.6103 11.25 14.8011 11.25 15V18Z"
-              [attr.fill]="rlaLab.isActive ? '#234078' : '#343A40'"/>
-            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 1.25C11.292 1.25 10.649 1.453 9.95 1.792C9.276 2.12 8.496 2.604 7.523 3.208L5.456 4.491C4.536 5.063 3.797 5.521 3.229 5.956C2.64 6.406 2.188 6.866 1.861 7.463C1.535 8.058 1.389 8.692 1.318 9.441C1.25 10.166 1.25 11.054 1.25 12.167V13.78C1.25 15.684 1.25 17.187 1.403 18.362C1.559 19.567 1.889 20.54 2.633 21.309C3.38 22.082 4.33 22.428 5.508 22.591C6.648 22.75 8.106 22.75 9.942 22.75H14.058C15.894 22.75 17.352 22.75 18.492 22.591C19.669 22.428 20.62 22.082 21.368 21.309C22.111 20.54 22.441 19.567 22.598 18.362C22.75 17.187 22.75 15.684 22.75 13.78V12.167C22.75 11.054 22.75 10.167 22.682 9.441C22.612 8.691 22.465 8.058 22.139 7.463C21.812 6.866 21.359 6.407 20.771 5.956C20.203 5.52 19.465 5.063 18.544 4.491L16.477 3.208C15.504 2.604 14.724 2.12 14.049 1.792C13.352 1.452 12.709 1.25 12 1.25ZM8.28 4.504C9.295 3.874 10.01 3.432 10.607 3.141C11.188 2.858 11.6 2.75 12 2.75C12.4 2.75 12.812 2.858 13.393 3.141C13.991 3.431 14.705 3.874 15.72 4.504L17.72 5.745C18.681 6.342 19.356 6.761 19.86 7.147C20.349 7.522 20.63 7.831 20.823 8.183C21.016 8.536 21.129 8.949 21.188 9.581C21.249 10.229 21.25 11.046 21.25 12.204V13.725C21.25 15.695 21.248 17.101 21.11 18.168C20.974 19.216 20.717 19.824 20.29 20.267C19.865 20.706 19.287 20.967 18.286 21.106C17.26 21.248 15.907 21.25 14 21.25H10C8.092 21.25 6.74 21.248 5.714 21.106C4.713 20.966 4.135 20.706 3.711 20.266C3.283 19.824 3.026 19.216 2.891 18.168C2.751 17.101 2.75 15.696 2.75 13.725V12.204C2.75 11.046 2.75 10.229 2.812 9.581C2.871 8.949 2.984 8.536 3.177 8.183C3.37 7.831 3.651 7.522 4.141 7.147C4.644 6.761 5.319 6.342 6.28 5.745L8.28 4.504Z"
-              [attr.fill]="rlaLab.isActive ? '#234078' : '#343A40'"/>
+            <path
+              d="M11.25 18C11.25 18.1989 11.329 18.3897 11.4697 18.5303C11.6103 18.671 11.8011 18.75 12 18.75C12.1989 18.75 12.3897 18.671 12.5303 18.5303C12.671 18.3897 12.75 18.1989 12.75 18V15C12.75 14.8011 12.671 14.6103 12.5303 14.4697C12.3897 14.329 12.1989 14.25 12 14.25C11.8011 14.25 11.6103 14.329 11.4697 14.4697C11.329 14.6103 11.25 14.8011 11.25 15V18Z"
+              fill="currentColor" />
+            <path fill-rule="evenodd" clip-rule="evenodd"
+              d="M12 1.25C11.292 1.25 10.649 1.453 9.95 1.792C9.276 2.12 8.496 2.604 7.523 3.208L5.456 4.491C4.536 5.063 3.797 5.521 3.229 5.956C2.64 6.406 2.188 6.866 1.861 7.463C1.535 8.058 1.389 8.692 1.318 9.441C1.25 10.166 1.25 11.054 1.25 12.167V13.78C1.25 15.684 1.25 17.187 1.403 18.362C1.559 19.567 1.889 20.54 2.633 21.309C3.38 22.082 4.33 22.428 5.508 22.591C6.648 22.75 8.106 22.75 9.942 22.75H14.058C15.894 22.75 17.352 22.75 18.492 22.591C19.669 22.428 20.62 22.082 21.368 21.309C22.111 20.54 22.441 19.567 22.598 18.362C22.75 17.187 22.75 15.684 22.75 13.78V12.167C22.75 11.054 22.75 10.167 22.682 9.441C22.612 8.691 22.465 8.058 22.139 7.463C21.812 6.866 21.359 6.407 20.771 5.956C20.203 5.52 19.465 5.063 18.544 4.491L16.477 3.208C15.504 2.604 14.724 2.12 14.049 1.792C13.352 1.452 12.709 1.25 12 1.25ZM8.28 4.504C9.295 3.874 10.01 3.432 10.607 3.141C11.188 2.858 11.6 2.75 12 2.75C12.4 2.75 12.812 2.858 13.393 3.141C13.991 3.431 14.705 3.874 15.72 4.504L17.72 5.745C18.681 6.342 19.356 6.761 19.86 7.147C20.349 7.522 20.63 7.831 20.823 8.183C21.016 8.536 21.129 8.949 21.188 9.581C21.249 10.229 21.25 11.046 21.25 12.204V13.725C21.25 15.695 21.248 17.101 21.11 18.168C20.974 19.216 20.717 19.824 20.29 20.267C19.865 20.706 19.287 20.967 18.286 21.106C17.26 21.248 15.907 21.25 14 21.25H10C8.092 21.25 6.74 21.248 5.714 21.106C4.713 20.966 4.135 20.706 3.711 20.266C3.283 19.824 3.026 19.216 2.891 18.168C2.751 17.101 2.75 15.696 2.75 13.725V12.204C2.75 11.046 2.75 10.229 2.812 9.581C2.871 8.949 2.984 8.536 3.177 8.183C3.37 7.831 3.651 7.522 4.141 7.147C4.644 6.761 5.319 6.342 6.28 5.745L8.28 4.504Z"
+              [attr.fill]="rlaLab.isActive ? '#234078' : '#343A40'" />
           </svg>
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Tableau Lab</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Tableau Lab</span>
       </a>
 
       <!-- Examens -->
       <a routerLink="/laboratory/examens"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
-          <svg width="14" height="20" viewBox="0 0 14 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M2.5 14C2.36739 14 2.24021 14.0527 2.14645 14.1464C2.05268 14.2402 2 14.3674 2 14.5C2 14.6326 2.05268 14.7598 2.14645 14.8536C2.24021 14.9473 2.36739 15 2.5 15H11.5C11.6326 15 11.7598 14.9473 11.8536 14.8536C11.9473 14.7598 12 14.6326 12 14.5C12 14.3674 11.9473 14.2402 11.8536 14.1464C11.7598 14.0527 11.6326 14 11.5 14H2.5ZM2 16.5C2 16.3674 2.05268 16.2402 2.14645 16.1464C2.24021 16.0527 2.36739 16 2.5 16H8.5C8.63261 16 8.75979 16.0527 8.85355 16.1464C8.94732 16.2402 9 16.3674 9 16.5C9 16.6326 8.94732 16.7598 8.85355 16.8536C8.75979 16.9473 8.63261 17 8.5 17H2.5C2.36739 17 2.24021 16.9473 2.14645 16.8536C2.05268 16.7598 2 16.6326 2 16.5Z" />
-            <path fill-rule="evenodd" clip-rule="evenodd"
-              d="M5.46154 5.8076C5.42356 5.7165 5.35947 5.63869 5.27735 5.58395C5.19522 5.52921 5.09873 5.5 5.00004 5.5C4.90134 5.5 4.80485 5.52921 4.72273 5.58395C4.6406 5.63869 4.57652 5.7165 4.53854 5.8076L2.66754 10.2976L2.65904 10.3186L2.03854 11.8076C1.98748 11.93 1.98714 12.0677 2.03759 12.1903C2.08804 12.313 2.18514 12.4105 2.30754 12.4616C2.42994 12.5127 2.5676 12.513 2.69025 12.4625C2.8129 12.4121 2.91048 12.315 2.96154 12.1926L3.45854 11.0001H6.54154L7.03854 12.1926C7.08959 12.315 7.18718 12.4121 7.30983 12.4625C7.43248 12.513 7.57014 12.5127 7.69254 12.4616C7.81494 12.4105 7.91204 12.313 7.96249 12.1903C8.01293 12.0677 8.01259 11.93 7.96154 11.8076L7.34104 10.3186L7.33254 10.2976L5.46154 5.8076ZM5.00004 7.3001L6.12504 10.0001H3.87504L5.00004 7.3001Z" />
-            <path
-              d="M10 8.5C10.1326 8.5 10.2598 8.55268 10.3536 8.64645C10.4473 8.74021 10.5 8.86739 10.5 9V10H11.5C11.6326 10 11.7598 10.0527 11.8536 10.1464C11.9473 10.2402 12 10.3674 12 10.5C12 10.6326 11.9473 10.7598 11.8536 10.8536C11.7598 10.9473 11.6326 11 11.5 11H10.5V12C10.5 12.1326 10.4473 12.2598 10.3536 12.3536C10.2598 12.4473 10.1326 12.5 10 12.5C9.86739 12.5 9.74021 12.4473 9.64645 12.3536C9.55268 12.2598 9.5 12.1326 9.5 12V11H8.5C8.36739 11 8.24021 10.9473 8.14645 10.8536C8.05268 10.7598 8 10.6326 8 10.5C8 10.3674 8.05268 10.2402 8.14645 10.1464C8.24021 10.0527 8.36739 10 8.5 10H9.5V9C9.5 8.86739 9.55268 8.74021 9.64645 8.64645C9.74021 8.55268 9.86739 8.5 10 8.5Z" />
-            <path fill-rule="evenodd" clip-rule="evenodd"
-              d="M14 5.5L9 0H2C1.46957 0 0.960859 0.210714 0.585786 0.585786C0.210714 0.960859 0 1.46957 0 2V18C0 18.5304 0.210714 19.0391 0.585786 19.4142C0.960859 19.7893 1.46957 20 2 20H12C12.5304 20 13.0391 19.7893 13.4142 19.4142C13.7893 19.0391 14 18.5304 14 18V5.5ZM8.5 5.5C8.5 5.63261 8.55268 5.75979 8.64645 5.85355C8.74021 5.94732 8.86739 6 9 6H13V18C13 18.2652 12.8946 18.5196 12.7071 18.7071C12.5196 18.8946 12.2652 19 12 19H2C1.73478 19 1.48043 18.8946 1.29289 18.7071C1.10536 18.5196 1 18.2652 1 18V2C1 1.73478 1.10536 1.48043 1.29289 1.29289C1.48043 1.10536 1.73478 1 2 1H8.5V5.5ZM12.194 5L9.5 2.0365V5H12.194Z" />
-          </svg>
+         <svg width="15" height="21" viewBox="0 0 15 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M2.60677 14.583C2.46864 14.583 2.33616 14.6379 2.23849 14.7356C2.14081 14.8332 2.08594 14.9657 2.08594 15.1038C2.08594 15.242 2.14081 15.3745 2.23849 15.4721C2.33616 15.5698 2.46864 15.6247 2.60677 15.6247H11.9818C12.1199 15.6247 12.2524 15.5698 12.3501 15.4721C12.4477 15.3745 12.5026 15.242 12.5026 15.1038C12.5026 14.9657 12.4477 14.8332 12.3501 14.7356C12.2524 14.6379 12.1199 14.583 11.9818 14.583H2.60677ZM2.08594 17.1872C2.08594 17.049 2.14081 16.9166 2.23849 16.8189C2.33616 16.7212 2.46864 16.6663 2.60677 16.6663H8.85677C8.9949 16.6663 9.12738 16.7212 9.22506 16.8189C9.32273 16.9166 9.3776 17.049 9.3776 17.1872C9.3776 17.3253 9.32273 17.4578 9.22506 17.5555C9.12738 17.6531 8.9949 17.708 8.85677 17.708H2.60677C2.46864 17.708 2.33616 17.6531 2.23849 17.5555C2.14081 17.4578 2.08594 17.3253 2.08594 17.1872Z" fill="currentColor"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M5.69171 6.04991C5.65215 5.95502 5.58539 5.87396 5.49984 5.81694C5.41429 5.75992 5.31379 5.72949 5.21098 5.72949C5.10817 5.72949 5.00766 5.75992 4.92211 5.81694C4.83657 5.87396 4.76981 5.95502 4.73025 6.04991L2.78129 10.727L2.77244 10.7489L2.12608 12.2999C2.0729 12.4274 2.07255 12.5708 2.12509 12.6986C2.17764 12.8263 2.27879 12.928 2.40629 12.9812C2.53379 13.0343 2.67719 13.0347 2.80495 12.9821C2.93271 12.9296 3.03436 12.8284 3.08754 12.701L3.60525 11.4588H6.81671L7.33441 12.701C7.3876 12.8284 7.48925 12.9296 7.61701 12.9821C7.74477 13.0347 7.88817 13.0343 8.01567 12.9812C8.14316 12.928 8.24431 12.8263 8.29686 12.6986C8.34941 12.5708 8.34905 12.4274 8.29587 12.2999L7.64952 10.7489L7.64067 10.727L5.69171 6.04991ZM5.21098 7.6046L6.38285 10.4171H4.0391L5.21098 7.6046Z" fill="currentColor"/>
+<path d="M10.4193 8.85449C10.5574 8.85449 10.6899 8.90937 10.7876 9.00704C10.8852 9.10472 10.9401 9.23719 10.9401 9.37533V10.417H11.9818C12.1199 10.417 12.2524 10.4719 12.3501 10.5695C12.4477 10.6672 12.5026 10.7997 12.5026 10.9378C12.5026 11.076 12.4477 11.2084 12.3501 11.3061C12.2524 11.4038 12.1199 11.4587 11.9818 11.4587H10.9401V12.5003C10.9401 12.6385 10.8852 12.7709 10.7876 12.8686C10.6899 12.9663 10.5574 13.0212 10.4193 13.0212C10.2811 13.0212 10.1487 12.9663 10.051 12.8686C9.95331 12.7709 9.89844 12.6385 9.89844 12.5003V11.4587H8.85677C8.71864 11.4587 8.58616 11.4038 8.48849 11.3061C8.39081 11.2084 8.33594 11.076 8.33594 10.9378C8.33594 10.7997 8.39081 10.6672 8.48849 10.5695C8.58616 10.4719 8.71864 10.417 8.85677 10.417H9.89844V9.37533C9.89844 9.23719 9.95331 9.10472 10.051 9.00704C10.1487 8.90937 10.2811 8.85449 10.4193 8.85449Z" fill="currentColor"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M14.5833 5.72917L9.375 0H2.08333C1.5308 0 1.00089 0.219493 0.610194 0.610194C0.219493 1.00089 0 1.5308 0 2.08333V18.75C0 19.3025 0.219493 19.8324 0.610194 20.2231C1.00089 20.6138 1.5308 20.8333 2.08333 20.8333H12.5C13.0525 20.8333 13.5824 20.6138 13.9731 20.2231C14.3638 19.8324 14.5833 19.3025 14.5833 18.75V5.72917ZM8.85417 5.72917C8.85417 5.8673 8.90904 5.99978 9.00671 6.09745C9.10439 6.19513 9.23687 6.25 9.375 6.25H13.5417V18.75C13.5417 19.0263 13.4319 19.2912 13.2366 19.4866C13.0412 19.6819 12.7763 19.7917 12.5 19.7917H2.08333C1.80707 19.7917 1.54211 19.6819 1.34676 19.4866C1.15141 19.2912 1.04167 19.0263 1.04167 18.75V2.08333C1.04167 1.80707 1.15141 1.54211 1.34676 1.34676C1.54211 1.15141 1.80707 1.04167 2.08333 1.04167H8.85417V5.72917ZM12.7021 5.20833L9.89583 2.12135V5.20833H12.7021Z" fill="currentColor"/>
+</svg>
 
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Examens</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Examens</span>
       </a>
 
       <!-- Demandes Laboratoire -->
       <a routerLink="/laboratory/demandes"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
           <svg width="16" height="20" viewBox="0 0 16 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -518,7 +519,7 @@
               d="M5 0C4.73478 0 4.48043 0.105357 4.29289 0.292893C4.10536 0.48043 4 0.734784 4 1H2C1.46957 1 0.960859 1.21071 0.585786 1.58579C0.210714 1.96086 0 2.46957 0 3V18C0 18.5304 0.210714 19.0391 0.585786 19.4142C0.960859 19.7893 1.46957 20 2 20H14C14.5304 20 15.0391 19.7893 15.4142 19.4142C15.7893 19.0391 16 18.5304 16 18V3C16 2.46957 15.7893 1.96086 15.4142 1.58579C15.0391 1.21071 14.5304 1 14 1H12C12 0.734784 11.8946 0.48043 11.7071 0.292893C11.5196 0.105357 11.2652 0 11 0H5ZM12 3H14V18H2V3H4V4C4 4.26522 4.10536 4.51957 4.29289 4.70711C4.48043 4.89464 4.73478 5 5 5H11C11.2652 5 11.5196 4.89464 11.7071 4.70711C11.8946 4.51957 12 4.26522 12 4V3ZM6 3V2H10V3H6Z" />
           </svg>
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Demandes</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Demandes</span>
       </a>
     </ng-container>
     <!-- IMAGING CENTER -->
@@ -528,36 +529,34 @@
       <a routerLink="/imaging/dashboard"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         #rlaImagerie="routerLinkActive"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M11.25 18C11.25 18.1989 11.329 18.3897 11.4697 18.5303C11.6103 18.671 11.8011 18.75 12 18.75C12.1989 18.75 12.3897 18.671 12.5303 18.5303C12.671 18.3897 12.75 18.1989 12.75 18V15C12.75 14.8011 12.671 14.6103 12.5303 14.4697C12.3897 14.329 12.1989 14.25 12 14.25C11.8011 14.25 11.6103 14.329 11.4697 14.4697C11.329 14.6103 11.25 14.8011 11.25 15V18Z"
-              [attr.fill]="rlaImagerie.isActive ? '#234078' : '#343A40'"/>
-            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 1.25C11.292 1.25 10.649 1.453 9.95 1.792C9.276 2.12 8.496 2.604 7.523 3.208L5.456 4.491C4.536 5.063 3.797 5.521 3.229 5.956C2.64 6.406 2.188 6.866 1.861 7.463C1.535 8.058 1.389 8.692 1.318 9.441C1.25 10.166 1.25 11.054 1.25 12.167V13.78C1.25 15.684 1.25 17.187 1.403 18.362C1.559 19.567 1.889 20.54 2.633 21.309C3.38 22.082 4.33 22.428 5.508 22.591C6.648 22.75 8.106 22.75 9.942 22.75H14.058C15.894 22.75 17.352 22.75 18.492 22.591C19.669 22.428 20.62 22.082 21.368 21.309C22.111 20.54 22.441 19.567 22.598 18.362C22.75 17.187 22.75 15.684 22.75 13.78V12.167C22.75 11.054 22.75 10.167 22.682 9.441C22.612 8.691 22.465 8.058 22.139 7.463C21.812 6.866 21.359 6.407 20.771 5.956C20.203 5.52 19.465 5.063 18.544 4.491L16.477 3.208C15.504 2.604 14.724 2.12 14.049 1.792C13.352 1.452 12.709 1.25 12 1.25ZM8.28 4.504C9.295 3.874 10.01 3.432 10.607 3.141C11.188 2.858 11.6 2.75 12 2.75C12.4 2.75 12.812 2.858 13.393 3.141C13.991 3.431 14.705 3.874 15.72 4.504L17.72 5.745C18.681 6.342 19.356 6.761 19.86 7.147C20.349 7.522 20.63 7.831 20.823 8.183C21.016 8.536 21.129 8.949 21.188 9.581C21.249 10.229 21.25 11.046 21.25 12.204V13.725C21.25 15.695 21.248 17.101 21.11 18.168C20.974 19.216 20.717 19.824 20.29 20.267C19.865 20.706 19.287 20.967 18.286 21.106C17.26 21.248 15.907 21.25 14 21.25H10C8.092 21.25 6.74 21.248 5.714 21.106C4.713 20.966 4.135 20.706 3.711 20.266C3.283 19.824 3.026 19.216 2.891 18.168C2.751 17.101 2.75 15.696 2.75 13.725V12.204C2.75 11.046 2.75 10.229 2.812 9.581C2.871 8.949 2.984 8.536 3.177 8.183C3.37 7.831 3.651 7.522 4.141 7.147C4.644 6.761 5.319 6.342 6.28 5.745L8.28 4.504Z"
-              [attr.fill]="rlaImagerie.isActive ? '#234078' : '#343A40'"/>
+            <path
+              d="M11.25 18C11.25 18.1989 11.329 18.3897 11.4697 18.5303C11.6103 18.671 11.8011 18.75 12 18.75C12.1989 18.75 12.3897 18.671 12.5303 18.5303C12.671 18.3897 12.75 18.1989 12.75 18V15C12.75 14.8011 12.671 14.6103 12.5303 14.4697C12.3897 14.329 12.1989 14.25 12 14.25C11.8011 14.25 11.6103 14.329 11.4697 14.4697C11.329 14.6103 11.25 14.8011 11.25 15V18Z"
+              fill="currentColor" />
+            <path fill-rule="evenodd" clip-rule="evenodd"
+              d="M12 1.25C11.292 1.25 10.649 1.453 9.95 1.792C9.276 2.12 8.496 2.604 7.523 3.208L5.456 4.491C4.536 5.063 3.797 5.521 3.229 5.956C2.64 6.406 2.188 6.866 1.861 7.463C1.535 8.058 1.389 8.692 1.318 9.441C1.25 10.166 1.25 11.054 1.25 12.167V13.78C1.25 15.684 1.25 17.187 1.403 18.362C1.559 19.567 1.889 20.54 2.633 21.309C3.38 22.082 4.33 22.428 5.508 22.591C6.648 22.75 8.106 22.75 9.942 22.75H14.058C15.894 22.75 17.352 22.75 18.492 22.591C19.669 22.428 20.62 22.082 21.368 21.309C22.111 20.54 22.441 19.567 22.598 18.362C22.75 17.187 22.75 15.684 22.75 13.78V12.167C22.75 11.054 22.75 10.167 22.682 9.441C22.612 8.691 22.465 8.058 22.139 7.463C21.812 6.866 21.359 6.407 20.771 5.956C20.203 5.52 19.465 5.063 18.544 4.491L16.477 3.208C15.504 2.604 14.724 2.12 14.049 1.792C13.352 1.452 12.709 1.25 12 1.25ZM8.28 4.504C9.295 3.874 10.01 3.432 10.607 3.141C11.188 2.858 11.6 2.75 12 2.75C12.4 2.75 12.812 2.858 13.393 3.141C13.991 3.431 14.705 3.874 15.72 4.504L17.72 5.745C18.681 6.342 19.356 6.761 19.86 7.147C20.349 7.522 20.63 7.831 20.823 8.183C21.016 8.536 21.129 8.949 21.188 9.581C21.249 10.229 21.25 11.046 21.25 12.204V13.725C21.25 15.695 21.248 17.101 21.11 18.168C20.974 19.216 20.717 19.824 20.29 20.267C19.865 20.706 19.287 20.967 18.286 21.106C17.26 21.248 15.907 21.25 14 21.25H10C8.092 21.25 6.74 21.248 5.714 21.106C4.713 20.966 4.135 20.706 3.711 20.266C3.283 19.824 3.026 19.216 2.891 18.168C2.751 17.101 2.75 15.696 2.75 13.725V12.204C2.75 11.046 2.75 10.229 2.812 9.581C2.871 8.949 2.984 8.536 3.177 8.183C3.37 7.831 3.651 7.522 4.141 7.147C4.644 6.761 5.319 6.342 6.28 5.745L8.28 4.504Z"
+              [attr.fill]="rlaImagerie.isActive ? '#234078' : '#343A40'" />
           </svg>
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Tableau de bord</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Tableau de bord</span>
       </a>
 
       <!-- Examens Imagerie -->
       <a routerLink="/imaging/examens"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
-          <svg width="14" height="20" viewBox="0 0 14 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M2.5 14C2.36739 14 2.24021 14.0527 2.14645 14.1464C2.05268 14.2402 2 14.3674 2 14.5C2 14.6326 2.05268 14.7598 2.14645 14.8536C2.24021 14.9473 2.36739 15 2.5 15H11.5C11.6326 15 11.7598 14.9473 11.8536 14.8536C11.9473 14.7598 12 14.6326 12 14.5C12 14.3674 11.9473 14.2402 11.8536 14.1464C11.7598 14.0527 11.6326 14 11.5 14H2.5ZM2 16.5C2 16.3674 2.05268 16.2402 2.14645 16.1464C2.24021 16.0527 2.36739 16 2.5 16H8.5C8.63261 16 8.75979 16.0527 8.85355 16.1464C8.94732 16.2402 9 16.3674 9 16.5C9 16.6326 8.94732 16.7598 8.85355 16.8536C8.75979 16.9473 8.63261 17 8.5 17H2.5C2.36739 17 2.24021 16.9473 2.14645 16.8536C2.05268 16.7598 2 16.6326 2 16.5Z" />
-            <path fill-rule="evenodd" clip-rule="evenodd"
-              d="M5.46154 5.8076C5.42356 5.7165 5.35947 5.63869 5.27735 5.58395C5.19522 5.52921 5.09873 5.5 5.00004 5.5C4.90134 5.5 4.80485 5.52921 4.72273 5.58395C4.6406 5.63869 4.57652 5.7165 4.53854 5.8076L2.66754 10.2976L2.65904 10.3186L2.03854 11.8076C1.98748 11.93 1.98714 12.0677 2.03759 12.1903C2.08804 12.313 2.18514 12.4105 2.30754 12.4616C2.42994 12.5127 2.5676 12.513 2.69025 12.4625C2.8129 12.4121 2.91048 12.315 2.96154 12.1926L3.45854 11.0001H6.54154L7.03854 12.1926C7.08959 12.315 7.18718 12.4121 7.30983 12.4625C7.43248 12.513 7.57014 12.5127 7.69254 12.4616C7.81494 12.4105 7.91204 12.313 7.96249 12.1903C8.01293 12.0677 8.01259 11.93 7.96154 11.8076L7.34104 10.3186L7.33254 10.2976L5.46154 5.8076ZM5.00004 7.3001L6.12504 10.0001H3.87504L5.00004 7.3001Z" />
-            <path
-              d="M10 8.5C10.1326 8.5 10.2598 8.55268 10.3536 8.64645C10.4473 8.74021 10.5 8.86739 10.5 9V10H11.5C11.6326 10 11.7598 10.0527 11.8536 10.1464C11.9473 10.2402 12 10.3674 12 10.5C12 10.6326 11.9473 10.7598 11.8536 10.8536C11.7598 10.9473 11.6326 11 11.5 11H10.5V12C10.5 12.1326 10.4473 12.2598 10.3536 12.3536C10.2598 12.4473 10.1326 12.5 10 12.5C9.86739 12.5 9.74021 12.4473 9.64645 12.3536C9.55268 12.2598 9.5 12.1326 9.5 12V11H8.5C8.36739 11 8.24021 10.9473 8.14645 10.8536C8.05268 10.7598 8 10.6326 8 10.5C8 10.3674 8.05268 10.2402 8.14645 10.1464C8.24021 10.0527 8.36739 10 8.5 10H9.5V9C9.5 8.86739 9.55268 8.74021 9.64645 8.64645C9.74021 8.55268 9.86739 8.5 10 8.5Z" />
-            <path fill-rule="evenodd" clip-rule="evenodd"
-              d="M14 5.5L9 0H2C1.46957 0 0.960859 0.210714 0.585786 0.585786C0.210714 0.960859 0 1.46957 0 2V18C0 18.5304 0.210714 19.0391 0.585786 19.4142C0.960859 19.7893 1.46957 20 2 20H12C12.5304 20 13.0391 19.7893 13.4142 19.4142C13.7893 19.0391 14 18.5304 14 18V5.5ZM8.5 5.5C8.5 5.63261 8.55268 5.75979 8.64645 5.85355C8.74021 5.94732 8.86739 6 9 6H13V18C13 18.2652 12.8946 18.5196 12.7071 18.7071C12.5196 18.8946 12.2652 19 12 19H2C1.73478 19 1.48043 18.8946 1.29289 18.7071C1.10536 18.5196 1 18.2652 1 18V2C1 1.73478 1.10536 1.48043 1.29289 1.29289C1.48043 1.10536 1.73478 1 2 1H8.5V5.5ZM12.194 5L9.5 2.0365V5H12.194Z" />
-          </svg>
+         <svg width="15" height="21" viewBox="0 0 15 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M2.60677 14.583C2.46864 14.583 2.33616 14.6379 2.23849 14.7356C2.14081 14.8332 2.08594 14.9657 2.08594 15.1038C2.08594 15.242 2.14081 15.3745 2.23849 15.4721C2.33616 15.5698 2.46864 15.6247 2.60677 15.6247H11.9818C12.1199 15.6247 12.2524 15.5698 12.3501 15.4721C12.4477 15.3745 12.5026 15.242 12.5026 15.1038C12.5026 14.9657 12.4477 14.8332 12.3501 14.7356C12.2524 14.6379 12.1199 14.583 11.9818 14.583H2.60677ZM2.08594 17.1872C2.08594 17.049 2.14081 16.9166 2.23849 16.8189C2.33616 16.7212 2.46864 16.6663 2.60677 16.6663H8.85677C8.9949 16.6663 9.12738 16.7212 9.22506 16.8189C9.32273 16.9166 9.3776 17.049 9.3776 17.1872C9.3776 17.3253 9.32273 17.4578 9.22506 17.5555C9.12738 17.6531 8.9949 17.708 8.85677 17.708H2.60677C2.46864 17.708 2.33616 17.6531 2.23849 17.5555C2.14081 17.4578 2.08594 17.3253 2.08594 17.1872Z" fill="currentColor"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M5.69171 6.04991C5.65215 5.95502 5.58539 5.87396 5.49984 5.81694C5.41429 5.75992 5.31379 5.72949 5.21098 5.72949C5.10817 5.72949 5.00766 5.75992 4.92211 5.81694C4.83657 5.87396 4.76981 5.95502 4.73025 6.04991L2.78129 10.727L2.77244 10.7489L2.12608 12.2999C2.0729 12.4274 2.07255 12.5708 2.12509 12.6986C2.17764 12.8263 2.27879 12.928 2.40629 12.9812C2.53379 13.0343 2.67719 13.0347 2.80495 12.9821C2.93271 12.9296 3.03436 12.8284 3.08754 12.701L3.60525 11.4588H6.81671L7.33441 12.701C7.3876 12.8284 7.48925 12.9296 7.61701 12.9821C7.74477 13.0347 7.88817 13.0343 8.01567 12.9812C8.14316 12.928 8.24431 12.8263 8.29686 12.6986C8.34941 12.5708 8.34905 12.4274 8.29587 12.2999L7.64952 10.7489L7.64067 10.727L5.69171 6.04991ZM5.21098 7.6046L6.38285 10.4171H4.0391L5.21098 7.6046Z" fill="currentColor"/>
+<path d="M10.4193 8.85449C10.5574 8.85449 10.6899 8.90937 10.7876 9.00704C10.8852 9.10472 10.9401 9.23719 10.9401 9.37533V10.417H11.9818C12.1199 10.417 12.2524 10.4719 12.3501 10.5695C12.4477 10.6672 12.5026 10.7997 12.5026 10.9378C12.5026 11.076 12.4477 11.2084 12.3501 11.3061C12.2524 11.4038 12.1199 11.4587 11.9818 11.4587H10.9401V12.5003C10.9401 12.6385 10.8852 12.7709 10.7876 12.8686C10.6899 12.9663 10.5574 13.0212 10.4193 13.0212C10.2811 13.0212 10.1487 12.9663 10.051 12.8686C9.95331 12.7709 9.89844 12.6385 9.89844 12.5003V11.4587H8.85677C8.71864 11.4587 8.58616 11.4038 8.48849 11.3061C8.39081 11.2084 8.33594 11.076 8.33594 10.9378C8.33594 10.7997 8.39081 10.6672 8.48849 10.5695C8.58616 10.4719 8.71864 10.417 8.85677 10.417H9.89844V9.37533C9.89844 9.23719 9.95331 9.10472 10.051 9.00704C10.1487 8.90937 10.2811 8.85449 10.4193 8.85449Z" fill="currentColor"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M14.5833 5.72917L9.375 0H2.08333C1.5308 0 1.00089 0.219493 0.610194 0.610194C0.219493 1.00089 0 1.5308 0 2.08333V18.75C0 19.3025 0.219493 19.8324 0.610194 20.2231C1.00089 20.6138 1.5308 20.8333 2.08333 20.8333H12.5C13.0525 20.8333 13.5824 20.6138 13.9731 20.2231C14.3638 19.8324 14.5833 19.3025 14.5833 18.75V5.72917ZM8.85417 5.72917C8.85417 5.8673 8.90904 5.99978 9.00671 6.09745C9.10439 6.19513 9.23687 6.25 9.375 6.25H13.5417V18.75C13.5417 19.0263 13.4319 19.2912 13.2366 19.4866C13.0412 19.6819 12.7763 19.7917 12.5 19.7917H2.08333C1.80707 19.7917 1.54211 19.6819 1.34676 19.4866C1.15141 19.2912 1.04167 19.0263 1.04167 18.75V2.08333C1.04167 1.80707 1.15141 1.54211 1.34676 1.34676C1.54211 1.15141 1.80707 1.04167 2.08333 1.04167H8.85417V5.72917ZM12.7021 5.20833L9.89583 2.12135V5.20833H12.7021Z" fill="currentColor"/>
+</svg>
         </div>
 
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">
           Examens
         </span>
       </a>
@@ -565,7 +564,7 @@
       <!-- Demandes Imagerie -->
       <a routerLink="/imaging/demandes"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
           <svg width="16" height="20" viewBox="0 0 16 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -574,7 +573,7 @@
               d="M5 0C4.73478 0 4.48043 0.105357 4.29289 0.292893C4.10536 0.48043 4 0.734784 4 1H2C1.46957 1 0.960859 1.21071 0.585786 1.58579C0.210714 1.96086 0 2.46957 0 3V18C0 18.5304 0.210714 19.0391 0.585786 19.4142C0.960859 19.7893 1.46957 20 2 20H14C14.5304 20 15.0391 19.7893 15.4142 19.4142C15.7893 19.0391 16 18.5304 16 18V3C16 2.46957 15.7893 1.96086 15.4142 1.58579C15.0391 1.21071 14.5304 1 14 1H12C12 0.734784 11.8946 0.48043 11.7071 0.292893C11.5196 0.105357 11.2652 0 11 0H5ZM12 3H14V18H2V3H4V4C4 4.26522 4.10536 4.51957 4.29289 4.70711C4.48043 4.89464 4.73478 5 5 5H11C11.2652 5 11.5196 4.89464 11.7071 4.70711C11.8946 4.51957 12 4.26522 12 4V3ZM6 3V2H10V3H6Z" />
           </svg>
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Demandes</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Demandes</span>
       </a>
 
     </ng-container>
@@ -588,37 +587,39 @@
       <a routerLink="/hospital/dashboard"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         #rlaHospital="routerLinkActive"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M11.25 18C11.25 18.1989 11.329 18.3897 11.4697 18.5303C11.6103 18.671 11.8011 18.75 12 18.75C12.1989 18.75 12.3897 18.671 12.5303 18.5303C12.671 18.3897 12.75 18.1989 12.75 18V15C12.75 14.8011 12.671 14.6103 12.5303 14.4697C12.3897 14.329 12.1989 14.25 12 14.25C11.8011 14.25 11.6103 14.329 11.4697 14.4697C11.329 14.6103 11.25 14.8011 11.25 15V18Z"
-              [attr.fill]="rlaHospital.isActive ? '#234078' : '#343A40'"/>
-            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 1.25C11.292 1.25 10.649 1.453 9.95 1.792C9.276 2.12 8.496 2.604 7.523 3.208L5.456 4.491C4.536 5.063 3.797 5.521 3.229 5.956C2.64 6.406 2.188 6.866 1.861 7.463C1.535 8.058 1.389 8.692 1.318 9.441C1.25 10.166 1.25 11.054 1.25 12.167V13.78C1.25 15.684 1.25 17.187 1.403 18.362C1.559 19.567 1.889 20.54 2.633 21.309C3.38 22.082 4.33 22.428 5.508 22.591C6.648 22.75 8.106 22.75 9.942 22.75H14.058C15.894 22.75 17.352 22.75 18.492 22.591C19.669 22.428 20.62 22.082 21.368 21.309C22.111 20.54 22.441 19.567 22.598 18.362C22.75 17.187 22.75 15.684 22.75 13.78V12.167C22.75 11.054 22.75 10.167 22.682 9.441C22.612 8.691 22.465 8.058 22.139 7.463C21.812 6.866 21.359 6.407 20.771 5.956C20.203 5.52 19.465 5.063 18.544 4.491L16.477 3.208C15.504 2.604 14.724 2.12 14.049 1.792C13.352 1.452 12.709 1.25 12 1.25ZM8.28 4.504C9.295 3.874 10.01 3.432 10.607 3.141C11.188 2.858 11.6 2.75 12 2.75C12.4 2.75 12.812 2.858 13.393 3.141C13.991 3.431 14.705 3.874 15.72 4.504L17.72 5.745C18.681 6.342 19.356 6.761 19.86 7.147C20.349 7.522 20.63 7.831 20.823 8.183C21.016 8.536 21.129 8.949 21.188 9.581C21.249 10.229 21.25 11.046 21.25 12.204V13.725C21.25 15.695 21.248 17.101 21.11 18.168C20.974 19.216 20.717 19.824 20.29 20.267C19.865 20.706 19.287 20.967 18.286 21.106C17.26 21.248 15.907 21.25 14 21.25H10C8.092 21.25 6.74 21.248 5.714 21.106C4.713 20.966 4.135 20.706 3.711 20.266C3.283 19.824 3.026 19.216 2.891 18.168C2.751 17.101 2.75 15.696 2.75 13.725V12.204C2.75 11.046 2.75 10.229 2.812 9.581C2.871 8.949 2.984 8.536 3.177 8.183C3.37 7.831 3.651 7.522 4.141 7.147C4.644 6.761 5.319 6.342 6.28 5.745L8.28 4.504Z"
-              [attr.fill]="rlaHospital.isActive ? '#234078' : '#343A40'"/>
+            <path
+              d="M11.25 18C11.25 18.1989 11.329 18.3897 11.4697 18.5303C11.6103 18.671 11.8011 18.75 12 18.75C12.1989 18.75 12.3897 18.671 12.5303 18.5303C12.671 18.3897 12.75 18.1989 12.75 18V15C12.75 14.8011 12.671 14.6103 12.5303 14.4697C12.3897 14.329 12.1989 14.25 12 14.25C11.8011 14.25 11.6103 14.329 11.4697 14.4697C11.329 14.6103 11.25 14.8011 11.25 15V18Z"
+              fill="currentColor" />
+            <path fill-rule="evenodd" clip-rule="evenodd"
+              d="M12 1.25C11.292 1.25 10.649 1.453 9.95 1.792C9.276 2.12 8.496 2.604 7.523 3.208L5.456 4.491C4.536 5.063 3.797 5.521 3.229 5.956C2.64 6.406 2.188 6.866 1.861 7.463C1.535 8.058 1.389 8.692 1.318 9.441C1.25 10.166 1.25 11.054 1.25 12.167V13.78C1.25 15.684 1.25 17.187 1.403 18.362C1.559 19.567 1.889 20.54 2.633 21.309C3.38 22.082 4.33 22.428 5.508 22.591C6.648 22.75 8.106 22.75 9.942 22.75H14.058C15.894 22.75 17.352 22.75 18.492 22.591C19.669 22.428 20.62 22.082 21.368 21.309C22.111 20.54 22.441 19.567 22.598 18.362C22.75 17.187 22.75 15.684 22.75 13.78V12.167C22.75 11.054 22.75 10.167 22.682 9.441C22.612 8.691 22.465 8.058 22.139 7.463C21.812 6.866 21.359 6.407 20.771 5.956C20.203 5.52 19.465 5.063 18.544 4.491L16.477 3.208C15.504 2.604 14.724 2.12 14.049 1.792C13.352 1.452 12.709 1.25 12 1.25ZM8.28 4.504C9.295 3.874 10.01 3.432 10.607 3.141C11.188 2.858 11.6 2.75 12 2.75C12.4 2.75 12.812 2.858 13.393 3.141C13.991 3.431 14.705 3.874 15.72 4.504L17.72 5.745C18.681 6.342 19.356 6.761 19.86 7.147C20.349 7.522 20.63 7.831 20.823 8.183C21.016 8.536 21.129 8.949 21.188 9.581C21.249 10.229 21.25 11.046 21.25 12.204V13.725C21.25 15.695 21.248 17.101 21.11 18.168C20.974 19.216 20.717 19.824 20.29 20.267C19.865 20.706 19.287 20.967 18.286 21.106C17.26 21.248 15.907 21.25 14 21.25H10C8.092 21.25 6.74 21.248 5.714 21.106C4.713 20.966 4.135 20.706 3.711 20.266C3.283 19.824 3.026 19.216 2.891 18.168C2.751 17.101 2.75 15.696 2.75 13.725V12.204C2.75 11.046 2.75 10.229 2.812 9.581C2.871 8.949 2.984 8.536 3.177 8.183C3.37 7.831 3.651 7.522 4.141 7.147C4.644 6.761 5.319 6.342 6.28 5.745L8.28 4.504Z"
+              [attr.fill]="rlaHospital.isActive ? '#234078' : '#343A40'" />
           </svg>
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Tableau de bord</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Tableau de bord</span>
       </a>
 
       <!-- Demandes -->
-<!--      <a routerLink="/hospital/demandes"-->
-<!--        routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"-->
-<!--        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">-->
-<!--        <div class="flex items-center justify-center w-8 h-8">-->
-<!--          <svg width="14" height="18" viewBox="0 0 14 18" fill="none" xmlns="http://www.w3.org/2000/svg">-->
-<!--            <path-->
-<!--              d="M3.43748 13.9791H10.3124V12.6041H3.43748V13.9791ZM3.43748 10.3124H10.3124V8.93748H3.43748V10.3124ZM1.65704 17.4166C1.19401 17.4166 0.802076 17.2562 0.481246 16.9354C0.160415 16.6145 0 16.2226 0 15.7596V1.65704C0 1.19401 0.160415 0.802076 0.481246 0.481246C0.802076 0.160415 1.19401 0 1.65704 0H8.93748L13.7499 4.81245V15.7596C13.7499 16.2226 13.5895 16.6145 13.2687 16.9354C12.9479 17.2562 12.5559 17.4166 12.0929 17.4166H1.65704ZM8.25 5.49993V1.37497H1.65704C1.58652 1.37497 1.52188 1.40435 1.46311 1.46311C1.40435 1.52188 1.37497 1.58652 1.37497 1.65704V15.7596C1.37497 15.8301 1.40435 15.8947 1.46311 15.9535C1.52188 16.0123 1.58652 16.0416 1.65704 16.0416H12.0929C12.1634 16.0416 12.2281 16.0123 12.2868 15.9535C12.3456 15.8947 12.375 15.8301 12.375 15.7596V5.49993H8.25ZM1.37497 1.37497V5.49993V1.37497V5.49993V15.7596C1.37497 15.8301 1.37497 15.8947 1.37497 15.9535C1.37497 16.0123 1.37497 16.0416 1.37497 16.0416C1.37497 16.0416 1.37497 16.0123 1.37497 15.9535C1.37497 15.8947 1.37497 15.8301 1.37497 15.7596V1.65704C1.37497 1.58652 1.37497 1.52188 1.37497 1.46311C1.37497 1.40435 1.37497 1.37497 1.37497 1.37497Z"-->
-<!--              fill="black" />-->
-<!--          </svg>-->
+      <a routerLink="/hospital/demandes"
+        routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        <div class="flex items-center justify-center w-8 h-8">
+          <svg width="14" height="18" viewBox="0 0 14 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M3.43748 13.9791H10.3124V12.6041H3.43748V13.9791ZM3.43748 10.3124H10.3124V8.93748H3.43748V10.3124ZM1.65704 17.4166C1.19401 17.4166 0.802076 17.2562 0.481246 16.9354C0.160415 16.6145 0 16.2226 0 15.7596V1.65704C0 1.19401 0.160415 0.802076 0.481246 0.481246C0.802076 0.160415 1.19401 0 1.65704 0H8.93748L13.7499 4.81245V15.7596C13.7499 16.2226 13.5895 16.6145 13.2687 16.9354C12.9479 17.2562 12.5559 17.4166 12.0929 17.4166H1.65704ZM8.25 5.49993V1.37497H1.65704C1.58652 1.37497 1.52188 1.40435 1.46311 1.46311C1.40435 1.52188 1.37497 1.58652 1.37497 1.65704V15.7596C1.37497 15.8301 1.40435 15.8947 1.46311 15.9535C1.52188 16.0123 1.58652 16.0416 1.65704 16.0416H12.0929C12.1634 16.0416 12.2281 16.0123 12.2868 15.9535C12.3456 15.8947 12.375 15.8301 12.375 15.7596V5.49993H8.25ZM1.37497 1.37497V5.49993V1.37497V5.49993V15.7596C1.37497 15.8301 1.37497 15.8947 1.37497 15.9535C1.37497 16.0123 1.37497 16.0416 1.37497 16.0416C1.37497 16.0416 1.37497 16.0123 1.37497 15.9535C1.37497 15.8947 1.37497 15.8301 1.37497 15.7596V1.65704C1.37497 1.58652 1.37497 1.52188 1.37497 1.46311C1.37497 1.40435 1.37497 1.37497 1.37497 1.37497Z"
+              fill="currentColor" />
+          </svg>
 
-<!--        </div>-->
-<!--        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Demandes médicales</span>-->
-<!--      </a>-->
+        </div>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Demandes médicales</span>
+      </a>
 
       <!-- Patients -->
       <a routerLink="/hospital/patients"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -626,43 +627,43 @@
               stroke="#343A40" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Patients</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Patients</span>
       </a>
 
       <!-- Hospitalisations -->
       <a routerLink="/hospital/hospitalisations"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
           <svg width="20" height="13" viewBox="0 0 20 13" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
               d="M0 12.8333V0H1.37497V8.7083H8.93748V1.83333H16.0416C16.9239 1.83333 17.6792 2.14748 18.3075 2.77577C18.9358 3.40406 19.2499 4.15935 19.2499 5.04163V12.8333H17.875V10.0833H1.37497V12.8333H0ZM5.0406 7.38615C4.38905 7.38615 3.83559 7.15811 3.3802 6.70203C2.92481 6.24595 2.69711 5.69214 2.69711 5.0406C2.69711 4.38905 2.92515 3.83559 3.38123 3.3802C3.83731 2.92481 4.39113 2.69711 5.04267 2.69711C5.69421 2.69711 6.24768 2.92515 6.70307 3.38123C7.15846 3.83731 7.38615 4.39113 7.38615 5.04267C7.38615 5.69421 7.15811 6.24768 6.70203 6.70307C6.24595 7.15846 5.69214 7.38615 5.0406 7.38615ZM10.3124 8.7083H17.875V5.04163C17.875 4.53747 17.6955 4.10587 17.3364 3.74684C16.9774 3.38781 16.5458 3.2083 16.0416 3.2083H10.3124V8.7083ZM5.04163 6.01119C5.31311 6.01119 5.54257 5.91746 5.73002 5.73002C5.91746 5.54257 6.01119 5.31311 6.01119 5.04163C6.01119 4.77016 5.91746 4.5407 5.73002 4.35325C5.54257 4.1658 5.31311 4.07208 5.04163 4.07208C4.77016 4.07208 4.5407 4.1658 4.35325 4.35325C4.1658 4.5407 4.07208 4.77016 4.07208 5.04163C4.07208 5.31311 4.1658 5.54257 4.35325 5.73002C4.5407 5.91746 4.77016 6.01119 5.04163 6.01119ZM10.3124 3.2083V8.7083V3.2083Z"
-              fill="black" />
+              fill="currentColor" />
           </svg>
 
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Hospitalisations</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Hospitalisations</span>
       </a>
 
       <!-- Chirurgie -->
-<!--      <a routerLink="/hospital/chirurgie"-->
-<!--        routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"-->
-<!--        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">-->
-<!--        <div class="flex items-center justify-center w-8 h-8">-->
-<!--          <svg width="18" height="17" viewBox="0 0 18 17" fill="none" xmlns="http://www.w3.org/2000/svg">-->
-<!--            <path-->
-<!--              d="M1.65704 16.9582C1.19401 16.9582 0.802076 16.7978 0.481246 16.477C0.160415 16.1562 0 15.7642 0 15.3012V4.86534C0 4.40231 0.160415 4.01038 0.481246 3.68955C0.802076 3.36872 1.19401 3.2083 1.65704 3.2083H5.5V1.65704C5.5 1.19401 5.66042 0.802076 5.98125 0.481246C6.30208 0.160415 6.69401 0 7.15704 0H10.2596C10.7226 0 11.1145 0.160415 11.4354 0.481246C11.7562 0.802076 11.9166 1.19401 11.9166 1.65704V3.2083H15.7596C16.2226 3.2083 16.6145 3.36872 16.9354 3.68955C17.2562 4.01038 17.4166 4.40231 17.4166 4.86534V15.3012C17.4166 15.7642 17.2562 16.1562 16.9354 16.477C16.6145 16.7978 16.2226 16.9582 15.7596 16.9582H1.65704ZM1.65704 15.5833H15.7596C15.8301 15.5833 15.8947 15.5539 15.9535 15.4951C16.0123 15.4364 16.0416 15.3717 16.0416 15.3012V4.86534C16.0416 4.79482 16.0123 4.73018 15.9535 4.67141C15.8947 4.61265 15.8301 4.58327 15.7596 4.58327H1.65704C1.58652 4.58327 1.52188 4.61265 1.46311 4.67141C1.40435 4.73018 1.37497 4.79482 1.37497 4.86534V15.3012C1.37497 15.3717 1.40435 15.4364 1.46311 15.4951C1.52188 15.5539 1.58652 15.5833 1.65704 15.5833ZM6.87497 3.2083H10.5416V1.65704C10.5416 1.58652 10.5123 1.52188 10.4535 1.46311C10.3947 1.40435 10.3301 1.37497 10.2596 1.37497H7.15704C7.08652 1.37497 7.02188 1.40435 6.96311 1.46311C6.90435 1.52188 6.87497 1.58652 6.87497 1.65704V3.2083ZM1.37497 15.5833C1.37497 15.5833 1.37497 15.5539 1.37497 15.4951C1.37497 15.4364 1.37497 15.3717 1.37497 15.3012V4.86534C1.37497 4.79482 1.37497 4.73018 1.37497 4.67141C1.37497 4.61265 1.37497 4.58327 1.37497 4.58327C1.37497 4.58327 1.37497 4.61265 1.37497 4.67141C1.37497 4.73018 1.37497 4.79482 1.37497 4.86534V15.3012C1.37497 15.3717 1.37497 15.4364 1.37497 15.4951C1.37497 15.5539 1.37497 15.5833 1.37497 15.5833ZM8.02082 10.7707V13.5207H9.39578V10.7707H12.1458V9.39578H9.39578V6.64578H8.02082V9.39578H5.27082V10.7707H8.02082Z"-->
-<!--              fill="black" />-->
-<!--          </svg>-->
+      <a routerLink="/hospital/chirurgie"
+        routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        <div class="flex items-center justify-center w-8 h-8">
+          <svg width="18" height="17" viewBox="0 0 18 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M1.65704 16.9582C1.19401 16.9582 0.802076 16.7978 0.481246 16.477C0.160415 16.1562 0 15.7642 0 15.3012V4.86534C0 4.40231 0.160415 4.01038 0.481246 3.68955C0.802076 3.36872 1.19401 3.2083 1.65704 3.2083H5.5V1.65704C5.5 1.19401 5.66042 0.802076 5.98125 0.481246C6.30208 0.160415 6.69401 0 7.15704 0H10.2596C10.7226 0 11.1145 0.160415 11.4354 0.481246C11.7562 0.802076 11.9166 1.19401 11.9166 1.65704V3.2083H15.7596C16.2226 3.2083 16.6145 3.36872 16.9354 3.68955C17.2562 4.01038 17.4166 4.40231 17.4166 4.86534V15.3012C17.4166 15.7642 17.2562 16.1562 16.9354 16.477C16.6145 16.7978 16.2226 16.9582 15.7596 16.9582H1.65704ZM1.65704 15.5833H15.7596C15.8301 15.5833 15.8947 15.5539 15.9535 15.4951C16.0123 15.4364 16.0416 15.3717 16.0416 15.3012V4.86534C16.0416 4.79482 16.0123 4.73018 15.9535 4.67141C15.8947 4.61265 15.8301 4.58327 15.7596 4.58327H1.65704C1.58652 4.58327 1.52188 4.61265 1.46311 4.67141C1.40435 4.73018 1.37497 4.79482 1.37497 4.86534V15.3012C1.37497 15.3717 1.40435 15.4364 1.46311 15.4951C1.52188 15.5539 1.58652 15.5833 1.65704 15.5833ZM6.87497 3.2083H10.5416V1.65704C10.5416 1.58652 10.5123 1.52188 10.4535 1.46311C10.3947 1.40435 10.3301 1.37497 10.2596 1.37497H7.15704C7.08652 1.37497 7.02188 1.40435 6.96311 1.46311C6.90435 1.52188 6.87497 1.58652 6.87497 1.65704V3.2083ZM1.37497 15.5833C1.37497 15.5833 1.37497 15.5539 1.37497 15.4951C1.37497 15.4364 1.37497 15.3717 1.37497 15.3012V4.86534C1.37497 4.79482 1.37497 4.73018 1.37497 4.67141C1.37497 4.61265 1.37497 4.58327 1.37497 4.58327C1.37497 4.58327 1.37497 4.61265 1.37497 4.67141C1.37497 4.73018 1.37497 4.79482 1.37497 4.86534V15.3012C1.37497 15.3717 1.37497 15.4364 1.37497 15.4951C1.37497 15.5539 1.37497 15.5833 1.37497 15.5833ZM8.02082 10.7707V13.5207H9.39578V10.7707H12.1458V9.39578H9.39578V6.64578H8.02082V9.39578H5.27082V10.7707H8.02082Z"
+              fill="currentColor" />
+          </svg>
 
-<!--        </div>-->
-<!--        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Chirurgie</span>-->
-<!--      </a>-->
+        </div>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Chirurgie</span>
+      </a>
 
       <!-- Demande de matériels -->
       <a routerLink="/hospital/demande-materiels"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -671,22 +672,22 @@
           </svg>
 
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Demande de matériels</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Demande de matériels</span>
       </a>
 
       <!-- Paiements -->
       <a routerLink="/hospital/paiements"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
           <svg width="19" height="14" viewBox="0 0 19 14" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
               d="M10.9118 7.42141C10.2713 7.42141 9.72924 7.1996 9.28561 6.75596C8.84197 6.31232 8.62015 5.77026 8.62015 5.12978C8.62015 4.4893 8.84197 3.94724 9.28561 3.5036C9.72924 3.05997 10.2713 2.83815 10.9118 2.83815C11.5523 2.83815 12.0943 3.05997 12.538 3.5036C12.9816 3.94724 13.2034 4.4893 13.2034 5.12978C13.2034 5.77026 12.9816 6.31232 12.538 6.75596C12.0943 7.1996 11.5523 7.42141 10.9118 7.42141ZM4.86534 10.2596C4.40965 10.2596 4.01956 10.0973 3.69505 9.77281C3.37055 9.4483 3.2083 9.05821 3.2083 8.60252V1.65704C3.2083 1.20135 3.37055 0.811259 3.69505 0.486755C4.01956 0.162252 4.40965 0 4.86534 0H16.9582C17.4139 0 17.804 0.162252 18.1285 0.486755C18.453 0.811259 18.6153 1.20135 18.6153 1.65704V8.60252C18.6153 9.05821 18.453 9.4483 18.1285 9.77281C17.804 10.0973 17.4139 10.2596 16.9582 10.2596H4.86534ZM6.2403 8.88459H15.5833C15.5833 8.42744 15.7455 8.03698 16.07 7.71321C16.3945 7.38944 16.7846 7.22756 17.2403 7.22756V3.032C16.7831 3.032 16.3927 2.86975 16.0689 2.54525C15.7452 2.22075 15.5833 1.83065 15.5833 1.37497H6.2403C6.2403 1.83212 6.07805 2.22258 5.75355 2.54635C5.42905 2.87012 5.03895 3.032 4.58327 3.032V7.22756C5.04042 7.22756 5.43088 7.38981 5.75465 7.71431C6.07842 8.03881 6.2403 8.42891 6.2403 8.88459ZM15.8829 13.4679H1.65704C1.20135 13.4679 0.811258 13.3056 0.486755 12.9811C0.162252 12.6566 0 12.2665 0 11.8108V2.73237H1.37497V11.8108C1.37497 11.8813 1.40435 11.946 1.46311 12.0047C1.52188 12.0635 1.58652 12.0929 1.65704 12.0929H15.8829V13.4679ZM4.86534 8.88459H4.58327C4.58327 8.88459 4.58327 8.85668 4.58327 8.80085C4.58327 8.74503 4.58327 8.67892 4.58327 8.60252V1.65704C4.58327 1.58064 4.58327 1.51453 4.58327 1.45871C4.58327 1.40288 4.58327 1.37497 4.58327 1.37497H4.86534C4.78894 1.37497 4.72283 1.40288 4.66701 1.45871C4.61118 1.51453 4.58327 1.58064 4.58327 1.65704V8.60252C4.58327 8.67892 4.61118 8.74503 4.66701 8.80085C4.72283 8.85668 4.78894 8.88459 4.86534 8.88459Z"
-              fill="black" />
+              fill="currentColor" />
           </svg>
 
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Paiements</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Paiements</span>
       </a>
 
     </ng-container>
@@ -699,22 +700,24 @@
       <a routerLink="/fournisseur/dashboard"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
         #rlaFournisseur="routerLinkActive"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M11.25 18C11.25 18.1989 11.329 18.3897 11.4697 18.5303C11.6103 18.671 11.8011 18.75 12 18.75C12.1989 18.75 12.3897 18.671 12.5303 18.5303C12.671 18.3897 12.75 18.1989 12.75 18V15C12.75 14.8011 12.671 14.6103 12.5303 14.4697C12.3897 14.329 12.1989 14.25 12 14.25C11.8011 14.25 11.6103 14.329 11.4697 14.4697C11.329 14.6103 11.25 14.8011 11.25 15V18Z"
-              [attr.fill]="rlaFournisseur.isActive ? '#234078' : '#343A40'"/>
-            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 1.25C11.292 1.25 10.649 1.453 9.95 1.792C9.276 2.12 8.496 2.604 7.523 3.208L5.456 4.491C4.536 5.063 3.797 5.521 3.229 5.956C2.64 6.406 2.188 6.866 1.861 7.463C1.535 8.058 1.389 8.692 1.318 9.441C1.25 10.166 1.25 11.054 1.25 12.167V13.78C1.25 15.684 1.25 17.187 1.403 18.362C1.559 19.567 1.889 20.54 2.633 21.309C3.38 22.082 4.33 22.428 5.508 22.591C6.648 22.75 8.106 22.75 9.942 22.75H14.058C15.894 22.75 17.352 22.75 18.492 22.591C19.669 22.428 20.62 22.082 21.368 21.309C22.111 20.54 22.441 19.567 22.598 18.362C22.75 17.187 22.75 15.684 22.75 13.78V12.167C22.75 11.054 22.75 10.167 22.682 9.441C22.612 8.691 22.465 8.058 22.139 7.463C21.812 6.866 21.359 6.407 20.771 5.956C20.203 5.52 19.465 5.063 18.544 4.491L16.477 3.208C15.504 2.604 14.724 2.12 14.049 1.792C13.352 1.452 12.709 1.25 12 1.25ZM8.28 4.504C9.295 3.874 10.01 3.432 10.607 3.141C11.188 2.858 11.6 2.75 12 2.75C12.4 2.75 12.812 2.858 13.393 3.141C13.991 3.431 14.705 3.874 15.72 4.504L17.72 5.745C18.681 6.342 19.356 6.761 19.86 7.147C20.349 7.522 20.63 7.831 20.823 8.183C21.016 8.536 21.129 8.949 21.188 9.581C21.249 10.229 21.25 11.046 21.25 12.204V13.725C21.25 15.695 21.248 17.101 21.11 18.168C20.974 19.216 20.717 19.824 20.29 20.267C19.865 20.706 19.287 20.967 18.286 21.106C17.26 21.248 15.907 21.25 14 21.25H10C8.092 21.25 6.74 21.248 5.714 21.106C4.713 20.966 4.135 20.706 3.711 20.266C3.283 19.824 3.026 19.216 2.891 18.168C2.751 17.101 2.75 15.696 2.75 13.725V12.204C2.75 11.046 2.75 10.229 2.812 9.581C2.871 8.949 2.984 8.536 3.177 8.183C3.37 7.831 3.651 7.522 4.141 7.147C4.644 6.761 5.319 6.342 6.28 5.745L8.28 4.504Z"
-              [attr.fill]="rlaFournisseur.isActive ? '#234078' : '#343A40'"/>
+            <path
+              d="M11.25 18C11.25 18.1989 11.329 18.3897 11.4697 18.5303C11.6103 18.671 11.8011 18.75 12 18.75C12.1989 18.75 12.3897 18.671 12.5303 18.5303C12.671 18.3897 12.75 18.1989 12.75 18V15C12.75 14.8011 12.671 14.6103 12.5303 14.4697C12.3897 14.329 12.1989 14.25 12 14.25C11.8011 14.25 11.6103 14.329 11.4697 14.4697C11.329 14.6103 11.25 14.8011 11.25 15V18Z"
+              fill="currentColor" />
+            <path fill-rule="evenodd" clip-rule="evenodd"
+              d="M12 1.25C11.292 1.25 10.649 1.453 9.95 1.792C9.276 2.12 8.496 2.604 7.523 3.208L5.456 4.491C4.536 5.063 3.797 5.521 3.229 5.956C2.64 6.406 2.188 6.866 1.861 7.463C1.535 8.058 1.389 8.692 1.318 9.441C1.25 10.166 1.25 11.054 1.25 12.167V13.78C1.25 15.684 1.25 17.187 1.403 18.362C1.559 19.567 1.889 20.54 2.633 21.309C3.38 22.082 4.33 22.428 5.508 22.591C6.648 22.75 8.106 22.75 9.942 22.75H14.058C15.894 22.75 17.352 22.75 18.492 22.591C19.669 22.428 20.62 22.082 21.368 21.309C22.111 20.54 22.441 19.567 22.598 18.362C22.75 17.187 22.75 15.684 22.75 13.78V12.167C22.75 11.054 22.75 10.167 22.682 9.441C22.612 8.691 22.465 8.058 22.139 7.463C21.812 6.866 21.359 6.407 20.771 5.956C20.203 5.52 19.465 5.063 18.544 4.491L16.477 3.208C15.504 2.604 14.724 2.12 14.049 1.792C13.352 1.452 12.709 1.25 12 1.25ZM8.28 4.504C9.295 3.874 10.01 3.432 10.607 3.141C11.188 2.858 11.6 2.75 12 2.75C12.4 2.75 12.812 2.858 13.393 3.141C13.991 3.431 14.705 3.874 15.72 4.504L17.72 5.745C18.681 6.342 19.356 6.761 19.86 7.147C20.349 7.522 20.63 7.831 20.823 8.183C21.016 8.536 21.129 8.949 21.188 9.581C21.249 10.229 21.25 11.046 21.25 12.204V13.725C21.25 15.695 21.248 17.101 21.11 18.168C20.974 19.216 20.717 19.824 20.29 20.267C19.865 20.706 19.287 20.967 18.286 21.106C17.26 21.248 15.907 21.25 14 21.25H10C8.092 21.25 6.74 21.248 5.714 21.106C4.713 20.966 4.135 20.706 3.711 20.266C3.283 19.824 3.026 19.216 2.891 18.168C2.751 17.101 2.75 15.696 2.75 13.725V12.204C2.75 11.046 2.75 10.229 2.812 9.581C2.871 8.949 2.984 8.536 3.177 8.183C3.37 7.831 3.651 7.522 4.141 7.147C4.644 6.761 5.319 6.342 6.28 5.745L8.28 4.504Z"
+              [attr.fill]="rlaFournisseur.isActive ? '#234078' : '#343A40'" />
           </svg>
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Tableau de bord</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Tableau de bord</span>
       </a>
 
       <!-- Demandes -->
       <a routerLink="/fournisseur/demandes"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
           <svg width="16" height="20" viewBox="0 0 16 20" fill="none" stroke="currentColor" stroke-width="0.1"
             xmlns="http://www.w3.org/2000/svg">
@@ -723,13 +726,13 @@
               fill="#434655" />
           </svg>
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Demandes</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Demandes</span>
       </a>
 
       <!-- Devis -->
       <a routerLink="/fournisseur/devis"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
           <svg width="16" height="20" viewBox="0 0 16 20" fill="none" stroke="currentColor" stroke-width="0.1"
             xmlns="http://www.w3.org/2000/svg">
@@ -738,7 +741,7 @@
               fill="#434655" />
           </svg>
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Devis</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Devis</span>
       </a>
 
     </ng-container>
@@ -748,7 +751,7 @@
       <!-- Dons -->
       <a routerLink="/donor/dons"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
           <svg width="20" height="19" viewBox="0 0 20 19" fill="none" stroke="currentColor"
             xmlns="http://www.w3.org/2000/svg">
@@ -760,7 +763,7 @@
               stroke="#343A40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Dons</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Dons</span>
       </a>
 
       <!-- Budget solidaire -->
@@ -773,13 +776,13 @@
             <path d="M12 22.25V18M12 22.25C12.83 22.25 13.5 22.7 13.5 23.25M12 22.25C11.17 22.25 10.5 22.7 10.5 23.25M0.75 18H23.25M2.25 4.75H21.75V18H2.25V4.75Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Budget</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Budget</span>
       </a>
 
       <!-- Historique -->
       <a routerLink="/donor/dons-historique"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -789,7 +792,7 @@
               stroke-linejoin="round" />
           </svg>
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Historique</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Historique</span>
       </a>
     </ng-container>
 
@@ -798,7 +801,7 @@
       <!-- Rapport -->
       <a routerLink="/organization/rapport"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
           <svg width="20" height="21" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -809,13 +812,13 @@
               stroke="#343A40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Rapport</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Rapport</span>
       </a>
 
       <!-- Budget -->
       <a routerLink="/organization/budget"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -826,13 +829,13 @@
               stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Budget</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Budget</span>
       </a>
 
       <!-- Demande -->
       <a routerLink="/organization/demande"
         routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
-        class="flex items-center w-[254px] h-[54px] px-[15px] gap-[12px] cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
         <div class="flex items-center justify-center w-8 h-8">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -840,7 +843,7 @@
               fill="#343A40" />
           </svg>
         </div>
-        <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Demande</span>
+        <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Demande</span>
       </a>
 
     </ng-container>
@@ -848,20 +851,22 @@
     <!-- MON COMPTE (commun) -->
     <a [routerLink]="accountRoute"
       routerLinkActive="!text-[#11458B] bg-[#F4F6F9] border-l-[3px] border-[#11458B] rounded-l-[12px]"
-      class="flex items-center h-[54px] w-[254px] px-[15px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
-      <div class="flex items-center justify-center w-6 h-6">
-       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M3.85 15.1C4.7 14.45 5.65 13.9377 6.7 13.563C7.75 13.1883 8.85 13.0007 10 13C11.15 12.9993 12.25 13.187 13.3 13.563C14.35 13.939 15.3 14.4513 16.15 15.1C16.7333 14.4167 17.1877 13.6417 17.513 12.775C17.8383 11.9083 18.0007 10.9833 18 10C18 7.78333 17.221 5.89567 15.663 4.337C14.105 2.77833 12.2173 1.99933 10 2C7.78267 2.00067 5.895 2.78 4.337 4.338C2.779 5.896 2 7.78333 2 10C2 10.9833 2.16267 11.9083 2.488 12.775C2.81333 13.6417 3.26733 14.4167 3.85 15.1ZM10 11C9.01667 11 8.18734 10.6627 7.512 9.988C6.83667 9.31333 6.49933 8.484 6.5 7.5C6.50067 6.516 6.83833 5.68667 7.513 5.012C8.18767 4.33733 9.01667 4 10 4C10.9833 4 11.8127 4.33767 12.488 5.013C13.1633 5.68833 13.5007 6.51733 13.5 7.5C13.4993 8.48267 13.162 9.312 12.488 9.988C11.814 10.664 10.9847 11.0013 10 11ZM10 20C8.61667 20 7.31667 19.7373 6.1 19.212C4.88334 18.6867 3.825 17.9743 2.925 17.075C2.025 16.1757 1.31267 15.1173 0.788001 13.9C0.263335 12.6827 0.000667933 11.3827 1.26582e-06 10C-0.000665401 8.61733 0.262001 7.31733 0.788001 6.1C1.314 4.88267 2.02633 3.82433 2.925 2.925C3.82367 2.02567 4.882 1.31333 6.1 0.788C7.318 0.262667 8.618 0 10 0C11.382 0 12.682 0.262667 13.9 0.788C15.118 1.31333 16.1763 2.02567 17.075 2.925C17.9737 3.82433 18.6863 4.88267 19.213 6.1C19.7397 7.31733 20.002 8.61733 20 10C19.998 11.3827 19.7353 12.6827 19.212 13.9C18.6887 15.1173 17.9763 16.1757 17.075 17.075C16.1737 17.9743 15.1153 18.687 13.9 19.213C12.6847 19.739 11.3847 20.0013 10 20ZM10 18C10.8833 18 11.7167 17.871 12.5 17.613C13.2833 17.355 14 16.984 14.65 16.5C14 16.0167 13.2833 15.646 12.5 15.388C11.7167 15.13 10.8833 15.0007 10 15C9.11667 14.9993 8.28333 15.1287 7.5 15.388C6.71667 15.6473 6 16.018 5.35 16.5C6 16.9833 6.71667 17.3543 7.5 17.613C8.28333 17.8717 9.11667 18.0007 10 18ZM10 9C10.4333 9 10.7917 8.85833 11.075 8.575C11.3583 8.29167 11.5 7.93333 11.5 7.5C11.5 7.06667 11.3583 6.70833 11.075 6.425C10.7917 6.14167 10.4333 6 10 6C9.56667 6 9.20833 6.14167 8.925 6.425C8.64167 6.70833 8.5 7.06667 8.5 7.5C8.5 7.93333 8.64167 8.29167 8.925 8.575C9.20833 8.85833 9.56667 9 10 9Z" fill="#343A40"/>
-</svg>
+      class="flex items-center w-full h-[42px] px-[8px] gap-4 cursor-pointer transition duration-200 text-gray-600 hover:bg-[#F4F6F9] hover:border-l-[3px] hover:border-[#11458B] hover:rounded-l-[12px]">
+      <div class="flex items-center justify-center w-8 h-8">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M3.85 15.1C4.7 14.45 5.65 13.9377 6.7 13.563C7.75 13.1883 8.85 13.0007 10 13C11.15 12.9993 12.25 13.187 13.3 13.563C14.35 13.939 15.3 14.4513 16.15 15.1C16.7333 14.4167 17.1877 13.6417 17.513 12.775C17.8383 11.9083 18.0007 10.9833 18 10C18 7.78333 17.221 5.89567 15.663 4.337C14.105 2.77833 12.2173 1.99933 10 2C7.78267 2.00067 5.895 2.78 4.337 4.338C2.779 5.896 2 7.78333 2 10C2 10.9833 2.16267 11.9083 2.488 12.775C2.81333 13.6417 3.26733 14.4167 3.85 15.1ZM10 11C9.01667 11 8.18734 10.6627 7.512 9.988C6.83667 9.31333 6.49933 8.484 6.5 7.5C6.50067 6.516 6.83833 5.68667 7.513 5.012C8.18767 4.33733 9.01667 4 10 4C10.9833 4 11.8127 4.33767 12.488 5.013C13.1633 5.68833 13.5007 6.51733 13.5 7.5C13.4993 8.48267 13.162 9.312 12.488 9.988C11.814 10.664 10.9847 11.0013 10 11ZM10 20C8.61667 20 7.31667 19.7373 6.1 19.212C4.88334 18.6867 3.825 17.9743 2.925 17.075C2.025 16.1757 1.31267 15.1173 0.788001 13.9C0.263335 12.6827 0.000667933 11.3827 1.26582e-06 10C-0.000665401 8.61733 0.262001 7.31733 0.788001 6.1C1.314 4.88267 2.02633 3.82433 2.925 2.925C3.82367 2.02567 4.882 1.31333 6.1 0.788C7.318 0.262667 8.618 0 10 0C11.382 0 12.682 0.262667 13.9 0.788C15.118 1.31333 16.1763 2.02567 17.075 2.925C17.9737 3.82433 18.6863 4.88267 19.213 6.1C19.7397 7.31733 20.002 8.61733 20 10C19.998 11.3827 19.7353 12.6827 19.212 13.9C18.6887 15.1173 17.9763 16.1757 17.075 17.075C16.1737 17.9743 15.1153 18.687 13.9 19.213C12.6847 19.739 11.3847 20.0013 10 20ZM10 18C10.8833 18 11.7167 17.871 12.5 17.613C13.2833 17.355 14 16.984 14.65 16.5C14 16.0167 13.2833 15.646 12.5 15.388C11.7167 15.13 10.8833 15.0007 10 15C9.11667 14.9993 8.28333 15.1287 7.5 15.388C6.71667 15.6473 6 16.018 5.35 16.5C6 16.9833 6.71667 17.3543 7.5 17.613C8.28333 17.8717 9.11667 18.0007 10 18ZM10 9C10.4333 9 10.7917 8.85833 11.075 8.575C11.3583 8.29167 11.5 7.93333 11.5 7.5C11.5 7.06667 11.3583 6.70833 11.075 6.425C10.7917 6.14167 10.4333 6 10 6C9.56667 6 9.20833 6.14167 8.925 6.425C8.64167 6.70833 8.5 7.06667 8.5 7.5C8.5 7.93333 8.64167 8.29167 8.925 8.575C9.20833 8.85833 9.56667 9 10 9Z"
+            fill="#343A40" />
+        </svg>
 
       </div>
-      <span class="font-medium text-[14px] leading-[14px] tracking-[0] font-inter text-[#343A40]">Mon compte</span>
+      <span class="font-medium text-sm leading-[14px] tracking-[0] font-inter">Mon compte</span>
     </a>
 
     <!-- DÉCONNEXION -->
     <div class="mt- px-0">
       <button
-        class="flex items-center px-4 py-3 w-full rounded-lg cursor-pointer transition-colors duration-200 hover:bg-red-50 text-gray-700"
+        class="flex items-center w-full h-[42px] px-[8px] gap-4 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-red-50 text-gray-700"
         (click)="logout()">
         <div class="flex items-center justify-center w-8 h-8">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"
@@ -876,6 +881,9 @@
   </nav>
 </aside>
 
+
+
+<!-- A voir-->
 <!-- HAMBURGER MOBILE -->
 <div class="lg:hidden fixed top-0 left-0 right-0 bg-white shadow-md z-50 px-4 py-3 flex items-center justify-between">
   <img src="assets/images/logo.png" class="h-9 object-contain" alt="Logo" />

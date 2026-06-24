@@ -286,7 +286,7 @@
               (focus)="showDeptDD = !!lieuRegion"
               (blur)="closeAllDropdowns()"
               [disabled]="!lieuRegion"
-              placeholder="{{ lieuRegion ? 'Ex: ' + currentDepts[0]?.nom : 'Choisir une région d abord' }}"
+              placeholder="Choisir une région d abord"
               autocomplete="off"
               class="w-full rounded-xl border border-slate-200 bg-[#F8FAFC] px-4 py-3 text-[14px] text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#00339E]/20 focus:border-[#00339E] disabled:opacity-50 disabled:cursor-not-allowed" />
             <div *ngIf="showDeptDD && filteredDepts.length > 0"

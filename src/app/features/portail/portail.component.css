@@ -1,0 +1,59 @@
+/* ── Hero image float animation ── */
+@keyframes scroll-left {
+  to { transform: translateX(-100%); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-10px); }
+}
+
+.animate-scroll-left {
+  animation:
+    scroll-left 30s linear infinite,
+    bounce 1.4s ease-in-out infinite;
+}
+
+.animate-scroll-left:hover {
+  animation-play-state: paused;
+}
+
+/* ── Partners marquee ── */
+@keyframes partners-marquee {
+  to { transform: translateX(-50%); }
+}
+
+.partners-marquee {
+  width: max-content;
+  animation: partners-marquee 28s linear infinite;
+}
+
+.partners-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* ── Partner logo tile ── */
+.partner-logo-placeholder {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  background: #f8fafc;
+  box-shadow: 0 10px 28px rgba(17, 69, 139, 0.08);
+  overflow: hidden;
+}
+
+.partner-logo-placeholder span {
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* ── Hide scrollbar (témoignages carousel) ── */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
