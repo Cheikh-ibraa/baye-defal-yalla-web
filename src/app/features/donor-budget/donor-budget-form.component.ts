@@ -5,12 +5,6 @@ import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 
-declare function sendPaymentInfos(
-  timestamp: number, agencyCode: string, token: string, serviceId: string,
-  callbackUrl: string, returnUrl: string, amount: number, city: string,
-  p1: string, p2: string, p3: string, p4: string,
-): void;
-
 @Component({
   selector: 'app-donor-budget-form',
   standalone: true,
@@ -64,44 +58,11 @@ export class DonorBudgetFormComponent implements OnInit {
     this.budgetId = this.route.snapshot.paramMap.get('id') ?? '';
     this.isEdit   = !!this.budgetId;
     if (this.isEdit) this.loadExisting();
-    else this.handlePaymentReturn();
   }
 
   private get authHeaders() {
     const token = localStorage.getItem('access_token');
     return { Authorization: `Bearer ${token}` };
-  }
-
-  private handlePaymentReturn(): void {
-    const params    = this.route.snapshot.queryParamMap;
-    const errorCode = params.get('errorCode');
-    const reference = params.get('reference');
-
-    if (!reference && !errorCode) return;
-
-    if (errorCode === '200' && reference) {
-      sessionStorage.removeItem('bdy_pending_ref');
-      const transactionId = params.get('num_transaction_from_gu')
-        ?? params.get('num_command') ?? '';
-      this.http.post(
-        `${environment.baseUrl}/payments/confirm`,
-        { reference, transactionId },
-        { headers: this.authHeaders },
-      ).subscribe({
-        next:  () => this.router.navigate(['/donor/budget']),
-        error: () => this.router.navigate(['/donor/budget']),
-      });
-    } else if (errorCode && errorCode !== '200') {
-      sessionStorage.removeItem('bdy_pending_ref');
-      if (reference) {
-        this.http.post(
-          `${environment.baseUrl}/payments/cancel`,
-          { reference },
-          { headers: this.authHeaders },
-        ).subscribe();
-      }
-      this.error = 'Paiement annulé ou refusé. Veuillez réessayer.';
-    }
   }
 
   private loadExisting(): void {
@@ -120,7 +81,10 @@ export class DonorBudgetFormComponent implements OnInit {
         this.existingUsed   = Number(b.usedAmount);
         this.isLoading = false;
       },
-      error: () => { this.isLoading = false; },
+      error: () => {
+        this.error = 'Impossible de charger ce budget.';
+        this.isLoading = false;
+      },
     });
   }
 
@@ -176,56 +140,45 @@ export class DonorBudgetFormComponent implements OnInit {
         pathologies:      this.selectedPathologies.length ? this.selectedPathologies : undefined,
         beneficiaryTypes: this.selectedBeneficiaries.length ? this.selectedBeneficiaries : undefined,
       };
-      this.http.patch(`${environment.baseUrl}/donor/budgets/${this.budgetId}`, payload, { headers: this.authHeaders })
-        .subscribe({
-          next: () => { this.isSaving = false; this.router.navigate(['/donor/budget']); },
-          error: (err: any) => {
-            this.isSaving = false;
-            const msg = err?.error?.message;
-            this.error = Array.isArray(msg) ? msg.join(', ') : (msg ?? 'Une erreur est survenue.');
-          },
-        });
+      this.http.patch(
+        `${environment.baseUrl}/donor/budgets/${this.budgetId}`,
+        payload,
+        { headers: this.authHeaders },
+      ).subscribe({
+        next: () => { this.isSaving = false; this.router.navigate(['/donor/budget']); },
+        error: (err: any) => {
+          this.isSaving = false;
+          const msg = err?.error?.message;
+          this.error = Array.isArray(msg) ? msg.join(', ') : (msg ?? 'Une erreur est survenue.');
+        },
+      });
       return;
     }
 
-    // Mode création : préparer le paiement TouchPay puis ouvrir le widget
-    if (typeof sendPaymentInfos !== 'function') {
-      this.isSaving = false;
-      this.error = 'Le module de paiement n\'est pas chargé. Rechargez la page.';
-      return;
-    }
+    // Mode création : initier le paiement TouchPay et rediriger
+    const returnUrl = `${window.location.origin}/donor/budget`;
 
-    const budgetData = {
-      name:             this.name || undefined,
-      amount:           this.amount,
-      region:           this.region || undefined,
-      department:       this.department || undefined,
-      commune:          this.commune || undefined,
-      urgencyLevel:     this.urgencyLevel || undefined,
-      pathologies:      this.selectedPathologies.length ? this.selectedPathologies : undefined,
-      beneficiaryTypes: this.selectedBeneficiaries.length ? this.selectedBeneficiaries : undefined,
+    const body: any = {
+      amount:    this.amount,
+      returnUrl,
     };
+    if (this.name)                            body.name             = this.name;
+    if (this.region)                          body.region           = this.region;
+    if (this.department)                      body.department       = this.department;
+    if (this.commune)                         body.commune          = this.commune;
+    if (this.urgencyLevel)                    body.urgencyLevel     = this.urgencyLevel;
+    if (this.selectedPathologies.length)      body.pathologies      = this.selectedPathologies;
+    if (this.selectedBeneficiaries.length)    body.beneficiaryTypes = this.selectedBeneficiaries;
 
-    this.http.post<{ reference: string }>(
-      `${environment.baseUrl}/payments/prepare-budget`,
-      budgetData,
+    this.http.post<{ transactionId: string; paymentUrl: string }>(
+      `${environment.baseUrl}/payments/initiate-budget/individual`,
+      body,
       { headers: this.authHeaders },
     ).subscribe({
-      next: ({ reference }) => {
+      next: ({ transactionId, paymentUrl }) => {
         this.isSaving = false;
-        const tp        = environment.touchpay;
-        const returnUrl = `${window.location.origin}/donor/budget/new?reference=${encodeURIComponent(reference)}`;
-        sessionStorage.setItem('bdy_pending_ref', reference);
-        try {
-          sendPaymentInfos(
-            Date.now(), tp.agencyCode, tp.token, tp.serviceId,
-            returnUrl, returnUrl,
-            this.amount, 'Dakar',
-            reference, '', '', '',
-          );
-        } catch (e: any) {
-          this.error = `Erreur TouchPay : ${e?.message ?? 'inconnu'}`;
-        }
+        sessionStorage.setItem('bdy_pending_ref', transactionId);
+        window.location.href = paymentUrl;
       },
       error: (err: any) => {
         this.isSaving = false;

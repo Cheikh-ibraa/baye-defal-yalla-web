@@ -1,26 +1,36 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { forkJoin } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { SENEGAL_REGIONS, SenegalDepartement } from '../../shared/data/senegal-admin.data';
 
-type DemandeStatus = 'En attente' | 'Devis reçus';
+const BASE = environment.baseUrl;
 
-interface KpiItem {
-  id: 'total' | 'attente' | 'devis';
-  label: string;
-  value: string;
-  dark: boolean;
-  sub: string | null;
-  subClass: string;
-}
+type DemandeStatus = 'EN_ATTENTE' | 'VALIDÉ' | 'URGENT';
 
 interface DemandeMateriel {
-  ref: string;
-  titre: string;
-  dateEmission: string;
-  fournisseurs: number;
+  id: string;
+  title: string;
+  createdAt: string;
+  quotesCount: number;
   status: DemandeStatus;
-  devisCount?: number;
+}
+
+interface Fournisseur {
+  keycloakId: string;
+  companyName: string;
+  city?: string;
+  rating?: number;
+  productType?: string;
+}
+
+interface ProductItem {
+  nom: string;
+  quantite: number;
+  unite: string;
 }
 
 @Component({
@@ -28,134 +38,301 @@ interface DemandeMateriel {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './demande-materiels.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DemandeMaterielComponent {
+export class DemandeMaterielComponent implements OnInit {
 
-  showModal = false;
-  nomDemande = 'Commande médicaux';
-  nomProduit = 'Gants';
-  quantite = 50;
-  unite = 'Boites';
-  description = '';
+  loading    = false;
+  submitting = false;
+  showModal  = false;
+  submitError   = '';
+  submitSuccess = false;
+
+  demandes: DemandeMateriel[] = [];
+  totalDemandes = 0;
+
+  fournisseurs: Fournisseur[] = [];
+  selectedSupplierIds: string[] = [];
+
+  // Form fields
+  institutionName = '';
+  nomDemande   = '';
+  description  = '';
   urgencyLevel = 'Urgent';
-  selectedFournisseurs: string[] = ['medtech', 'santelogix'];
 
-  readonly kpis: KpiItem[] = [
-    {
-      id: 'total',
-      label: 'TOTAL DEMANDES',
-      value: '24',
-      dark: true,
-      sub: null,
-      subClass: ''
-    },
-    {
-      id: 'attente',
-      label: 'EN ATTENTE',
-      value: '08',
-      dark: false,
-      sub: '+12% vs mois dernier',
-      subClass: 'text-[#16A34A]'
-    },
-    {
-      id: 'devis',
-      label: 'DEVIS REÇUS',
-      value: '16',
-      dark: false,
-      sub: 'Prêt pour décision',
-      subClass: 'text-[#00339E]'
+  // Lieu de livraison — cascading autocomplete
+  lieuRegion      = '';
+  lieuDepartement = '';
+  lieuCommune     = '';
+
+  // Autocomplete state
+  regionSearch    = '';
+  deptSearch      = '';
+  communeSearch   = '';
+  showRegionDD    = false;
+  showDeptDD      = false;
+  showCommuneDD   = false;
+
+  readonly allRegions = SENEGAL_REGIONS;
+
+  get filteredRegions() {
+    const q = this.regionSearch.toLowerCase();
+    return this.allRegions.filter(r => r.nom.toLowerCase().includes(q));
+  }
+
+  get currentDepts(): SenegalDepartement[] {
+    const reg = this.allRegions.find(r => r.nom === this.lieuRegion);
+    return reg?.departements ?? [];
+  }
+
+  get filteredDepts(): SenegalDepartement[] {
+    const q = this.deptSearch.toLowerCase();
+    return this.currentDepts.filter(d => d.nom.toLowerCase().includes(q));
+  }
+
+  get currentCommunes(): string[] {
+    const dept = this.currentDepts.find(d => d.nom === this.lieuDepartement);
+    return dept?.communes ?? [];
+  }
+
+  get filteredCommunes(): string[] {
+    const q = this.communeSearch.toLowerCase();
+    return this.currentCommunes.filter(c => c.toLowerCase().includes(q));
+  }
+
+  selectRegion(nom: string): void {
+    this.lieuRegion      = nom;
+    this.regionSearch    = nom;
+    this.lieuDepartement = '';
+    this.deptSearch      = '';
+    this.lieuCommune     = '';
+    this.communeSearch   = '';
+    this.showRegionDD    = false;
+    this.cdr.markForCheck();
+  }
+
+  selectDept(nom: string): void {
+    this.lieuDepartement = nom;
+    this.deptSearch      = nom;
+    this.lieuCommune     = '';
+    this.communeSearch   = '';
+    this.showDeptDD      = false;
+    this.cdr.markForCheck();
+  }
+
+  selectCommune(nom: string): void {
+    this.lieuCommune    = nom;
+    this.communeSearch  = nom;
+    this.showCommuneDD  = false;
+    this.cdr.markForCheck();
+  }
+
+  onRegionInput(): void {
+    this.lieuRegion      = '';
+    this.lieuDepartement = '';
+    this.deptSearch      = '';
+    this.lieuCommune     = '';
+    this.communeSearch   = '';
+    this.showRegionDD    = true;
+    this.cdr.markForCheck();
+  }
+
+  onDeptInput(): void {
+    this.lieuDepartement = '';
+    this.lieuCommune     = '';
+    this.communeSearch   = '';
+    this.showDeptDD      = true;
+    this.cdr.markForCheck();
+  }
+
+  onCommuneInput(): void {
+    this.lieuCommune   = '';
+    this.showCommuneDD = true;
+    this.cdr.markForCheck();
+  }
+
+  closeAllDropdowns(): void {
+    setTimeout(() => {
+      this.showRegionDD  = false;
+      this.showDeptDD    = false;
+      this.showCommuneDD = false;
+      this.cdr.markForCheck();
+    }, 180);
+  }
+
+  products: ProductItem[] = [{ nom: '', quantite: 50, unite: 'Boites' }];
+
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+  ) {}
+
+  ngOnInit(): void {
+    this.loadFromProfile();
+    this.loadAll();
+  }
+
+  private headers(): HttpHeaders {
+    const token = localStorage.getItem('access_token') ?? '';
+    return new HttpHeaders({ Authorization: `Bearer ${token}` });
+  }
+
+  private loadFromProfile(): void {
+    const raw = localStorage.getItem('user_profile');
+    if (raw) {
+      try {
+        const p = JSON.parse(raw);
+        this.institutionName = p.institutionName ?? p.organizationName ?? p.name ?? '';
+      } catch { /* ignore */ }
     }
-  ];
+  }
 
-  demandes: DemandeMateriel[] = [
-    {
-      ref: 'REQ-2024-001',
-      titre: 'Gants stériles en latex',
-      dateEmission: '12 Oct 2023',
-      fournisseurs: 4,
-      status: 'En attente'
-    },
-    {
-      ref: 'REQ-2024-042',
-      titre: 'Equipement blocs opératoires',
-      dateEmission: '08 Oct 2023',
-      fournisseurs: 6,
-      status: 'Devis reçus',
-      devisCount: 3
-    },
-    {
-      ref: 'REQ-2024-015',
-      titre: 'Kits de perfusion standard',
-      dateEmission: '05 Oct 2023',
-      fournisseurs: 3,
-      status: 'Devis reçus',
-      devisCount: 3
-    },
-    {
-      ref: 'REQ-2024-112',
-      titre: 'Sondes urinaires silicone',
-      dateEmission: '01 Oct 2023',
-      fournisseurs: 5,
-      status: 'Devis reçus',
-      devisCount: 3
-    },
-    {
-      ref: 'REQ-2024-088',
-      titre: 'Pansements hydrocellulaires',
-      dateEmission: '28 Sep 2023',
-      fournisseurs: 2,
-      status: 'Devis reçus',
-      devisCount: 3
-    }
-  ];
+  loadAll(): void {
+    this.loading = true;
+    forkJoin({
+      demandes: this.http.get<{ data: DemandeMateriel[]; total: number }>(
+        `${BASE}/hospital/material-requests`, { headers: this.headers() }),
+      suppliers: this.http.get<Fournisseur[]>(
+        `${BASE}/hospital/suppliers`, { headers: this.headers() }),
+    }).subscribe({
+      next: ({ demandes, suppliers }) => {
+        this.demandes      = demandes.data;
+        this.totalDemandes = demandes.total;
+        this.fournisseurs  = suppliers;
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => { this.loading = false; this.cdr.markForCheck(); },
+    });
+  }
 
-  constructor(private router: Router, private cdr: ChangeDetectorRef) {}
+  get totalCount()  { return this.totalDemandes; }
+  get attenteCount(){ return this.demandes.filter(d => d.status === 'EN_ATTENTE').length; }
+  get devisCount()  { return this.demandes.filter(d => d.status === 'VALIDÉ' || d.quotesCount > 0).length; }
 
-  openDetail(ref: string): void {
-    this.router.navigate(['/demande-materiels', ref]);
+  openDetail(id: string): void {
+    this.router.navigate(['/hospital/demande-materiels', id]);
   }
 
   statusClass(status: DemandeStatus): string {
-    return status === 'En attente'
-      ? 'bg-[#F39C121A] text-[#F39C12]'
-      : 'bg-[#00B8941A] text-[#00B894]';
+    if (status === 'EN_ATTENTE') return 'bg-[#F39C121A] text-[#F39C12]';
+    if (status === 'URGENT')     return 'bg-red-100 text-red-600';
+    return 'bg-[#00B8941A] text-[#00B894]';
   }
 
   statusLabel(d: DemandeMateriel): string {
-    return d.status === 'Devis reçus' ? `Devis reçus (${d.devisCount})` : d.status;
+    if (d.status === 'VALIDÉ') return `Devis reçus (${d.quotesCount})`;
+    if (d.status === 'URGENT') return 'Urgent';
+    return 'En attente';
+  }
+
+  formatDate(iso: string): string {
+    return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
   }
 
   openModal(): void {
-    this.showModal = true;
+    this.nomDemande          = 'Commande médicaux';
+    this.description         = '';
+    this.urgencyLevel        = 'Urgent';
+    this.lieuRegion          = '';
+    this.lieuDepartement     = '';
+    this.lieuCommune         = '';
+    this.regionSearch        = '';
+    this.deptSearch          = '';
+    this.communeSearch       = '';
+    this.showRegionDD        = false;
+    this.showDeptDD          = false;
+    this.showCommuneDD       = false;
+    this.products            = [{ nom: 'Gants', quantite: 50, unite: 'Boites' }];
+    this.selectedSupplierIds = this.fournisseurs.slice(0, 2).map(f => f.keycloakId);
+    this.submitError         = '';
+    this.submitSuccess       = false;
+    this.showModal           = true;
     this.cdr.markForCheck();
   }
 
-  closeModal(): void {
-    this.showModal = false;
-    this.cdr.markForCheck();
-  }
+  closeModal(): void { this.showModal = false; this.cdr.markForCheck(); }
 
-  toggleFournisseur(id: string): void {
-    if (this.selectedFournisseurs.includes(id)) {
-      this.selectedFournisseurs = this.selectedFournisseurs.filter(f => f !== id);
+  toggleSupplier(id: string): void {
+    if (this.selectedSupplierIds.includes(id)) {
+      this.selectedSupplierIds = this.selectedSupplierIds.filter(s => s !== id);
     } else {
-      this.selectedFournisseurs = [...this.selectedFournisseurs, id];
+      this.selectedSupplierIds = [...this.selectedSupplierIds, id];
     }
+    this.cdr.markForCheck();
+  }
+
+  isSelected(id: string): boolean {
+    return this.selectedSupplierIds.includes(id);
+  }
+
+  addProduct(): void {
+    this.products = [...this.products, { nom: '', quantite: 1, unite: 'Boites' }];
+    this.cdr.markForCheck();
+  }
+
+  removeProduct(i: number): void {
+    this.products = this.products.filter((_, idx) => idx !== i);
     this.cdr.markForCheck();
   }
 
   submitDemande(): void {
-    const nextRef = `REQ-2024-0${this.demandes.length + 1}`;
-    const newDemande: DemandeMateriel = {
-      ref: nextRef,
-      titre: this.nomDemande || 'Demande sans nom',
-      dateEmission: '05 Juin 2026',
-      fournisseurs: this.selectedFournisseurs.length,
-      status: 'En attente',
-      devisCount: 0
+    if (!this.nomDemande.trim()) {
+      this.submitError = 'Veuillez saisir un nom pour la demande.';
+      this.cdr.markForCheck();
+      return;
+    }
+    this.submitting  = true;
+    this.submitError = '';
+
+    const urgencyMap: Record<string, string> = {
+      Normal: 'NORMAL', Urgent: 'URGENT', Critique: 'URGENT',
     };
-    this.demandes = [newDemande, ...this.demandes];
-    this.closeModal();
+
+    const deliveryAddress: any = {};
+    if (this.lieuRegion.trim())      deliveryAddress.region      = this.lieuRegion.trim();
+    if (this.lieuDepartement.trim()) deliveryAddress.departement = this.lieuDepartement.trim();
+    if (this.lieuCommune.trim())     deliveryAddress.commune     = this.lieuCommune.trim();
+
+    const body: any = {
+      institutionName: this.institutionName || 'Hôpital',
+      title:           this.nomDemande.trim(),
+      description:     this.description.trim() || undefined,
+      urgencyLevel:    urgencyMap[this.urgencyLevel] ?? 'NORMAL',
+      items: this.products
+        .filter(p => p.nom.trim())
+        .map(p => ({ articleName: `${p.nom.trim()} (${p.unite})`, quantity: Number(p.quantite) || 1 })),
+      invitedSupplierIds: this.selectedSupplierIds,
+    };
+    if (Object.keys(deliveryAddress).length > 0) body.deliveryAddress = deliveryAddress;
+
+    this.http.post<DemandeMateriel>(
+      `${BASE}/hospital/material-requests`,
+      body,
+      { headers: this.headers() },
+    ).subscribe({
+      next: created => {
+        this.submitting = false;
+        this.submitSuccess = true;
+        this.demandes = [created, ...this.demandes];
+        this.totalDemandes++;
+        setTimeout(() => this.closeModal(), 1200);
+        this.cdr.markForCheck();
+      },
+      error: err => {
+        this.submitting = false;
+        this.submitError = err?.error?.message ?? 'Une erreur est survenue.';
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  supplierScore(f: Fournisseur): string {
+    return f.rating ? `${f.rating}/5` : '—';
+  }
+
+  supplierLocation(f: Fournisseur): string {
+    return f.city ?? f.productType ?? '';
   }
 }

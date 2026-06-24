@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import {environment} from '../../../environments/environment';
+import { environment } from '../../../environments/environment';
+
 interface Budget {
   id: string;
   name: string;
@@ -32,36 +33,84 @@ export class DonorBudgetListComponent implements OnInit {
   totalEngaged = 0;
   totalRestant = 0;
 
-  constructor(private http: HttpClient, private router: Router) {}
+  paymentStatus: 'success' | 'error' | null = null;
+  paymentMessage = '';
+
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private route: ActivatedRoute,
+  ) {}
 
   ngOnInit(): void {
+    this.handlePaymentReturn();
     this.loadBudgets();
   }
 
-  private loadBudgets(): void {
+  private get authHeaders() {
     const token = localStorage.getItem('access_token');
-    const headers = { Authorization: `Bearer ${token}` };
+    return { Authorization: `Bearer ${token}` };
+  }
 
-    this.http.get<any>(`${environment.baseUrl}/donor/budgets`, { headers }).subscribe({
+  private handlePaymentReturn(): void {
+    const params    = this.route.snapshot.queryParamMap;
+    const errorCode = params.get('errorCode');
+    const reference = params.get('reference');
+
+    if (!errorCode && !reference) return;
+
+    this.router.navigate([], { replaceUrl: true, queryParams: {} });
+
+    if (errorCode === '200' && reference) {
+      sessionStorage.removeItem('bdy_pending_ref');
+      const transactionId = params.get('num_transaction_from_gu')
+        ?? params.get('num_command') ?? '';
+      this.http.post(
+        `${environment.baseUrl}/payments/confirm`,
+        { reference, transactionId },
+        { headers: this.authHeaders },
+      ).subscribe({
+        next: () => {
+          this.paymentStatus  = 'success';
+          this.paymentMessage = 'Votre budget solidaire a été activé avec succès !';
+          this.loadBudgets();
+        },
+        error: () => {
+          this.paymentStatus  = 'success';
+          this.paymentMessage = 'Paiement reçu. Votre budget sera activé sous peu.';
+        },
+      });
+    } else if (errorCode && errorCode !== '200') {
+      sessionStorage.removeItem('bdy_pending_ref');
+      if (reference) {
+        this.http.post(
+          `${environment.baseUrl}/payments/cancel`,
+          { reference },
+          { headers: this.authHeaders },
+        ).subscribe();
+      }
+      this.paymentStatus  = 'error';
+      this.paymentMessage = 'Paiement annulé ou refusé. Veuillez réessayer.';
+    }
+  }
+
+  loadBudgets(): void {
+    this.isLoading = true;
+    this.error = null;
+
+    this.http.get<any>(`${environment.baseUrl}/donor/budgets`, { headers: this.authHeaders }).subscribe({
       next: (res) => {
         this.budgets      = res.budgets ?? [];
         this.totalBudgets = this.budgets.length;
-        this.totalEngaged = res.totalAllocated ?? 0;
-        this.totalRestant = this.totalEngaged - (res.totalUsed ?? 0);
+        this.totalEngaged = Number(res.totalAllocated ?? 0);
+        this.totalRestant = this.totalEngaged - Number(res.totalUsed ?? 0);
         this.isLoading    = false;
       },
       error: () => {
-        this.budgets = STATIC_BUDGETS;
-        this.computeStats();
+        this.error = 'Impossible de charger vos budgets. Veuillez réessayer.';
         this.isLoading = false;
       },
     });
-  }
-
-  private computeStats(): void {
-    this.totalBudgets = this.budgets.length;
-    this.totalEngaged = this.budgets.reduce((s, b) => s + b.amount, 0);
-    this.totalRestant = this.budgets.reduce((s, b) => s + (b.amount - b.usedAmount), 0);
   }
 
   usagePercent(b: Budget): number {
@@ -69,7 +118,7 @@ export class DonorBudgetListComponent implements OnInit {
   }
 
   formatAmount(n: number): string {
-    return n.toLocaleString('fr-FR');
+    return (n ?? 0).toLocaleString('fr-FR');
   }
 
   openDetail(id: string): void {
@@ -80,44 +129,3 @@ export class DonorBudgetListComponent implements OnInit {
     this.router.navigate(['/donor/budget/new']);
   }
 }
-
-const STATIC_BUDGETS: Budget[] = [
-  {
-    id: '1',
-    name: 'Budget Solidarité Cancer – Dakar',
-    amount: 500000,
-    usedAmount: 200000,
-    status: 'ACTIF',
-    region: 'Dakar',
-    pathologies: ['Cancer', 'Diabète', 'Cardiologie'],
-    beneficiaryTypes: ['Enfants', 'Femmes'],
-    urgencyLevel: 'Élevé',
-    endDate: '2026-12-31',
-    createdAt: '2026-01-01',
-  },
-  {
-    id: '2',
-    name: 'Soutien Diabète – Saint-Louis',
-    amount: 450000,
-    usedAmount: 100000,
-    status: 'ACTIF',
-    region: 'Saint-Louis',
-    pathologies: ['Diabète'],
-    beneficiaryTypes: ['Jeunes'],
-    urgencyLevel: 'Moyen',
-    endDate: '2026-09-30',
-    createdAt: '2026-02-01',
-  },
-  {
-    id: '3',
-    name: 'Urgence Cardio – Thiès',
-    amount: 300000,
-    usedAmount: 300000,
-    status: 'TERMINÉ',
-    region: 'Thiès',
-    pathologies: ['Cardiologie'],
-    beneficiaryTypes: ['Séniors'],
-    urgencyLevel: 'Critique',
-    createdAt: '2025-10-01',
-  },
-];

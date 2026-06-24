@@ -46,15 +46,15 @@ export class BudgetComponent implements OnInit {
   newAmount: number | null = null;
   newType: 'MENSUEL' | 'ANNUEL' = 'MENSUEL';
   newBeneficiaries: { [key: string]: boolean } = {
-    'Tous': true,
-    'Nouveau-nés': false,
-    'Enfants': false,
-    'Adultes': false,
+    'Tous':           false,
+    'Nouveau-nés':    false,
+    'Enfants':        false,
+    'Adultes':        false,
     'Personnes âgées': false,
   };
   newNeeds: { [key: string]: boolean } = {
-    'Analyses': true,
-    'Imagerie': true,
+    'Analyses':    true,
+    'Imagerie':    true,
     'Ordonnances': false,
   };
 
@@ -81,7 +81,6 @@ export class BudgetComponent implements OnInit {
 
     if (!errorCode && !reference) return;
 
-    // Nettoyage de l'URL
     this.router.navigate([], { replaceUrl: true, queryParams: {} });
 
     if (errorCode === '200' && reference) {
@@ -96,6 +95,7 @@ export class BudgetComponent implements OnInit {
         next: () => {
           this.paymentStatus  = 'success';
           this.paymentMessage = 'Votre budget a été activé avec succès.';
+          this.load();
         },
         error: () => {
           this.paymentStatus  = 'success';
@@ -159,21 +159,24 @@ export class BudgetComponent implements OnInit {
 
   private needLabel(n: string): string {
     const map: Record<string, string> = {
-      ANALYSE:     'Analyses',
-      IMAGERIE:    'Imagerie',
-      ORDONNANCE:  'Ordonnances',
-      EQUIPEMENT:  'Équipements',
+      ANALYSE:    'Analyses',
+      IMAGERIE:   'Imagerie',
+      ORDONNANCE: 'Ordonnances',
+      EQUIPEMENT: 'Équipements',
     };
     return map[n] ?? n;
   }
 
-  // ── Modal ────────────────────────────────────────────────────────────────────
+  // ── Modal ─────────────────────────────────────────────────────────────────────
 
   openModal(): void {
     this.newAmount = null;
     this.newType   = 'MENSUEL';
-    this.newBeneficiaries = { 'Tous': true, 'Nouveau-nés': false, 'Enfants': false, 'Adultes': false, 'Personnes âgées': false };
-    this.newNeeds         = { 'Analyses': true, 'Imagerie': true, 'Ordonnances': false };
+    this.newBeneficiaries = {
+      'Tous': false, 'Nouveau-nés': false, 'Enfants': false,
+      'Adultes': false, 'Personnes âgées': false,
+    };
+    this.newNeeds = { 'Analyses': true, 'Imagerie': true, 'Ordonnances': false };
     this.modalStep = 'form';
     this.isModalOpen = true;
   }
@@ -212,7 +215,7 @@ export class BudgetComponent implements OnInit {
     };
 
     this.http.post<{ transactionId: string; paymentUrl: string }>(
-      `${environment.baseUrl}/payments/initiate-budget`,
+      `${environment.baseUrl}/payments/initiate-budget/organization`,
       body,
       { headers: this.authHeaders },
     ).subscribe({
@@ -237,7 +240,7 @@ export class BudgetComponent implements OnInit {
     return Object.keys(this.newNeeds).filter(k => this.newNeeds[k]);
   }
 
-  // ── Display helpers ──────────────────────────────────────────────────────────
+  // ── Display helpers ───────────────────────────────────────────────────────────
 
   formatAmount(n: number): string {
     return (n ?? 0).toLocaleString('fr-FR');
@@ -254,6 +257,5 @@ export class BudgetComponent implements OnInit {
   dismissPaymentStatus(): void {
     this.paymentStatus = null;
     this.paymentMessage = '';
-    if (this.paymentStatus === 'success') this.load();
   }
 }

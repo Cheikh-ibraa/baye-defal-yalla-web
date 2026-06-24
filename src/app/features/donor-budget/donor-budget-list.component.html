@@ -1,5 +1,38 @@
 <div class="min-h-screen bg-[#F8FAFC] p-6">
 
+  <!-- Bannière retour paiement -->
+  <div *ngIf="paymentStatus === 'success'"
+    class="mb-5 flex items-start gap-3 bg-green-50 border border-green-200 rounded-2xl px-5 py-4">
+    <svg class="w-5 h-5 text-green-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <p class="text-sm text-green-700 font-medium flex-1">{{ paymentMessage }}</p>
+    <button (click)="paymentStatus = null" class="text-green-400 hover:text-green-600">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+  <div *ngIf="paymentStatus === 'error'"
+    class="mb-5 flex items-start gap-3 bg-red-50 border border-red-200 rounded-2xl px-5 py-4">
+    <svg class="w-5 h-5 text-red-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <p class="text-sm text-red-700 font-medium flex-1">{{ paymentMessage }}</p>
+    <button (click)="paymentStatus = null" class="text-red-400 hover:text-red-600">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Erreur chargement -->
+  <div *ngIf="!isLoading && error"
+    class="mb-5 flex items-start gap-3 bg-red-50 border border-red-200 rounded-2xl px-5 py-4">
+    <p class="text-sm text-red-700 font-medium flex-1">{{ error }}</p>
+    <button (click)="loadBudgets()" class="text-sm text-red-600 font-semibold underline">Réessayer</button>
+  </div>
+
   <!-- Header -->
   <div class="flex items-center justify-between mb-6">
     <div>

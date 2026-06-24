@@ -1556,23 +1556,6 @@
     <!-- Analyses médicales -->
     <div *ngIf="activeTab === 'examens'" class="space-y-6">
 
-      <!-- Codes de présence pour rendez-vous à venir -->
-      <div *ngIf="pendingLabOrders.length > 0" class="bg-white rounded-xl shadow-sm p-6">
-        <h2 class="text-base font-semibold text-[#343A40] mb-4">Codes de présence</h2>
-        <p class="text-xs text-gray-400 mb-4">Présentez ce code à votre arrivée au laboratoire pour confirmer votre présence.</p>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div *ngFor="let order of pendingLabOrders"
-            class="flex flex-col items-center gap-2 p-5 border-2 border-dashed border-[#104382]/30 rounded-xl bg-[#EEF2FF]">
-            <span class="text-xs font-medium text-[#104382]/60 uppercase tracking-wide">{{ order.labOrderRef }}</span>
-            <span class="text-4xl font-mono font-extrabold text-[#104382] tracking-[0.25em]">{{ order.presenceCode }}</span>
-            <span class="text-xs text-gray-500 text-center">
-              {{ (order.categories || []).join(', ') || 'Analyse biologique' }}
-              <span *ngIf="order.appointmentDate"> · {{ order.appointmentDate | date:'dd/MM/yyyy' }}</span>
-            </span>
-          </div>
-        </div>
-      </div>
-
       <!-- Résultats biologiques -->
       <div class="bg-white rounded-xl shadow-sm p-6">
         <h2 class="text-lg font-semibold text-[#343A40] mb-4">Résultats biologiques</h2>
@@ -1652,22 +1635,6 @@
     <!-- Imagerie médicale -->
     <div *ngIf="activeTab === 'imagerie'" class="space-y-6">
 
-      <!-- Codes de présence pour rendez-vous d'imagerie à venir -->
-      <div *ngIf="pendingImagingOrders.length > 0" class="bg-white rounded-xl shadow-sm p-6">
-        <h2 class="text-base font-semibold text-[#343A40] mb-4">Codes de présence</h2>
-        <p class="text-xs text-gray-400 mb-4">Présentez ce code à votre arrivée au centre d'imagerie pour confirmer votre présence.</p>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div *ngFor="let order of pendingImagingOrders"
-            class="flex flex-col items-center gap-2 p-5 border-2 border-dashed border-[#104382]/30 rounded-xl bg-[#EEF2FF]">
-            <span class="text-xs font-medium text-[#104382]/60 uppercase tracking-wide">{{ order.imagingOrderRef }}</span>
-            <span class="text-4xl font-mono font-extrabold text-[#104382] tracking-[0.25em]">{{ order.presenceCode }}</span>
-            <span class="text-xs text-gray-500 text-center">
-              {{ (order.examTypes || []).join(', ') || 'Examen d\'imagerie' }}
-              <span *ngIf="order.appointmentDate"> · {{ order.appointmentDate | date:'dd/MM/yyyy' }}</span>
-            </span>
-          </div>
-        </div>
-      </div>
 
       <div class="bg-white rounded-xl shadow-sm p-6">
         <h2 class="text-lg font-semibold text-[#343A40] mb-4">Imagerie médicale</h2>

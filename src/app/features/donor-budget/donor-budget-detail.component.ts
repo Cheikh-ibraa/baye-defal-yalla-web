@@ -68,10 +68,7 @@ export class DonorBudgetDetailComponent implements OnInit {
 
     this.http.get<any>(`${environment.baseUrl}/donor/budgets/${this.id}`, { headers }).subscribe({
       next: (res) => { this.budget = res; this.isLoading = false; },
-      error: () => {
-        this.budget = STATIC_BUDGET;
-        this.isLoading = false;
-      },
+      error: () => { this.isLoading = false; },
     });
   }
 
@@ -101,21 +98,3 @@ export class DonorBudgetDetailComponent implements OnInit {
 
   downloadReport(): void { alert('Fonctionnalité de téléchargement disponible prochainement.'); }
 }
-
-const STATIC_BUDGET = {
-  id: '1',
-  name: 'Budget Solidarité Cancer – Dakar',
-  amount: 500000,
-  usedAmount: 200000,
-  usagePercent: 40,
-  remaining: 300000,
-  status: 'ACTIF',
-  region: 'Dakar',
-  department: 'Dakar',
-  commune: 'Plateau',
-  pathologies: ['Cancer', 'Diabète', 'Cardiologie'],
-  beneficiaryTypes: ['Enfants', 'Femmes'],
-  urgencyLevel: 'Élevé',
-  endDate: '2026-12-31',
-  createdAt: '2026-01-01',
-};

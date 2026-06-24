@@ -1,127 +1,143 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 
-// ─── Domain Types ───────────────────────────────────────────────────────────
-
-type DemandeStatus = 'En attente' | 'Validé' | 'Urgent';
+type FilterOption = 'Toutes' | 'EN_ATTENTE' | 'VALIDÉ' | 'URGENT';
 
 interface DemandeFournisseur {
   id: string;
   hopital: string;
   categorie: string;
-  status: DemandeStatus;
-  echeance: string;
+  status: string;
+  createdAt: string;
   produitsCount: number;
-  /** SVG icon key: 'hospital' | 'star' | 'lab' */
-  iconKey: 'hospital' | 'star' | 'lab';
+  quotesCount: number;
+  urgencyLevel: string;
+  hasMyQuote: boolean;
 }
-
-type FilterOption = 'Toutes' | 'En attente' | 'Validé';
-
-// ─── Component ──────────────────────────────────────────────────────────────
 
 @Component({
   selector: 'app-demandes-fournisseur',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './demandes-fournisseur.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DemandesFournisseurComponent {
-
+export class DemandesFournisseurComponent implements OnInit {
+  isLoading = true;
+  error = '';
   activeFilter: FilterOption = 'Toutes';
+  demandes: DemandeFournisseur[] = [];
 
-  readonly filters: FilterOption[] = ['Toutes', 'En attente', 'Validé'];
+  readonly filters: FilterOption[] = ['Toutes', 'EN_ATTENTE', 'VALIDÉ', 'URGENT'];
 
-  constructor(private router: Router) {}
+  readonly filterLabels: Record<FilterOption, string> = {
+    'Toutes':     'Toutes',
+    'EN_ATTENTE': 'En attente',
+    'VALIDÉ':     'Validé',
+    'URGENT':     'Urgent',
+  };
 
-  readonly allDemandes: DemandeFournisseur[] = [
-    {
-      id: '1',
-      hopital: 'BDY Hôpital Central',
-      categorie: 'Equipement de bloc...',
-      status: 'En attente',
-      echeance: '24 oct 2025',
-      produitsCount: 3,
-      iconKey: 'hospital'
-    },
-    {
-      id: '2',
-      hopital: 'Clinique du Parc',
-      categorie: 'Imagerie IRM',
-      status: 'Validé',
-      echeance: '30 dec 2025',
-      produitsCount: 5,
-      iconKey: 'star'
-    },
-    {
-      id: '3',
-      hopital: 'CHU Saint-Luc',
-      categorie: 'Équipement Labo',
-      status: 'Urgent',
-      echeance: '24 sept 2025',
-      produitsCount: 2,
-      iconKey: 'lab'
-    },
-    {
-      id: '4',
-      hopital: 'Clinique du Parc',
-      categorie: 'Imagerie IRM',
-      status: 'Validé',
-      echeance: '30 dec 2025',
-      produitsCount: 5,
-      iconKey: 'star'
-    },
-    {
-      id: '5',
-      hopital: 'BDY Hôpital Central',
-      categorie: 'Equipement de bloc...',
-      status: 'En attente',
-      echeance: '24 oct 2025',
-      produitsCount: 3,
-      iconKey: 'hospital'
-    },
-    {
-      id: '6',
-      hopital: 'CHU Saint-Luc',
-      categorie: 'Équipement Labo',
-      status: 'Urgent',
-      echeance: '24 sept 2025',
-      produitsCount: 2,
-      iconKey: 'lab'
-    }
-  ];
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
-  get filteredDemandes(): DemandeFournisseur[] {
-    if (this.activeFilter === 'Toutes') return this.allDemandes;
-    return this.allDemandes.filter(d => d.status === this.activeFilter);
+  ngOnInit(): void {
+    this.load();
+  }
+
+  private get headers() {
+    const token = localStorage.getItem('access_token');
+    return { Authorization: `Bearer ${token}` };
+  }
+
+  load(): void {
+    this.isLoading = true;
+    this.error = '';
+    const params: any = { limit: 50 };
+    if (this.activeFilter !== 'Toutes') params.status = this.activeFilter;
+
+    this.http.get<any>(`${environment.baseUrl}/supplier/requests`, {
+      headers: this.headers,
+      params,
+    }).subscribe({
+      next: (res) => {
+        this.demandes = (res.data ?? []).map((r: any) => this.mapRequest(r));
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.error = 'Impossible de charger les demandes.';
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  private mapRequest(r: any): DemandeFournisseur {
+    return {
+      id:           r.id,
+      hopital:      r.institutionName ?? 'Établissement',
+      categorie:    r.title ?? this.needTypeLabel(r.needType),
+      status:       r.status,
+      createdAt:    r.createdAt,
+      produitsCount:(r.items ?? []).length,
+      quotesCount:  r.quotesCount ?? 0,
+      urgencyLevel: r.urgencyLevel,
+      hasMyQuote:   !!r.myQuote,
+    };
+  }
+
+  private needTypeLabel(type: string): string {
+    const map: Record<string, string> = {
+      ANALYSES:   'Analyses médicales',
+      IMAGERIE:   'Imagerie',
+      ORDONNANCE: 'Ordonnances',
+      EQUIPEMENT: 'Équipement médical',
+    };
+    return map[type] ?? type;
   }
 
   setFilter(filter: FilterOption): void {
     this.activeFilter = filter;
+    this.load();
   }
 
-  /** Returns Tailwind classes for the status badge */
-  statusBadgeClass(status: DemandeStatus): string {
+  statusBadgeClass(status: string): string {
     switch (status) {
-      case 'Validé':    return 'bg-[#E6F4EA] text-[#137333]';
-      case 'En attente': return 'bg-[#DBEAFE] text-[#104382]';
-      case 'Urgent':    return 'bg-[#FCE8E6] text-[#C5221F]';
+      case 'VALIDÉ':     return 'bg-[#E6F4EA] text-[#137333]';
+      case 'EN_ATTENTE': return 'bg-[#DBEAFE] text-[#104382]';
+      case 'URGENT':     return 'bg-[#FCE8E6] text-[#C5221F]';
+      default:           return 'bg-[#F1F3F5] text-[#4E5166]';
     }
   }
 
-  /** Returns Tailwind classes for the icon container background */
-  iconBgClass(iconKey: DemandeFournisseur['iconKey']): string {
-    switch (iconKey) {
-      case 'hospital': return 'bg-[#EEF4FF] text-[#104382]';
-      case 'star':     return 'bg-[#E6F4EA] text-[#137333]';
-      case 'lab':      return 'bg-[#FCE8E6] text-[#C5221F]';
-    }
+  statusLabel(status: string): string {
+    const map: Record<string, string> = {
+      EN_ATTENTE: 'En attente',
+      VALIDÉ:     'Validé',
+      URGENT:     'Urgent',
+    };
+    return map[status] ?? status;
   }
-  /** Navigates to the detail page of the selected demande */
+
+  urgencyLabel(level: string): string {
+    return level === 'URGENT' ? 'Urgent' : 'Normal';
+  }
+
+  formatDate(d: string): string {
+    if (!d) return '–';
+    return new Date(d).toLocaleDateString('fr-FR', {
+      day: 'numeric', month: 'short', year: 'numeric',
+    });
+  }
+
   openDetail(id: string): void {
-    this.router.navigate(['/demandes-fournisseur', id]);
+    this.router.navigate(['/fournisseur/demandes', id]);
   }
 }
