@@ -1,445 +1,500 @@
 <div class="min-h-screen px-2 py-4">
-  <div class="max-w-6xl mx-auto">
-    <!-- Header with back button -->
-    <div class="mb-6 flex flex-row items-center gap-4">
-      <button (click)="goBack()"
-        class="inline-flex items-center justify-center p-4 bg-white rounded-md shadow-sm hover:bg-gray-50 transition-colors mb-2">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M20 12H4M4 12L10 6M4 12L10 18" stroke="#2B3674" stroke-width="1.5" stroke-linecap="round"
-            stroke-linejoin="round" />
-        </svg>
-      </button>
-      <div>
-        <h1 class="text-3xl font-semibold text-[#343A40]">Nouvelle demande d'imagerie médicale</h1>
-        <p class="text-xs text-[#343A40] mt-1">
-          Sélectionnez un patient, renseignez la prescription puis générez un QR et un PDF.
-        </p>
+  <div class="mx-auto">
+
+    <!-- ═══════════════════ VUE LISTE ═══════════════════ -->
+    <ng-container *ngIf="viewMode === 'list'">
+
+      <div class="mb-4 flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-semibold text-[#343A40]">Mes demandes d'imagerie</h1>
+          <p class="text-xs text-gray-500 mt-1">Historique de toutes vos demandes d'imagerie médicale</p>
+        </div>
+        <button (click)="openCreate()"
+          class="flex items-center gap-2 px-4 py-2.5 bg-[#104382] text-white text-sm font-medium rounded-md hover:bg-[#0d3468] transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+          </svg>
+          Nouvelle demande
+        </button>
       </div>
-    </div>
 
-    <!-- Form Container -->
-    <div class="bg-white rounded-md shadow-sm">
-      <form (ngSubmit)="onSubmit()">
+      <!-- barre de recherche -->
+      <div class="mb-4">
+        <div class="relative max-w-sm">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+          </svg>
+          <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearch()"
+            placeholder="Référence, patient, type d'examen..."
+            class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none"/>
+        </div>
+      </div>
 
-        <!-- Informations Patient (Readonly) -->
-        <div class="border-b border-gray-200">
-          <button type="button" (click)="toggleSection('patient')"
-            class="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
-            <h2 class="text-xl font-semibold text-[#2C3E50]">Informations Patient</h2>
-            <svg class="w-5 h-5 text-gray-500 transition-transform" [class.rotate-180]="!patientInfoExpanded"
-              fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
+      <!-- chargement -->
+      <div *ngIf="loadingList" class="flex justify-center py-16">
+        <svg class="animate-spin w-8 h-8 text-[#104382]" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+        </svg>
+      </div>
 
-          <div *ngIf="patientInfoExpanded" class="px-6 pb-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- erreur -->
+      <div *ngIf="!loadingList && listError" class="bg-red-50 border border-red-200 rounded-md px-6 py-4 text-sm text-red-700">
+        {{ listError }}
+        <button (click)="loadList()" class="ml-3 underline font-medium">Réessayer</button>
+      </div>
+
+      <!-- vide -->
+      <div *ngIf="!loadingList && !listError && filteredOrders.length === 0"
+        class="bg-white rounded-md shadow-sm px-6 py-16 text-center">
+        <svg class="mx-auto w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        <p class="text-gray-500 mb-4">{{ searchQuery ? 'Aucun résultat pour cette recherche.' : 'Aucune demande d\'imagerie pour le moment.' }}</p>
+        <button *ngIf="!searchQuery" (click)="openCreate()"
+          class="px-4 py-2 bg-[#104382] text-white text-sm rounded-md hover:bg-[#0d3468] transition-colors">
+          Créer une première demande
+        </button>
+      </div>
+
+      <!-- tableau -->
+      <div *ngIf="!loadingList && !listError && filteredOrders.length > 0" class="bg-white rounded-md shadow-sm overflow-hidden">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th class="px-4 py-3 text-left font-medium text-gray-600">Référence</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-600">Patient</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-600">Type d'examen</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-600">Région</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-600">Urgence</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-600">Statut</th>
+              <th class="px-4 py-3 text-left font-medium text-gray-600">Date</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr *ngFor="let order of paginatedOrders"
+              (click)="openDetail(order)"
+              class="hover:bg-blue-50 transition-colors cursor-pointer">
+              <td class="px-4 py-3 font-mono text-xs text-[#104382] font-semibold">{{ order.imagingOrderRef ?? '—' }}</td>
+              <td class="px-4 py-3 font-medium text-gray-800">{{ order.patientName ?? '—' }}</td>
+              <td class="px-4 py-3 text-gray-600">{{ examTypeLabel((order.examTypes ?? [])[0]) || '—' }}</td>
+              <td class="px-4 py-3 text-gray-600">{{ (order.bodyRegions ?? [])[0] ?? '—' }}</td>
+              <td class="px-4 py-3">
+                <span class="px-2 py-0.5 rounded-full text-xs font-medium"
+                  [ngClass]="{
+                    'bg-red-100 text-red-700':    order.urgency === 'URGENT',
+                    'bg-orange-100 text-orange-700': order.urgency === 'PRIORITY',
+                    'bg-gray-100 text-gray-700':  !order.urgency || order.urgency === 'NORMAL'
+                  }">{{ urgencyLabel(order.urgency) }}</span>
+              </td>
+              <td class="px-4 py-3">
+                <span class="px-2 py-0.5 rounded-full text-xs font-medium" [ngClass]="statusInfo(order.status).color">
+                  {{ statusInfo(order.status).label }}
+                </span>
+              </td>
+              <td class="px-4 py-3 text-gray-500 text-xs">{{ order.createdAt | date:'dd/MM/yyyy' }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- pagination -->
+        <div *ngIf="totalPages > 1" class="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-gray-50">
+          <p class="text-xs text-gray-500">
+            {{ (currentPage - 1) * pageSize + 1 }}–{{ minVal(currentPage * pageSize, filteredOrders.length) }} sur {{ filteredOrders.length }} résultats
+          </p>
+          <div class="flex items-center gap-1">
+            <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1"
+              class="px-2 py-1 rounded text-xs border border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white transition-colors">&laquo;</button>
+            <ng-container *ngFor="let p of pageNumbers">
+              <button (click)="goToPage(p)"
+                class="px-2.5 py-1 rounded text-xs border transition-colors"
+                [ngClass]="p === currentPage ? 'bg-[#104382] text-white border-[#104382]' : 'border-gray-300 hover:bg-white'">{{ p }}</button>
+            </ng-container>
+            <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages"
+              class="px-2 py-1 rounded text-xs border border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white transition-colors">&raquo;</button>
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
+
+    <!-- ═══════════════════ VUE DÉTAIL ═══════════════════ -->
+    <ng-container *ngIf="viewMode === 'detail' && selectedOrder">
+
+      <div class="mb-4 flex items-center gap-4">
+        <button (click)="goBack()"
+          class="inline-flex items-center justify-center p-3 bg-white rounded-md shadow-sm hover:bg-gray-50 transition-colors">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M20 12H4M4 12L10 6M4 12L10 18" stroke="#2B3674" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="flex-1">
+          <h1 class="text-2xl font-semibold text-[#343A40]">Détail de la demande</h1>
+          <p class="text-xs text-gray-500 mt-0.5">Référence : <span class="font-mono font-semibold text-[#104382]">{{ selectedOrder.imagingOrderRef ?? '—' }}</span></p>
+        </div>
+        <button (click)="printOrder()"
+          class="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50 transition-colors shadow-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+          </svg>
+          Télécharger / Imprimer
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+        <div class="lg:col-span-2 space-y-4">
+
+          <!-- Patient -->
+          <div class="bg-white rounded-md shadow-sm p-5">
+            <h2 class="text-sm font-semibold text-[#104382] uppercase tracking-wide mb-3">Patient</h2>
+            <div class="grid grid-cols-2 gap-3 text-sm">
+              <div><p class="text-xs text-gray-500">Nom complet</p><p class="font-medium text-gray-800 mt-0.5">{{ selectedOrder.patientName ?? '—' }}</p></div>
+              <div><p class="text-xs text-gray-500">Assurance</p><p class="font-medium text-gray-800 mt-0.5">{{ selectedOrder.patientInsurance ?? '—' }}</p></div>
+            </div>
+          </div>
+
+          <!-- Examens -->
+          <div class="bg-white rounded-md shadow-sm p-5">
+            <h2 class="text-sm font-semibold text-[#104382] uppercase tracking-wide mb-3">Examens prescrits</h2>
+            <div class="grid grid-cols-2 gap-4 text-sm mb-4">
               <div>
-                <label class="block text-base font-medium text-[#333333] mb-2">
-                  N° Référence
-                </label>
-                <input type="text" [value]="patientInfo.reference" readonly
-                  class="w-full px-4 py-3 border border-gray-300 rounded-md bg-gray-50 text-gray-600 cursor-not-allowed text-sm" />
+                <p class="text-xs text-gray-500 mb-1">Types d'examen</p>
+                <div class="flex flex-wrap gap-2">
+                  <span *ngFor="let t of (selectedOrder.examTypes ?? [])"
+                    class="px-2.5 py-1 bg-blue-50 text-blue-700 text-xs rounded-full border border-blue-200">
+                    {{ examTypeLabel(t) }}
+                  </span>
+                  <span *ngIf="(selectedOrder.examTypes ?? []).length === 0" class="text-gray-400 text-sm">—</span>
+                </div>
               </div>
-
               <div>
-                <label class="block text-base font-medium text-[#333333] mb-2">
-                  Nom du patient
-                </label>
-                <input type="text" [value]="patientInfo.nom + ' ' + patientInfo.prenom" readonly
-                  class="w-full px-4 py-3 border border-gray-300 rounded-md bg-gray-50 text-gray-600 cursor-not-allowed text-sm" />
+                <p class="text-xs text-gray-500 mb-1">Régions anatomiques</p>
+                <div class="flex flex-wrap gap-2">
+                  <span *ngFor="let r of (selectedOrder.bodyRegions ?? [])"
+                    class="px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full border border-green-200">
+                    {{ r }}
+                  </span>
+                  <span *ngIf="(selectedOrder.bodyRegions ?? []).length === 0" class="text-gray-400 text-sm">—</span>
+                </div>
               </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3 text-sm">
+              <div><p class="text-xs text-gray-500">Indication clinique</p><p class="font-medium text-gray-800 mt-0.5">{{ selectedOrder.clinicalIndication ?? '—' }}</p></div>
+              <div><p class="text-xs text-gray-500">À jeun</p><p class="font-medium text-gray-800 mt-0.5">{{ selectedOrder.fasting ? 'Oui' : 'Non' }}</p></div>
             </div>
           </div>
-        </div>
 
-        <!-- Type d'examen -->
-        <div class="border-b border-gray-200">
-          <button type="button" (click)="toggleSection('typeExamen')"
-            class="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
-            <h2 class="text-xl font-semibold text-[#2C3E50]">Type d'examen <span class="text-red-500">*</span></h2>
-            <svg class="w-5 h-5 text-gray-500 transition-transform" [class.rotate-180]="!typeExamenExpanded" fill="none"
-              stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
+          <!-- Fichier résultat (si uploadé) -->
+          <div *ngIf="selectedOrder.resultFileUrl" class="bg-white rounded-md shadow-sm p-5">
+            <h2 class="text-sm font-semibold text-[#104382] uppercase tracking-wide mb-3">Compte rendu / Fichier résultat</h2>
+            <a [href]="selectedOrder.resultFileUrl" target="_blank" rel="noopener"
+              class="inline-flex items-center gap-2 px-4 py-2.5 bg-[#104382] text-white text-sm font-medium rounded-md hover:bg-[#0d3468] transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+              </svg>
+              Ouvrir le fichier résultat
+            </a>
+            <p class="text-xs text-gray-400 mt-2">{{ selectedOrder.resultFileUrl }}</p>
+          </div>
 
-          <div *ngIf="typeExamenExpanded" class="px-6 pb-6">
-            <div *ngIf="loadingTypes" class="text-center py-4">
-              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto"></div>
-              <p class="text-sm text-gray-600 mt-2">Chargement des types d'examens...</p>
-            </div>
-
-            <div *ngIf="!loadingTypes" class="space-y-4">
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <label *ngFor="let type of typesExamens"
-                  class="flex items-center px-4 py-3 border rounded-md cursor-pointer hover:bg-gray-50 transition-colors"
-                  [class.border-[#104382]]="formData.typeId === type.id"
-                  [class.bg-[#10438214]]="formData.typeId === type.id">
-                  <input type="radio" [value]="type.id" [(ngModel)]="formData.typeId" name="typeId"
-                    class="w-4 h-4 text-teal-600 border-gray-300 focus:ring-[#104382]" />
-                  <span class="ml-3 text-sm text-[#343A40]">{{ type.name || type.label }}</span>
-                </label>
-              </div>
-
-              <button type="button" (click)="addImagingType()"
-                class="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-md text-sm font-medium text-[#104382] hover:border-[#104382] transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          <!-- Images médicales (si disponibles) -->
+          <div *ngIf="(selectedOrder.imageUrls ?? []).length > 0" class="bg-white rounded-md shadow-sm p-5">
+            <h2 class="text-sm font-semibold text-[#104382] uppercase tracking-wide mb-3">Images médicales</h2>
+            <div class="grid grid-cols-2 gap-3">
+              <a *ngFor="let url of selectedOrder.imageUrls; let i = index"
+                [href]="url" target="_blank" rel="noopener"
+                class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors text-sm text-[#104382] truncate">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
-                Ajouter un type
-              </button>
+                Image {{ i + 1 }}
+              </a>
             </div>
           </div>
+
+          <!-- Observations (si disponibles) -->
+          <div *ngIf="selectedOrder.observations || selectedOrder.radiologistNotes" class="bg-white rounded-md shadow-sm p-5">
+            <h2 class="text-sm font-semibold text-[#104382] uppercase tracking-wide mb-3">Compte rendu du radiologue</h2>
+            <p *ngIf="selectedOrder.reportTitle" class="text-sm font-semibold text-gray-700 mb-2">{{ selectedOrder.reportTitle }}</p>
+            <p *ngIf="selectedOrder.observations" class="text-sm text-gray-700 mb-2">{{ selectedOrder.observations }}</p>
+            <p *ngIf="selectedOrder.radiologistNotes" class="text-sm text-gray-600 italic">{{ selectedOrder.radiologistNotes }}</p>
+          </div>
+
         </div>
 
-        <!-- Région -->
-        <div class="border-b border-gray-200">
-          <button type="button" (click)="toggleSection('region')"
-            class="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
-            <h2 class="text-xl font-semibold text-[#2C3E50]">Région <span class="text-red-500">*</span></h2>
-            <svg class="w-5 h-5 text-gray-500 transition-transform" [class.rotate-180]="!regionExpanded" fill="none"
-              stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
+        <!-- Colonne latérale -->
+        <div class="space-y-4">
 
-          <div *ngIf="regionExpanded" class="px-6 pb-6">
-            <div *ngIf="loadingRegions" class="text-center py-4">
-              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto"></div>
-              <p class="text-sm text-gray-600 mt-2">Chargement des régions...</p>
-            </div>
-
-            <div *ngIf="!loadingRegions" class="space-y-4">
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <label *ngFor="let region of regions"
-                  class="flex items-center px-4 py-3 border rounded-md cursor-pointer hover:bg-gray-50 transition-colors"
-                  [class.border-[#104382]]="formData.regionId === region.id"
-                  [class.bg-[#10438214]]="formData.regionId === region.id">
-                  <input type="radio" [value]="region.id" [(ngModel)]="formData.regionId" name="regionId"
-                    class="w-4 h-4 text-teal-600 border-gray-300 focus:ring-[#104382]" />
-                  <span class="ml-3 text-sm text-[#343A40]">{{ region.name || region.label }}</span>
-                </label>
+          <div class="bg-white rounded-md shadow-sm p-5">
+            <h2 class="text-sm font-semibold text-[#104382] uppercase tracking-wide mb-3">Statut</h2>
+            <div class="space-y-3 text-sm">
+              <div>
+                <p class="text-xs text-gray-500 mb-1">Statut actuel</p>
+                <span class="px-3 py-1 rounded-full text-xs font-semibold" [ngClass]="statusInfo(selectedOrder.status).color">
+                  {{ statusInfo(selectedOrder.status).label }}
+                </span>
               </div>
+              <div>
+                <p class="text-xs text-gray-500 mb-1">Urgence</p>
+                <span class="px-3 py-1 rounded-full text-xs font-semibold"
+                  [ngClass]="{
+                    'bg-red-100 text-red-700':    selectedOrder.urgency === 'URGENT',
+                    'bg-orange-100 text-orange-700': selectedOrder.urgency === 'PRIORITY',
+                    'bg-gray-100 text-gray-700':  !selectedOrder.urgency || selectedOrder.urgency === 'NORMAL'
+                  }">{{ urgencyLabel(selectedOrder.urgency) }}</span>
+              </div>
+              <div><p class="text-xs text-gray-500">Date création</p><p class="font-medium text-gray-800 mt-0.5">{{ selectedOrder.createdAt | date:'dd/MM/yyyy HH:mm' }}</p></div>
+              <div *ngIf="selectedOrder.appointmentDate">
+                <p class="text-xs text-gray-500">Date RDV</p>
+                <p class="font-medium text-[#104382] mt-0.5">{{ selectedOrder.appointmentDate | date:'dd/MM/yyyy HH:mm' }}</p>
+              </div>
+            </div>
+          </div>
 
-              <button type="button" (click)="addImagingRegion()"
-                class="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-md text-sm font-medium text-[#104382] hover:border-[#104382] transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          <div *ngIf="selectedOrder.acceptedCenterName" class="bg-white rounded-md shadow-sm p-5">
+            <h2 class="text-sm font-semibold text-[#104382] uppercase tracking-wide mb-3">Centre d'imagerie</h2>
+            <div class="space-y-2 text-sm">
+              <div><p class="text-xs text-gray-500">Nom</p><p class="font-medium text-gray-800 mt-0.5">{{ selectedOrder.acceptedCenterName }}</p></div>
+              <div *ngIf="selectedOrder.acceptedCenterAddress"><p class="text-xs text-gray-500">Adresse</p><p class="font-medium text-gray-800 mt-0.5">{{ selectedOrder.acceptedCenterAddress }}</p></div>
+              <div *ngIf="selectedOrder.acceptedPrice"><p class="text-xs text-gray-500">Coût estimé</p><p class="font-semibold text-[#104382] mt-0.5">{{ selectedOrder.acceptedPrice | number:'1.0-0' }} FCFA</p></div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-md shadow-sm p-5">
+            <h2 class="text-sm font-semibold text-[#104382] uppercase tracking-wide mb-3">Prescripteur</h2>
+            <div class="space-y-2 text-sm">
+              <div><p class="text-xs text-gray-500">Médecin</p><p class="font-medium text-gray-800 mt-0.5">{{ selectedOrder.doctorName ?? '—' }}</p></div>
+              <div *ngIf="selectedOrder.doctorSpecialty"><p class="text-xs text-gray-500">Spécialité</p><p class="font-medium text-gray-800 mt-0.5">{{ selectedOrder.doctorSpecialty }}</p></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </ng-container>
+
+    <!-- ═══════════════════ VUE FORMULAIRE ═══════════════════ -->
+    <ng-container *ngIf="viewMode === 'create'">
+
+      <div class="mb-6 flex flex-row items-center gap-4">
+        <button (click)="goBack()"
+          class="inline-flex items-center justify-center p-4 bg-white rounded-md shadow-sm hover:bg-gray-50 transition-colors mb-2">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M20 12H4M4 12L10 6M4 12L10 18" stroke="#2B3674" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div>
+          <h1 class="text-2xl font-semibold text-[#343A40]">Nouvelle demande d'imagerie médicale</h1>
+          <p class="text-xs text-[#343A40] mt-1">Le centre d'imagerie le plus proche sera automatiquement sélectionné.</p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-md shadow-sm">
+        <form (ngSubmit)="onSubmit()">
+
+          <!-- Patient -->
+          <div class="border-b border-gray-200 px-6 py-4">
+            <h2 class="text-xl font-semibold text-[#2C3E50] mb-4">Informations Patient</h2>
+            <div *ngIf="!patientInfo.id" class="relative mb-4">
+              <label class="block text-sm font-medium text-[#333333] mb-2">Rechercher un patient <span class="text-red-500">*</span></label>
+              <input type="text" [(ngModel)]="patientSearch" name="patientSearch"
+                (input)="searchPatient(patientSearch)"
+                placeholder="Nom, prénom ou téléphone..."
+                class="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none text-sm"/>
+              <div *ngIf="patientSearchLoading" class="absolute right-3 top-10">
+                <svg class="animate-spin w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
                 </svg>
-                Ajouter une région
-              </button>
+              </div>
+              <div *ngIf="patientSearchResults.length > 0"
+                class="absolute z-10 w-full bg-white border border-gray-200 rounded-md shadow-lg mt-1 max-h-52 overflow-y-auto">
+                <div *ngFor="let p of patientSearchResults" (mousedown)="selectPatient(p)"
+                  class="px-4 py-3 cursor-pointer hover:bg-[#F4F6F9] text-sm border-b border-gray-100 last:border-0">
+                  <span class="font-medium text-gray-800">{{ (p.firstName ?? p.prenom ?? '') }} {{ (p.lastName ?? p.nom ?? '') }}</span>
+                  <span class="text-gray-500 ml-2 text-xs">{{ p.email }}</span>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="patientInfo.id" class="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <svg class="w-5 h-5 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+              <span class="text-sm font-medium text-blue-800">{{ patientInfo.prenom }} {{ patientInfo.nom }}</span>
+              <button type="button" (click)="patientInfo = { id: '', reference: '', nom: '', prenom: '', assurance: '' }; patientSearch = ''"
+                class="ml-auto text-xs text-blue-600 underline">Changer</button>
             </div>
           </div>
-        </div>
 
-        <!-- Centre d'imagerie (Autocomplete) -->
-        <div class="border-b border-gray-200">
-          <button type="button" (click)="toggleSection('centre')"
-            class="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
-            <h2 class="text-xl font-semibold text-[#2C3E50]">Centre d'imagerie <span class="text-red-500">*</span></h2>
-            <svg class="w-5 h-5 text-gray-500 transition-transform" [class.rotate-180]="!centreExpanded" fill="none"
-              stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-
-          <div *ngIf="centreExpanded" class="px-6 pb-6">
-            <div class="relative">
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Rechercher un centre d'imagerie
-              </label>
-              <input type="text" [(ngModel)]="centerSearchTerm" (input)="onCenterSearch($event)"
-                (focus)="showCenterDropdown = centerResults.length > 0" (blur)="closeCenterDropdown()"
-                name="centerSearch" placeholder="Tapez au moins 2 caractères..."
-                class="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none transition-all text-sm" />
-
-              <!-- Loading indicator -->
-              <div *ngIf="loadingCenters" class="absolute right-3 top-11">
-                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-teal-600"></div>
-              </div>
-
-              <!-- Dropdown results -->
-              <div *ngIf="showCenterDropdown && centerResults.length > 0"
-                class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
-                <button type="button" *ngFor="let center of centerResults" (click)="selectCenter(center)"
-                  class="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors text-sm border-b last:border-b-0">
-                  <div class="font-medium text-gray-800">{{ (center.nom || '') + ' ' + (center.prenom || '') }}</div>
-                  <div *ngIf="center.adress || center.telephone" class="text-xs text-gray-500 mt-1">
-                    <span *ngIf="center.adress">{{ center.adress }}</span>
-                    <span *ngIf="center.adress && center.telephone"> • </span>
-                    <span *ngIf="center.telephone">{{ center.telephone }}</span>
+          <!-- Type d'examen -->
+          <div class="border-b border-gray-200">
+            <button type="button" (click)="toggleSection('typeExamen')"
+              class="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+              <h2 class="text-xl font-semibold text-[#2C3E50]">Type d'examen</h2>
+              <svg class="w-5 h-5 text-gray-500 transition-transform" [class.rotate-180]="!typeExamenExpanded" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div *ngIf="typeExamenExpanded" class="px-6 pb-6">
+              <div class="flex flex-wrap gap-2 items-center">
+                <button type="button" *ngFor="let t of examTypes" (click)="selectedExamType = t.value"
+                  class="px-3 py-1.5 rounded-full border text-sm transition-all"
+                  [ngClass]="selectedExamType === t.value
+                    ? 'bg-[#104382] text-white border-[#104382]'
+                    : 'border-gray-300 text-gray-700 hover:border-[#104382] hover:text-[#104382]'">
+                  {{ t.label }}
+                </button>
+                <!-- Valeur personnalisée sélectionnée -->
+                <button *ngIf="isCustomExam()" type="button"
+                  class="px-3 py-1.5 rounded-full border text-sm bg-[#104382] text-white border-[#104382] flex items-center gap-1">
+                  {{ selectedExamType }}
+                  <span (click)="selectedExamType = ''" class="ml-1 hover:opacity-70 cursor-pointer">×</span>
+                </button>
+                <!-- Input personnalisé -->
+                <ng-container *ngIf="!showCustomExamInput; else customExamField">
+                  <button type="button" (click)="showCustomExamInput = true"
+                    class="px-3 py-1.5 rounded-full border border-dashed border-gray-300 text-sm text-gray-500 hover:border-[#104382] hover:text-[#104382] flex items-center gap-1">
+                    + Ajouter
+                  </button>
+                </ng-container>
+                <ng-template #customExamField>
+                  <div class="flex items-center gap-1">
+                    <input type="text" [(ngModel)]="customExamLabel" (keydown.enter)="addCustomExam()"
+                      placeholder="Ex: Scintigraphie..."
+                      class="px-3 py-1.5 rounded-full border border-[#104382] text-sm outline-none w-44">
+                    <button type="button" (click)="addCustomExam()"
+                      class="px-3 py-1.5 bg-[#104382] text-white rounded-full text-sm">OK</button>
+                    <button type="button" (click)="showCustomExamInput = false; customExamLabel = ''"
+                      class="text-gray-400 hover:text-gray-600 text-lg leading-none">×</button>
                   </div>
+                </ng-template>
+              </div>
+            </div>
+          </div>
+
+          <!-- Région anatomique -->
+          <div class="border-b border-gray-200">
+            <button type="button" (click)="toggleSection('region')"
+              class="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+              <h2 class="text-xl font-semibold text-[#2C3E50]">Région anatomique</h2>
+              <svg class="w-5 h-5 text-gray-500 transition-transform" [class.rotate-180]="!regionExpanded" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div *ngIf="regionExpanded" class="px-6 pb-6">
+              <div class="flex flex-wrap gap-2 items-center">
+                <button type="button" *ngFor="let r of bodyRegions" (click)="selectedBodyRegion = r.label"
+                  class="px-3 py-1.5 rounded-full border text-sm transition-all"
+                  [ngClass]="selectedBodyRegion === r.label
+                    ? 'bg-[#104382] text-white border-[#104382]'
+                    : 'border-gray-300 text-gray-700 hover:border-[#104382] hover:text-[#104382]'">
+                  {{ r.label }}
+                </button>
+                <!-- Valeur personnalisée sélectionnée -->
+                <button *ngIf="isCustomRegion()" type="button"
+                  class="px-3 py-1.5 rounded-full border text-sm bg-[#104382] text-white border-[#104382] flex items-center gap-1">
+                  {{ selectedBodyRegion }}
+                  <span (click)="selectedBodyRegion = ''" class="ml-1 hover:opacity-70 cursor-pointer">×</span>
+                </button>
+                <!-- Input personnalisé -->
+                <ng-container *ngIf="!showCustomRegionInput; else customRegionField">
+                  <button type="button" (click)="showCustomRegionInput = true"
+                    class="px-3 py-1.5 rounded-full border border-dashed border-gray-300 text-sm text-gray-500 hover:border-[#104382] hover:text-[#104382] flex items-center gap-1">
+                    + Ajouter
+                  </button>
+                </ng-container>
+                <ng-template #customRegionField>
+                  <div class="flex items-center gap-1">
+                    <input type="text" [(ngModel)]="customRegionLabel" (keydown.enter)="addCustomRegion()"
+                      placeholder="Ex: Colonne cervicale..."
+                      class="px-3 py-1.5 rounded-full border border-[#104382] text-sm outline-none w-44">
+                    <button type="button" (click)="addCustomRegion()"
+                      class="px-3 py-1.5 bg-[#104382] text-white rounded-full text-sm">OK</button>
+                    <button type="button" (click)="showCustomRegionInput = false; customRegionLabel = ''"
+                      class="text-gray-400 hover:text-gray-600 text-lg leading-none">×</button>
+                  </div>
+                </ng-template>
+              </div>
+            </div>
+          </div>
+
+          <!-- Indication clinique -->
+          <div class="border-b border-gray-200">
+            <button type="button" (click)="toggleSection('indication')"
+              class="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+              <h2 class="text-xl font-semibold text-[#2C3E50]">Indication clinique</h2>
+              <svg class="w-5 h-5 text-gray-500 transition-transform" [class.rotate-180]="!indicationExpanded" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div *ngIf="indicationExpanded" class="px-6 pb-6 space-y-3">
+              <div class="flex flex-wrap gap-2">
+                <button type="button" *ngFor="let tag of indicationsPredefinies" (click)="addIndicationTag(tag)"
+                  class="px-3 py-1 border border-gray-300 rounded-full text-xs text-gray-600 hover:bg-gray-50 transition-colors">
+                  + {{ tag }}
                 </button>
               </div>
+              <textarea [(ngModel)]="clinicalIndication" name="clinicalIndication" rows="3"
+                placeholder="Décrivez l'indication clinique..."
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#104382] outline-none resize-none text-sm"></textarea>
+            </div>
+          </div>
 
-              <!-- Selected center -->
-              <div *ngIf="formData.imagingCenterId" class="mt-3 p-3 bg-[#10438214] border border-teal-200 rounded-md">
-                <div class="flex items-center justify-between">
-                  <div>
-                    <p class="text-sm font-medium text-teal-900">Centre sélectionné</p>
-                    <p class="text-sm text-[#104382]">{{ formData.imagingCenterName }}</p>
-                  </div>
-                  <button type="button"
-                    (click)="formData.imagingCenterId = null; formData.imagingCenterName = ''; centerSearchTerm = ''"
-                    class="text-red-600 hover:text-red-800">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+          <!-- Paramètres -->
+          <div class="border-b border-gray-200">
+            <button type="button" (click)="toggleSection('parametres')"
+              class="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+              <h2 class="text-xl font-semibold text-[#2C3E50]">Paramètres</h2>
+              <svg class="w-5 h-5 text-gray-500 transition-transform" [class.rotate-180]="!parametresExpanded" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div *ngIf="parametresExpanded" class="px-6 pb-6 space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-[#333333] mb-2">Niveau d'urgence</label>
+                <div class="flex gap-3">
+                  <button type="button" (click)="urgency = 'NORMAL'"
+                    class="flex-1 py-2.5 border-2 rounded-md text-sm font-medium transition-all"
+                    [ngClass]="urgency === 'NORMAL' ? 'border-[#104382] bg-blue-50 text-[#104382]' : 'border-gray-300 text-gray-700'">Normal</button>
+                  <button type="button" (click)="urgency = 'PRIORITY'"
+                    class="flex-1 py-2.5 border-2 rounded-md text-sm font-medium transition-all"
+                    [ngClass]="urgency === 'PRIORITY' ? 'border-orange-500 bg-orange-50 text-orange-600' : 'border-gray-300 text-gray-700'">Prioritaire</button>
+                  <button type="button" (click)="urgency = 'URGENT'"
+                    class="flex-1 py-2.5 border-2 rounded-md text-sm font-medium transition-all"
+                    [ngClass]="urgency === 'URGENT' ? 'border-red-500 bg-red-50 text-red-600' : 'border-gray-300 text-gray-700'">Urgent</button>
                 </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <input type="checkbox" id="fasting" [(ngModel)]="fasting" name="fasting"
+                  class="w-4 h-4 text-[#104382] border-gray-300 rounded focus:ring-[#104382]"/>
+                <label for="fasting" class="text-sm text-gray-700">Patient à jeun requis</label>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Indication Clinique -->
-        <div class="border-b border-gray-200">
-          <button type="button" (click)="toggleSection('indication')"
-            class="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
-            <h2 class="text-xl font-semibold text-[#2C3E50]">Indication Clinique <span class="text-red-500">*</span>
-            </h2>
-            <svg class="w-5 h-5 text-gray-500 transition-transform" [class.rotate-180]="!indicationExpanded" fill="none"
-              stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-
-          <div *ngIf="indicationExpanded" class="px-6 pb-6">
-            <textarea [(ngModel)]="formData.clinicalIndication" name="clinicalIndication" rows="2"
-              placeholder="Contexte médical, suspicion diagnostique, traitement en cours..."
-              class="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none transition-all resize-none text-sm"></textarea>
-
-            <div class="flex flex-wrap gap-2 mt-3">
-              <button *ngFor="let indication of indicationsPredefinies" type="button"
-                (click)="addIndicationTag(indication)"
-                class="inline-flex items-center px-3 py-1.5 text-xs border border-[#CBD5E1] text-gray-700 rounded-full hover:bg-gray-50 transition-colors">
-                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          <!-- Boutons -->
+          <div class="px-6 py-6">
+            <div class="flex flex-col sm:flex-row gap-3">
+              <button type="submit" [disabled]="submitting"
+                class="px-6 py-3 bg-[#104382] text-white font-medium rounded-md transition-colors text-sm disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2">
+                <svg *ngIf="submitting" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                 </svg>
-                {{ indication }}
+                {{ submitting ? 'Envoi en cours...' : 'Envoyer la demande' }}
+              </button>
+              <button type="button" (click)="onCancel()"
+                class="px-6 py-3 bg-white text-gray-700 font-medium border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-sm">
+                Annuler
               </button>
             </div>
           </div>
-        </div>
 
-        <!-- Paramètres & Urgence -->
-        <div class="border-b border-gray-200">
-          <button type="button" (click)="toggleSection('parametres')"
-            class="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
-            <h2 class="text-xl font-semibold text-[#2C3E50]">Paramètres & Urgence</h2>
-            <svg class="w-5 h-5 text-gray-500 transition-transform" [class.rotate-180]="!parametresExpanded" fill="none"
-              stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
+        </form>
+      </div>
 
-          <div *ngIf="parametresExpanded" class="px-6 pb-6 space-y-6">
-            <!-- Patient jeune ET Niveau d'urgence sur la même ligne -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <!-- Patient jeune -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-3">
-                  Patient jeune ?
-                </label>
-                <div class="flex gap-3">
-                  <label
-                    class="relative flex items-center justify-center px-6 py-2.5 border-2 rounded-md cursor-pointer transition-all flex-1"
-                    [class.border-[#104382]]="formData.youngPatient === true"
-                    [class.bg-[#10438214]]="formData.youngPatient === true"
-                    [class.border-gray-300]="formData.youngPatient !== true"
-                    [class.hover:bg-gray-50]="formData.youngPatient !== true">
-                    <input type="radio" name="youngPatient" [value]="true" [(ngModel)]="formData.youngPatient"
-                      class="sr-only" />
-                    <span class="text-sm font-medium" [class.text-[#104382]]="formData.youngPatient === true"
-                      [class.text-gray-700]="formData.youngPatient !== true">
-                      Oui
-                    </span>
-                    <svg *ngIf="formData.youngPatient === true" class="absolute right-3 w-5 h-5 text-[#104382]"
-                      fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                        clip-rule="evenodd" />
-                    </svg>
-                  </label>
+    </ng-container>
 
-                  <label
-                    class="relative flex items-center justify-center px-6 py-2.5 border-2 rounded-md cursor-pointer transition-all flex-1"
-                    [class.border-[#104382]]="formData.youngPatient === false"
-                    [class.bg-[#10438214]]="formData.youngPatient === false"
-                    [class.border-gray-300]="formData.youngPatient !== false"
-                    [class.hover:bg-gray-50]="formData.youngPatient !== false">
-                    <input type="radio" name="youngPatient" [value]="false" [(ngModel)]="formData.youngPatient"
-                      class="sr-only" />
-                    <span class="text-sm font-medium" [class.text-[#104382]]="formData.youngPatient === false"
-                      [class.text-gray-700]="formData.youngPatient !== false">
-                      Non
-                    </span>
-                    <svg *ngIf="formData.youngPatient === false" class="absolute right-3 w-5 h-5 text-[#104382]"
-                      fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                        clip-rule="evenodd" />
-                    </svg>
-                  </label>
-                </div>
-              </div>
-
-              <!-- Niveau d'urgence -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-3">
-                  Niveau d'urgence
-                </label>
-                <div class="flex gap-3">
-                  <label
-                    class="relative flex items-center justify-center px-4 py-2.5 border-2 rounded-md cursor-pointer transition-all flex-1"
-                    [class.border-[#104382]]="formData.urgencyLevel === 'NORMAL'"
-                    [class.bg-[#10438214]]="formData.urgencyLevel === 'NORMAL'"
-                    [class.border-gray-300]="formData.urgencyLevel !== 'NORMAL'"
-                    [class.hover:bg-gray-50]="formData.urgencyLevel !== 'NORMAL'">
-                    <input type="radio" name="urgencyLevel" value="NORMAL" [(ngModel)]="formData.urgencyLevel"
-                      class="sr-only" />
-                    <span class="text-sm font-medium" [class.text-[#104382]]="formData.urgencyLevel === 'NORMAL'"
-                      [class.text-gray-700]="formData.urgencyLevel !== 'NORMAL'">
-                      Normal
-                    </span>
-                    <svg *ngIf="formData.urgencyLevel === 'NORMAL'" class="absolute right-2 w-5 h-5 text-[#104382]"
-                      fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                        clip-rule="evenodd" />
-                    </svg>
-                  </label>
-
-                  <label
-                    class="relative flex items-center justify-center px-4 py-2.5 border-2 rounded-md cursor-pointer transition-all flex-1"
-                    [class.border-[#104382]]="formData.urgencyLevel === 'PRIORITAIRE'"
-                    [class.bg-[#10438214]]="formData.urgencyLevel === 'PRIORITAIRE'"
-                    [class.border-gray-300]="formData.urgencyLevel !== 'PRIORITAIRE'"
-                    [class.hover:bg-gray-50]="formData.urgencyLevel !== 'PRIORITAIRE'">
-                    <input type="radio" name="urgencyLevel" value="PRIORITAIRE" [(ngModel)]="formData.urgencyLevel"
-                      class="sr-only" />
-                    <span class="text-sm font-medium" [class.text-[#104382]]="formData.urgencyLevel === 'PRIORITAIRE'"
-                      [class.text-gray-700]="formData.urgencyLevel !== 'PRIORITAIRE'">
-                      Prioritaire
-                    </span>
-                    <svg *ngIf="formData.urgencyLevel === 'PRIORITAIRE'" class="absolute right-2 w-5 h-5 text-[#104382]"
-                      fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                        clip-rule="evenodd" />
-                    </svg>
-                  </label>
-
-                  <label
-                    class="relative flex items-center justify-center px-4 py-2.5 border-2 rounded-md cursor-pointer transition-all flex-1"
-                    [class.border-[#104382]]="formData.urgencyLevel === 'URGENT'"
-                    [class.bg-[#10438214]]="formData.urgencyLevel === 'URGENT'"
-                    [class.border-gray-300]="formData.urgencyLevel !== 'URGENT'"
-                    [class.hover:bg-gray-50]="formData.urgencyLevel !== 'URGENT'">
-                    <input type="radio" name="urgencyLevel" value="URGENT" [(ngModel)]="formData.urgencyLevel"
-                      class="sr-only" />
-                    <span class="text-sm font-medium" [class.text-[#104382]]="formData.urgencyLevel === 'URGENT'"
-                      [class.text-gray-700]="formData.urgencyLevel !== 'URGENT'">
-                      Urgent
-                    </span>
-                    <svg *ngIf="formData.urgencyLevel === 'URGENT'" class="absolute right-2 w-5 h-5 text-[#104382]"
-                      fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                        clip-rule="evenodd" />
-                    </svg>
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <!-- needsHelp Checkbox -->
-            <div>
-              <label class="flex items-start cursor-pointer">
-                <input type="checkbox" [(ngModel)]="formData.needsHelp" name="needsHelp"
-                  class="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-[#104382] mt-1" />
-                <span class="ml-3 text-sm font-medium text-gray-700">Assistance nécessaire</span>
-              </label>
-              <p class="text-xs text-gray-500 mt-2 ml-7">Cochez si le patient nécessite une assistance particulière pour
-                l'examen d'imagerie</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="px-6 py-6">
-          <div class="flex flex-col sm:flex-row gap-3">
-            <button type="submit"
-              class="px-6 py-3 bg-[#104382] text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-[#104382] focus:ring-offset-2 transition-colors text-sm">
-              Générer la demande
-            </button>
-
-            <button type="button" (click)="onCancel()"
-              class="px-6 py-3 bg-white border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50 focus:outline-none transition-colors text-sm">
-              Annuler
-            </button>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<!-- ========================== -->
-<!-- MODAL CRÉER TYPE -->
-<!-- ========================== -->
-<div *ngIf="showTypeModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-  (click)="closeTypeModal()">
-  <div class="bg-white rounded-xl w-full max-w-md p-6 shadow-2xl" (click)="$event.stopPropagation()">
-    <h3 class="text-lg font-semibold text-gray-900 mb-4">Créer un nouveau type d'examen</h3>
-
-    <div class="mb-4">
-      <label class="block text-sm font-medium text-gray-700 mb-2">
-        Nom du type d'examen
-      </label>
-      <input type="text" [(ngModel)]="newTypeName" placeholder="Ex: Scanner thoracique"
-        class="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none text-sm" />
-    </div>
-
-    <div class="flex gap-3">
-      <button (click)="submitNewType()"
-        class="flex-1 px-4 py-2.5 bg-[#104382] text-white rounded-md transition-colors text-sm font-medium">
-        Créer
-      </button>
-      <button (click)="closeTypeModal()"
-        class="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm font-medium">
-        Annuler
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ========================== -->
-<!-- MODAL CRÉER RÉGION -->
-<!-- ========================== -->
-<div *ngIf="showRegionModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-  (click)="closeRegionModal()">
-  <div class="bg-white rounded-xl w-full max-w-md p-6 shadow-2xl" (click)="$event.stopPropagation()">
-    <h3 class="text-lg font-semibold text-gray-900 mb-4">Créer une nouvelle région</h3>
-
-    <div class="mb-4">
-      <label class="block text-sm font-medium text-gray-700 mb-2">
-        Nom de la région
-      </label>
-      <input type="text" [(ngModel)]="newRegionName" placeholder="Ex: Membre inférieur gauche"
-        class="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none text-sm" />
-    </div>
-
-    <div class="flex gap-3">
-      <button (click)="submitNewRegion()"
-        class="flex-1 px-4 py-2.5 bg-[#104382] text-white rounded-md transition-colors text-sm font-medium">
-        Créer
-      </button>
-      <button (click)="closeRegionModal()"
-        class="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm font-medium">
-        Annuler
-      </button>
-    </div>
   </div>
 </div>

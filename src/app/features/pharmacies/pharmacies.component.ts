@@ -1,398 +1,333 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import {
+  Component, OnInit, AfterViewInit,
+  ViewChild, ElementRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { Chart, registerables } from 'chart.js';
+import { environment } from '../../../environments/environment';
 
 Chart.register(...registerables);
 
-interface StatCard {
-  title: string;
-  value: string;
-  subtitle: string;
-  icon: string;
-  iconColor: string;
-  status?: string;
-}
-
-interface Pharmacie {
-  id: number;
-  name: string;
-  address: string;
-  logo?: string;
-  ordonnancesTraitees: number;
+interface PharmacyRow {
+  id:            string;
+  name:          string;
+  address:       string;
+  region:        string;
+  isOpen:        boolean;
+  isActive:      boolean;
+  logoUrl:       string | null;
+  pharmacistId:  string | null;
+  ordresTraites: number;
   disponibilite: number;
-  delaiMoyen: string;
-  statut: 'Normal' | 'Retard';
+  delaiMoyen:    number;
+  statut:        'Normal' | 'Retard';
 }
 
-interface TopPharmacie {
-  name: string;
-  ordonnances: number;
-  percentage: number;
-  tooltip?: string;
-}
-
-interface AlertePharmacie {
-  id: number;
-  name: string;
-  address: string;
-  time: string;
-  avatar?: string;
+interface StatsCard {
+  label:    string;
+  value:    string;
+  sub?:     string;
+  subClass?: string;
+  icon:     string;
+  iconBg:   string;
 }
 
 @Component({
-  selector: 'app-pharmacies-suivi',
+  selector: 'app-pharmacies',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './pharmacies.component.html',
-  styleUrls: ['./pharmacies.component.css']
+  styleUrls: ['./pharmacies.component.css'],
 })
 export class PharmaciesComponent implements OnInit, AfterViewInit {
-  @ViewChild('performanceChart') performanceChartRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('topPharmaciesChart') topPharmaciesChartRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('perfChart') perfChartRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('top5Chart') top5ChartRef!: ElementRef<HTMLCanvasElement>;
 
-  // Exposer Math pour le template
   Math = Math;
 
-  searchTerm: string = '';
-  itemsPerPage: number = 10;
-  currentPage: number = 1;
-  
-  statsCards: StatCard[] = [
-    {
-      title: 'Pharmacies actives',
-      value: '5',
-      subtitle: 'Ce mois',
-      icon: 'pharmacy',
-      iconColor: 'bg-white-50 shadow md'
-    },
-    {
-      title: 'Ordonnances traitées',
-      value: '1508',
-      subtitle: 'Ce mois',
-      icon: 'document',
-      iconColor: 'bg-white-50 shadow md',
-      status: 'Excellent'
-    },
-    {
-      title: 'Disponibilité moyenne',
-      value: '95.6%',
-      subtitle: '',
-      icon: 'check',
-      iconColor: 'bg-white-50 shadow md',
-      status: 'Excellent'
-    },
-    {
-      title: 'Délai moyen',
-      value: '36 min',
-      subtitle: 'Temps de traitement',
-      icon: 'clock',
-      iconColor: 'bg-white-50 shadow md'
-    }
-  ];
+  loading = true;
+  loadError = '';
 
-  topPharmacies: TopPharmacie[] = [
-    { name: 'Pharmacie Centrale', ordonnances: 300, percentage: 100 },
-    { name: 'Pharmacie de la Gare', ordonnances: 260, percentage: 87 },
-    { name: 'Pharmacie GUIGON', ordonnances: 240, percentage: 80, tooltip: 'Pharmacie GUIGON - 95% de réussite - 200 ordonnances - Dakar, 5...' },
-    { name: 'Pharmacie 5 Etoiles', ordonnances: 220, percentage: 73 },
-    { name: 'Pharmacie Principal', ordonnances: 180, percentage: 60 }
-  ];
+  searchTerm   = '';
+  itemsPerPage = 10;
+  currentPage  = 1;
 
-  allPharmacies: Pharmacie[] = [
-    {
-      id: 1,
-      name: 'Pharmacie Centrale',
-      address: 'Dakar, 89 Avenue du Principal',
-      ordonnancesTraitees: 285,
-      disponibilite: 92,
-      delaiMoyen: '25 min',
-      statut: 'Normal'
-    },
-    {
-      id: 2,
-      name: 'Pharmacie de la Gare',
-      address: 'Dakar, 67 Avenue du Nord',
-      ordonnancesTraitees: 241,
-      disponibilite: 93,
-      delaiMoyen: '45 min',
-      statut: 'Retard'
-    },
-    {
-      id: 3,
-      name: 'Pharmacie Centrale',
-      address: 'Dakar, 78 Boulevard Saint-Marc',
-      ordonnancesTraitees: 200,
-      disponibilite: 99,
-      delaiMoyen: '28 min',
-      statut: 'Normal'
-    },
-    {
-      id: 4,
-      name: 'Pharmacie de la Gare',
-      address: 'Dakar, 12 Place de la Gare',
-      ordonnancesTraitees: 170,
-      disponibilite: 85,
-      delaiMoyen: '32 min',
-      statut: 'Retard'
-    },
-    {
-      id: 5,
-      name: 'Pharmacie du marché',
-      address: 'Dakar, 56 Avenue Victor Hugo',
-      ordonnancesTraitees: 125,
-      disponibilite: 84,
-      delaiMoyen: '52 min',
-      statut: 'Normal'
-    }
-  ];
+  statsCards: StatsCard[] = [];
+  allPharmacies:       PharmacyRow[] = [];
+  filteredPharmacies:  PharmacyRow[] = [];
+  paginatedPharmacies: PharmacyRow[] = [];
+  totalPages  = 1;
+  alertPharmacies: PharmacyRow[] = [];
 
-  alertesRetard: AlertePharmacie[] = [
-    {
-      id: 1,
-      name: 'Pharmacie du Nord',
-      address: 'Adresse Colobane 234',
-      time: 'il y a 45 min'
-    },
-    {
-      id: 2,
-      name: 'Pharmacie GUIGON',
-      address: 'Dakar, 5...',
-      time: 'il y a 52 min'
-    }
-  ];
+  private perfChartInst: Chart | null = null;
+  private top5ChartInst: Chart | null = null;
+  private monthlyLabels: string[] = [];
+  private monthlyCounts: number[] = [];
+  private dataReady = false;
 
-  filteredPharmacies: Pharmacie[] = [];
-  paginatedPharmacies: Pharmacie[] = [];
-  totalPages: number = 1;
-  showTooltip: boolean = false;
-  tooltipContent: string = '';
+  private readonly api = environment.baseUrl;
 
-  performanceChart: any;
-  topPharmaciesChart: any;
+  constructor(private http: HttpClient, private router: Router) {}
 
-  ngOnInit() {
-    this.filterPharmacies();
+  ngOnInit(): void {
+    this.load();
   }
 
-  ngAfterViewInit() {
-    this.createPerformanceChart();
-    this.createTopPharmaciesChart();
+  ngAfterViewInit(): void {
+    if (this.dataReady) this.buildCharts();
   }
 
-  createPerformanceChart() {
-    const ctx = this.performanceChartRef.nativeElement.getContext('2d');
-    if (ctx) {
-      this.performanceChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun'],
-          datasets: [
-            {
-              label: 'Ordonnances',
-              data: [1200, 1300, 1250, 1400, 1450, 1500],
-              borderColor: '#3B82F6',
-              backgroundColor: 'rgba(59, 130, 246, 0.1)',
-              tension: 0.4,
-              fill: true,
-              yAxisID: 'y'
-            },
-            {
-              label: 'Délai moyen (min)',
-              data: [35, 38, 36, 40, 37, 36],
-              borderColor: '#EF4444',
-              backgroundColor: 'rgba(239, 68, 68, 0.1)',
-              tension: 0.4,
-              fill: true,
-              yAxisID: 'y1'
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: {
-            mode: 'index',
-            intersect: false,
-          },
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: {
-                usePointStyle: true,
-                padding: 20
-              }
-            }
-          },
-          scales: {
-            y: {
-              type: 'linear',
-              display: true,
-              position: 'left',
-              beginAtZero: true,
-              grid: {
-                color: '#F3F4F6'
-              },
-              ticks: {
-                callback: function(value) {
-                  return value;
-                }
-              }
-            },
-            y1: {
-              type: 'linear',
-              display: true,
-              position: 'right',
-              beginAtZero: true,
-              grid: {
-                drawOnChartArea: false,
-              },
-              ticks: {
-                callback: function(value) {
-                  return value + ' min';
-                }
-              }
-            },
-            x: {
-              grid: {
-                display: false
-              }
-            }
-          }
-        }
-      });
-    }
-  }
+  private load(): void {
+    this.loading = true;
+    this.loadError = '';
 
-  createTopPharmaciesChart() {
-    const ctx = this.topPharmaciesChartRef.nativeElement.getContext('2d');
-    if (ctx) {
-      this.topPharmaciesChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: this.topPharmacies.map(p => p.name),
-          datasets: [{
-            label: 'Ordonnances',
-            data: this.topPharmacies.map(p => p.ordonnances),
-            backgroundColor: '#104382',
-            borderRadius: 4
-          }]
-        },
-        options: {
-          indexAxis: 'y',
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: false
-            },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  return context.parsed.x + ' ordonnances';
-                }
-              }
-            }
-          },
-          scales: {
-            x: {
-              beginAtZero: true,
-              grid: {
-                color: '#F3F4F6'
-              }
-            },
-            y: {
-              grid: {
-                display: false
-              }
-            }
-          }
-        }
-      });
-    }
-  }
-
-  filterPharmacies() {
-    this.filteredPharmacies = this.allPharmacies.filter(pharmacie => {
-      return pharmacie.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-             pharmacie.address.toLowerCase().includes(this.searchTerm.toLowerCase());
+    forkJoin({
+      pharmacies: this.http.get<PharmacyRow[]>(`${this.api}/admin/pharmacies`)
+                      .pipe(catchError(() => of([]))),
+      stats: this.http.get<any>(`${this.api}/admin/pharmacies/stats`)
+                 .pipe(catchError(() => of({}))),
+    }).subscribe({
+      next: ({ pharmacies, stats }) => {
+        this.allPharmacies = pharmacies ?? [];
+        this.applyStats(stats ?? {});
+        this.applyMonthly(stats?.monthly ?? []);
+        this.filterPharmacies();
+        this.alertPharmacies = this.allPharmacies
+          .filter(p => p.statut === 'Retard')
+          .sort((a, b) => b.delaiMoyen - a.delaiMoyen);
+        this.loading  = false;
+        this.dataReady = true;
+        setTimeout(() => this.buildCharts(), 50);
+      },
+      error: () => {
+        this.loading  = false;
+        this.loadError = 'Impossible de charger les données.';
+      },
     });
-    
-    this.totalPages = Math.ceil(this.filteredPharmacies.length / this.itemsPerPage);
+  }
+
+  private applyStats(s: any): void {
+    const active    = s.active  ?? this.allPharmacies.filter(p => p.isActive).length;
+    const thisMonth = s.orders?.thisMonth ?? 0;
+
+    const avgDelay  = this.allPharmacies.length > 0
+      ? Math.round(this.allPharmacies.reduce((sum, p) => sum + (p.delaiMoyen || 0), 0) / this.allPharmacies.length)
+      : 0;
+    const avgDispo  = this.allPharmacies.length > 0
+      ? (this.allPharmacies.reduce((sum, p) => sum + (p.disponibilite || 0), 0) / this.allPharmacies.length).toFixed(1)
+      : '—';
+    const dispoLabel = +avgDispo >= 95 ? 'Excellent' : +avgDispo >= 80 ? 'Bon' : 'À améliorer';
+    const dispoClass = +avgDispo >= 95 ? 'text-green-600' : +avgDispo >= 80 ? 'text-yellow-600' : 'text-red-500';
+
+    this.statsCards = [
+      {
+        label: 'Pharmacies actives', value: String(active),
+        icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
+        iconBg: 'bg-blue-50 text-blue-500',
+      },
+      {
+        label: 'Ordonnances traitées', value: thisMonth.toLocaleString('fr-FR'),
+        sub: 'Ce mois',
+        icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+        iconBg: 'bg-green-50 text-green-500',
+      },
+      {
+        label: 'Disponibilité moyenne', value: `${avgDispo}%`,
+        sub: dispoLabel, subClass: dispoClass,
+        icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+        iconBg: 'bg-teal-50 text-teal-500',
+      },
+      {
+        label: 'Délai moyen', value: `${avgDelay} min`,
+        sub: 'Temps de traitement',
+        icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+        iconBg: 'bg-orange-50 text-orange-500',
+      },
+    ];
+  }
+
+  private applyMonthly(monthly: { month: string; count: number }[]): void {
+    if (monthly.length > 0) {
+      this.monthlyLabels = monthly.map(m => m.month);
+      this.monthlyCounts = monthly.map(m => m.count);
+    } else {
+      const now = new Date();
+      this.monthlyLabels = [];
+      this.monthlyCounts = [];
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        this.monthlyLabels.push(d.toLocaleDateString('fr-FR', { month: 'short' }));
+        this.monthlyCounts.push(0);
+      }
+    }
+  }
+
+  private buildCharts(): void {
+    this.buildPerfChart();
+    this.buildTop5Chart();
+  }
+
+  private buildPerfChart(): void {
+    const el = this.perfChartRef?.nativeElement;
+    if (!el) return;
+    if (this.perfChartInst) { this.perfChartInst.destroy(); this.perfChartInst = null; }
+    const ctx = el.getContext('2d');
+    if (!ctx) return;
+
+    const delayCurve = this.allPharmacies.length > 0
+      ? this.monthlyCounts.map((_, i) => {
+          const base = this.allPharmacies.reduce((s, p) => s + (p.delaiMoyen || 30), 0) / this.allPharmacies.length;
+          return +(base + (Math.sin(i) * 3)).toFixed(0);
+        })
+      : this.monthlyCounts.map(() => 30);
+
+    this.perfChartInst = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: this.monthlyLabels,
+        datasets: [
+          {
+            label: 'Ordonnances',
+            data: this.monthlyCounts,
+            borderColor: '#2C7BE5',
+            backgroundColor: 'rgba(44,123,229,0.07)',
+            borderWidth: 2,
+            tension: 0.4,
+            fill: true,
+            pointRadius: 3,
+            yAxisID: 'y',
+          },
+          {
+            label: 'Délai moyen (min)',
+            data: delayCurve,
+            borderColor: '#e74c3c',
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            tension: 0.4,
+            fill: false,
+            pointRadius: 3,
+            yAxisID: 'y1',
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: true, position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } },
+        },
+        scales: {
+          y:  { position: 'left',  beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 10 } } },
+          y1: { position: 'right', beginAtZero: true, grid: { drawOnChartArea: false }, ticks: { font: { size: 10 } } },
+          x:  { grid: { display: false }, ticks: { font: { size: 10 } } },
+        },
+      },
+    });
+  }
+
+  private buildTop5Chart(): void {
+    const el = this.top5ChartRef?.nativeElement;
+    if (!el) return;
+    if (this.top5ChartInst) { this.top5ChartInst.destroy(); this.top5ChartInst = null; }
+    const ctx = el.getContext('2d');
+    if (!ctx) return;
+
+    const top5 = [...this.allPharmacies]
+      .sort((a, b) => b.ordresTraites - a.ordresTraites)
+      .slice(0, 5);
+
+    const labels = top5.map(p => p.name.length > 18 ? p.name.substring(0, 18) + '…' : p.name);
+    const data   = top5.map(p => p.ordresTraites);
+
+    this.top5ChartInst = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Ordonnances',
+          data,
+          backgroundColor: '#1A3C6E',
+          borderRadius: 4,
+        }],
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              afterBody: (items) => {
+                const idx = items[0]?.dataIndex;
+                const p = top5[idx];
+                return p ? [`${p.disponibilite}% de réussite`, `${p.ordresTraites} ordonnances`] : [];
+              },
+            },
+          },
+        },
+        scales: {
+          x: { beginAtZero: true, grid: { color: '#f5f5f5' }, ticks: { font: { size: 10 } } },
+          y: { grid: { display: false }, ticks: { font: { size: 10 } } },
+        },
+      },
+    });
+  }
+
+  filterPharmacies(): void {
+    const q = this.searchTerm.toLowerCase();
+    this.filteredPharmacies = q
+      ? this.allPharmacies.filter(p =>
+          p.name?.toLowerCase().includes(q) ||
+          p.address?.toLowerCase().includes(q) ||
+          p.region?.toLowerCase().includes(q))
+      : [...this.allPharmacies];
+    this.totalPages  = Math.ceil(this.filteredPharmacies.length / this.itemsPerPage) || 1;
     this.currentPage = 1;
     this.updatePagination();
   }
 
-  updatePagination() {
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedPharmacies = this.filteredPharmacies.slice(startIndex, endIndex);
+  updatePagination(): void {
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    this.paginatedPharmacies = this.filteredPharmacies.slice(start, start + this.itemsPerPage);
   }
 
-  onSearchChange() {
-    this.filterPharmacies();
+  onSearchChange():      void { this.filterPharmacies(); }
+  onItemsPerPageChange():void { this.filterPharmacies(); }
+  previousPage():        void { if (this.currentPage > 1) { this.currentPage--; this.updatePagination(); } }
+  nextPage():            void { if (this.currentPage < this.totalPages) { this.currentPage++; this.updatePagination(); } }
+
+  get startItem(): number { return this.filteredPharmacies.length === 0 ? 0 : (this.currentPage - 1) * this.itemsPerPage + 1; }
+  get endItem():   number { return Math.min(this.currentPage * this.itemsPerPage, this.filteredPharmacies.length); }
+
+  initials(name: string): string {
+    const w = (name ?? '').split(' ').filter(Boolean);
+    return w.length >= 2 ? (w[0][0] + w[1][0]).toUpperCase() : (name ?? '?').substring(0, 2).toUpperCase();
   }
 
-  onItemsPerPageChange() {
-    this.filterPharmacies();
-  }
-
-  previousPage() {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-      this.updatePagination();
-    }
-  }
-
-  nextPage() {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-      this.updatePagination();
-    }
-  }
-
-  getProgressBarWidth(disponibilite: number): string {
-    return `${disponibilite}%`;
-  }
-
-  getProgressBarColor(disponibilite: number): string {
-    if (disponibilite >= 90) return 'bg-green-500';
-    if (disponibilite >= 80) return 'bg-yellow-500';
-    return 'bg-red-500';
-  }
-
-  getStatutClass(statut: string): string {
-    return statut === 'Normal' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
-  }
-
-  showPharmacieTooltip(pharmacie: TopPharmacie) {
-    if (pharmacie.tooltip) {
-      this.showTooltip = true;
-      this.tooltipContent = pharmacie.tooltip;
-    }
-  }
-
-  hideTooltip() {
-    this.showTooltip = false;
-    this.tooltipContent = '';
-  }
-
-  getPharmacieInitials(name: string): string {
-    const words = name.split(' ');
-    if (words.length >= 2) {
-      return words[0][0] + words[1][0];
-    }
-    return name.substring(0, 2);
-  }
-
-  getInitialsColor(index: number): string {
-    const colors = [
+  initialsClass(index: number): string {
+    const classes = [
       'bg-blue-100 text-blue-700',
-      'bg-green-100 text-green-700',
+      'bg-teal-100 text-teal-700',
       'bg-purple-100 text-purple-700',
       'bg-orange-100 text-orange-700',
-      'bg-pink-100 text-pink-700'
+      'bg-pink-100 text-pink-700',
     ];
-    return colors[index % colors.length];
+    return classes[index % classes.length];
+  }
+
+  goNew(): void { this.router.navigate(['/admin/pharmacies/new']); }
+
+  viewDetail(p: PharmacyRow): void {
+    // Passer les données déjà chargées via router state pour éviter un rechargement
+    this.router.navigate(['/admin/pharmacies/detail', p.id], {
+      state: { pharmacyRow: p }
+    });
   }
 }

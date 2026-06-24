@@ -1,0 +1,83 @@
+<div class="min-h-screen bg-[#F4F6F9] p-6">
+
+  <!-- Header -->
+  <div class="mb-6">
+    <h1 class="text-2xl font-semibold text-[#343A40] font-work">Mes hospitalisations</h1>
+    <p class="text-sm text-gray-500 mt-1">Suivi de vos demandes et séjours hospitaliers</p>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex items-center justify-center py-20">
+    <svg class="animate-spin h-8 w-8 text-[#00339E]" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+    </svg>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="!loading && error" class="bg-white rounded-xl shadow-sm p-8 text-center">
+    <svg class="mx-auto h-12 w-12 text-red-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+    </svg>
+    <p class="text-gray-600 mb-4">Impossible de charger vos hospitalisations.</p>
+    <button (click)="load()" class="px-4 py-2 bg-[#00339E] text-white rounded-lg text-sm hover:bg-[#002b80] transition-colors">
+      Réessayer
+    </button>
+  </div>
+
+  <!-- Empty -->
+  <div *ngIf="!loading && !error && hospitalizations.length === 0" class="bg-white rounded-xl shadow-sm p-12 text-center">
+    <svg class="mx-auto h-14 w-14 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+    </svg>
+    <p class="text-gray-500 text-lg font-medium">Aucune hospitalisation trouvée</p>
+    <p class="text-gray-400 text-sm mt-1">Vos demandes d'hospitalisation apparaîtront ici.</p>
+  </div>
+
+  <!-- List -->
+  <div *ngIf="!loading && !error && hospitalizations.length > 0" class="flex flex-col gap-4">
+    <div
+      *ngFor="let h of hospitalizations"
+      (click)="goToDetail(h.id)"
+      class="bg-white rounded-xl shadow-sm p-5 cursor-pointer hover:shadow-md transition-shadow border border-transparent hover:border-[#00339E]/20"
+    >
+      <div class="flex items-start justify-between gap-4">
+        <!-- Left: info -->
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-base font-semibold text-[#191B23] truncate">{{ hospitalDisplay(h) }}</span>
+            <span *ngIf="h.priority === 'Urgent'" class="text-xs bg-red-100 text-red-700 rounded-full px-2 py-0.5 font-medium shrink-0">Urgent</span>
+          </div>
+          <p class="text-sm text-gray-500 mb-1">
+            <span class="font-medium text-gray-700">Service :</span> {{ h.department || '—' }}
+          </p>
+          <p class="text-sm text-gray-500 mb-2">
+            <span class="font-medium text-gray-700">Motif :</span> {{ h.motif || '—' }}
+          </p>
+          <div class="flex flex-wrap gap-3 text-xs text-gray-400">
+            <span *ngIf="h.admissionDate">
+              <span class="font-medium text-gray-600">Admission :</span> {{ formatDate(h.admissionDate) }}
+            </span>
+            <span *ngIf="h.expectedDischargeDate">
+              <span class="font-medium text-gray-600">Sortie prévue :</span> {{ formatDate(h.expectedDischargeDate) }}
+            </span>
+            <span *ngIf="h.referentDoctorName">
+              <span class="font-medium text-gray-600">Dr :</span> {{ h.referentDoctorName }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Right: status + chevron -->
+        <div class="flex flex-col items-end gap-3 shrink-0">
+          <span class="text-xs font-medium rounded-full px-3 py-1" [ngClass]="statusClass(h.status)">
+            {{ statusLabel(h.status) }}
+          </span>
+          <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

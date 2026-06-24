@@ -1,92 +1,73 @@
 <div class="min-h-screen bg-[#F4F6F9]">
-  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4 sm:mb-6 lg:mb-8">
-    <div class=" lg:mb-0">
-      <h1 class="sm:text-2xl lg:text-3xl text-[#343A40] mb-2 font-semibold leading-[28px] tracking-[0] font-work">
-        Tableau de Bord</h1>
-      <p class="sm:text-base text-[#343A40] font-normal text-sm leading-[16px] tracking-[0] font-open-sans">Vue
-        d'ensemble de votre activité</p>
+
+  <!-- Barre d'actions -->
+  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4 sm:mb-6">
+    <div>
+      <h1 class="text-2xl lg:text-3xl text-[#343A40] mb-1 font-semibold font-work">Tableau de bord</h1>
+      <p class="text-[#343A40] font-normal text-sm font-open-sans">Vue d'ensemble de votre activité</p>
     </div>
 
-    <div class="flex flex-col sm:flex-row gap-2 sm:gap-4 items-start sm:items-center mt-4 lg:mt-0">
-      <!-- Period Selector -->
-      <div class="relative w-full sm:w-auto">
+    <div class="flex flex-row gap-2 sm:gap-3 items-center mt-4 lg:mt-0 flex-wrap">
+
+      <!-- Période -->
+      <div class="relative">
         <select (change)="onPeriodChange($event)"
-          class="appearance-none bg-white rounded-md px-3 sm:px-4 py-3 pr-12 focus:outline-none focus:ring-2 font-inter text-sm w-full sm:w-auto min-w-[180px]">
+                class="appearance-none bg-white border border-gray-200 rounded-md pl-8 pr-6 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer">
           <option value="DAILY">Quotidien</option>
           <option value="WEEKLY" selected>Hebdomadaire</option>
           <option value="MONTHLY">Mensuel</option>
         </select>
-        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M19 9L12 16L5 9" stroke="#777777" stroke-width="2" stroke-linecap="round"
-              stroke-linejoin="round" />
-          </svg>
-        </div>
+        <svg class="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        <svg class="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
       </div>
 
-      <!-- Region Selector -->
-      <div class="relative w-full sm:w-auto">
-        <select
-          class="appearance-none bg-white rounded-md px-3 sm:px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm w-full sm:w-auto min-w-[180px]">
-          <option>Région</option>
-          <option selected>Toutes les régions</option>
-          <option>Dakar</option>
-          <option>Thiès</option>
-          <option>Saint-Louis</option>
+      <!-- Statut -->
+      <div class="relative">
+        <select class="appearance-none bg-white border border-gray-200 rounded-md px-4 pr-7 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer">
+          <option>Statut</option>
+          <option>En attente</option>
+          <option>En préparation</option>
+          <option>Prêtes</option>
+          <option>Livrées</option>
         </select>
-        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M19 9L12 16L5 9" stroke="#777777" stroke-width="2" stroke-linecap="round"
-              stroke-linejoin="round" />
-          </svg>
-        </div>
+        <svg class="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
       </div>
 
-      <div class="relative inline-block text-left w-full sm:w-auto">
-        <!-- Bouton principal -->
+      <!-- Export -->
+      <div class="relative inline-block text-left">
         <button (click)="toggleDropdown()" [disabled]="isExporting"
-          class="bg-[#104382] hover:bg-[#3072BC] disabled:opacity-60 disabled:cursor-not-allowed text-white px-4 sm:px-6 py-2.5 rounded-md flex items-center justify-center gap-2 transition-colors duration-200 p-[10px] w-full sm:w-auto text-sm">
+                class="bg-[#2C7BE5] hover:bg-[#1d6dda] disabled:opacity-60 text-white px-5 py-2 rounded-md flex items-center gap-2 transition-colors text-sm font-medium">
           <ng-container *ngIf="isExporting; else exportIcon">
-            <!-- Spinner pendant l'export -->
-            <svg class="animate-spin w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
-              viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
             </svg>
             Exportation...
           </ng-container>
           <ng-template #exportIcon>
-            <img src="assets/icones/export.png" alt="" srcset="" class="w-6 h-6">
+            <img src="assets/icones/export.png" alt="" class="w-4 h-4">
             Exporter
           </ng-template>
         </button>
 
-        <!-- Menu dropdown -->
         <div [class.hidden]="!isOpen"
-          class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+             class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5">
           <div class="py-1">
-            <!-- En-tête du dropdown -->
-            <div class="px-4 py-2 text-sm text-gray-500 border-b border-gray-100">
-              Exporter sous
-            </div>
-
-            <!-- Option PDF -->
+            <div class="px-4 py-2 text-xs text-gray-500 border-b border-gray-100">Exporter sous</div>
             <button (click)="exportToPDF()"
-              class="group flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors duration-150">
-              <!-- Icône PDF -->
-              <div class="flex-shrink-0 w-8 h-8 mr-3 rounded flex items-center justify-center">
-                <img src="assets/icones/pdf.png" alt="" srcset="">
-              </div>
+                    class="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+              <img src="assets/icones/pdf.png" alt="" class="w-7 h-7 mr-3">
               <span class="font-medium">PDF</span>
             </button>
-
-            <!-- Option Excel -->
             <button (click)="exportToExcel()" [disabled]="isExporting"
-              class="group flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 disabled:opacity-60 disabled:cursor-not-allowed transition-colors duration-150">
-              <!-- Icône Excel -->
-              <div class="flex-shrink-0 w-8 h-8 mr-3 rounded flex items-center justify-center">
-                <img src="assets/icones/excel.png" alt="" srcset="">
-              </div>
+                    class="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-60 transition-colors">
+              <img src="assets/icones/excel.png" alt="" class="w-7 h-7 mr-3">
               <span class="font-medium">{{ isExporting ? 'Exportation...' : 'EXCEL' }}</span>
             </button>
           </div>
@@ -95,272 +76,211 @@
     </div>
   </div>
 
-  <!-- Conteneur pour aligner le header avec les cartes -->
-
-  <div class="">
-    <!-- Header pharmacie -->
-    <div
-      class="bg-gradient-to-r from-[#14B8A6] to-[#3B82F6] text-white flex flex-col sm:flex-row justify-between items-start sm:items-center opacity-100 rounded-t-[12px] p-4 sm:p-6 lg:p-8">
-      <div class="flex-1 mb-4 sm:mb-0">
-        <!-- Chargement du nom -->
-        <h1 class="text-lg sm:text-xl font-bold mb-2 font-inter">
-          <span *ngIf="isLoadingPharmacyInfo"
-            class="animate-pulse bg-white/30 rounded h-6 w-48 inline-block align-middle"></span>
-          <span *ngIf="!isLoadingPharmacyInfo && pharmacyInfo">
-            Bienvenue, Dr. {{ pharmacyInfo.pharmacist.prenom }} {{ pharmacyInfo.pharmacist.nom }}
-          </span>
-          <span *ngIf="!isLoadingPharmacyInfo && !pharmacyInfo">Bienvenue</span>
-        </h1>
-        <p class="text-[#CCFBF1] font-inter text-sm sm:text-base leading-5 sm:leading-6">Votre compte a été créé avec
-          succès. Vous pouvez maintenant accéder à toutes les fonctionnalités.</p>
-      </div>
-      <!-- Logo de la pharmacie -->
-      <div
-        class="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full border-4 border-white shadow-md flex-shrink-0 overflow-hidden bg-white/20 flex items-center justify-center">
-        <!-- Chargement -->
-        <div *ngIf="isLoadingPharmacyInfo" class="w-full h-full animate-pulse bg-white/30 rounded-full"></div>
-        <!-- Logo disponible -->
-        <img *ngIf="!isLoadingPharmacyInfo && getLogoUrl()" [src]="getLogoUrl()!" [alt]="pharmacyInfo?.name"
-          class="w-full h-full object-cover" (error)="pharmacyInfoError = true" />
-        <!-- Placeholder si pas de logo ou erreur -->
-        <span *ngIf="!isLoadingPharmacyInfo && !getLogoUrl()" class="text-white text-2xl font-bold">
-          {{ pharmacyInfo?.name?.charAt(0) ?? '?' }}
-        </span>
-      </div>
+  <!-- Bannière de bienvenue -->
+  <div class="bg-gradient-to-r from-[#A8CFF0] to-[#3B82F6] text-white rounded-t-xl p-6 lg:p-8 flex justify-between items-center">
+    <div class="flex-1 mr-4">
+      <h2 class="text-xl sm:text-2xl font-bold mb-2">
+        Bienvenue<span *ngIf="pharmacistName">, {{ pharmacistName }}</span>
+      </h2>
+      <p class="text-blue-100 text-sm sm:text-base">
+        <ng-container *ngIf="!loadingDashboard && dashboard?.pharmacy">
+          {{ dashboard!.pharmacy!.name }} — {{ dashboard!.pharmacy!.address }}
+        </ng-container>
+        <ng-container *ngIf="loadingDashboard || !dashboard?.pharmacy">
+          Votre compte est actif. Vous pouvez accéder à toutes les fonctionnalités.
+        </ng-container>
+      </p>
     </div>
-
-    <!-- Badge "Nouveau" -->
-    <div
-      class="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 bg-white w-full max-w-full h-auto min-h-[52px] rounded-b-[12px] opacity-100 mb-6">
-      <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-        <span
-          class="bg-[#CCFBF1] text-[#115E59] px-3 py-1 rounded-full text-xs font-medium font-inter flex-shrink-0">Nouveau</span>
-        <span class="text-[#0D9488] text-xs">Complétez votre profil pour une meilleure expérience</span>
-      </div>
+    <!-- Avatar / Logo -->
+    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 border-white bg-white/20 flex items-center justify-center overflow-hidden flex-shrink-0">
+      <div *ngIf="loadingDashboard" class="w-full h-full animate-pulse bg-white/30 rounded-full"></div>
+      <img *ngIf="!loadingDashboard && dashboard?.pharmacy?.logoUrl"
+           [src]="dashboard!.pharmacy!.logoUrl!" [alt]="dashboard!.pharmacy!.name"
+           class="w-full h-full object-cover">
+      <span *ngIf="!loadingDashboard && !dashboard?.pharmacy?.logoUrl" class="text-white text-2xl font-bold select-none">
+        {{ (pharmacistName ? pharmacistName.charAt(0) : (dashboard?.pharmacy?.name?.charAt(0) ?? '?')) | uppercase }}
+      </span>
     </div>
+  </div>
 
-    <!-- Statistiques principales -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-      <!-- Card 1: Commandes en attente -->
-      <div class="bg-white rounded-xl overflow-hidden">
-        <!-- Header avec icône et titre -->
-        <div class="p-6 pb-4">
-          <div class="flex items-start gap-4">
-            <!-- Icône -->
-            <div class="w-12 h-12 bg-teal-50 rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg class="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-              </svg>
-            </div>
+  <!-- Barre de notification -->
+  <div class="bg-white rounded-b-xl px-5 sm:px-6 py-3 mb-6 flex items-center gap-3 flex-wrap">
+    <span *ngIf="!loadingDashboard && dashboard?.pharmacy?.isOpen"
+          class="bg-teal-100 text-teal-700 text-xs px-2.5 py-0.5 rounded-full font-medium">Ouverte</span>
+    <span *ngIf="!loadingDashboard && dashboard?.pharmacy !== null && !dashboard?.pharmacy?.isOpen"
+          class="bg-red-100 text-red-700 text-xs px-2.5 py-0.5 rounded-full font-medium">Fermée</span>
+    <span *ngIf="loadingDashboard" class="animate-pulse bg-gray-200 rounded-full h-5 w-16 inline-block"></span>
 
-            <!-- Contenu -->
-            <div class="flex-1">
-              <h3 class="text-[#6B7280] text-xs font-medium mb-2">Commandes en attente</h3>
-              <p class="text-lg font-medium text-[#343A40]">
-                <span *ngIf="isLoadingCounter" class="animate-pulse bg-gray-200 rounded h-8 w-16 inline-block"></span>
-                <span *ngIf="!isLoadingCounter && pharmacyCounter">{{ pharmacyCounter.pendingCount }}</span>
-                <span *ngIf="!isLoadingCounter && !pharmacyCounter">-</span>
-              </p>
-            </div>
-          </div>
-        </div>
+    <span *ngIf="!errorDashboard" class="text-sm text-gray-600">
+      Complétez votre profil pour <span class="text-blue-500 cursor-pointer hover:underline">une meilleure expérience</span>
+    </span>
+    <span *ngIf="errorDashboard" class="text-red-600 text-xs">{{ errorDashboard }}</span>
+  </div>
 
-        <!-- Footer avec lien -->
-        <div class="px-6 py-4 bg-[#F0FDFA] border-t border-[#F0FDFA]">
-          <button (click)="onCardClick('Commandes en attente')"
-            class="flex items-center justify-between w-full text-left group hover:bg-bg[#F0FDFA] -mx-2 px-2 py-1 rounded transition-colors">
-            <span class="text-[#0F766E] text-xs font-medium">Voir toutes les commandes</span>
-            <svg class="w-4 h-4 text-teal-600 transform group-hover:translate-x-1 transition-transform" fill="none"
-              stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+  <!-- Cartes statistiques (3 colonnes) -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-6">
+
+    <!-- Commandes en attente -->
+    <div class="bg-white rounded-xl overflow-hidden shadow-sm">
+      <div class="p-5 sm:p-6">
+        <div class="flex items-center gap-4">
+          <div class="w-11 h-11 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
+            <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
             </svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- Card 2: Temps moyen de préparation -->
-      <div class="bg-white rounded-xl overflow-hidden">
-        <!-- Header avec icône et titre -->
-        <div class="p-6 pb-4">
-          <div class="flex items-start gap-4">
-            <!-- Icône -->
-            <div class="w-12 h-12 bg-[#EAF2FC] rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-
-            <!-- Contenu -->
-            <div class="flex-1">
-              <h3 class="text-[#6B7280] text-xs font-medium mb-2">Temps moyen de préparation</h3>
-              <p class="text-lg font-medium text-[#343A40]">
-                <span *ngIf="isLoadingCounter" class="animate-pulse bg-gray-200 rounded h-8 w-16 inline-block"></span>
-                <span *ngIf="!isLoadingCounter && pharmacyCounter">{{ pharmacyCounter.averagePrepTime }}</span>
-                <span *ngIf="!isLoadingCounter && !pharmacyCounter">-</span>
-              </p>
-            </div>
+          </div>
+          <div>
+            <p class="text-gray-500 text-xs font-medium mb-1">Commandes en attente</p>
+            <p class="text-2xl font-bold text-[#343A40]">
+              <span *ngIf="loadingDashboard" class="animate-pulse bg-gray-200 rounded h-8 w-10 inline-block"></span>
+              <span *ngIf="!loadingDashboard">{{ dashboard?.pending ?? 0 }}</span>
+            </p>
           </div>
         </div>
-
-        <!-- Footer avec lien -->
-        <div class="px-6 py-4 bg-[#EAF2FC] border-t border-[#EAF2FC]">
-          <button (click)="onCardClick('Temps moyen de préparation')"
-            class="flex items-center justify-between w-full text-left group hover:bg-gray-100 -mx-2 px-2 py-1 rounded transition-colors">
-            <span class="text-[#2C7BE5] text-xs font-medium">Voir toutes les commandes</span>
-            <svg class="w-4 h-4 text-blue-600 transform group-hover:translate-x-1 transition-transform" fill="none"
-              stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
       </div>
+      <div class="px-5 sm:px-6 py-3 border-t border-gray-100 flex items-center justify-between">
+        <span class="text-blue-600 text-xs font-medium">Voir toutes les commandes</span>
+        <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </div>
+    </div>
 
-      <!-- Card 3: Commandes en préparations -->
-      <div class="bg-white rounded-xl overflow-hidden">
-        <!-- Header avec icône et titre -->
-        <div class="p-6 pb-4">
-          <div class="flex items-start gap-4">
-            <!-- Icône -->
-            <div class="w-12 h-12 bg-yellow-50 rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-
-            <!-- Contenu -->
-            <div class="flex-1">
-              <h3 class="text-[#6B7280] text-xs font-medium mb-2">Commandes en préparations</h3>
-              <p class="text-lg font-medium text-[#343A40]">
-                <span *ngIf="isLoadingCounter" class="animate-pulse bg-gray-200 rounded h-8 w-16 inline-block"></span>
-                <span *ngIf="!isLoadingCounter && pharmacyCounter">{{ pharmacyCounter.inPreparationCount }}</span>
-                <span *ngIf="!isLoadingCounter && !pharmacyCounter">-</span>
-              </p>
-            </div>
+    <!-- Temps moyen de préparation -->
+    <div class="bg-white rounded-xl overflow-hidden shadow-sm">
+      <div class="p-5 sm:p-6">
+        <div class="flex items-center gap-4">
+          <div class="w-11 h-11 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
+            <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-gray-500 text-xs font-medium mb-1">Temps moyen de préparation</p>
+            <p class="text-2xl font-bold text-[#343A40]">{{ avgPreparationTime }}</p>
           </div>
         </div>
+      </div>
+      <div class="px-5 sm:px-6 py-3 border-t border-gray-100 flex items-center justify-between">
+        <span class="text-blue-600 text-xs font-medium">Voir toutes les commandes</span>
+        <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </div>
+    </div>
 
-        <!-- Footer avec lien -->
-        <div class="px-6 py-4 bg-[#FDF7E6] border-t border-[#FDF7E6]">
-          <button (click)="onCardClick('Commandes en préparations')"
-            class="flex items-center justify-between w-full text-left group hover:bg-[#FDF7E6] -mx-2 px-2 py-1 rounded transition-colors">
-            <span class="text-[#EBB305] text-xs font-medium">Voir toutes les commandes</span>
-            <svg class="w-4 h-4 text-amber-600 transform group-hover:translate-x-1 transition-transform" fill="none"
-              stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+    <!-- Commandes en préparation -->
+    <div class="bg-white rounded-xl overflow-hidden shadow-sm">
+      <div class="p-5 sm:p-6">
+        <div class="flex items-center gap-4">
+          <div class="w-11 h-11 bg-yellow-50 rounded-lg flex items-center justify-center flex-shrink-0">
+            <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
             </svg>
-          </button>
+          </div>
+          <div>
+            <p class="text-gray-500 text-xs font-medium mb-1">Commandes en préparations</p>
+            <p class="text-2xl font-bold text-[#343A40]">
+              <span *ngIf="loadingDashboard" class="animate-pulse bg-gray-200 rounded h-8 w-10 inline-block"></span>
+              <span *ngIf="!loadingDashboard">{{ dashboard?.inPreparation ?? 0 }}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="px-5 sm:px-6 py-3 bg-yellow-50 border-t border-yellow-100 flex items-center justify-between">
+        <span class="text-yellow-700 text-xs font-medium">Voir toutes les commandes</span>
+        <svg class="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vue d'ensemble des revenus -->
+  <div class="bg-white rounded-xl p-5 sm:p-6 mb-6 shadow-sm">
+    <h3 class="text-base font-semibold text-[#343A40] mb-4">Vue d'ensemble des revenus</h3>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="border border-gray-100 rounded-lg p-4">
+        <p class="text-gray-500 text-xs mb-1">Revenus totaux</p>
+        <p class="text-lg font-bold text-[#343A40]">{{ formatCurrency(0) }}</p>
+      </div>
+      <div class="border border-gray-100 rounded-lg p-4">
+        <p class="text-gray-500 text-xs mb-1">Aujourd'hui</p>
+        <p class="text-lg font-bold text-[#343A40]">{{ formatCurrency(0) }}</p>
+      </div>
+      <div class="border border-gray-100 rounded-lg p-4">
+        <p class="text-gray-500 text-xs mb-1">7 derniers jours</p>
+        <p class="text-lg font-bold text-[#343A40]">{{ formatCurrency(0) }}</p>
+      </div>
+      <div class="border border-gray-100 rounded-lg p-4">
+        <p class="text-gray-500 text-xs mb-1">Mois précédent</p>
+        <p class="text-lg font-bold text-[#343A40]">{{ formatCurrency(0) }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Graphiques -->
+  <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
+
+    <!-- Répartition des commandes (camembert) -->
+    <div class="bg-white rounded-xl p-5 sm:p-6 shadow-sm">
+      <h3 class="text-base font-semibold text-gray-900 mb-4">Répartition des commandes</h3>
+      <div class="relative h-48 sm:h-56">
+        <div *ngIf="loadingDashboard" class="absolute inset-0 flex items-center justify-center">
+          <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-teal-500"></div>
+        </div>
+        <canvas #pieChart class="absolute inset-0 w-full h-full" [class.opacity-0]="loadingDashboard"></canvas>
+      </div>
+      <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
+        <div class="flex items-center gap-2">
+          <div class="w-3 h-3 bg-yellow-400 rounded-full flex-shrink-0"></div>
+          <span class="text-gray-600">En attente</span>
+          <span class="text-gray-400">({{ dashboard?.pendingPercentage ?? 0 }}%)</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-3 h-3 bg-blue-400 rounded-full flex-shrink-0"></div>
+          <span class="text-gray-600">Préparation</span>
+          <span class="text-gray-400">({{ dashboard?.inPreparationPercentage ?? 0 }}%)</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-3 h-3 bg-blue-600 rounded-full flex-shrink-0"></div>
+          <span class="text-gray-600">Prêtes</span>
+          <span class="text-gray-400">({{ dashboard?.readyPercentage ?? 0 }}%)</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-3 h-3 bg-teal-500 rounded-full flex-shrink-0"></div>
+          <span class="text-gray-600">Livrées</span>
+          <span class="text-gray-400">({{ dashboard?.deliveredPercentage ?? 0 }}%)</span>
         </div>
       </div>
     </div>
 
-    <!-- Vue d'ensemble des revenus -->
-    <div class="bg-white rounded-xl p-4 sm:p-6 border border-gray-100 mb-6 sm:mb-8">
-      <h2 class="text-lg font-semibold text-[#2C3E50] mb-4 sm:mb-6 lg:mb-8">Vue d'ensemble des revenus</h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-[#F4F6F9] rounded-lg p-3 w-full ">
-          <p class="text-[#6B7280] text-xs 2xl:text-sm font-medium mb-2">Hier</p>
-          <p class="text-lg 2xl:text-xl font-semibold leading-7 text-[#343A40]">
-            <span *ngIf="isLoadingPayments" class="animate-pulse bg-gray-200 rounded h-6 w-24 inline-block"></span>
-            <span *ngIf="!isLoadingPayments && paymentStats">{{ formatCurrency(paymentStats.yesterdayTotal) }}</span>
-            <span *ngIf="!isLoadingPayments && !paymentStats">- Fcfa</span>
-          </p>
-        </div>
-        <div class="bg-[#F4F6F9] rounded-lg p-3 w-full">
-          <p class="text-[#6B7280] text-xs 2xl:text-sm font-medium mb-2">Aujourd'hui</p>
-          <p class="text-lg 2xl:text-xl font-semibold leading-7 text-[#343A40]">
-            <span *ngIf="isLoadingPayments" class="animate-pulse bg-gray-200 rounded h-6 w-24 inline-block"></span>
-            <span *ngIf="!isLoadingPayments && paymentStats">{{ formatCurrency(paymentStats.todayTotal) }}</span>
-            <span *ngIf="!isLoadingPayments && !paymentStats">- Fcfa</span>
-          </p>
-        </div>
-        <div class="bg-[#F4F6F9] rounded-lg p-3 w-full">
-          <p class="text-[#6B7280] text-xs 2xl:text-sm font-medium mb-2">7 derniers jours</p>
-          <p class="text-lg 2xl:text-xl font-semibold leading-7 text-[#343A40]">
-            <span *ngIf="isLoadingPayments" class="animate-pulse bg-gray-200 rounded h-6 w-24 inline-block"></span>
-            <span *ngIf="!isLoadingPayments && paymentStats">{{ formatCurrency(paymentStats.last7DaysTotal) }}</span>
-            <span *ngIf="!isLoadingPayments && !paymentStats">- Fcfa</span>
-          </p>
-        </div>
-        <div class="bg-[#F4F6F9] rounded-lg p-3 w-full">
-          <p class="text-[#6B7280] text-xs 2xl:text-sm font-medium mb-2">30 derniers jours</p>
-          <p class="text-lg 2xl:text-xl font-semibold leading-7 text-[#343A40]">
-            <span *ngIf="isLoadingPayments" class="animate-pulse bg-gray-200 rounded h-6 w-24 inline-block"></span>
-            <span *ngIf="!isLoadingPayments && paymentStats">{{ formatCurrency(paymentStats.last30DaysTotal) }}</span>
-            <span *ngIf="!isLoadingPayments && !paymentStats">- Fcfa</span>
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Graphiques -->
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
-      <!-- Répartition des commandes -->
-      <div class="bg-white rounded-lg p-4 border border-gray-100">
-        <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-4">Répartition des commandes</h3>
-
-        <!-- Conteneur fixe -->
-        <div class="relative h-48 sm:h-56 lg:h-64">
-          <div *ngIf="isLoadingCounter" class="absolute inset-0 flex items-center justify-center">
-            <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-teal-500"></div>
-          </div>
-          <canvas #pieChart class="absolute inset-0 w-full h-full" [class.opacity-50]="isLoadingCounter"></canvas>
-        </div>
-
-        <!-- Légendes -->
-        <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm">
-          <div class="flex items-center gap-2">
-            <div class="w-3 h-3 bg-yellow-400 rounded-full flex-shrink-0"></div>
-            <span class="text-gray-600">En attente</span>
-            <span *ngIf="!isLoadingCounter && pharmacyCounter" class="text-gray-400">({{
-              pharmacyCounter.pendingPercentage }}%)</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <div class="w-3 h-3 bg-blue-400 rounded-full flex-shrink-0"></div>
-            <span class="text-gray-600">Préparation</span>
-            <span *ngIf="!isLoadingCounter && pharmacyCounter" class="text-gray-400">({{
-              pharmacyCounter.inPreparationPercentage }}%)</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <div class="w-3 h-3 bg-blue-600 rounded-full flex-shrink-0"></div>
-            <span class="text-gray-600">Prêtes</span>
-            <span *ngIf="!isLoadingCounter && pharmacyCounter" class="text-gray-400">({{
-              pharmacyCounter.readyPercentage }}%)</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <div class="w-3 h-3 bg-teal-500 rounded-full flex-shrink-0"></div>
-            <span class="text-gray-600">Livrées</span>
-            <span *ngIf="!isLoadingCounter && pharmacyCounter" class="text-gray-400">({{
-              pharmacyCounter.deliveredPercentage }}%)</span>
-          </div>
-        </div>
+    <!-- Évolution des commandes (linéaire) -->
+    <div class="bg-white rounded-xl p-5 sm:p-6 shadow-sm">
+      <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 gap-2">
+        <h3 class="text-base font-semibold text-gray-900">Évolution des commandes</h3>
+        <select (change)="onPeriodChange($event)"
+                class="border border-gray-200 rounded-md px-3 py-1.5 text-xs text-gray-700 focus:ring-2 focus:ring-teal-500 focus:outline-none w-full sm:w-auto">
+          <option value="DAILY">Quotidien (24h)</option>
+          <option value="WEEKLY" selected>Hebdomadaire (7j)</option>
+          <option value="MONTHLY">Mensuel (8 sem.)</option>
+        </select>
       </div>
 
-      <!-- Évolution des livraisons -->
-      <div class="bg-white rounded-lg p-4 border border-gray-100">
-        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-2">
-          <h3 class="text-base sm:text-lg font-semibold text-gray-900">Évolution des livraisons</h3>
-          <select (change)="onPeriodChange($event)"
-            class="border border-gray-300 rounded-md px-3 py-1 text-xs sm:text-sm w-full sm:w-auto">
-            <option value="DAILY">Quotidien</option>
-            <option value="WEEKLY" selected>Hebdomadaire</option>
-            <option value="MONTHLY">Mensuel</option>
-          </select>
-        </div>
-        <div class="flex items-center gap-2 mb-4">
-          <div class="w-1 h-1 bg-teal-500 rounded-full"></div>
-          <span class="text-gray-600 text-xs sm:text-sm">Commandes livrées</span>
-        </div>
+      <div class="flex items-center gap-2 mb-3">
+        <div class="w-5 h-0 border-t-2 border-dashed border-teal-500"></div>
+        <span class="text-gray-600 text-xs">Commandes reçu</span>
+      </div>
 
-        <!-- Conteneur contrôlé -->
-        <div class="relative h-48 sm:h-56 lg:h-64">
-          <div *ngIf="isLoadingEvolution" class="absolute inset-0 flex items-center justify-center">
-            <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-teal-500"></div>
-          </div>
-          <canvas #lineChart class="absolute inset-0 w-full h-full" [class.opacity-50]="isLoadingEvolution"></canvas>
+      <div *ngIf="errorEvolution" class="text-red-500 text-xs mb-2">{{ errorEvolution }}</div>
+      <div *ngIf="!loadingEvolution && evolutionIsEmpty"
+           class="text-gray-400 text-sm text-center py-4">Aucune commande sur cette période.</div>
+
+      <div class="relative h-48 sm:h-56">
+        <div *ngIf="loadingEvolution" class="absolute inset-0 flex items-center justify-center">
+          <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-teal-500"></div>
         </div>
+        <canvas #lineChart class="absolute inset-0 w-full h-full" [class.opacity-0]="loadingEvolution"></canvas>
       </div>
     </div>
   </div>

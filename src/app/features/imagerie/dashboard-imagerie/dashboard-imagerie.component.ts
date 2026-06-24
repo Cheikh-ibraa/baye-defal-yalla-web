@@ -1,41 +1,37 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import {
+  Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { forkJoin } from 'rxjs';
+import { catchError, of } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 // ── Interfaces ────────────────────────────────────────────────────────────────
 
-interface StatCard {
-  label: string;
-  value: number;
-  sub: string;
-  subClass: string;
-  icon: 'flask' | 'clock' | 'file' | 'users';
+interface ImagingDashboard {
+  newRequests:    number;
+  urgentRequests: number;
+  accepted:       number;
+  completed:      number;
+  inProgress:     number;
+  receivedToday:  number;
 }
 
-type Priority = 'Urgent' | 'Normal';
-type ExamenStatus = 'PENDING' | 'ACCEPTED' | 'COMPLETED' | 'CANCELLED';
-type EquipmentStatus = 'available' | 'busy' | 'maintenance';
+type Priority     = 'Urgent' | 'Normal';
+type OrderStatus  = 'PENDING' | 'ACCEPTED' | 'FUNDED' | 'IN_PROGRESS' | 'COMPLETED' | 'REJECTED' | 'EXPIRED';
 
 interface PlanningExam {
-  id: number;
+  id:              string;
   patientInitials: string;
-  patientName: string;
-  patientRef: string;
-  type: string;
-  prescripteur: string;
-  equipements: string[];
-  receivedAt: string;
-  priority: Priority;
-  status: ExamenStatus;
-  hasAction: boolean;
-}
-
-interface Equipment {
-  name: string;
-  percent: number;
-  status: EquipmentStatus;
+  patientName:     string;
+  patientRef:      string;
+  type:            string;
+  prescripteur:    string;
+  receivedAt:      string;
+  priority:        Priority;
+  status:          OrderStatus;
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -48,71 +44,117 @@ interface Equipment {
   styleUrl: './dashboard-imagerie.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DashboardImagerieComponent implements OnInit, OnDestroy {
+export class DashboardImagerieComponent implements OnInit {
 
-  // ── State ──────────────────────────────────────────────────────────────────
   loading = true;
+  private readonly api = environment.baseUrl;
 
-  stats: StatCard[] = [];
+  // Stats
+  statDuJour   = 0;
+  statAttente  = 0;
+  statUrgents  = 0;
+  statRealises = 0;
+
   planningExams: PlanningExam[] = [];
-  equipments: Equipment[] = [];
 
-  // ── Mock data ──────────────────────────────────────────────────────────────
-  private mockStats: StatCard[] = [
-    { label: 'Examens du jour', value: 8,   sub: "Aujourd'hui",      subClass: 'text-gray-400',  icon: 'flask' },
-    { label: 'Examens en attente', value: 3, sub: 'Dont 2 urgences',  subClass: 'text-red-500 font-medium',   icon: 'clock' },
-    { label: 'Examens réalisés', value: 4,   sub: 'Total',            subClass: 'text-[#00B894]', icon: 'file'  },
-    { label: 'Patients', value: 124,         sub: '+4% vs mois dernier', subClass: 'text-gray-500', icon: 'users', }
-  ];
-
-  private mockExams: PlanningExam[] = [
-    { id: 5, patientInitials: 'MD', patientName: 'Moussa Wade', patientRef: '#0005', type: 'Cérébral',    prescripteur: 'Dr. Neuro',  equipements: ['IRM-01', 'IRM'],     receivedAt: '2025-01-15 09:15', priority: 'Urgent', status: 'ACCEPTED',  hasAction: true  },
-    { id: 4, patientInitials: 'MF', patientName: 'Maman Fall',  patientRef: '#0004', type: 'Thorax',      prescripteur: 'Dr. Pneumo', equipements: ['CT-01', 'Scanner'],  receivedAt: '2025-01-15 09:15', priority: 'Urgent', status: 'ACCEPTED',  hasAction: true  },
-    { id: 3, patientInitials: 'FF', patientName: 'Fatou Fall',  patientRef: '#0003', type: 'Genou Droit', prescripteur: 'Dr. Ortho',  equipements: ['RX-02', 'Radio'],    receivedAt: '2025-01-15 08:30', priority: 'Normal', status: 'PENDING',   hasAction: false },
-    { id: 2, patientInitials: 'IL', patientName: 'Isseu Ly',    patientRef: '#0002', type: 'Abdominal',   prescripteur: 'Dr. Gastro', equipements: ['US-01', 'Echo'],     receivedAt: '2025-01-14 11:45', priority: 'Normal', status: 'PENDING',   hasAction: false },
-    { id: 1, patientInitials: 'IL', patientName: 'Isseu Ly',    patientRef: '#0001', type: 'Genou Gauche',prescripteur: 'Dr. Ortho',  equipements: ['CT-01', 'Scanner'],  receivedAt: '2025-01-14 11:45', priority: 'Normal', status: 'PENDING',   hasAction: false }
-  ];
-
-  private mockEquipments: Equipment[] = [
-    { name: 'IRM-01', percent: 85, status: 'busy'        },
-    { name: 'CT-01',  percent: 60, status: 'available'   },
-    { name: 'RX-01',  percent: 45, status: 'available'   },
-    { name: 'RX-02',  percent: 30, status: 'maintenance' },
-    { name: 'US-01',  percent: 75, status: 'busy'        }
-  ];
-
-  constructor(private router: Router, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+    private http: HttpClient
+  ) {}
 
   ngOnInit(): void {
-    of(null).pipe(delay(300)).subscribe(() => {
-      this.stats        = this.mockStats;
-      this.planningExams = this.mockExams;
-      this.equipments   = this.mockEquipments;
-      this.loading      = false;
-      this.cdr.markForCheck();
+    forkJoin({
+      dashboard: this.http.get<ImagingDashboard>(`${this.api}/diagnostic/imaging/dashboard`).pipe(catchError(() => of(null))),
+      orders:    this.http.get<any>(`${this.api}/diagnostic/imaging-orders/all`, { params: { page: '1', limit: '10' } }).pipe(catchError(() => of({ data: [] }))),
+    }).subscribe(({ dashboard, orders }) => {
+      if (dashboard) {
+        this.statDuJour   = dashboard.receivedToday  ?? 0;
+        this.statAttente  = dashboard.newRequests     ?? 0;
+        this.statUrgents  = dashboard.urgentRequests  ?? 0;
+        this.statRealises = dashboard.completed       ?? 0;
+      }
+      const list = Array.isArray(orders) ? orders : (orders?.data ?? []);
+      this.resolveNames(list);
     });
   }
 
-  ngOnDestroy(): void {}
+  private resolveNames(orders: any[]): void {
+    const ids = [...new Set([
+      ...orders.map((o: any) => o.patientId).filter(Boolean),
+      ...orders.map((o: any) => o.doctorId).filter(Boolean),
+    ])];
+
+    if (!ids.length) { this.build(orders, {}); return; }
+
+    this.http.get<{ keycloakId: string; firstName: string; lastName: string }[]>(
+      `${this.api}/users/names?ids=${ids.join(',')}`
+    ).pipe(catchError(() => of([]))).subscribe(names => {
+      const m: Record<string, string> = {};
+      for (const n of names) m[n.keycloakId] = `${n.firstName ?? ''} ${n.lastName ?? ''}`.trim();
+      this.build(orders, m);
+    });
+  }
+
+  private build(orders: any[], names: Record<string, string>): void {
+    const PRIORITY_MAP: Record<string, Priority> = {
+      URGENT:   'Urgent',
+      PRIORITY: 'Urgent',
+      NORMAL:   'Normal',
+    };
+
+    this.planningExams = orders.slice(0, 10).map((o: any) => {
+      const pName = names[o.patientId] || `Patient ${(o.patientId ?? '').slice(-6).toUpperCase()}`;
+      const dName = names[o.doctorId]  ? `Dr. ${names[o.doctorId]}` : 'Médecin';
+      const cats  = (o.categories ?? o.examTypes ?? []) as string[];
+      const type  = cats.length > 0 ? cats.join(', ') : (o.examType ?? o.type ?? 'Examen');
+      const date  = o.receivedAt ?? o.createdAt;
+      const initials = pName.split(' ').map((w: string) => w[0] ?? '').join('').slice(0, 2).toUpperCase();
+      return {
+        id:              o.id,
+        patientInitials: initials,
+        patientName:     pName,
+        patientRef:      o.imagingOrderRef ?? o.labOrderRef ?? '—',
+        type,
+        prescripteur:    dName,
+        receivedAt:      date ? new Date(date).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) : '—',
+        priority:        PRIORITY_MAP[o.urgency] ?? 'Normal',
+        status:          o.status as OrderStatus,
+      };
+    });
+
+    this.loading = false;
+    this.cdr.markForCheck();
+  }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
-  getEquipmentBarClass(status: EquipmentStatus): string {
-    return status === 'busy' ? 'bg-red-500'
-      : status === 'maintenance' ? 'bg-yellow-400'
-      : 'bg-[#00B894]';
+  getStatusLabel(s: OrderStatus): string {
+    const m: Record<OrderStatus, string> = {
+      PENDING: 'En attente', ACCEPTED: 'Accepté', FUNDED: 'Financé',
+      IN_PROGRESS: 'En cours', COMPLETED: 'Terminé', REJECTED: 'Rejeté', EXPIRED: 'Expiré',
+    };
+    return m[s] ?? s;
+  }
+
+  getStatusClass(s: OrderStatus): string {
+    const m: Record<OrderStatus, string> = {
+      PENDING:     'bg-yellow-100 text-yellow-700',
+      ACCEPTED:    'bg-blue-100 text-blue-700',
+      FUNDED:      'bg-purple-100 text-purple-700',
+      IN_PROGRESS: 'bg-indigo-100 text-indigo-700',
+      COMPLETED:   'bg-green-100 text-[#00B894]',
+      REJECTED:    'bg-red-100 text-red-600',
+      EXPIRED:     'bg-gray-100 text-gray-500',
+    };
+    return m[s] ?? 'bg-gray-100 text-gray-500';
   }
 
   navigateToAll(): void {
-    this.router.navigate(['/examens-imagerie']);
+    this.router.navigate(['/imaging/examens']);
   }
 
-  viewExam(id: number): void {
-    this.router.navigate(['/detail-examen-imagerie', id]);
-  }
-
-  confirmExam(id: number): void {
-    // Action validation — à brancher sur le service
-    console.log('confirm', id);
+  viewExam(id: string): void {
+    this.router.navigate(['/imaging/examens', id]);
   }
 }

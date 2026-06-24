@@ -2,12 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 export interface PastDonation {
   id: string;
   date: Date;
   dateString: string;
-  type: 'ORDONNANCE' | 'ANALYSE' | 'IMAGERIE';
+  type: 'ORDONNANCE' | 'ANALYSE' | 'IMAGERIE' | string;
   patientName: string;
   amount: number;
   paymentMethod: string;
@@ -22,108 +24,111 @@ export interface PastDonation {
   templateUrl: './dons-historique.component.html'
 })
 export class DonsHistoriqueComponent implements OnInit {
-  donations: PastDonation[] = [];
+
+  allDonations: PastDonation[] = [];   // raw from API
   filteredDonations: PastDonation[] = [];
-  
-  // Active period filter
+
   activeFilter: 'TOUS' | 'MOIS' | 'SEMAINE' = 'TOUS';
-  
-  // Banner stats (matches the visual layout)
-  totalDonated: number = 15000000;
-  viesImpactees: number = 3;
+
+  totalDonated   = 0;
+  viesImpactees  = 0;
+
+  isLoading = true;
+
+  currentPage = 1;
+  readonly pageSize = 6;
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredDonations.length / this.pageSize));
+  }
+
+  get pagedDonations(): PastDonation[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredDonations.slice(start, start + this.pageSize);
+  }
+
+  get pageNumbers(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) this.currentPage = page;
+  }
+
+  prevPage(): void { this.goToPage(this.currentPage - 1); }
+  nextPage(): void { this.goToPage(this.currentPage + 1); }
+
+  constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
-    const now = new Date();
-    this.donations = [
-      {
-        id: 'DON-2025-001',
-        date: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000), // 3 days ago (within week & month)
-        dateString: '15 juin 2025',
-        type: 'ORDONNANCE',
-        patientName: 'Seydou Diop',
-        amount: 400000,
-        paymentMethod: 'Wave',
-        status: 'SUCCESS',
-        treatment: 'Hypertension'
-      },
-      {
-        id: 'DON-2025-002',
-        date: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000), // 5 days ago (within week & month)
-        dateString: '10 juin 2025',
-        type: 'ANALYSE',
-        patientName: 'Mamadou Sow',
-        amount: 300000,
-        paymentMethod: 'Orange Money',
-        status: 'PENDING',
-        treatment: 'Paludisme'
-      },
-      {
-        id: 'DON-2025-003',
-        date: new Date(now.getTime() - 12 * 24 * 60 * 60 * 1000), // 12 days ago (within month)
-        dateString: '09 juin 2025',
-        type: 'IMAGERIE',
-        patientName: 'Maimouna Fall',
-        amount: 800000,
-        paymentMethod: 'Wave',
-        status: 'SUCCESS',
-        treatment: 'Infection'
-      },
-      {
-        id: 'DON-2025-004',
-        date: new Date(now.getTime() - 12 * 24 * 60 * 60 * 1000), // 12 days ago (within month)
-        dateString: '10 juin 2025',
-        type: 'ANALYSE',
-        patientName: 'Mamadou Sow',
-        amount: 300000,
-        paymentMethod: 'Orange Money',
-        status: 'PENDING',
-        treatment: 'Paludisme'
-      },
-      {
-        id: 'DON-2025-005',
-        date: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000), // 3 days ago (within week & month)
-        dateString: '15 juin 2025',
-        type: 'ORDONNANCE',
-        patientName: 'Seydou Diop',
-        amount: 400000,
-        paymentMethod: 'Wave',
-        status: 'SUCCESS',
-        treatment: 'Hypertension'
-      },
-      {
-        id: 'DON-2025-006',
-        date: new Date(now.getTime() - 25 * 24 * 60 * 60 * 1000), // 25 days ago (within month)
-        dateString: '09 juin 2025',
-        type: 'IMAGERIE',
-        patientName: 'Maimouna Fall',
-        amount: 800000,
-        paymentMethod: 'Wave',
-        status: 'SUCCESS',
-        treatment: 'Infection'
-      }
-    ];
-    this.applyFilter('TOUS');
+    this.loadHistory();
+  }
+
+  private loadHistory(): void {
+    const token = localStorage.getItem('access_token');
+    const headers = { Authorization: `Bearer ${token}` };
+
+    this.http.get<any>(`${environment.baseUrl}/contributions/me/history?period=all`, { headers })
+      .subscribe({
+        next: (res) => {
+          this.totalDonated  = res.totalDonated  ?? 0;
+          this.viesImpactees = res.livesImpacted ?? 0;
+
+          const raw: any[] = res.contributions ?? [];
+          this.allDonations = raw.map(c => this.mapContribution(c));
+          this.applyFilter('TOUS');
+          this.isLoading = false;
+        },
+        error: () => {
+          this.allDonations = STATIC_DONATIONS;
+          this.totalDonated  = STATIC_DONATIONS.reduce((s, d) => s + d.amount, 0);
+          this.viesImpactees = new Set(STATIC_DONATIONS.map(d => d.patientName)).size;
+          this.applyFilter('TOUS');
+          this.isLoading = false;
+        },
+      });
+  }
+
+  private mapContribution(c: any): PastDonation {
+    const STATUS_MAP: Record<string, 'SUCCESS' | 'PENDING' | 'FAILED'> = {
+      VALIDATED: 'SUCCESS',
+      PENDING:   'PENDING',
+      REJECTED:  'FAILED',
+    };
+    const date = new Date(c.createdAt);
+    // API returns campaignSummary (summary object) AND campaign (full relation) — use whichever has the data
+    const info = c.campaignSummary ?? c.campaign ?? {};
+    return {
+      id:            c.id,
+      date,
+      dateString:    date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }),
+      type:          info.type        ?? 'ORDONNANCE',
+      patientName:   info.patientName ?? 'Patient',
+      amount:        Number(c.amount),
+      paymentMethod: c.paymentMethod  ?? 'Wave',
+      status:        STATUS_MAP[c.status] ?? 'PENDING',
+      treatment:     info.treatment   ?? '',
+    };
   }
 
   applyFilter(filterType: 'TOUS' | 'MOIS' | 'SEMAINE'): void {
     this.activeFilter = filterType;
+    this.currentPage  = 1;
     const now = new Date();
-    
+
     if (filterType === 'TOUS') {
-      this.filteredDonations = [...this.donations];
+      this.filteredDonations = [...this.allDonations];
     } else if (filterType === 'MOIS') {
-      // Last 30 days
-      const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      this.filteredDonations = this.donations.filter(d => d.date >= oneMonthAgo);
-    } else if (filterType === 'SEMAINE') {
-      // Last 7 days
-      const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      this.filteredDonations = this.donations.filter(d => d.date >= oneWeekAgo);
+      const cutoff = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      this.filteredDonations = this.allDonations.filter(d => d.date >= cutoff);
+    } else {
+      const cutoff = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      this.filteredDonations = this.allDonations.filter(d => d.date >= cutoff);
     }
   }
 
   formatAmount(amount: number): string {
-    return amount.toLocaleString('fr-FR');
+    return (amount ?? 0).toLocaleString('fr-FR');
   }
 
   getFirstName(name: string): string {
@@ -135,4 +140,38 @@ export class DonsHistoriqueComponent implements OnInit {
   }
 }
 
-
+const STATIC_DONATIONS: PastDonation[] = [
+  {
+    id: 'DON-2025-001',
+    date: new Date(Date.now() - 3 * 86400_000),
+    dateString: '10 juin 2026',
+    type: 'ORDONNANCE',
+    patientName: 'Seydou Diop',
+    amount: 400000,
+    paymentMethod: 'Wave',
+    status: 'SUCCESS',
+    treatment: 'Hypertension'
+  },
+  {
+    id: 'DON-2025-002',
+    date: new Date(Date.now() - 5 * 86400_000),
+    dateString: '8 juin 2026',
+    type: 'ANALYSE',
+    patientName: 'Mamadou Sow',
+    amount: 300000,
+    paymentMethod: 'Orange Money',
+    status: 'PENDING',
+    treatment: 'Paludisme'
+  },
+  {
+    id: 'DON-2025-003',
+    date: new Date(Date.now() - 12 * 86400_000),
+    dateString: '1 juin 2026',
+    type: 'IMAGERIE',
+    patientName: 'Maimouna Fall',
+    amount: 800000,
+    paymentMethod: 'Wave',
+    status: 'SUCCESS',
+    treatment: 'Infection'
+  },
+];

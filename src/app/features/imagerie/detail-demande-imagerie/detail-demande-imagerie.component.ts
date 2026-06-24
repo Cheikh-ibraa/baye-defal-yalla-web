@@ -2,10 +2,9 @@ import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@
 import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { of } from 'rxjs';
-import { delay } from 'rxjs/operators';
-
-// ── Interfaces ────────────────────────────────────────────────────────────────
+import { HttpClient } from '@angular/common/http';
+import { catchError, finalize, of } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 type Priority = 'URGENT' | 'ROUTINE' | 'PRIORITAIRE';
 
@@ -17,83 +16,15 @@ interface Examen {
 }
 
 interface DetailDemande {
-  id: number;
+  id: string;
   priority: Priority;
-  patient: { nom: string; genre: string; age: number; ref: string };
+  patient: { nom: string; genre: string; age: number | null; ref: string };
   medecin: { nom: string; specialite: string; clinique: string };
   contexteMedical: string;
   examens: Examen[];
 }
 
 interface AccepterForm { montant: number | null; date: string; heure: string; note: string; }
-
-// ── Mock store ────────────────────────────────────────────────────────────────
-
-const MOCK_DETAILS: Record<number, DetailDemande> = {
-  1: {
-    id: 1, priority: 'URGENT',
-    patient: { nom: 'Fatou Diop', genre: 'FEMME', age: 35, ref: 'ANA-2026-001' },
-    medecin: { nom: 'Dr. Mamadou Ndiaye', specialite: 'Cardiologue', clinique: 'Clinique St. Luc' },
-    contexteMedical: '"Patient suspecté d\'une rupture du LCA. Interprétation prioritaire et séquences hautes résolutions requises."',
-    examens: [
-      { id: 1, titre: 'IRM Genou Droit',   sousTitre: 'Routine • Standard',  icon: 'irm'     },
-      { id: 2, titre: 'Scanner Thoracique', sousTitre: 'Injection Requis',    icon: 'scanner' }
-    ]
-  },
-  2: {
-    id: 2, priority: 'ROUTINE',
-    patient: { nom: 'Maman Fall', genre: 'FEMME', age: 42, ref: 'ANA-2026-002' },
-    medecin: { nom: 'Dr. Assane Diallo', specialite: 'Pneumologue', clinique: 'Laboratoire Central Ville' },
-    contexteMedical: '"Patient présentant une toux chronique. Scanner thoracique avec injection requis pour évaluation pulmonaire."',
-    examens: [
-      { id: 1, titre: 'Scanner Thoracique', sousTitre: 'Injection Requis', icon: 'scanner' },
-      { id: 2, titre: 'Radiographie',        sousTitre: 'Standard',         icon: 'radio'   }
-    ]
-  },
-  3: {
-    id: 3, priority: 'PRIORITAIRE',
-    patient: { nom: 'Fatou Fall', genre: 'FEMME', age: 28, ref: 'ANA-2026-003' },
-    medecin: { nom: 'Dr. Moussa Sarr', specialite: 'Orthopédiste', clinique: 'Hôpital Universitaire' },
-    contexteMedical: '"Suivi échographique pour douleurs abdominales persistantes. Le patient demande un RDV dans les meilleurs délais."',
-    examens: [
-      { id: 1, titre: 'Échographie Abdominale', sousTitre: 'Routine • Standard', icon: 'echo' }
-    ]
-  },
-  4: {
-    id: 4, priority: 'ROUTINE',
-    patient: { nom: 'Isseu Ly', genre: 'FEMME', age: 31, ref: 'ANA-2026-004' },
-    medecin: { nom: 'Dr. Khadim Ba', specialite: 'Gastroentérologue', clinique: 'Laboratoire Central Ville' },
-    contexteMedical: '"Douleurs abdominales chroniques sans cause identifiée. Scanner thoracique avec injection requis."',
-    examens: [
-      { id: 1, titre: 'Scanner Thoracique', sousTitre: 'Injection Requis', icon: 'scanner' },
-      { id: 2, titre: 'Échographie',         sousTitre: 'Standard',         icon: 'echo'    }
-    ]
-  },
-  5: {
-    id: 5, priority: 'URGENT',
-    patient: { nom: 'Moussa Wade', genre: 'HOMME', age: 45, ref: 'ANA-2026-005' },
-    medecin: { nom: 'Dr. Oumar Diop', specialite: 'Neurologue', clinique: 'Clinique St. Luc' },
-    contexteMedical: '"Patient suspecté d\'une rupture du LCA. Interprétation prioritaire et séquences hautes résolutions requises."',
-    examens: [
-      { id: 1, titre: 'IRM Cérébral',     sousTitre: 'Urgence • Standard',  icon: 'irm'  },
-      { id: 2, titre: 'IRM Genou Droit',  sousTitre: 'Routine • Standard',  icon: 'irm'  }
-    ]
-  },
-  6: {
-    id: 6, priority: 'PRIORITAIRE',
-    patient: { nom: 'Aïssatou Ndiaye', genre: 'FEMME', age: 52, ref: 'ANA-2026-006' },
-    medecin: { nom: 'Dr. Ibrahima Fall', specialite: 'Cardiologue', clinique: 'Hôpital Universitaire' },
-    contexteMedical: '"Suivi échographique pour douleurs abdominales. Contrôle post-opératoire recommandé."',
-    examens: [
-      { id: 1, titre: 'Échographie Abdominale', sousTitre: 'Routine • Standard',  icon: 'echo'    },
-      { id: 2, titre: 'Scanner Thoracique',      sousTitre: 'Injection Requis',    icon: 'scanner' },
-      { id: 3, titre: 'IRM Lombaire',            sousTitre: 'Prioritaire',         icon: 'irm'     },
-      { id: 4, titre: 'Radiographie',            sousTitre: 'Standard',            icon: 'radio'   }
-    ]
-  }
-};
-
-// ── Component ─────────────────────────────────────────────────────────────────
 
 @Component({
   selector: 'app-detail-demande-imagerie',
@@ -105,28 +36,93 @@ const MOCK_DETAILS: Record<number, DetailDemande> = {
 })
 export class DetailDemandeImagerieComponent implements OnInit {
 
-  detail: DetailDemande | null = null;
-  loading = true;
+  private readonly api = environment.baseUrl;
 
-  // Modal accepter
+  detail:   DetailDemande | null = null;
+  loading   = true;
+  isSaving  = false;
+  isRejecting = false;
+
   showAccepterModal = false;
   showSuccessModal  = false;
   form: AccepterForm = { montant: null, date: '', heure: '', note: '' };
 
   constructor(
-    private route: ActivatedRoute,
-    private router: Router,
+    private route:    ActivatedRoute,
+    private router:   Router,
     private location: Location,
-    private cdr: ChangeDetectorRef
+    private cdr:      ChangeDetectorRef,
+    private http:     HttpClient,
   ) {}
 
   ngOnInit(): void {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
-    of(MOCK_DETAILS[id] ?? MOCK_DETAILS[1]).pipe(delay(150)).subscribe(data => {
-      this.detail  = data;
-      this.loading = false;
-      this.cdr.markForCheck();
-    });
+    const id = this.route.snapshot.paramMap.get('id')!;
+    this.http.get<any>(`${this.api}/diagnostic/imaging-orders/${id}`)
+      .pipe(catchError(() => of(null)))
+      .subscribe(order => {
+        if (!order) { this.loading = false; this.cdr.markForCheck(); return; }
+        const ids = [order.patientId, order.doctorId].filter(Boolean) as string[];
+        if (!ids.length) { this.buildDetail(order, {}); return; }
+        this.http.get<{ keycloakId: string; firstName: string; lastName: string }[]>(
+          `${this.api}/users/names?ids=${ids.join(',')}`
+        ).pipe(catchError(() => of([]))).subscribe(names => {
+          const m: Record<string, string> = {};
+          for (const n of names) m[n.keycloakId] = `${n.firstName ?? ''} ${n.lastName ?? ''}`.trim();
+          this.buildDetail(order, m);
+        });
+      });
+  }
+
+  private buildDetail(o: any, names: Record<string, string>): void {
+    const PRI_MAP: Record<string, Priority> = {
+      URGENT: 'URGENT', PRIORITY: 'PRIORITAIRE', PRIORITAIRE: 'PRIORITAIRE',
+      NORMAL: 'ROUTINE', ROUTINE: 'ROUTINE',
+    };
+    const pName  = names[o.patientId] || `Patient ${(o.patientId ?? '').slice(-6).toUpperCase()}`;
+    const dName  = names[o.doctorId]  ? `Dr. ${names[o.doctorId]}` : 'Médecin prescripteur';
+    const cats   = (o.examTypes   ?? []) as string[];
+    const regions = (o.bodyRegions ?? []) as string[];
+
+    const iconFor = (t: string): 'irm' | 'scanner' | 'echo' | 'radio' => {
+      const u = t.toUpperCase();
+      if (u.includes('IRM') || u.includes('MRI'))              return 'irm';
+      if (u.includes('SCANNER') || u.includes('CT') || u.includes('TDM')) return 'scanner';
+      if (u.includes('ECHO') || u.includes('ÉCHOGRAPHIE'))     return 'echo';
+      return 'radio';
+    };
+
+    let examens: Examen[] = cats.map((c, i) => ({
+      id: i + 1, titre: c,
+      sousTitre: regions[i] ? `${regions[i]}` : 'Standard',
+      icon: iconFor(c),
+    }));
+
+    if (!examens.length && regions.length) {
+      examens = regions.map((r, i) => ({ id: i + 1, titre: r, sousTitre: 'Standard', icon: 'radio' as const }));
+    }
+    if (!examens.length) {
+      examens = [{ id: 1, titre: o.type ?? 'Examen d\'imagerie', sousTitre: 'Standard', icon: 'radio' }];
+    }
+
+    this.detail = {
+      id:       o.id,
+      priority: PRI_MAP[o.urgency] ?? 'ROUTINE',
+      patient: {
+        nom:   pName,
+        genre: '—',
+        age:   null,
+        ref:   o.imagingOrderRef ?? o.id,
+      },
+      medecin: {
+        nom:       dName,
+        specialite: 'Médecin',
+        clinique:  '—',
+      },
+      contexteMedical: o.clinicalContext ?? o.notes ?? 'Aucun contexte clinique fourni.',
+      examens,
+    };
+    this.loading = false;
+    this.cdr.markForCheck();
   }
 
   // ── Navigation ─────────────────────────────────────────────────────────────
@@ -145,35 +141,54 @@ export class DetailDemandeImagerieComponent implements OnInit {
   ouvrirAccepter(): void {
     this.form = { montant: 25000, date: '', heure: '', note: 'Résultats disponibles sous 24h' };
     this.showAccepterModal = true;
-    this.cdr.detectChanges();
+    this.cdr.markForCheck();
   }
 
   fermerModal(): void {
     this.showAccepterModal = false;
-    this.cdr.detectChanges();
+    this.cdr.markForCheck();
   }
 
   confirmerAcceptation(): void {
-    this.showAccepterModal = false;
-    this.showSuccessModal  = true;
-    this.cdr.detectChanges();
-    setTimeout(() => {
-      this.showSuccessModal = false;
-      this.cdr.detectChanges();
-    }, 2500);
+    if (!this.detail || !this.form.montant || !this.form.date || !this.form.heure) return;
+
+    const appointmentDate = new Date(`${this.form.date}T${this.form.heure}:00`).toISOString();
+    this.isSaving = true;
+    this.cdr.markForCheck();
+
+    this.http.patch(
+      `${this.api}/diagnostic/imaging-orders/${this.detail.id}/accept`,
+      { price: this.form.montant, appointmentDate, note: this.form.note }
+    ).pipe(finalize(() => { this.isSaving = false; this.cdr.markForCheck(); }))
+      .subscribe({
+        next: () => {
+          this.showAccepterModal = false;
+          this.showSuccessModal  = true;
+          this.cdr.markForCheck();
+          setTimeout(() => { this.router.navigate(['/imaging/demandes']); }, 2000);
+        },
+        error: err => {
+          console.error(err?.error?.message ?? 'Erreur lors de l\'acceptation');
+        }
+      });
   }
 
   // ── Refuser ────────────────────────────────────────────────────────────────
   refuser(): void {
-    this.router.navigate(['/demande-imagerie']);
+    if (!this.detail) return;
+    this.isRejecting = true;
+    this.cdr.markForCheck();
+    this.http.patch(
+      `${this.api}/diagnostic/imaging-orders/${this.detail.id}/reject`, {}
+    ).pipe(
+      catchError(() => of(null)),
+      finalize(() => { this.isRejecting = false; this.cdr.markForCheck(); })
+    ).subscribe(() => this.router.navigate(['/imaging/demandes']));
   }
 
   getPatientInitiales(): string {
-    if (!this.detail) return '';
+    if (!this.detail) return '?';
     return this.detail.patient.nom
-      .split(' ')
-      .filter(n => n.length > 0)
-      .map(n => n[0].toUpperCase())
-      .join('');
+      .split(' ').filter(n => n).map(n => n[0].toUpperCase()).join('').slice(0, 2);
   }
 }

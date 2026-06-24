@@ -12,6 +12,14 @@ gap: 24px;
 
 }
 
+.sidebar-scrollbar-hidden {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.sidebar-scrollbar-hidden::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
 
 
 .entete{

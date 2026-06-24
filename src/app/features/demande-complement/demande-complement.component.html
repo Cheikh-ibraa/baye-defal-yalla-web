@@ -1,4 +1,3 @@
-<!-- Livraison Component -->
 <div class="min-h-screen bg-[#F4F6F9]">
 
   <!-- Header -->
@@ -7,9 +6,9 @@
     <p class="text-sm sm:text-base text-[#343A40]">Consultez et répondez aux demandes de compléments d'informations</p>
   </div>
 
-  <!-- Mobile View Toggle Button -->
-  <div class="lg:hidden mb-4" *ngIf="selectedDelivery">
-    <button (click)="selectedDelivery = null"
+  <!-- Mobile: back button -->
+  <div class="lg:hidden mb-4" *ngIf="selectedOrder">
+    <button (click)="selectedOrder = null; emittingPharmacy = null"
       class="w-full flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
       <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -18,37 +17,35 @@
     </button>
   </div>
 
-  <!-- Single white card -->
+  <!-- Main card -->
   <div class="bg-white rounded-xl shadow-sm overflow-hidden">
 
-    <!-- Shared header -->
+    <!-- Card header -->
     <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
       <h2 class="text-lg font-bold text-[#2C3E50]">Demandes de complément</h2>
       <div class="flex items-center gap-3">
         <!-- Search -->
         <div class="relative">
           <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M13.1539 12.2073L10.6806 9.75393C11.6407 8.55687 12.1056 7.03747 11.9798 5.50813C11.854 3.9788 11.147 2.55579 10.0043 1.5317C8.86151 0.507604 7.3698 -0.0397263 5.83588 0.00224731C4.30196 0.0442209 2.84241 0.672308 1.75736 1.75736C0.672308 2.84241 0.0442209 4.30196 0.00224731 5.83588C-0.0397263 7.3698 0.507604 8.86151 1.5317 10.0043C2.55579 11.147 3.9788 11.854 5.50813 11.9798C7.03747 12.1056 8.55687 11.6407 9.75393 10.6806L12.2073 13.1339C12.2692 13.1964 12.343 13.246 12.4242 13.2799C12.5055 13.3137 12.5926 13.3311 12.6806 13.3311C12.7686 13.3311 12.8557 13.3137 12.937 13.2799C13.0182 13.246 13.092 13.1964 13.1539 13.1339C13.2741 13.0096 13.3413 12.8435 13.3413 12.6706C13.3413 12.4977 13.2741 12.3316 13.1539 12.2073ZM6.01393 10.6806C5.09095 10.6806 4.1887 10.4069 3.42127 9.89412C2.65384 9.38134 2.0557 8.65251 1.7025 7.79979C1.34929 6.94707 1.25687 6.00876 1.43694 5.10351C1.617 4.19827 2.06146 3.36675 2.7141 2.7141C3.36675 2.06146 4.19827 1.617 5.10351 1.43694C6.00876 1.25687 6.94707 1.34929 7.79979 1.7025C8.65251 2.0557 9.38134 2.65384 9.89412 3.42127C10.4069 4.1887 10.6806 5.09095 10.6806 6.01393C10.6806 7.25161 10.1889 8.43859 9.31376 9.31376C8.43859 10.1889 7.25161 10.6806 6.01393 10.6806Z"
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M13.1539 12.2073L10.6806 9.75393C11.6407 8.55687 12.1056 7.03747 11.9798 5.50813C11.854 3.9788 11.147 2.55579 10.0043 1.5317C8.86151 0.507604 7.3698 -0.0397263 5.83588 0.00224731C4.30196 0.0442209 2.84241 0.672308 1.75736 1.75736C0.672308 2.84241 0.0442209 4.30196 0.00224731 5.83588C-0.0397263 7.3698 0.507604 8.86151 1.5317 10.0043C2.55579 11.147 3.9788 11.854 5.50813 11.9798C7.03747 12.1056 8.55687 11.6407 9.75393 10.6806L12.2073 13.1339C12.2692 13.1964 12.343 13.246 12.4242 13.2799C12.5055 13.3137 12.5926 13.3311 12.6806 13.3311C12.7686 13.3311 12.8557 13.3137 12.937 13.2799C13.0182 13.246 13.092 13.1964 13.1539 13.1339C13.2741 13.0096 13.3413 12.8435 13.3413 12.6706C13.3413 12.4977 13.2741 12.3316 13.1539 12.2073ZM6.01393 10.6806C5.09095 10.6806 4.1887 10.4069 3.42127 9.89412C2.65384 9.38134 2.0557 8.65251 1.7025 7.79979C1.34929 6.94707 1.25687 6.00876 1.43694 5.10351C1.617 4.19827 2.06146 3.36675 2.7141 2.7141C3.36675 2.06146 4.19827 1.617 5.10351 1.43694C6.00876 1.25687 6.94707 1.34929 7.79979 1.7025C8.65251 2.0557 9.38134 2.65384 9.89412 3.42127C10.4069 4.1887 10.6806 5.09095 10.6806 6.01393C10.6806 7.25161 10.1889 8.43859 9.31376 9.31376C8.43859 10.1889 7.25161 10.6806 6.01393 10.6806Z"
                 fill="#777777" />
             </svg>
           </div>
-          <input type="text" placeholder="Rechercher une demande"
+          <input type="text" placeholder="Rechercher une demande" [(ngModel)]="searchQuery"
             class="pl-10 pr-4 py-2.5 border border-[#EEEEEE] text-xs text-[#777777] rounded-lg outline-none w-46" />
         </div>
 
-        <!-- Filter button with dropdown -->
+        <!-- Filter -->
         <details #filterDetails class="relative">
           <summary
             class="flex items-center gap-2 px-4 py-2 border border-[#EEEEEE] rounded-lg hover:bg-gray-50 text-sm font-medium text-gray-700 cursor-pointer list-none select-none">
-            <svg width="14" height="10" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg width="14" height="10" viewBox="0 0 14 10" fill="none">
               <path d="M0.625 0.625H13.125M2.70833 4.79167H11.0417M5.20833 8.95833H8.54167" stroke="#777777"
                 stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
             Filtrer
-            <span *ngIf="selectedStatus && selectedStatus !== 'CREATED'"
-              class="ml-1 w-2 h-2 rounded-full bg-[#00B894] inline-block"></span>
+            <span *ngIf="selectedStatus" class="ml-1 w-2 h-2 rounded-full bg-[#00B894] inline-block"></span>
           </summary>
           <div
             class="absolute right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg w-52 py-1 overflow-hidden">
@@ -56,8 +53,8 @@
             <button *ngFor="let opt of [
                 {label: 'Toutes', value: ''},
                 {label: 'En attente', value: 'PENDING'},
-                {label: 'Validée', value: 'ACCEPTED'},
-                {label: 'En cours', value: 'IN_PROGRESS'},
+                {label: 'En préparation', value: 'IN_PREPARATION'},
+                {label: 'Prêtes', value: 'READY'},
                 {label: 'Livrées', value: 'DELIVERED'},
                 {label: 'Annulées', value: 'CANCELLED'}
               ]" (click)="selectedStatus = opt.value; onStatusChange(); filterDetails.removeAttribute('open')"
@@ -75,37 +72,37 @@
       </div>
     </div>
 
-    <!-- Content panels -->
+    <!-- Split panels -->
     <div class="flex flex-col lg:flex-row">
 
-      <!-- Left Section - Deliveries List -->
-      <div class="w-full lg:w-1/2 border-r border-gray-200 overflow-y-auto flex-col"
-        [ngClass]="{'hidden lg:flex': selectedDelivery, 'flex': !selectedDelivery}"
-        style="max-height: calc(100vh - 130px)">
+      <!-- LEFT: list -->
+      <div class="w-full lg:w-1/2 border-r border-gray-200 flex-col"
+        [ngClass]="{'hidden lg:flex': selectedOrder, 'flex': !selectedOrder}"
+        style="max-height: calc(100vh - 130px); overflow-y: auto">
 
-        <!-- Loading State -->
-        <div *ngIf="loading" class="flex items-center justify-center py-8">
+        <!-- Loading -->
+        <div *ngIf="loading" class="flex items-center justify-center py-12">
           <div class="text-center">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <p class="text-sm text-gray-600">Chargement des demandes...</p>
           </div>
         </div>
 
-        <!-- Error State -->
-        <div *ngIf="error && !loading" class="flex items-center justify-center py-8">
+        <!-- Error -->
+        <div *ngIf="error && !loading" class="flex items-center justify-center py-12">
           <div class="text-center">
             <svg class="w-12 h-12 mx-auto mb-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
-            <p class="text-red-600 font-medium mb-4">{{error}}</p>
-            <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" (click)="loadDeliveries()">
+            <p class="text-red-600 font-medium mb-4">{{ error }}</p>
+            <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" (click)="loadOrders()">
               Réessayer
             </button>
           </div>
         </div>
 
-        <!-- Table - Desktop -->
+        <!-- Table desktop -->
         <div *ngIf="!loading && !error" class="hidden md:block overflow-x-auto">
           <table class="w-full">
             <thead class="bg-[#F5F7FA]">
@@ -117,82 +114,76 @@
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr *ngFor="let delivery of deliveries; trackBy: trackByDeliveryId" (click)="selectDelivery(delivery)"
+              <tr *ngFor="let order of paginatedOrders; trackBy: trackById"
+                (click)="selectOrder(order)"
                 class="hover:bg-gray-50 cursor-pointer transition-colors duration-150"
-                [class.bg-blue-50]="selectedDelivery?.id === delivery.id">
+                [class.bg-blue-50]="selectedOrder?.id === order.id">
                 <td class="px-4 lg:px-6 py-4 whitespace-nowrap">
-                  <span class="text-sm font-semibold text-[#2C7BE5]">{{delivery.prescription.reference}}</span>
+                  <span class="text-sm font-semibold text-[#2C7BE5]">{{ getOrderRef(order) }}</span>
                 </td>
                 <td class="px-4 lg:px-6 py-4 whitespace-nowrap">
-                  <span class="text-sm text-[#4B4848]">{{getFullName(delivery.prescription.patient)}}</span>
+                  <span class="text-sm text-[#4B4848]">{{ getPatientDisplay(order) }}</span>
                 </td>
                 <td class="px-4 lg:px-6 py-4 whitespace-nowrap">
-                  <span class="text-sm text-[#4B4848]">{{formatDate(delivery.deliveryTime)}}</span>
+                  <span class="text-sm text-[#4B4848]">{{ formatDate(order.createdAt) }}</span>
                 </td>
                 <td class="px-4 lg:px-6 py-4 whitespace-nowrap">
                   <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                    [ngClass]="getStatusColorClass(delivery.status)">
-                    {{getStatusLabel(delivery.status)}}
+                    [ngClass]="getStatusColorClass(order.status)">
+                    {{ getStatusLabel(order.status) }}
                   </span>
                 </td>
               </tr>
             </tbody>
           </table>
 
-          <!-- Empty state -->
-          <div *ngIf="deliveries.length === 0" class="text-center py-8">
+          <!-- Empty -->
+          <div *ngIf="paginatedOrders.length === 0" class="text-center py-12">
             <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2" />
             </svg>
             <h3 class="text-base font-medium text-gray-900 mb-2">Aucune demande trouvée</h3>
-            <p class="text-sm text-gray-500">Aucune demande ne correspond à vos critères</p>
+            <p class="text-sm text-gray-500">Aucune demande de complément n'est assignée à votre pharmacie</p>
           </div>
         </div>
 
-        <!-- Cards - Mobile -->
+        <!-- Cards mobile -->
         <div *ngIf="!loading && !error" class="md:hidden divide-y divide-gray-200">
-          <div *ngFor="let delivery of deliveries; trackBy: trackByDeliveryId" (click)="selectDelivery(delivery)"
-            class="p-4 hover:bg-gray-50 cursor-pointer transition-colors duration-150"
-            [class.bg-blue-50]="selectedDelivery?.id === delivery.id">
+          <div *ngFor="let order of paginatedOrders; trackBy: trackById"
+            (click)="selectOrder(order)"
+            class="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+            [class.bg-blue-50]="selectedOrder?.id === order.id">
             <div class="flex justify-between items-start mb-2">
-              <span class="text-sm font-medium text-blue-600">{{delivery.prescription.reference}}</span>
+              <span class="text-sm font-medium text-blue-600">{{ getOrderRef(order) }}</span>
               <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                [ngClass]="getStatusColorClass(delivery.status)">
-                {{getStatusLabel(delivery.status)}}
+                [ngClass]="getStatusColorClass(order.status)">
+                {{ getStatusLabel(order.status) }}
               </span>
             </div>
-            <div class="text-sm text-gray-900 font-medium mb-1">{{getFullName(delivery.prescription.patient)}}</div>
-            <div class="text-xs text-gray-500">{{formatDate(delivery.deliveryTime)}}</div>
+            <div class="text-sm text-gray-900 font-medium mb-1">{{ getPatientDisplay(order) }}</div>
+            <div class="text-xs text-gray-500">{{ formatDate(order.createdAt) }}</div>
           </div>
 
-          <!-- Empty state mobile -->
-          <div *ngIf="deliveries.length === 0" class="text-center py-8 px-4">
-            <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2" />
-            </svg>
-            <h3 class="text-base font-medium text-gray-900 mb-2">Aucune demande trouvée</h3>
-            <p class="text-sm text-gray-500">Aucune demande ne correspond à vos critères</p>
+          <div *ngIf="paginatedOrders.length === 0" class="text-center py-12 px-4">
+            <p class="text-sm text-gray-500">Aucune demande trouvée</p>
           </div>
         </div>
 
         <!-- Pagination -->
         <div *ngIf="!loading && !error" class="px-3 sm:px-6 py-4 border-t border-gray-200">
-          <!-- Desktop -->
           <div class="hidden sm:flex items-center justify-between">
             <div class="flex items-center space-x-4">
               <span class="text-sm text-gray-700">Éléments par page :</span>
-              <select
-                class="border border-gray-300 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              <select class="border border-gray-300 rounded px-3 py-1 text-sm focus:outline-none"
                 [(ngModel)]="itemsPerPage" (change)="onItemsPerPageChange()">
-                <option value="5">5</option>
-                <option value="10">10</option>
-                <option value="20">20</option>
+                <option [value]="5">5</option>
+                <option [value]="10">10</option>
+                <option [value]="20">20</option>
               </select>
             </div>
             <div class="flex items-center space-x-4">
-              <span class="text-sm text-gray-700">{{startIndex}} - {{endIndex}} sur {{totalItems}}</span>
+              <span class="text-sm text-gray-700">{{ startIndex }} - {{ endIndex }} sur {{ totalItems }}</span>
               <div class="flex space-x-1">
                 <button (click)="previousPage()" [disabled]="currentPage === 0"
                   class="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -210,412 +201,442 @@
             </div>
           </div>
 
-          <!-- Mobile -->
-          <div class="sm:hidden space-y-3">
-            <div class="flex items-center justify-between">
-              <span class="text-xs text-gray-700">Par page :</span>
-              <select
-                class="border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                [(ngModel)]="itemsPerPage" (change)="onItemsPerPageChange()">
-                <option value="5">5</option>
-                <option value="10">10</option>
-                <option value="20">20</option>
-              </select>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-xs text-gray-700">{{startIndex}} - {{endIndex}} sur {{totalItems}}</span>
-              <div class="flex space-x-1">
-                <button (click)="previousPage()" [disabled]="currentPage === 0"
-                  class="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
-                  <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                <button (click)="nextPage()" [disabled]="currentPage >= totalPages - 1"
-                  class="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
-                  <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </div>
+          <!-- Mobile pagination -->
+          <div class="sm:hidden flex items-center justify-between">
+            <span class="text-xs text-gray-700">{{ startIndex }} - {{ endIndex }} sur {{ totalItems }}</span>
+            <div class="flex space-x-1">
+              <button (click)="previousPage()" [disabled]="currentPage === 0"
+                class="p-2 rounded hover:bg-gray-100 disabled:opacity-50">
+                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button (click)="nextPage()" [disabled]="currentPage >= totalPages - 1"
+                class="p-2 rounded hover:bg-gray-100 disabled:opacity-50">
+                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Right Section - Delivery Details -->
-      <div class="w-full lg:w-1/2 overflow-y-auto lg:block" [class.hidden]="!selectedDelivery"
+      <!-- RIGHT: detail -->
+      <div class="w-full lg:w-1/2 overflow-y-auto" [class.hidden]="!selectedOrder"
         style="max-height: calc(100vh - 130px)">
 
-        <!-- Details when a delivery is selected -->
-        <div *ngIf="selectedDelivery" class="p-4 sm:p-6 h-full">
-          <div class="w-full">
+        <div *ngIf="selectedOrder" class="p-4 sm:p-6">
 
-            <!-- Header -->
-            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 space-y-4 sm:space-y-0">
-              <h2 class="text-xl font-bold text-[#343A40]">
-                Demande {{ selectedDelivery.prescription.reference }}
-              </h2>
+          <!-- Detail header + action buttons -->
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 space-y-4 sm:space-y-0">
+            <h2 class="text-xl font-bold text-[#343A40]">Demande {{ getOrderRef(selectedOrder) }}</h2>
 
-              <!-- Boutons Accepter / Refuser : PENDING -->
-              <div *ngIf="!isAccepted(selectedDelivery.id) && !isReady(selectedDelivery.id)" class="flex space-x-2">
-                <button (click)="acceptDemande(selectedDelivery)"
-                  class="flex items-center justify-center px-4 py-2 bg-[#4FBFA5] hover:bg-[#3FA892] text-white rounded-lg transition-colors space-x-2 text-sm">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Accepter</span>
-                </button>
-                <button (click)="refuseDemande(selectedDelivery)"
-                  class="flex items-center justify-center px-4 py-2 bg-[#F36B6B] hover:bg-[#D55A5A] text-white rounded-lg transition-colors space-x-2 text-sm">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  <span>Refuser</span>
-                </button>
+            <!-- PENDING: Accepter / Refuser -->
+            <div *ngIf="selectedOrder.status === 'PENDING'" class="flex space-x-2">
+              <button (click)="accepterDemande()"
+                class="flex items-center justify-center px-4 py-2 bg-[#4FBFA5] hover:bg-[#3FA892] text-white rounded-lg transition-colors space-x-2 text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                <span>Accepter</span>
+              </button>
+              <button (click)="refuserDemande()"
+                class="flex items-center justify-center px-4 py-2 bg-[#F36B6B] hover:bg-[#D55A5A] text-white rounded-lg transition-colors space-x-2 text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                <span>Refuser</span>
+              </button>
+            </div>
+
+            <!-- IN_PREPARATION: Prête à être récupérée -->
+            <div *ngIf="selectedOrder.status === 'IN_PREPARATION'">
+              <button (click)="marquerPrete()"
+                class="flex items-center gap-2 px-5 py-2.5 bg-[#104382] hover:bg-[#0D3568] text-white rounded-lg text-sm transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                Prête à être récupérée
+              </button>
+            </div>
+
+            <!-- READY: Scanner QR -->
+            <div *ngIf="selectedOrder.status === 'READY'">
+              <button (click)="scannerQr()"
+                class="flex items-center gap-2 px-5 py-2.5 bg-[#104382] hover:bg-[#0D3568] text-white rounded-lg text-sm font-semibold transition-colors">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="3" y="3" width="8" height="8" rx="1" stroke="currentColor" stroke-width="2"/>
+                  <rect x="5" y="5" width="4" height="4" fill="currentColor"/>
+                  <rect x="13" y="3" width="8" height="8" rx="1" stroke="currentColor" stroke-width="2"/>
+                  <rect x="15" y="5" width="4" height="4" fill="currentColor"/>
+                  <rect x="3" y="13" width="8" height="8" rx="1" stroke="currentColor" stroke-width="2"/>
+                  <rect x="5" y="15" width="4" height="4" fill="currentColor"/>
+                  <path d="M13 13h3v3h-3zM19 13v3M13 19h3M19 19v-3M19 16h-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                Scanner QR
+              </button>
+            </div>
+
+            <!-- DELIVERED / CANCELLED: status badge -->
+            <div *ngIf="selectedOrder.status === 'DELIVERED' || selectedOrder.status === 'CANCELLED'">
+              <span class="inline-flex px-3 py-2 text-sm font-semibold rounded-lg"
+                [ngClass]="getStatusColorClass(selectedOrder.status)">
+                {{ getStatusLabel(selectedOrder.status) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- ======================================================== -->
+          <!-- PENDING                                                   -->
+          <!-- ======================================================== -->
+          <ng-container *ngIf="selectedOrder.status === 'PENDING'">
+
+            <!-- Pharmacie émettrice -->
+            <div class="border-2 border-dashed border-[#1E4D9B66] rounded-2xl p-4 bg-[#F9FAFB] mb-6">
+              <div class="flex items-center gap-2 text-[#00367C] font-bold text-sm sm:text-base mb-4">
+                <svg width="16" height="20" viewBox="0 0 16 20" fill="none">
+                  <path d="M6.5 13.5H9.5V11H12V8H9.5V5.5H6.5V8H4V11H6.5V13.5ZM8 20C5.68333 19.4167 3.77083 18.0875 2.2625 16.0125C0.754167 13.9375 0 11.6333 0 9.1V3L8 0L16 3V9.1C16 11.6333 15.2458 13.9375 13.7375 16.0125C12.2292 18.0875 10.3167 19.4167 8 20Z" fill="#00367C" />
+                </svg>
+                <span>Pharmacie émettrice</span>
               </div>
 
-              <!-- Bouton Prête à être récupérée : ACCEPTÉ -->
-              <div *ngIf="isAccepted(selectedDelivery.id) && !isReady(selectedDelivery.id)">
-                <button (click)="markAsReady(selectedDelivery)"
-                  class="flex items-center gap-2 px-5 py-2.5 bg-[#104382] hover:bg-[#0D3568] text-white rounded-lg text-sm transition-colors">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              <div *ngIf="loadingPharmacy" class="text-sm text-gray-400 italic mb-4">Chargement...</div>
+
+              <div *ngIf="!loadingPharmacy" class="flex items-center gap-4 mb-4">
+                <div class="flex items-center justify-center bg-white p-3 border border-gray-100 rounded-2xl w-14 h-14 shrink-0">
+                  <svg width="23" height="25" viewBox="0 0 23 25" fill="none">
+                    <path d="M0 25V22.5L2.5 15L0 7.5V5H15.875L17.6875 0L20.625 1.0625L19.1875 5H22.5V7.5L20 15L22.5 22.5V25H0ZM10 20H12.5V16.25H16.25V13.75H12.5V10H10V13.75H6.25V16.25H10V20ZM2.625 22.5H19.875L17.375 15L19.875 7.5H2.625L5.125 15L2.625 22.5Z" fill="#006B55" />
                   </svg>
-                  Prête à être récupérée
-                </button>
+                </div>
+                <div>
+                  <h3 class="font-bold text-[#131B2E] text-base leading-tight">{{ emittingPharmacy?.name || 'Pharmacie' }}</h3>
+                  <p class="text-xs text-[#737782] font-medium">Réf : {{ selectedOrder.parentOrderId?.substring(0,8)?.toUpperCase() }}</p>
+                </div>
               </div>
 
-              <!-- Bouton Scanner QR : READY -->
-              <div *ngIf="isReady(selectedDelivery.id)">
-                <button (click)="scanQrCode(selectedDelivery)"
-                  class="flex items-center gap-2 px-5 py-2.5 bg-[#104382] hover:bg-[#0D3568] text-white rounded-lg text-sm font-semibold transition-colors">
-                  <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="3" y="3" width="8" height="8" rx="1" stroke="currentColor" stroke-width="2"/>
-                    <rect x="5" y="5" width="4" height="4" fill="currentColor"/>
-                    <rect x="13" y="3" width="8" height="8" rx="1" stroke="currentColor" stroke-width="2"/>
-                    <rect x="15" y="5" width="4" height="4" fill="currentColor"/>
-                    <rect x="3" y="13" width="8" height="8" rx="1" stroke="currentColor" stroke-width="2"/>
-                    <rect x="5" y="15" width="4" height="4" fill="currentColor"/>
-                    <path d="M13 13h3v3h-3zM19 13v3M13 19h3M19 19v-3M19 16h-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  </svg>
-                  Scanner QR
-                </button>
+              <div *ngIf="!loadingPharmacy && emittingPharmacy?.address" class="flex items-center gap-2 text-sm text-[#555555] font-medium mb-4">
+                <svg width="10" height="12" viewBox="0 0 10 12" fill="none">
+                  <path d="M4.66667 5.83333C4.9875 5.83333 5.26215 5.7191 5.49062 5.49062C5.7191 5.26215 5.83333 4.9875 5.83333 4.66667C5.83333 4.34583 5.7191 4.07118 5.49062 3.84271C5.26215 3.61424 4.9875 3.5 4.66667 3.5C4.34583 3.5 4.07118 3.61424 3.84271 3.84271C3.61424 4.07118 3.5 4.34583 3.5 4.66667C3.5 4.9875 3.61424 5.26215 3.84271 5.49062C4.07118 5.7191 4.34583 5.83333 4.66667 5.83333ZM4.66667 10.1208C5.85278 9.03194 6.73264 8.04271 7.30625 7.15312C7.87986 6.26354 8.16667 5.47361 8.16667 4.78333C8.16667 3.72361 7.82882 2.8559 7.15312 2.18021C6.47743 1.50451 5.64861 1.16667 4.66667 1.16667C3.68472 1.16667 2.8559 1.50451 2.18021 2.18021C1.50451 2.8559 1.16667 3.72361 1.16667 4.78333C1.16667 5.47361 1.45347 6.26354 2.02708 7.15312C2.60069 8.04271 3.48056 9.03194 4.66667 10.1208ZM4.66667 11.6667C3.10139 10.3347 1.93229 9.09757 1.15937 7.95521C0.386458 6.81285 0 5.75556 0 4.78333C0 3.325 0.469097 2.16319 1.40729 1.29792C2.34549 0.432639 3.43194 0 4.66667 0C5.90139 0 6.98785 0.432639 7.92604 1.29792C8.86424 2.16319 9.33333 3.325 9.33333 4.78333C9.33333 5.75556 8.94688 6.81285 8.17396 7.95521C7.40104 9.09757 6.23194 10.3347 4.66667 11.6667Z" fill="#737782" />
+                </svg>
+                <span>{{ emittingPharmacy?.address }}</span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-6 pt-2">
+                <div>
+                  <h4 class="text-xs font-semibold text-[#737782] tracking-wider mb-1">Contact</h4>
+                  <p class="font-bold text-[#131B2E] text-sm">{{ emittingPharmacy?.phone || '—' }}</p>
+                </div>
+                <div>
+                  <h4 class="text-xs font-semibold text-[#737782] tracking-wider mb-1">Date émission</h4>
+                  <p class="font-bold text-[#131B2E] text-sm">{{ formatDate(selectedOrder.createdAt) }}</p>
+                </div>
               </div>
             </div>
 
-            <!-- ================================================ -->
-            <!-- ETAT 1 : PENDING non accepté                     -->
-            <!-- ================================================ -->
-            <ng-container *ngIf="!isAccepted(selectedDelivery.id) && !isReady(selectedDelivery.id)">
+            <!-- Instructions -->
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+              <h3 class="text-base font-medium text-yellow-800 mb-3">Instructions de préparation</h3>
+              <ul class="space-y-2 text-sm text-yellow-700">
+                <li class="flex items-start"><span class="text-yellow-600 mr-2">•</span>Vérifiez la disponibilité de tous les produits</li>
+                <li class="flex items-start"><span class="text-yellow-600 mr-2">•</span>Assurez-vous que les produits correspondent exactement à la commande</li>
+                <li class="flex items-start"><span class="text-yellow-600 mr-2">•</span>Emballez soigneusement les produits</li>
+                <li class="flex items-start"><span class="text-yellow-600 mr-2">•</span>Joignez la facture</li>
+              </ul>
+            </div>
 
-              <!-- Pharmacie Émettrice -->
-              <div class="border-2 border-dashed border-[#1E4D9B66] rounded-2xl p-4 bg-[#F9FAFB] mb-6">
-                <div class="flex items-center gap-2 text-[#00367C] font-bold text-sm sm:text-base mb-4">
-                  <svg width="16" height="20" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6.5 13.5H9.5V11H12V8H9.5V5.5H6.5V8H4V11H6.5V13.5ZM8 20C5.68333 19.4167 3.77083 18.0875 2.2625 16.0125C0.754167 13.9375 0 11.6333 0 9.1V3L8 0L16 3V9.1C16 11.6333 15.2458 13.9375 13.7375 16.0125C12.2292 18.0875 10.3167 19.4167 8 20Z" fill="#00367C" />
+            <!-- Médicaments -->
+            <div class="mb-4">
+              <h3 class="text-base font-semibold text-gray-900 mb-4">Médicaments associés</h3>
+              <div class="overflow-x-auto rounded-lg border border-gray-200">
+                <table class="w-full text-sm">
+                  <thead class="bg-[#F5F7FA]">
+                    <tr>
+                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Médicament</th>
+                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Posologie</th>
+                      <th class="px-4 py-3 text-right text-xs font-medium text-gray-500">Qté</th>
+                      <th class="px-4 py-3 text-right text-xs font-medium text-gray-500">P.U</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-100">
+                    <tr *ngFor="let item of selectedOrder.items" class="hover:bg-gray-50">
+                      <td class="px-4 py-3 text-sm text-gray-900">{{ item.medicationName }}</td>
+                      <td class="px-4 py-3 text-sm text-gray-900">{{ item.dosage }}</td>
+                      <td class="px-4 py-3 text-sm text-gray-900 text-right">{{ item.quantity }}</td>
+                      <td class="px-4 py-3 text-sm font-semibold text-gray-900 text-right">{{ item.unitPrice || '—' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </ng-container>
+
+          <!-- ======================================================== -->
+          <!-- IN_PREPARATION                                            -->
+          <!-- ======================================================== -->
+          <ng-container *ngIf="selectedOrder.status === 'IN_PREPARATION'">
+
+            <!-- Instructions bleues -->
+            <div class="bg-[#EEF4FF] border border-[#C7D9F8] rounded-xl p-4 mb-6">
+              <h3 class="text-sm font-bold text-[#1E293B] mb-3">Instructions de préparation</h3>
+              <ul class="space-y-2 text-sm text-[#2C7BE5]">
+                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#2C7BE5] shrink-0"></span>Vérifiez la disponibilité de tous les produits</li>
+                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#2C7BE5] shrink-0"></span>Assurez-vous que les produits correspondent exactement à la commande</li>
+                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#2C7BE5] shrink-0"></span>Emballez soigneusement les produits pour éviter les dommages</li>
+                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#2C7BE5] shrink-0"></span>Joignez la facture</li>
+              </ul>
+            </div>
+
+            <!-- Pharmacie émettrice -->
+            <div class="border-2 border-dashed border-[#1E4D9B66] rounded-2xl p-4 bg-[#F9FAFB] mb-6">
+              <div class="flex items-center gap-2 text-[#00367C] font-bold text-sm mb-4">
+                <svg width="16" height="20" viewBox="0 0 16 20" fill="none">
+                  <path d="M6.5 13.5H9.5V11H12V8H9.5V5.5H6.5V8H4V11H6.5V13.5ZM8 20C5.68333 19.4167 3.77083 18.0875 2.2625 16.0125C0.754167 13.9375 0 11.6333 0 9.1V3L8 0L16 3V9.1C16 11.6333 15.2458 13.9375 13.7375 16.0125C12.2292 18.0875 10.3167 19.4167 8 20Z" fill="#00367C"/>
+                </svg>
+                <span>Pharmacie émettrice</span>
+              </div>
+              <div class="flex items-center gap-4 mb-3">
+                <div class="flex items-center justify-center bg-white p-3 border border-gray-100 rounded-2xl w-14 h-14 shrink-0">
+                  <svg width="23" height="25" viewBox="0 0 23 25" fill="none">
+                    <path d="M0 25V22.5L2.5 15L0 7.5V5H15.875L17.6875 0L20.625 1.0625L19.1875 5H22.5V7.5L20 15L22.5 22.5V25H0ZM10 20H12.5V16.25H16.25V13.75H12.5V10H10V13.75H6.25V16.25H10V20ZM2.625 22.5H19.875L17.375 15L19.875 7.5H2.625L5.125 15L2.625 22.5Z" fill="#006B55"/>
                   </svg>
-                  <span>Pharmacie émettrice</span>
-                </div>
-                <div class="flex items-center gap-4 mb-4">
-                  <div class="flex items-center justify-center bg-white p-3 border border-gray-100 rounded-2xl w-14 h-14 shrink-0">
-                    <svg width="23" height="25" viewBox="0 0 23 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M0 25V22.5L2.5 15L0 7.5V5H15.875L17.6875 0L20.625 1.0625L19.1875 5H22.5V7.5L20 15L22.5 22.5V25H0ZM10 20H12.5V16.25H16.25V13.75H12.5V10H10V13.75H6.25V16.25H10V20ZM2.625 22.5H19.875L17.375 15L19.875 7.5H2.625L5.125 15L2.625 22.5Z" fill="#006B55" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 class="font-bold text-[#131B2E] text-base leading-tight">{{ selectedDelivery.prescription.pharmacy.name }}</h3>
-                    <p class="text-xs text-[#737782] font-medium">Code : {{ selectedDelivery.prescription.pharmacy.code || 'PH-00231' }}</p>
-                  </div>
-                </div>
-                <div class="flex items-center gap-2 text-sm text-[#555555] font-medium mb-6">
-                  <svg width="10" height="12" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4.66667 5.83333C4.9875 5.83333 5.26215 5.7191 5.49062 5.49062C5.7191 5.26215 5.83333 4.9875 5.83333 4.66667C5.83333 4.34583 5.7191 4.07118 5.49062 3.84271C5.26215 3.61424 4.9875 3.5 4.66667 3.5C4.34583 3.5 4.07118 3.61424 3.84271 3.84271C3.61424 4.07118 3.5 4.34583 3.5 4.66667C3.5 4.9875 3.61424 5.26215 3.84271 5.49062C4.07118 5.7191 4.34583 5.83333 4.66667 5.83333ZM4.66667 10.1208C5.85278 9.03194 6.73264 8.04271 7.30625 7.15312C7.87986 6.26354 8.16667 5.47361 8.16667 4.78333C8.16667 3.72361 7.82882 2.8559 7.15312 2.18021C6.47743 1.50451 5.64861 1.16667 4.66667 1.16667C3.68472 1.16667 2.8559 1.50451 2.18021 2.18021C1.50451 2.8559 1.16667 3.72361 1.16667 4.78333C1.16667 5.47361 1.45347 6.26354 2.02708 7.15312C2.60069 8.04271 3.48056 9.03194 4.66667 10.1208ZM4.66667 11.6667C3.10139 10.3347 1.93229 9.09757 1.15937 7.95521C0.386458 6.81285 0 5.75556 0 4.78333C0 3.325 0.469097 2.16319 1.40729 1.29792C2.34549 0.432639 3.43194 0 4.66667 0C5.90139 0 6.98785 0.432639 7.92604 1.29792C8.86424 2.16319 9.33333 3.325 9.33333 4.78333C9.33333 5.75556 8.94688 6.81285 8.17396 7.95521C7.40104 9.09757 6.23194 10.3347 4.66667 11.6667Z" fill="#737782" />
-                  </svg>
-                  <span>{{ selectedDelivery.prescription.pharmacy.address }}</span>
-                </div>
-                <div class="grid grid-cols-2 gap-6 pt-2">
-                  <div>
-                    <h4 class="text-xs font-semibold text-[#737782] tracking-wider mb-1">Contact</h4>
-                    <p class="font-bold text-[#131B2E] text-sm tracking-tight">{{ selectedDelivery.prescription.pharmacy.phone }}</p>
-                  </div>
-                  <div>
-                    <h4 class="text-xs font-semibold text-[#737782] tracking-wider mb-1">Date émission</h4>
-                    <p class="font-bold text-[#131B2E] text-sm tracking-tight">{{ formatDate(selectedDelivery.prescription.createdAt) }}</p>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Instructions de préparation -->
-              <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-                <h3 class="text-base font-medium text-yellow-800 mb-3">Instructions de préparation</h3>
-                <ul class="space-y-2 text-sm text-yellow-700">
-                  <li class="flex items-start"><span class="text-yellow-600 mr-2">•</span>Vérifiez la disponibilité de tous les produits</li>
-                  <li class="flex items-start"><span class="text-yellow-600 mr-2">•</span>Assurez-vous que les produits correspondent exactement à la commande</li>
-                  <li class="flex items-start"><span class="text-yellow-600 mr-2">•</span>Scanner le QR code présenté</li>
-                  <li class="flex items-start"><span class="text-yellow-600 mr-2">•</span>Emballez soigneusement les produits</li>
-                  <li class="flex items-start"><span class="text-yellow-600 mr-2">•</span>Joignez la facture</li>
-                </ul>
-              </div>
-
-              <!-- Médicaments -->
-              <div *ngIf="selectedDelivery.prescription.medications.length" class="mb-4">
-                <h3 class="text-base font-semibold text-gray-900 mb-4">Médicaments associés</h3>
-                <div class="overflow-x-auto rounded-lg border border-gray-200">
-                  <table class="w-full text-sm">
-                    <thead class="bg-[#F5F7FA]"><tr>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">Médicament</th>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">Posologie</th>
-                      <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 tracking-wider">Quantité</th>
-                      <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 tracking-wider">P U</th>
-                    </tr></thead>
-                    <tbody class="bg-white divide-y divide-gray-100">
-                      <tr *ngFor="let m of selectedDelivery.prescription.medications" class="hover:bg-gray-50">
-                        <td class="px-4 py-3 text-sm text-gray-900">{{m.name}}</td>
-                        <td class="px-4 py-3 text-sm text-gray-900">{{m.dosage}}</td>
-                        <td class="px-4 py-3 text-sm text-gray-900 text-right">{{m.quantity}}</td>
-                        <td class="px-4 py-3 text-sm font-semibold text-gray-900 text-right">{{m.price | number:'1.0-0'}}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <div class="flex justify-between items-center pt-4">
-                  <span class="text-base font-semibold text-[#343A40]">Total</span>
-                  <span class="text-xl font-semibold text-[#343A40]">{{calculateTotal(selectedDelivery.prescription.medications) | number:'1.0-0'}} FCFA</span>
-                </div>
-              </div>
-
-            </ng-container>
-
-            <!-- ================================================ -->
-            <!-- ETAT 2 : ACCEPTE - Prête à être récupérée        -->
-            <!-- ================================================ -->
-            <ng-container *ngIf="isAccepted(selectedDelivery.id) && !isReady(selectedDelivery.id)">
-
-              <!-- Instructions de préparation -->
-              <div class="bg-[#EEF4FF] border border-[#C7D9F8] rounded-xl p-4 mb-6">
-                <h3 class="text-sm font-bold text-[#1E293B] mb-3">Instructions de préparation</h3>
-                <ul class="space-y-2 text-sm text-[#2C7BE5]">
-                  <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#2C7BE5] shrink-0"></span>Vérifiez la disponibilité de tous les produits</li>
-                  <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#2C7BE5] shrink-0"></span>Assurez-vous que les produits correspondent exactement à la commande</li>
-                  <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#2C7BE5] shrink-0"></span>Scanner le QR code présenté</li>
-                  <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#2C7BE5] shrink-0"></span>Emballez soigneusement les produits pour éviter les dommages</li>
-                  <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#2C7BE5] shrink-0"></span>Joignez la facture</li>
-                </ul>
-              </div>
-
-              <!-- Pharmacie Émettrice -->
-              <div class="border-2 border-dashed border-[#1E4D9B66] rounded-2xl p-4 bg-[#F9FAFB] mb-6">
-                <div class="flex items-center gap-2 text-[#00367C] font-bold text-sm mb-4">
-                  <svg width="16" height="20" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6.5 13.5H9.5V11H12V8H9.5V5.5H6.5V8H4V11H6.5V13.5ZM8 20C5.68333 19.4167 3.77083 18.0875 2.2625 16.0125C0.754167 13.9375 0 11.6333 0 9.1V3L8 0L16 3V9.1C16 11.6333 15.2458 13.9375 13.7375 16.0125C12.2292 18.0875 10.3167 19.4167 8 20Z" fill="#00367C"/>
-                  </svg>
-                  <span>Pharmacie émettrice</span>
-                </div>
-                <div class="flex items-center gap-4 mb-3">
-                  <div class="flex items-center justify-center bg-white p-3 border border-gray-100 rounded-2xl w-14 h-14 shrink-0">
-                    <svg width="23" height="25" viewBox="0 0 23 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M0 25V22.5L2.5 15L0 7.5V5H15.875L17.6875 0L20.625 1.0625L19.1875 5H22.5V7.5L20 15L22.5 22.5V25H0ZM10 20H12.5V16.25H16.25V13.75H12.5V10H10V13.75H6.25V16.25H10V20ZM2.625 22.5H19.875L17.375 15L19.875 7.5H2.625L5.125 15L2.625 22.5Z" fill="#006B55"/>
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 class="font-bold text-[#131B2E] text-base leading-tight">{{ selectedDelivery.prescription.pharmacy.name }}</h3>
-                    <p class="text-xs text-[#737782] font-medium">Code : {{ selectedDelivery.prescription.pharmacy.code || 'PH-00231' }}</p>
-                  </div>
-                </div>
-                <div class="flex items-center gap-2 text-sm text-[#555555] font-medium mb-4">
-                  <svg width="10" height="12" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4.66667 5.83333C4.9875 5.83333 5.26215 5.7191 5.49062 5.49062C5.7191 5.26215 5.83333 4.9875 5.83333 4.66667C5.83333 4.34583 5.7191 4.07118 5.49062 3.84271C5.26215 3.61424 4.9875 3.5 4.66667 3.5C4.34583 3.5 4.07118 3.61424 3.84271 3.84271C3.61424 4.07118 3.5 4.34583 3.5 4.66667C3.5 4.9875 3.61424 5.26215 3.84271 5.49062C4.07118 5.7191 4.34583 5.83333 4.66667 5.83333ZM4.66667 10.1208C5.85278 9.03194 6.73264 8.04271 7.30625 7.15312C7.87986 6.26354 8.16667 5.47361 8.16667 4.78333C8.16667 3.72361 7.82882 2.8559 7.15312 2.18021C6.47743 1.50451 5.64861 1.16667 4.66667 1.16667C3.68472 1.16667 2.8559 1.50451 2.18021 2.18021C1.50451 2.8559 1.16667 3.72361 1.16667 4.78333C1.16667 5.47361 1.45347 6.26354 2.02708 7.15312C2.60069 8.04271 3.48056 9.03194 4.66667 10.1208ZM4.66667 11.6667C3.10139 10.3347 1.93229 9.09757 1.15937 7.95521C0.386458 6.81285 0 5.75556 0 4.78333C0 3.325 0.469097 2.16319 1.40729 1.29792C2.34549 0.432639 3.43194 0 4.66667 0C5.90139 0 6.98785 0.432639 7.92604 1.29792C8.86424 2.16319 9.33333 3.325 9.33333 4.78333C9.33333 5.75556 8.94688 6.81285 8.17396 7.95521C7.40104 9.09757 6.23194 10.3347 4.66667 11.6667Z" fill="#737782"/>
-                  </svg>
-                  <span>{{ selectedDelivery.prescription.pharmacy.address }}</span>
-                </div>
-                <div class="grid grid-cols-2 gap-4 pt-2 border-t border-dashed border-[#1E4D9B33]">
-                  <div>
-                    <p class="text-xs text-[#737782] mb-1">Contact</p>
-                    <p class="font-bold text-[#131B2E] text-sm">{{ selectedDelivery.prescription.pharmacy.phone }}</p>
-                  </div>
-                  <div class="text-right">
-                    <p class="text-xs text-[#737782] mb-1">Date émission</p>
-                    <p class="font-bold text-[#131B2E] text-sm">{{ formatDate(selectedDelivery.prescription.createdAt) }}</p>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Patient / Médecin / Date / Téléphone -->
-              <div class="grid grid-cols-2 gap-x-6 gap-y-4 mb-6">
-                <div>
-                  <p class="text-xs text-[#737782] mb-1">Patient</p>
-                  <p class="font-bold text-[#131B2E] text-sm">{{ getFullName(selectedDelivery.prescription.patient) }}</p>
                 </div>
                 <div>
-                  <p class="text-xs text-[#737782] mb-1">Médecin</p>
-                  <p class="font-bold text-[#131B2E] text-sm">Dr. {{ selectedDelivery.prescription.doctor.nom }}</p>
+                  <h3 class="font-bold text-[#131B2E] text-base leading-tight">{{ emittingPharmacy?.name || 'Pharmacie' }}</h3>
+                  <p class="text-xs text-[#737782] font-medium">Réf : {{ selectedOrder.parentOrderId?.substring(0,8)?.toUpperCase() }}</p>
+                </div>
+              </div>
+              <div *ngIf="emittingPharmacy?.address" class="flex items-center gap-2 text-sm text-[#555555] font-medium mb-3">
+                <svg width="10" height="12" viewBox="0 0 10 12" fill="none">
+                  <path d="M4.66667 5.83333C4.9875 5.83333 5.26215 5.7191 5.49062 5.49062C5.7191 5.26215 5.83333 4.9875 5.83333 4.66667C5.83333 4.34583 5.7191 4.07118 5.49062 3.84271C5.26215 3.61424 4.9875 3.5 4.66667 3.5C4.34583 3.5 4.07118 3.61424 3.84271 3.84271C3.61424 4.07118 3.5 4.34583 3.5 4.66667C3.5 4.9875 3.61424 5.26215 3.84271 5.49062C4.07118 5.7191 4.34583 5.83333 4.66667 5.83333ZM4.66667 10.1208C5.85278 9.03194 6.73264 8.04271 7.30625 7.15312C7.87986 6.26354 8.16667 5.47361 8.16667 4.78333C8.16667 3.72361 7.82882 2.8559 7.15312 2.18021C6.47743 1.50451 5.64861 1.16667 4.66667 1.16667C3.68472 1.16667 2.8559 1.50451 2.18021 2.18021C1.50451 2.8559 1.16667 3.72361 1.16667 4.78333C1.16667 5.47361 1.45347 6.26354 2.02708 7.15312C2.60069 8.04271 3.48056 9.03194 4.66667 10.1208ZM4.66667 11.6667C3.10139 10.3347 1.93229 9.09757 1.15937 7.95521C0.386458 6.81285 0 5.75556 0 4.78333C0 3.325 0.469097 2.16319 1.40729 1.29792C2.34549 0.432639 3.43194 0 4.66667 0C5.90139 0 6.98785 0.432639 7.92604 1.29792C8.86424 2.16319 9.33333 3.325 9.33333 4.78333C9.33333 5.75556 8.94688 6.81285 8.17396 7.95521C7.40104 9.09757 6.23194 10.3347 4.66667 11.6667Z" fill="#737782"/>
+                </svg>
+                <span>{{ emittingPharmacy?.address }}</span>
+              </div>
+              <div class="grid grid-cols-2 gap-4 pt-2 border-t border-dashed border-[#1E4D9B33]">
+                <div>
+                  <p class="text-xs text-[#737782] mb-1">Contact</p>
+                  <p class="font-bold text-[#131B2E] text-sm">{{ emittingPharmacy?.phone || '—' }}</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-xs text-[#737782] mb-1">Date émission</p>
+                  <p class="font-bold text-[#131B2E] text-sm">{{ formatDate(selectedOrder.createdAt) }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Patient info -->
+            <div class="grid grid-cols-2 gap-x-6 gap-y-4 mb-6">
+              <div>
+                <p class="text-xs text-[#737782] mb-1">Patient</p>
+                <p class="font-bold text-[#131B2E] text-sm">{{ getPatientDisplay(selectedOrder) }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-[#737782] mb-1">Date commande</p>
+                <p class="font-bold text-[#131B2E] text-sm">{{ formatDate(selectedOrder.createdAt) }}</p>
+              </div>
+            </div>
+
+            <!-- Tabs médicaments -->
+            <div class="mb-4">
+              <div class="flex gap-6 border-b border-gray-200 mb-4">
+                <button (click)="activeTab = 'medicaments'"
+                  class="pb-3 text-sm font-medium flex items-center gap-2 border-b-2 transition-colors"
+                  [ngClass]="activeTab === 'medicaments' ? 'border-[#2C7BE5] text-[#2C7BE5]' : 'border-transparent text-gray-500 hover:text-gray-700'">
+                  Médicaments associés
+                  <span class="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold"
+                    [ngClass]="activeTab === 'medicaments' ? 'bg-[#2C7BE5] text-white' : 'bg-gray-200 text-gray-600'">{{ selectedOrder.items.length }}</span>
+                </button>
+              </div>
+
+              <div class="overflow-x-auto rounded-lg border border-gray-200">
+                <table class="w-full text-sm">
+                  <thead class="bg-[#F5F7FA]">
+                    <tr>
+                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Médicament</th>
+                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Posologie</th>
+                      <th class="px-4 py-3 text-right text-xs font-medium text-gray-500">Qté</th>
+                      <th class="px-4 py-3 text-right text-xs font-medium text-gray-500">P.U</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-100">
+                    <tr *ngFor="let item of selectedOrder.items" class="hover:bg-gray-50">
+                      <td class="px-4 py-3 text-sm text-gray-900">{{ item.medicationName }}</td>
+                      <td class="px-4 py-3 text-sm text-gray-900">{{ item.dosage }}</td>
+                      <td class="px-4 py-3 text-sm text-gray-900 text-right">{{ item.quantity }}</td>
+                      <td class="px-4 py-3 text-sm font-semibold text-gray-900 text-right">{{ item.unitPrice || '—' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </ng-container>
+
+          <!-- ======================================================== -->
+          <!-- READY                                                     -->
+          <!-- ======================================================== -->
+          <ng-container *ngIf="selectedOrder.status === 'READY'">
+
+            <!-- Badge prête -->
+            <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-6 flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div>
+                <p class="font-semibold text-green-800 text-sm">Prête à être récupérée</p>
+                <p class="text-xs text-green-600">Le patient peut venir récupérer ses médicaments</p>
+              </div>
+            </div>
+
+            <!-- Pharmacie émettrice -->
+            <div class="border-2 border-dashed border-[#1E4D9B66] rounded-2xl p-4 bg-[#F9FAFB] mb-6">
+              <div class="flex items-center gap-2 text-[#00367C] font-bold text-sm sm:text-base mb-4">
+                <svg width="16" height="20" viewBox="0 0 16 20" fill="none">
+                  <path d="M6.5 13.5H9.5V11H12V8H9.5V5.5H6.5V8H4V11H6.5V13.5ZM8 20C5.68333 19.4167 3.77083 18.0875 2.2625 16.0125C0.754167 13.9375 0 11.6333 0 9.1V3L8 0L16 3V9.1C16 11.6333 15.2458 13.9375 13.7375 16.0125C12.2292 18.0875 10.3167 19.4167 8 20Z" fill="#00367C" />
+                </svg>
+                <span>Pharmacie émettrice</span>
+              </div>
+              <div class="flex items-center gap-4 mb-3">
+                <div class="flex items-center justify-center bg-white p-3 border border-gray-100 rounded-2xl w-14 h-14 shrink-0">
+                  <svg width="23" height="25" viewBox="0 0 23 25" fill="none">
+                    <path d="M0 25V22.5L2.5 15L0 7.5V5H15.875L17.6875 0L20.625 1.0625L19.1875 5H22.5V7.5L20 15L22.5 22.5V25H0ZM10 20H12.5V16.25H16.25V13.75H12.5V10H10V13.75H6.25V16.25H10V20ZM2.625 22.5H19.875L17.375 15L19.875 7.5H2.625L5.125 15L2.625 22.5Z" fill="#006B55" />
+                  </svg>
                 </div>
                 <div>
-                  <p class="text-xs text-[#737782] mb-1">Date</p>
-                  <p class="font-bold text-[#131B2E] text-sm">{{ formatDate(selectedDelivery.deliveryTime) }}</p>
+                  <h3 class="font-bold text-[#131B2E] text-base leading-tight">{{ emittingPharmacy?.name || 'Pharmacie' }}</h3>
+                  <p class="text-xs text-[#737782] font-medium">Réf : {{ selectedOrder.parentOrderId?.substring(0,8)?.toUpperCase() }}</p>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-6 pt-2">
+                <div>
+                  <h4 class="text-xs font-semibold text-[#737782] tracking-wider mb-1">Contact</h4>
+                  <p class="font-bold text-[#131B2E] text-sm">{{ emittingPharmacy?.phone || '—' }}</p>
                 </div>
                 <div>
-                  <p class="text-xs text-[#737782] mb-1">Téléphone</p>
-                  <p class="font-bold text-[#131B2E] text-sm">{{ selectedDelivery.prescription.pharmacy.phone }}</p>
+                  <h4 class="text-xs font-semibold text-[#737782] tracking-wider mb-1">Date émission</h4>
+                  <p class="font-bold text-[#131B2E] text-sm">{{ formatDate(selectedOrder.createdAt) }}</p>
                 </div>
               </div>
+            </div>
 
-              <!-- Médicaments associés -->
-              <div *ngIf="selectedDelivery.prescription.medications.length" class="mb-4">
-                <h3 class="text-base font-semibold text-[#131B2E] mb-3">Médicaments associés</h3>
-                <div class="overflow-x-auto rounded-lg border border-gray-200">
-                  <table class="w-full text-sm">
-                    <thead class="bg-[#F5F7FA]"><tr>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">Médicament</th>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">Posologie</th>
-                      <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 tracking-wider">Qté</th>
-                      <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 tracking-wider">P U</th>
-                    </tr></thead>
-                    <tbody class="bg-white divide-y divide-gray-100">
-                      <tr *ngFor="let m of selectedDelivery.prescription.medications" class="hover:bg-gray-50">
-                        <td class="px-4 py-3 text-sm text-gray-900">{{m.name}}</td>
-                        <td class="px-4 py-3 text-sm text-gray-900">{{m.dosage}}</td>
-                        <td class="px-4 py-3 text-sm text-gray-900 text-right">{{m.quantity}}</td>
-                        <td class="px-4 py-3 text-sm font-semibold text-gray-900 text-right">{{m.price | number:'1.0-0'}}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <div class="flex justify-between items-center pt-4">
-                  <span class="text-base font-semibold text-[#343A40]">Total</span>
-                  <span class="text-xl font-semibold text-[#343A40]">{{calculateTotal(selectedDelivery.prescription.medications) | number:'1.0-0'}} FCFA</span>
-                </div>
+            <!-- Médicaments prêts -->
+            <div class="mb-4">
+              <h3 class="text-base font-semibold text-[#131B2E] mb-3">Médicaments prêts</h3>
+              <div class="overflow-x-auto rounded-lg border border-gray-200">
+                <table class="w-full text-sm">
+                  <thead class="bg-[#F5F7FA]">
+                    <tr>
+                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Médicament</th>
+                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Posologie</th>
+                      <th class="px-4 py-3 text-right text-xs font-medium text-gray-500">Qté</th>
+                      <th class="px-4 py-3 text-right text-xs font-medium text-gray-500">Statut</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-100">
+                    <tr *ngFor="let item of selectedOrder.items" class="hover:bg-gray-50">
+                      <td class="px-4 py-3 text-sm text-gray-900">{{ item.medicationName }}</td>
+                      <td class="px-4 py-3 text-sm text-gray-900">{{ item.dosage }}</td>
+                      <td class="px-4 py-3 text-sm text-gray-900 text-right">{{ item.quantity }}</td>
+                      <td class="px-4 py-3 text-right">
+                        <span class="inline-flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-100 px-2 py-1 rounded-full">
+                          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                          </svg>
+                          Prêt
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
+            </div>
 
-            </ng-container>
+          </ng-container>
 
-            <!-- ================================================ -->
-            <!-- ETAT 3 : READY - Scanner QR + instructions récup -->
-            <!-- ================================================ -->
-            <ng-container *ngIf="isReady(selectedDelivery.id)">
-
-              <!-- Instructions de récupération -->
-              <div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-4 mb-6">
-                <h3 class="text-sm font-bold text-[#1E293B] mb-3">Instructions de récupération</h3>
-                <ul class="space-y-2 text-sm text-[#2C7BE5]">
-                  <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#2C7BE5] shrink-0"></span>Contactez le client avant la réception</li>
-                  <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#2C7BE5] shrink-0"></span>Vérifiez l'identité du client à la réception</li>
-                  <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#2C7BE5] shrink-0"></span>Demandez une signature pour confirmer la réception</li>
-                </ul>
+          <!-- ======================================================== -->
+          <!-- DELIVERED                                                 -->
+          <!-- ======================================================== -->
+          <ng-container *ngIf="selectedOrder.status === 'DELIVERED'">
+            <div class="bg-teal-50 border border-teal-200 rounded-xl p-4 mb-6 flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                </svg>
               </div>
-
-              <!-- Pharmacie émettrice -->
-              <div class="border-2 border-dashed border-[#1E4D9B66] rounded-2xl p-4 bg-[#F9FAFB] mb-6">
-                <div class="flex items-center gap-2 text-[#00367C] font-bold text-sm sm:text-base mb-4">
-                  <svg width="16" height="20" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6.5 13.5H9.5V11H12V8H9.5V5.5H6.5V8H4V11H6.5V13.5ZM8 20C5.68333 19.4167 3.77083 18.0875 2.2625 16.0125C0.754167 13.9375 0 11.6333 0 9.1V3L8 0L16 3V9.1C16 11.6333 15.2458 13.9375 13.7375 16.0125C12.2292 18.0875 10.3167 19.4167 8 20Z" fill="#00367C" />
-                  </svg>
-                  <span>Pharmacie émettrice</span>
-                </div>
-                <div class="flex items-center gap-4 mb-4">
-                  <div class="flex items-center justify-center bg-white p-3 border border-gray-100 rounded-2xl w-14 h-14 shrink-0">
-                    <svg width="23" height="25" viewBox="0 0 23 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M0 25V22.5L2.5 15L0 7.5V5H15.875L17.6875 0L20.625 1.0625L19.1875 5H22.5V7.5L20 15L22.5 22.5V25H0ZM10 20H12.5V16.25H16.25V13.75H12.5V10H10V13.75H6.25V16.25H10V20ZM2.625 22.5H19.875L17.375 15L19.875 7.5H2.625L5.125 15L2.625 22.5Z" fill="#006B55" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 class="font-bold text-[#131B2E] text-base leading-tight">{{ selectedDelivery.prescription.pharmacy.name }}</h3>
-                    <p class="text-xs text-[#737782] font-medium">Code : {{ selectedDelivery.prescription.pharmacy.code || 'PH-00231' }}</p>
-                  </div>
-                </div>
-                <div class="flex items-center gap-2 text-sm text-[#555555] font-medium mb-6">
-                  <svg width="10" height="12" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4.66667 5.83333C4.9875 5.83333 5.26215 5.7191 5.49062 5.49062C5.7191 5.26215 5.83333 4.9875 5.83333 4.66667C5.83333 4.34583 5.7191 4.07118 5.49062 3.84271C5.26215 3.61424 4.9875 3.5 4.66667 3.5C4.34583 3.5 4.07118 3.61424 3.84271 3.84271C3.61424 4.07118 3.5 4.34583 3.5 4.66667C3.5 4.9875 3.61424 5.26215 3.84271 5.49062C4.07118 5.7191 4.34583 5.83333 4.66667 5.83333ZM4.66667 10.1208C5.85278 9.03194 6.73264 8.04271 7.30625 7.15312C7.87986 6.26354 8.16667 5.47361 8.16667 4.78333C8.16667 3.72361 7.82882 2.8559 7.15312 2.18021C6.47743 1.50451 5.64861 1.16667 4.66667 1.16667C3.68472 1.16667 2.8559 1.50451 2.18021 2.18021C1.50451 2.8559 1.16667 3.72361 1.16667 4.78333C1.16667 5.47361 1.45347 6.26354 2.02708 7.15312C2.60069 8.04271 3.48056 9.03194 4.66667 10.1208ZM4.66667 11.6667C3.10139 10.3347 1.93229 9.09757 1.15937 7.95521C0.386458 6.81285 0 5.75556 0 4.78333C0 3.325 0.469097 2.16319 1.40729 1.29792C2.34549 0.432639 3.43194 0 4.66667 0C5.90139 0 6.98785 0.432639 7.92604 1.29792C8.86424 2.16319 9.33333 3.325 9.33333 4.78333C9.33333 5.75556 8.94688 6.81285 8.17396 7.95521C7.40104 9.09757 6.23194 10.3347 4.66667 11.6667Z" fill="#737782" />
-                  </svg>
-                  <span>{{ selectedDelivery.prescription.pharmacy.address }}</span>
-                </div>
-                <div class="grid grid-cols-2 gap-6 pt-2">
-                  <div>
-                    <h4 class="text-xs font-semibold text-[#737782] tracking-wider mb-1">Contact</h4>
-                    <p class="font-bold text-[#131B2E] text-sm tracking-tight">{{ selectedDelivery.prescription.pharmacy.phone }}</p>
-                  </div>
-                  <div>
-                    <h4 class="text-xs font-semibold text-[#737782] tracking-wider mb-1">Date émission</h4>
-                    <p class="font-bold text-[#131B2E] text-sm tracking-tight">{{ formatDate(selectedDelivery.prescription.createdAt) }}</p>
-                  </div>
-                </div>
+              <div>
+                <p class="font-semibold text-teal-800 text-sm">Médicaments remis au patient</p>
+                <p class="text-xs text-teal-600">Cette demande a été traitée avec succès</p>
               </div>
+            </div>
 
-              <!-- Tabs médicaments / paiements -->
-              <div class="mb-4">
-                <div class="flex gap-6 border-b border-gray-200">
-                  <button (click)="activeTab = 'medicaments'" class="pb-3 text-sm font-medium flex items-center gap-2 border-b-2 transition-colors"
-                    [ngClass]="activeTab === 'medicaments' ? 'border-[#2C7BE5] text-[#2C7BE5]' : 'border-transparent text-gray-500 hover:text-gray-700'">
-                    Médicaments associés
-                    <span class="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold"
-                      [ngClass]="activeTab === 'medicaments' ? 'bg-[#2C7BE5] text-white' : 'bg-gray-200 text-gray-600'">{{ selectedDelivery.prescription.medications.length }}</span>
-                  </button>
-                  <button (click)="activeTab = 'paiements'" class="pb-3 text-sm font-medium flex items-center gap-2 border-b-2 transition-colors"
-                    [ngClass]="activeTab === 'paiements' ? 'border-[#2C7BE5] text-[#2C7BE5]' : 'border-transparent text-gray-500 hover:text-gray-700'">
-                    Paiements
-                    <span class="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold"
-                      [ngClass]="activeTab === 'paiements' ? 'bg-[#2C7BE5] text-white' : 'bg-gray-200 text-gray-600'">1</span>
-                  </button>
-                </div>
-                <div *ngIf="activeTab === 'medicaments'" class="pt-4">
-                  <h3 class="text-base font-semibold text-gray-900 mb-4">Médicaments associés</h3>
-                  <div class="overflow-x-auto rounded-lg border border-gray-200" *ngIf="selectedDelivery.prescription.medications.length">
-                    <table class="w-full text-sm">
-                      <thead class="bg-[#F5F7FA]"><tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">Médicament</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">Posologie</th>
-                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 tracking-wider">Quantité</th>
-                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 tracking-wider">P U</th>
-                      </tr></thead>
-                      <tbody class="bg-white divide-y divide-gray-100">
-                        <tr *ngFor="let m of selectedDelivery.prescription.medications" class="hover:bg-gray-50">
-                          <td class="px-4 py-3 text-sm text-gray-900">{{m.name}}</td>
-                          <td class="px-4 py-3 text-sm text-gray-900">{{m.dosage}}</td>
-                          <td class="px-4 py-3 text-sm text-gray-900 text-right">{{m.quantity}}</td>
-                          <td class="px-4 py-3 text-sm font-semibold text-gray-900 text-right">{{m.price | number:'1.0-0'}}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <div class="flex justify-between items-center pt-4">
-                    <span class="text-base font-semibold text-[#343A40]">Total</span>
-                    <span class="text-xl font-semibold text-[#343A40]">{{calculateTotal(selectedDelivery.prescription.medications) | number:'1.0-0'}} FCFA</span>
-                  </div>
-                </div>
-                <div *ngIf="activeTab === 'paiements'" class="pt-4">
-                  <h3 class="text-base font-semibold text-gray-900 mb-4">Paiements</h3>
-                  <div class="overflow-x-auto rounded-lg border border-gray-200">
-                    <table class="w-full text-sm">
-                      <thead class="bg-[#F5F7FA]"><tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">Date</th>
-                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 tracking-wider">Montant de livraison</th>
-                      </tr></thead>
-                      <tbody class="bg-white divide-y divide-gray-100">
-                        <tr class="hover:bg-gray-50">
-                          <td class="px-4 py-3 text-sm text-gray-900">{{formatDate(selectedDelivery.deliveryTime)}}</td>
-                          <td class="px-4 py-3 text-sm font-semibold text-gray-900 text-right">{{(selectedDelivery.price | number:'1.0-0') || '—'}} FCFA</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
+            <div class="overflow-x-auto rounded-lg border border-gray-200">
+              <table class="w-full text-sm">
+                <thead class="bg-[#F5F7FA]">
+                  <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Médicament</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Posologie</th>
+                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500">Qté</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-100">
+                  <tr *ngFor="let item of selectedOrder.items" class="hover:bg-gray-50">
+                    <td class="px-4 py-3 text-sm text-gray-900">{{ item.medicationName }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">{{ item.dosage }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900 text-right">{{ item.quantity }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </ng-container>
+
+          <!-- ======================================================== -->
+          <!-- CANCELLED                                                 -->
+          <!-- ======================================================== -->
+          <ng-container *ngIf="selectedOrder.status === 'CANCELLED'">
+            <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </div>
+              <div>
+                <p class="font-semibold text-red-800 text-sm">Demande refusée</p>
+                <p class="text-xs text-red-500">Cette demande a été annulée</p>
+              </div>
+            </div>
 
-            </ng-container>
+            <div class="overflow-x-auto rounded-lg border border-gray-200">
+              <table class="w-full text-sm">
+                <thead class="bg-[#F5F7FA]">
+                  <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Médicament</th>
+                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500">Qté</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-100">
+                  <tr *ngFor="let item of selectedOrder.items" class="opacity-50">
+                    <td class="px-4 py-3 text-sm text-gray-900 line-through">{{ item.medicationName }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900 text-right">{{ item.quantity }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </ng-container>
 
-          </div>
         </div>
 
-        <!-- Default: no delivery selected -->
-        <div *ngIf="!selectedDelivery" class="flex items-center justify-center h-full min-h-64 py-16">
+        <!-- No order selected -->
+        <div *ngIf="!selectedOrder" class="flex items-center justify-center h-full min-h-64 py-16">
           <div class="text-center">
             <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                 d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
             </svg>
             <h3 class="text-base font-medium text-gray-900 mb-2">Sélectionnez une demande</h3>
-            <p class="text-sm text-gray-500">Cliquez sur une demande dans la liste pour voir ses détails</p>
+            <p class="text-sm text-gray-500">Cliquez sur une demande pour voir ses détails</p>
           </div>
         </div>
 

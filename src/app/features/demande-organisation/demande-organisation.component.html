@@ -21,11 +21,14 @@
 </svg>
       </div>
       <div class="mt-4">
-        <h2 class="text-3xl font-bold text-[#191B23]">154</h2>
-        <p class="mt-2 text-xs text-[#747686] font-medium"><span class="font-bold text-[#137333]">~+12%</span> vs mois dernier</p>
+        <h2 class="text-3xl font-bold text-[#191B23]">
+          <ng-container *ngIf="!isLoading">{{ totalDemandes }}</ng-container>
+          <span *ngIf="isLoading" class="inline-block w-16 h-8 bg-gray-200 rounded animate-pulse align-middle"></span>
+        </h2>
+        <p class="mt-2 text-xs text-[#747686] font-medium">demandes au total</p>
       </div>
     </div>
-    
+
     <!-- Card 2 -->
     <div class="rounded-2xl bg-white p-5 shadow-sm flex flex-col justify-between">
       <div class="flex items-center justify-between">
@@ -35,11 +38,14 @@
 </svg>
       </div>
       <div class="mt-4">
-        <h2 class="text-3xl font-bold text-[#191B23]">482</h2>
-        <p class="mt-2 text-xs text-[#747686] font-medium"><span class="font-bold text-[#137333]">~+8.4%</span> vs mois dernier</p>
+        <h2 class="text-3xl font-bold text-[#191B23]">
+          <ng-container *ngIf="!isLoading">{{ totalDevis }}</ng-container>
+          <span *ngIf="isLoading" class="inline-block w-16 h-8 bg-gray-200 rounded animate-pulse align-middle"></span>
+        </h2>
+        <p class="mt-2 text-xs text-[#747686] font-medium">devis reçus au total</p>
       </div>
     </div>
-    
+
     <!-- Card 3 -->
     <div class="rounded-2xl bg-white p-5 shadow-sm flex flex-col justify-between">
       <div class="flex items-center justify-between">
@@ -47,11 +53,14 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C5221F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
       </div>
       <div class="mt-4">
-        <h2 class="text-3xl font-bold text-[#191B23]">310</h2>
-        <p class="mt-2 text-xs text-[#747686] font-medium"><span class="font-bold text-[#137333]">~+15.2%</span> taux de conversion 64%</p>
+        <h2 class="text-3xl font-bold text-[#191B23]">
+          <ng-container *ngIf="!isLoading">{{ devisValides }}</ng-container>
+          <span *ngIf="isLoading" class="inline-block w-16 h-8 bg-gray-200 rounded animate-pulse align-middle"></span>
+        </h2>
+        <p class="mt-2 text-xs text-[#747686] font-medium">demandes validées</p>
       </div>
     </div>
-    
+
     <!-- Card 4 -->
     <div class="rounded-2xl bg-white p-5 shadow-sm flex flex-col justify-between">
       <div class="flex items-center justify-between">
@@ -134,7 +143,7 @@
       <div class="mt-6 flex gap-12">
         <div>
           <p class="text-[10px] uppercase tracking-wider text-[#94A3B8] font-semibold">Budget estimé</p>
-          <p class="mt-1.5 text-base font-bold text-[#104382]">{{ d.budgetEstime }}</p>
+          <p class="mt-1.5 text-base font-bold text-[#104382]">{{ formatAmount(d.budgetEstime) }}</p>
         </div>
         <div>
           <p class="text-[10px] uppercase tracking-wider text-[#94A3B8] font-semibold">Devis reçus</p>

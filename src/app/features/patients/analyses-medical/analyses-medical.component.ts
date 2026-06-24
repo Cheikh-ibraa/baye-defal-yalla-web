@@ -1,10 +1,25 @@
-import { Component, EventEmitter, Output, inject, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Location } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Subject, of, debounceTime, distinctUntilChanged, switchMap, delay } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 import Swal from 'sweetalert2';
+
+const CATEGORIES = [
+  'Hématologie', 'Biochimie', 'Hormonologie', 'Sérologie',
+  'Microbiologie', 'Urines', 'Coagulation', 'Autres examens'
+];
+
+const STATUS_LABELS: Record<string, { label: string; color: string }> = {
+  PENDING:     { label: 'En attente',   color: 'bg-yellow-100 text-yellow-800' },
+  ACCEPTED:    { label: 'Acceptée',     color: 'bg-blue-100 text-blue-800'    },
+  FUNDED:      { label: 'Financée',     color: 'bg-purple-100 text-purple-800'},
+  IN_PROGRESS: { label: 'En cours',     color: 'bg-indigo-100 text-indigo-800'},
+  COMPLETED:   { label: 'Terminée',     color: 'bg-green-100 text-green-800'  },
+  REJECTED:    { label: 'Rejetée',      color: 'bg-red-100 text-red-800'      },
+  EXPIRED:     { label: 'Expirée',      color: 'bg-gray-100 text-gray-600'    },
+};
 
 @Component({
   selector: 'app-analyses-medical',
@@ -14,436 +29,270 @@ import Swal from 'sweetalert2';
   styleUrl: './analyses-medical.component.css'
 })
 export class AnalysesMedicalComponent implements OnInit {
-  @Output() close = new EventEmitter<void>();
-  private location = inject(Location);
+  private http   = inject(HttpClient);
   private router = inject(Router);
-  // Local auth mock
-  private mockCurrentUser: any = { id: 999, prenom: 'Dr', nom: 'Mock' };
+  private api    = environment.baseUrl;
 
-  // --- Local Laboratoire mocks ---
-  private mockAnalysisTypes: any[] = [
-    { id: 1, name: 'Hématologie' },
-    { id: 2, name: 'Biochimie' }
-  ];
+  // ── vue ──────────────────────────────────────────────────────────────────
+  viewMode: 'list' | 'detail' | 'create' = 'list';
+  selectedOrder: any = null;
 
-  private mockLaboratories: any[] = [
-    { id: 1, name: 'Laboratoire Central', address: 'Rue A' },
-    { id: 2, name: 'Lab Clinique', address: 'Rue B' }
-  ];
+  // ── liste ─────────────────────────────────────────────────────────────────
+  labOrders: any[] = [];
+  loadingList = false;
+  listError   = '';
 
-  private localGetAnalysisTypes() {
-    return of(this.mockAnalysisTypes).pipe(delay(120));
+  // ── recherche & pagination ─────────────────────────────────────────────────
+  searchQuery  = '';
+  currentPage  = 1;
+  readonly pageSize = 10;
+
+  // ── sections collapse (form) ──────────────────────────────────────────────
+  patientInfoExpanded  = true;
+  examensExpanded      = true;
+  indicationExpanded   = true;
+  parametresExpanded   = true;
+
+  // ── patient ───────────────────────────────────────────────────────────────
+  patientId        = '';
+  patientReference = '';
+  patientName      = '';
+  patientInsurance = '';
+
+  patientSearch        = '';
+  patientSearchResults: any[] = [];
+  patientSearchLoading = false;
+
+  // ── form ───────────────────────────────────────────────────────────────────
+  categories      = CATEGORIES;
+  selectedCats    = new Set<string>();
+  clinicalIndication = '';
+  fasting         = true;
+  urgency: 'NORMAL' | 'PRIORITY' | 'URGENT' = 'NORMAL';
+  indicationsPredefinies = ['Suspicion diabète', 'Suivi traitement HTA', 'Bilan préopératoire'];
+  isSaving = false;
+
+  get selectedCatsList(): string[] { return [...this.selectedCats]; }
+
+  // ── pagination computed ────────────────────────────────────────────────────
+  get filteredOrders(): any[] {
+    const q = this.searchQuery.toLowerCase().trim();
+    if (!q) return this.labOrders;
+    return this.labOrders.filter(o =>
+      o.labOrderRef?.toLowerCase().includes(q) ||
+      o.patientName?.toLowerCase().includes(q) ||
+      (o.categories ?? []).join(' ').toLowerCase().includes(q) ||
+      STATUS_LABELS[o.status]?.label.toLowerCase().includes(q)
+    );
   }
 
-  private localSearchLaboratories(keyword: string) {
-    const res = this.mockLaboratories.filter(l => (l.name || '').toLowerCase().includes(keyword.toLowerCase()));
-    return of(res).pipe(delay(150));
+  get totalPages(): number { return Math.max(1, Math.ceil(this.filteredOrders.length / this.pageSize)); }
+
+  get paginatedOrders(): any[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredOrders.slice(start, start + this.pageSize);
   }
 
-  private localCreateAnalysisType(name: string) {
-    const id = this.mockAnalysisTypes.length + 1;
-    const created = { id, name };
-    this.mockAnalysisTypes.push(created);
-    return of(created).pipe(delay(150));
+  get pageNumbers(): number[] { return Array.from({ length: this.totalPages }, (_, i) => i + 1); }
+
+  minVal(a: number, b: number): number { return Math.min(a, b); }
+
+  statusInfo(status: string) {
+    return STATUS_LABELS[status] ?? { label: status, color: 'bg-gray-100 text-gray-700' };
   }
 
-  private localCreateLaboratoire(payload: any) {
-    const created = { id: Math.floor(Math.random() * 10000), ...payload };
-    return of(created).pipe(delay(200));
+  urgencyLabel(u: string): string {
+    return u === 'URGENT' ? 'Urgent' : u === 'PRIORITY' ? 'Prioritaire' : 'Normal';
   }
 
-  // Sections collapse state
-  patientInfoExpanded = true;
-  examensExpanded = true;
-  laboratoireExpanded = true;
-  indicationExpanded = true;
-  parametresExpanded = true;
-
-  // Patient info (readonly)
-  patientInfo: {
-    id: number;  // ID numérique pour l'API
-    reference: string;  // Référence string pour l'affichage
-    nom: string;
-    prenom: string;
-    telephone: string;
-  } = {
-      id: 0,
-      reference: '',
-      nom: '',
-      prenom: '',
-      telephone: ''
-    };
-
-  // Doctor ID (récupéré depuis auth)
-  doctorId: number = 0;
-
-  // Form data
-  formData: {
-    typeId: number | null;
-    laboratoryId: number | null;
-    laboratoryName: string;
-    clinicalIndication: string;
-    youngPatient: boolean;
-    urgencyLevel: 'NORMAL' | 'PRIORITAIRE' | 'URGENT';
-    needsHelp: boolean;
-  } = {
-      typeId: null,
-      laboratoryId: null,
-      laboratoryName: '',
-      clinicalIndication: '',
-      youngPatient: false,
-      urgencyLevel: 'NORMAL',
-      needsHelp: false
-    };
-
-  // Types d'examens (chargés depuis API)
-  typesExamens: any[] = [];
-  loadingTypes = false;
-
-  // Laboratoires autocomplete
-  laboratorySearchTerm = '';
-  laboratoryResults: any[] = [];
-  showLaboratoryDropdown = false;
-  loadingLaboratories = false;
-  private searchSubject = new Subject<string>();
-
-  // Modal création type d'analyse
-  showTypeModal = false;
-  newTypeName = '';
-
-  // Indications cliniques prédéfinies
-  indicationsPredefinies = [
-    'Suspicion diabète',
-    'Suivi traitement HTA',
-    'Bilan préopératoire'
-  ];
-
-  ngOnInit() {
-    this.loadPatientInfo();
-    this.loadDoctorId();
-    this.loadAnalysisTypes();
-    this.setupLaboratorySearch();
-  }
-
-  loadPatientInfo() {
-    // Récupérer les infos patient depuis localStorage
-    const selectedPatient = localStorage.getItem('selectedPatient');
-    if (selectedPatient) {
-      const patient = JSON.parse(selectedPatient);
-
-      // Récupérer l'ID numérique du patient
-      const patientIdStr = localStorage.getItem('selectedPatientId');
-      let numericId = 0;
-
-      if (patientIdStr) {
-        // ID trouvé dans localStorage
-        numericId = parseInt(patientIdStr, 10);
-      } else if (patient.id && typeof patient.id === 'string' && patient.id.startsWith('ID-')) {
-        // Extraire l'ID depuis le format "ID-XXX"
-        const idMatch = patient.id.match(/ID-(\d+)/);
-        if (idMatch && idMatch[1]) {
-          numericId = parseInt(idMatch[1], 10);
-          console.warn('⚠️ selectedPatientId non trouvé, extraction depuis patient.id:', patient.id, '→', numericId);
-        }
-      }
-
-      // Déterminer la référence à afficher
-      let displayReference = '';
-      if (patient.id && typeof patient.id === 'string' && !patient.id.startsWith('ID-')) {
-        // patient.id contient déjà la référence (ex: "NDIAYE-00000025")
-        displayReference = patient.id;
-      } else if (patient.reference) {
-        // Utiliser patient.reference si disponible
-        displayReference = patient.reference;
-      } else {
-        // Fallback sur patient.id
-        displayReference = patient.id || '';
-      }
-
-      this.patientInfo = {
-        id: numericId,  // ID numérique pour l'API
-        reference: displayReference,  // Référence string pour l'affichage
-        nom: patient.nom || '',
-        prenom: patient.prenom || '',
-        telephone: patient.telephone || ''
-      };
-
-      console.log('✅ Données patient chargées:', {
-        reference: this.patientInfo.reference,
-        patientId: this.patientInfo.id,
-        nom: `${this.patientInfo.nom} ${this.patientInfo.prenom}`
-      });
-
-      if (!numericId || numericId === 0) {
-        console.error('❌ ERREUR: Impossible de récupérer l\'ID numérique du patient');
+  ngOnInit(): void {
+    this.loadList();
+    if (localStorage.getItem('openCreateMode') === '1') {
+      localStorage.removeItem('openCreateMode');
+      if (localStorage.getItem('selectedPatient')) {
+        this.openCreate();
       }
     }
   }
 
-  loadDoctorId() {
-    // Local mock current user
-    const currentUser = this.mockCurrentUser;
-    if (currentUser) {
-      this.doctorId = currentUser.id;
-      console.log('✅ Médecin connecté (mock):', { id: this.doctorId, nom: `${currentUser.prenom} ${currentUser.nom}` });
-    } else {
-      console.error('❌ Impossible de récupérer l\'utilisateur connecté (mock)');
-    }
-  }
+  // ── liste ──────────────────────────────────────────────────────────────────
 
-  loadAnalysisTypes() {
-    this.loadingTypes = true;
-    this.localGetAnalysisTypes().subscribe({
-      next: (types) => {
-        this.typesExamens = types;
-        this.loadingTypes = false;
+  loadList(): void {
+    this.loadingList = true;
+    this.listError   = '';
+    this.http.get<any>(`${this.api}/diagnostic/lab-orders/doctor`).subscribe({
+      next: (data) => {
+        this.labOrders = Array.isArray(data) ? data : (data?.data ?? []);
+        this.loadingList = false;
       },
-      error: (err) => {
-        console.error('Erreur chargement types d\'analyses (mock):', err);
-        this.loadingTypes = false;
-      }
+      error: () => { this.listError = 'Impossible de charger les analyses.'; this.loadingList = false; }
     });
   }
 
-  setupLaboratorySearch() {
-    this.searchSubject.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
-      switchMap(keyword => {
-        if (keyword.length < 2) {
-          this.laboratoryResults = [];
-          return of([]);
-        }
-        this.loadingLaboratories = true;
-        return this.localSearchLaboratories(keyword);
-      })
-    ).subscribe({
-      next: (results) => {
-        this.laboratoryResults = results;
-        this.showLaboratoryDropdown = true;
-        this.loadingLaboratories = false;
-      },
-      error: (err) => {
-        console.error('Erreur recherche laboratoires:', err);
-        this.loadingLaboratories = false;
-      }
+  onSearch(): void { this.currentPage = 1; }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) this.currentPage = page;
+  }
+
+  openDetail(order: any): void {
+    this.selectedOrder = order;
+    this.viewMode = 'detail';
+  }
+
+  printOrder(): void {
+    const o = this.selectedOrder;
+    if (!o) return;
+    const urgLabel = this.urgencyLabel(o.urgency);
+    const st = this.statusInfo(o.status);
+    const cats = (o.categories ?? []).join(', ') || '—';
+    const date = o.createdAt ? new Date(o.createdAt).toLocaleDateString('fr-FR') : '—';
+    const rdv  = o.appointmentDate ? new Date(o.appointmentDate).toLocaleDateString('fr-FR') : '—';
+    const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+<title>Demande d'analyses — ${o.labOrderRef ?? ''}</title>
+<style>
+  body{font-family:Arial,sans-serif;margin:40px;color:#222;font-size:14px}
+  h1{color:#104382;border-bottom:2px solid #104382;padding-bottom:8px}
+  h2{color:#104382;font-size:15px;margin-top:24px;border-bottom:1px solid #ddd;padding-bottom:4px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;margin-bottom:16px}
+  .field label{font-weight:600;color:#555;font-size:12px}
+  .field p{margin:2px 0 0;font-size:14px}
+  .badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600}
+  .URGENT{background:#fee2e2;color:#b91c1c}
+  .PRIORITY{background:#ffedd5;color:#c2410c}
+  .NORMAL{background:#f3f4f6;color:#374151}
+  @media print{body{margin:20px}}
+</style></head><body>
+<h1>Demande d'analyses biologiques</h1>
+<p style="color:#555;font-size:13px">Référence : <strong>${o.labOrderRef ?? '—'}</strong> &nbsp;|&nbsp; Date : <strong>${date}</strong></p>
+<h2>Patient</h2>
+<div class="grid">
+  <div class="field"><label>Nom</label><p>${o.patientName ?? '—'}</p></div>
+  <div class="field"><label>Assurance</label><p>${o.patientInsurance ?? '—'}</p></div>
+</div>
+<h2>Prescripteur</h2>
+<div class="grid">
+  <div class="field"><label>Médecin</label><p>${o.doctorName ?? '—'}</p></div>
+  <div class="field"><label>Spécialité</label><p>${o.doctorSpecialty ?? '—'}</p></div>
+</div>
+<h2>Analyses prescrites</h2>
+<div class="grid">
+  <div class="field"><label>Catégories</label><p>${cats}</p></div>
+  <div class="field"><label>Indication clinique</label><p>${o.clinicalIndication ?? '—'}</p></div>
+  <div class="field"><label>À jeun</label><p>${o.fasting ? 'Oui' : 'Non'}</p></div>
+  <div class="field"><label>Urgence</label><p><span class="badge ${o.urgency}">${urgLabel}</span></p></div>
+</div>
+<h2>Statut & Rendez-vous</h2>
+<div class="grid">
+  <div class="field"><label>Statut</label><p>${st.label}</p></div>
+  <div class="field"><label>Date RDV</label><p>${rdv}</p></div>
+  <div class="field"><label>Centre accepté</label><p>${o.acceptedCenterName ?? '—'}</p></div>
+  <div class="field"><label>Adresse</label><p>${o.acceptedCenterAddress ?? '—'}</p></div>
+  ${o.acceptedPrice ? `<div class="field"><label>Coût estimé</label><p>${Number(o.acceptedPrice).toLocaleString('fr-FR')} FCFA</p></div>` : ''}
+</div>
+${o.observations ? `<h2>Observations</h2><p>${o.observations}</p>` : ''}
+</body></html>`;
+    const w = window.open('', '_blank', 'width=800,height=700');
+    if (w) { w.document.open(); w.document.write(html); w.document.close(); setTimeout(() => w.print(), 400); }
+  }
+
+  // ── form ───────────────────────────────────────────────────────────────────
+
+  openCreate(): void {
+    this.loadPatientFromStorage();
+    this.selectedCats.clear();
+    this.clinicalIndication = '';
+    this.fasting = true;
+    this.urgency = 'NORMAL';
+    this.viewMode = 'create';
+  }
+
+  private loadPatientFromStorage(): void {
+    const stored = localStorage.getItem('selectedPatient');
+    this.patientId = localStorage.getItem('selectedPatientId') ?? '';
+    if (stored) {
+      const p = JSON.parse(stored);
+      this.patientName      = `${p.prenom ?? p.firstName ?? ''} ${p.nom ?? p.lastName ?? ''}`.trim();
+      this.patientReference = p.id ?? '';
+      this.patientSearch    = this.patientName;
+    }
+    if (this.patientId) {
+      this.http.get<any>(`${this.api}/users/${this.patientId}`).subscribe({
+        next: (user) => { this.patientInsurance = user?.patientProfile?.insurance ?? ''; }
+      });
+    }
+  }
+
+  searchPatient(q: string): void {
+    if (q.trim().length < 2) { this.patientSearchResults = []; return; }
+    this.patientSearchLoading = true;
+    this.http.get<any[]>(`${this.api}/users/patients/search`, { params: { q } }).subscribe({
+      next:  (r) => { this.patientSearchResults = r ?? []; this.patientSearchLoading = false; },
+      error: ()  => { this.patientSearchResults = [];      this.patientSearchLoading = false; }
     });
   }
 
-  onLaboratorySearch(event: any) {
-    const keyword = event.target.value;
-    this.laboratorySearchTerm = keyword;
-    this.searchSubject.next(keyword);
+  selectPatient(p: any): void {
+    this.patientId        = p.keycloakId ?? p.id ?? '';
+    this.patientName      = `${p.firstName ?? p.prenom ?? ''} ${p.lastName ?? p.nom ?? ''}`.trim();
+    this.patientInsurance = p.patientProfile?.insurance ?? p.assurance ?? '';
+    this.patientSearch    = this.patientName;
+    this.patientSearchResults = [];
+    localStorage.setItem('selectedPatient', JSON.stringify({ id: this.patientId, nom: this.patientName }));
+    localStorage.setItem('selectedPatientId', this.patientId);
   }
 
-  selectLaboratory(lab: any) {
-    this.formData.laboratoryId = lab.id;
-    const fullName = `${lab.nom || ''} ${lab.prenom || ''}`.trim();
-    this.formData.laboratoryName = fullName || lab.name || 'Laboratoire';
-    this.laboratorySearchTerm = fullName || lab.name || 'Laboratoire';
-    this.showLaboratoryDropdown = false;
+  toggleCategory(cat: string): void {
+    if (this.selectedCats.has(cat)) this.selectedCats.delete(cat);
+    else                            this.selectedCats.add(cat);
   }
 
-  closeLaboratoryDropdown() {
-    setTimeout(() => {
-      this.showLaboratoryDropdown = false;
-    }, 200);
+  addIndicationTag(tag: string): void {
+    this.clinicalIndication = this.clinicalIndication ? `${this.clinicalIndication}, ${tag}` : tag;
   }
 
-  addAnalysisType() {
-    // Ouvrir le modal de création
-    this.newTypeName = '';
-    this.showTypeModal = true;
+  toggleSection(s: string): void {
+    if (s === 'patient')    this.patientInfoExpanded  = !this.patientInfoExpanded;
+    if (s === 'examens')    this.examensExpanded      = !this.examensExpanded;
+    if (s === 'indication') this.indicationExpanded   = !this.indicationExpanded;
+    if (s === 'parametres') this.parametresExpanded   = !this.parametresExpanded;
   }
 
-  submitNewType() {
-    // Validation du nom
-    if (!this.newTypeName || !this.newTypeName.trim()) {
-      Swal.fire({
-        title: 'Champ requis',
-        text: 'Veuillez entrer le nom du type d\'analyse',
-        icon: 'warning',
-        confirmButtonColor: '#01b894',
-        confirmButtonText: 'OK',
-        width: '400px'
-      });
+  onSubmit(): void {
+    if (!this.patientId) {
+      Swal.fire({ title: 'Patient non sélectionné', text: 'Recherchez et sélectionnez un patient.', icon: 'error', confirmButtonColor: '#104382', width: '400px' });
       return;
     }
-
-    // Créer le type via l'API
-    this.localCreateAnalysisType(this.newTypeName.trim()).subscribe({
-      next: (response) => {
-        Swal.fire({
-          title: 'Succès!',
-          text: 'Type d\'analyse créé avec succès',
-          icon: 'success',
-          confirmButtonColor: '#01b894',
-          confirmButtonText: 'OK',
-          width: '400px'
-        });
-        this.closeTypeModal();
-        this.loadAnalysisTypes(); // Recharger la liste
-      },
-      error: (err) => {
-        console.error('❌ Erreur création type d\'analyse:', err);
-        Swal.fire({
-          title: 'Erreur!',
-          text: 'Erreur lors de la création du type d\'analyse',
-          icon: 'error',
-          confirmButtonColor: '#01b894',
-          confirmButtonText: 'OK',
-          width: '400px'
-        });
-      }
-    });
-  }
-
-  closeTypeModal() {
-    this.showTypeModal = false;
-    this.newTypeName = '';
-  }
-
-  toggleSection(section: string) {
-    switch (section) {
-      case 'patient':
-        this.patientInfoExpanded = !this.patientInfoExpanded;
-        break;
-      case 'examens':
-        this.examensExpanded = !this.examensExpanded;
-        break;
-      case 'laboratoire':
-        this.laboratoireExpanded = !this.laboratoireExpanded;
-        break;
-      case 'indication':
-        this.indicationExpanded = !this.indicationExpanded;
-        break;
-      case 'parametres':
-        this.parametresExpanded = !this.parametresExpanded;
-        break;
-    }
-  }
-
-  addIndicationTag(indication: string) {
-    if (this.formData.clinicalIndication) {
-      this.formData.clinicalIndication += ', ' + indication;
-    } else {
-      this.formData.clinicalIndication = indication;
-    }
-  }
-
-  onSubmit() {
-    // Validation des données patient et docteur
-    if (!this.patientInfo.id || this.patientInfo.id === 0) {
-      Swal.fire({
-        title: 'Patient non sélectionné',
-        text: 'Aucun patient sélectionné. Veuillez retourner à la liste des patients.',
-        icon: 'error',
-        confirmButtonColor: '#01b894',
-        confirmButtonText: 'OK',
-        width: '400px'
-      });
+    if (this.selectedCats.size === 0) {
+      Swal.fire({ title: 'Examens manquants', text: 'Sélectionnez au moins un type d\'examen.', icon: 'warning', confirmButtonColor: '#104382', width: '400px' });
       return;
     }
-
-    if (!this.doctorId || this.doctorId === 0) {
-      Swal.fire({
-        title: 'Erreur médecin',
-        text: 'Impossible de récupérer l\'identifiant du médecin. Veuillez vous reconnecter.',
-        icon: 'error',
-        confirmButtonColor: '#01b894',
-        confirmButtonText: 'OK',
-        width: '400px'
-      });
-      return;
-    }
-
-    // Validation du formulaire
-    if (!this.formData.typeId) {
-      Swal.fire({
-        title: 'Champ manquant',
-        text: 'Veuillez sélectionner un type d\'analyse',
-        icon: 'warning',
-        confirmButtonColor: '#01b894',
-        confirmButtonText: 'OK',
-        width: '400px'
-      });
-      return;
-    }
-    if (!this.formData.laboratoryId) {
-      Swal.fire({
-        title: 'Champ manquant',
-        text: 'Veuillez sélectionner un laboratoire',
-        icon: 'warning',
-        confirmButtonColor: '#01b894',
-        confirmButtonText: 'OK',
-        width: '400px'
-      });
-      return;
-    }
-    if (!this.formData.clinicalIndication) {
-      Swal.fire({
-        title: 'Champ manquant',
-        text: 'Veuillez renseigner l\'indication clinique',
-        icon: 'warning',
-        confirmButtonColor: '#01b894',
-        confirmButtonText: 'OK',
-        width: '400px'
-      });
-      return;
-    }
-
-    // Préparer le payload selon le format API
     const payload = {
-      patientId: this.patientInfo.id,
-      doctorId: this.doctorId,
-      laboratoryId: this.formData.laboratoryId,
-      typeId: this.formData.typeId,
-      clinicalIndication: this.formData.clinicalIndication,
-      youngPatient: this.formData.youngPatient,
-      urgencyLevel: this.formData.urgencyLevel,
-      needsHelp: this.formData.needsHelp
+      patientId:          this.patientId,
+      categories:         [...this.selectedCats],
+      clinicalIndication: this.clinicalIndication || undefined,
+      fasting:            this.fasting,
+      urgency:            this.urgency,
+      patientInsurance:   this.patientInsurance || undefined,
     };
-
-    console.log('📤 Envoi demande d\'analyses:', payload);
-    console.log('📋 Patient Info:', this.patientInfo);
-    console.log('👨‍⚕️ Doctor ID:', this.doctorId);
-    console.log('📝 Form Data:', this.formData);
-
-    this.localCreateLaboratoire(payload).subscribe({
-      next: (response) => {
-        console.log('✅ Demande créée avec succès:', response);
+    this.isSaving = true;
+    this.http.post(`${this.api}/diagnostic/lab-orders`, payload).subscribe({
+      next: () => {
+        this.isSaving = false;
         Swal.fire({
-          title: 'Succès!',
-          text: 'La demande d\'analyses a été créée avec succès',
-          icon: 'success',
-          confirmButtonColor: '#01b894',
-          confirmButtonText: 'OK',
-          width: '400px'
+          title: 'Demande envoyée !',
+          text: 'La demande d\'analyses a été créée.',
+          icon: 'success', confirmButtonColor: '#104382', confirmButtonText: 'OK', width: '420px'
         }).then(() => {
-          this.router.navigate(['/patients']);
+          this.router.navigate(['/doctor/patients'], { queryParams: { tab: 'examens' } });
         });
       },
       error: (err) => {
-        console.error('❌ Erreur création demande:', err);
-        console.error('❌ Payload envoyé:', payload);
-        Swal.fire({
-          title: 'Erreur!',
-          text: 'Erreur lors de la création de la demande. Veuillez réessayer.',
-          icon: 'error',
-          confirmButtonColor: '#01b894',
-          confirmButtonText: 'OK',
-          width: '400px'
-        });
+        this.isSaving = false;
+        Swal.fire({ title: 'Erreur', text: err?.error?.message ?? 'Erreur lors de la création.', icon: 'error', confirmButtonColor: '#104382', width: '400px' });
       }
     });
   }
 
-  onCancel() {
-    console.log('Demande annulée');
-    this.router.navigate(['/patients']);
-  }
-
-  goBack() {
-    this.router.navigate(['/patients']);
-  }
+  goBack(): void { this.viewMode = 'list'; }
 }

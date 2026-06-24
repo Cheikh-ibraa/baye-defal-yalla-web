@@ -1,122 +1,36 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
-export interface PastDonationDetail {
+interface PastDonationDetail {
   id: string;
   dateString: string;
   timeString: string;
   type: string;
   typeTag: string;
   patientName: string;
+  patientAge: number;
   amount: number;
-  paymentMethod: string;
   status: 'SUCCESS' | 'PENDING' | 'FAILED';
   treatment: string;
   location: string;
   reference: string;
   patientPhoto?: string;
   impactCoveredPercentage: number;
+  thankYouMessageType?: 'text' | 'voice';
+  thankYouText?: string;
+  thankYouAudioUrl?: string;
+  hasThankYou: boolean;
 }
 
-const DETAIL_DONATIONS: PastDonationDetail[] = [
-  {
-    id: 'DON-2025-001',
-    dateString: '15 juin 2025',
-    timeString: '14:30',
-    type: 'Ordonnance',
-    typeTag: 'ORDONNANCE',
-    patientName: 'Seydou Diop',
-    amount: 400000,
-    paymentMethod: 'Wave',
-    status: 'SUCCESS',
-    treatment: 'Hypertension',
-    location: 'Dakar, Sénégal',
-    reference: 'DON-2025-06-15-8921',
-    patientPhoto: 'assets/images/patient.png',
-    impactCoveredPercentage: 100
-  },
-  {
-    id: 'DON-2025-002',
-    dateString: '10 juin 2025',
-    timeString: '11:15',
-    type: 'Analyse',
-    typeTag: 'ANALYSE',
-    patientName: 'Mamadou Sow',
-    amount: 300000,
-    paymentMethod: 'Orange Money',
-    status: 'PENDING',
-    treatment: 'Paludisme',
-    location: 'Thies, Sénégal',
-    reference: 'DON-2025-06-10-1845',
-    patientPhoto: 'assets/images/patient.png',
-    impactCoveredPercentage: 80
-  },
-  {
-    id: 'DON-2025-003',
-    dateString: '09 juin 2025',
-    timeString: '09:40',
-    type: 'Imagerie',
-    typeTag: 'IMAGERIE',
-    patientName: 'Maimouna Fall',
-    amount: 800000,
-    paymentMethod: 'Wave',
-    status: 'SUCCESS',
-    treatment: 'Infection',
-    location: 'Saint-Louis, Sénégal',
-    reference: 'DON-2025-06-09-4322',
-    patientPhoto: 'assets/images/medecin.png',
-    impactCoveredPercentage: 100
-  },
-  {
-    id: 'DON-2025-004',
-    dateString: '10 juin 2025',
-    timeString: '15:20',
-    type: 'Analyse',
-    typeTag: 'ANALYSE',
-    patientName: 'Mamadou Sow',
-    amount: 300000,
-    paymentMethod: 'Orange Money',
-    status: 'PENDING',
-    treatment: 'Paludisme',
-    location: 'Thies, Sénégal',
-    reference: 'DON-2025-06-10-9281',
-    patientPhoto: 'assets/images/patient.png',
-    impactCoveredPercentage: 75
-  },
-  {
-    id: 'DON-2025-005',
-    dateString: '15 juin 2025',
-    timeString: '17:05',
-    type: 'Ordonnance',
-    typeTag: 'ORDONNANCE',
-    patientName: 'Seydou Diop',
-    amount: 400000,
-    paymentMethod: 'Wave',
-    status: 'SUCCESS',
-    treatment: 'Hypertension',
-    location: 'Dakar, Sénégal',
-    reference: 'DON-2025-06-15-7734',
-    patientPhoto: 'assets/images/patient.png',
-    impactCoveredPercentage: 100
-  },
-  {
-    id: 'DON-2025-006',
-    dateString: '09 juin 2025',
-    timeString: '13:10',
-    type: 'Imagerie',
-    typeTag: 'IMAGERIE',
-    patientName: 'Maimouna Fall',
-    amount: 800000,
-    paymentMethod: 'Wave',
-    status: 'SUCCESS',
-    treatment: 'Infection',
-    location: 'Saint-Louis, Sénégal',
-    reference: 'DON-2025-06-09-5112',
-    patientPhoto: 'assets/images/medecin.png',
-    impactCoveredPercentage: 100
-  }
-];
+const TYPE_LABEL: Record<string, string> = {
+  ORDONNANCE: 'Ordonnance',
+  ANALYSE:    'Analyse',
+  IMAGERIE:   'Imagerie',
+  HOSPITALISATION: 'Hospitalisation',
+};
 
 @Component({
   selector: 'app-dons-detail',
@@ -125,24 +39,105 @@ const DETAIL_DONATIONS: PastDonationDetail[] = [
   templateUrl: './dons-detail.component.html'
 })
 export class DonsDetailComponent implements OnInit {
-  private route = inject(ActivatedRoute);
+  private route  = inject(ActivatedRoute);
   private router = inject(Router);
+  private http   = inject(HttpClient);
 
   donationId: string | null = null;
   donation: PastDonationDetail | null = null;
+  isLoading = true;
+  error: string | null = null;
+
+  isPlayingAudio = false;
+  private audio: HTMLAudioElement | null = null;
+
+  private get authHeaders() {
+    const token = localStorage.getItem('access_token');
+    return { Authorization: `Bearer ${token}` };
+  }
 
   ngOnInit(): void {
     this.donationId = this.route.snapshot.paramMap.get('id');
     if (this.donationId) {
-      this.donation = DETAIL_DONATIONS.find(d => d.id === this.donationId) || null;
+      this.loadDetail(this.donationId);
     }
   }
 
+  private loadDetail(id: string): void {
+    this.isLoading = true;
+    this.error = null;
+
+    this.http.get<any>(`${environment.baseUrl}/contributions/${id}`, { headers: this.authHeaders }).subscribe({
+      next: (res) => {
+        this.donation = this.mapContribution(res);
+        this.isLoading = false;
+      },
+      error: () => {
+        this.error = 'Impossible de charger les détails de ce don.';
+        this.isLoading = false;
+      },
+    });
+  }
+
+  private mapContribution(c: any): PastDonationDetail {
+    const date     = new Date(c.createdAt);
+    const campaign = c.campaign ?? {};
+    const target   = Number(campaign.targetAmount ?? 0);
+    const collected = Number(campaign.collectedAmount ?? 0);
+    const pct      = target > 0 ? Math.min(100, Math.round((collected / target) * 100)) : 0;
+
+    const statusMap: Record<string, 'SUCCESS' | 'PENDING' | 'FAILED'> = {
+      VALIDATED: 'SUCCESS',
+      PENDING:   'PENDING',
+      REJECTED:  'FAILED',
+    };
+
+    const thankYou = c.thankYouMessage;
+
+    return {
+      id:          c.id,
+      dateString:  date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }),
+      timeString:  date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+      type:        TYPE_LABEL[campaign.type] ?? (campaign.type ?? '—'),
+      typeTag:     campaign.type ?? '—',
+      patientName: campaign.patientName ?? 'Patient',
+      patientAge:  campaign.patientAge  ?? 0,
+      amount:      Number(c.amount ?? 0),
+      status:      statusMap[c.status] ?? 'PENDING',
+      treatment:   campaign.treatment   ?? campaign.description ?? '—',
+      location:    'Dakar, Sénégal',
+      reference:   c.receiptNumber      ?? c.id,
+      patientPhoto: undefined,
+      impactCoveredPercentage: pct,
+      hasThankYou:      !!thankYou,
+      thankYouMessageType: thankYou?.messageType,
+      thankYouText:        thankYou?.message,
+      thankYouAudioUrl:    thankYou?.audioUrl,
+    };
+  }
+
   formatAmount(amount: number): string {
-    return amount.toLocaleString('fr-FR');
+    return (amount ?? 0).toLocaleString('fr-FR');
   }
 
   goBack(): void {
-    this.router.navigate(['/dons-historique']);
+    this.router.navigate(['/donor/dons-historique']);
+  }
+
+  toggleAudio(): void {
+    if (!this.donation?.thankYouAudioUrl) return;
+
+    if (!this.audio) {
+      this.audio = new Audio(this.donation.thankYouAudioUrl);
+      this.audio.onended = () => { this.isPlayingAudio = false; };
+    }
+
+    if (this.isPlayingAudio) {
+      this.audio.pause();
+      this.isPlayingAudio = false;
+    } else {
+      this.audio.play();
+      this.isPlayingAudio = true;
+    }
   }
 }

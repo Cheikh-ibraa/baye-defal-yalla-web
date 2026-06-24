@@ -1,62 +1,37 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
-import Swal from 'sweetalert2';
-
-// Local interfaces for static scheduling state
-interface AvailableDay {
-  date: string; // Format: DD-MM-YYYY
-  startTime: string; // Format: HH:mm
-  endTime: string; // Format: HH:mm
-}
-
-interface TimeSlot {
-  id: number;
-  date: string; // Format: DD-MM-YYYY
-  startTime: string; // Format: HH:mm
-  endTime: string; // Format: HH:mm
-  booked: boolean;
-}
+import { HttpClient } from '@angular/common/http';
+import { Subject, forkJoin } from 'rxjs';
+import { takeUntil, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 interface WeekDay {
   label: string;
   date: Date;
-  dateString: string; // Format: DD-MM-YYYY
+  dateString: string;
   isAvailable: boolean;
-  availability?: AvailableDay;
 }
 
-interface AppointmentType {
-  id: number;
-  name: string;
-  description: string;
-}
-
-interface Appointment {
-  id: number;
-  doctorName: string;
-  specialty: string | null;
-  patientName: string;
-  date: string; // Format: DD-MM-YYYY
-  startTime: string; // Format: HH:mm
-  endTime: string; // Format: HH:mm
+interface CalendarEntry {
+  id: string;
+  patientLabel: string;
+  date: string;
+  startTime: string;
+  endTime: string;
   reason: string;
-  type: AppointmentType | null;
-  status: 'EN_ATTENTE' | 'TERMINE' | 'ANNULE';
-  createdAt: string;
-  updatedAt: string;
+  status: string;
 }
 
-interface PagedResponse<T> {
-  content: T[];
-  totalElements: number;
-  totalPages: number;
-  number: number; // page actuelle
-  size: number;
-  first: boolean;
-  last: boolean;
+interface ActivityItem {
+  id: string;
+  type: 'Analyse' | 'Imagerie' | 'Hospitalisation';
+  patientLabel: string;
+  dateDisplay: string;
+  time: string;
+  description: string;
+  status: string;
 }
 
 @Component({
@@ -66,692 +41,313 @@ interface PagedResponse<T> {
   templateUrl: './planings.component.html',
   styleUrl: './planings.component.css'
 })
-export class PlaningsComponent implements OnInit {
+export class PlaningsComponent implements OnInit, OnDestroy {
   activeTab: 'agenda' | 'rendez-vous' = 'agenda';
 
-  // Médecin connecté
-  doctorId: number | null = null;
-
-  // Gestion de la semaine
   currentWeekStart: Date = new Date();
   weekDays: WeekDay[] = [];
+  calendarEntries: CalendarEntry[] = [];
 
-  // Jour sélectionné et créneaux
-  selectedDay: WeekDay | null = null;
-  timeSlots: TimeSlot[] = [];
+  allActivities: ActivityItem[] = [];
+  filteredActivities: ActivityItem[] = [];
 
-  // États de chargement
-  isLoadingDays = false;
-  isLoadingSlots = false;
-  errorMessage: string | null = null;
-  slotsErrorMessage: string | null = null;
-
-  // Jours disponibles du mois
-  availableDaysCache: AvailableDay[] = [];
-
-  // Rendez-vous pour la grille calendrier (tous les RDV)
-  calendarAppointments: Appointment[] = [];
-
-  // Liste des rendez-vous (tab rendez-vous - paginé)
-  appointments: Appointment[] = [];
-
-  // Pagination des rendez-vous
-  currentPage = 0;
-  pageSize = 10;
-  totalPages = 0;
-  totalElements = 0;
-  isFirstPage = true;
-  isLastPage = true;
-  isLoadingAppointments = false;
-  appointmentsErrorMessage: string | null = null;
-
-  // Filtres
   searchQuery = '';
   statusFilter = 'Tous les statuts';
 
-  // Modal d'ajout de créneau
-  showAddSlotModal = false;
-  formError = '';
-  newSlot = {
-    date: '',
-    heureDebut: '',
-    heureFin: ''
-  };
+  currentPage = 0;
+  pageSize = 10;
 
-  constructor() {
+  isLoadingCalendar = false;
+  isLoadingActivities = false;
+  errorCalendar: string | null = null;
+  errorActivities: string | null = null;
+
+  private activitiesLoaded = false;
+  private destroy$ = new Subject<void>();
+
+  constructor(private http: HttpClient) {
     this.initializeCurrentWeek();
   }
 
-  private getMockCurrentUser(): { id: number; nom?: string; prenom?: string } {
-    return { id: 10, nom: 'Dupont', prenom: 'Jean' } as { id: number; nom?: string; prenom?: string };
-  }
-
   ngOnInit(): void {
-    this.loadDoctorIdAndAvailabilities();
+    this.loadCalendarData();
   }
 
-  /**
-   * Charge le doctorId depuis l'utilisateur connecté et les disponibilités
-   */
-  loadDoctorIdAndAvailabilities(): void {
-    const currentUser = this.getMockCurrentUser();
-    if (currentUser) {
-      this.doctorId = currentUser.id;
-      this.loadAvailableDays();
-      // Charger tous les rendez-vous pour l'affichage dans la grille calendrier
-      this.loadAppointmentsForCalendar();
-    } else {
-      console.error('Erreur lors de la récupération du médecin connecté: utilisateur non connecté');
-      this.errorMessage = 'Impossible de récupérer vos informations. Veuillez vous reconnecter.';
-    }
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  /**
-   * Charge tous les rendez-vous pour l'affichage dans le calendrier (sans pagination)
-   */
-  loadAppointmentsForCalendar(): void {
-    if (!this.doctorId) return;
+  // === Semaine ===
 
-    // Charger avec une grande taille de page pour avoir tous les RDV
-    this.localGetDoctorAppointments(this.doctorId, 0, 1000).subscribe({
-      next: (response: PagedResponse<Appointment>) => {
-        this.calendarAppointments = response.content;
-      },
-      error: (error: any) => {
-        console.error('Erreur lors du chargement des rendez-vous pour le calendrier (mock):', error);
-      }
-    });
-  }
-
-  /**
-   * Initialise la semaine courante (du lundi au dimanche)
-   */
   initializeCurrentWeek(): void {
     const today = new Date();
-    const dayOfWeek = today.getDay();
-    const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Lundi de la semaine
-
+    const diff = today.getDay() === 0 ? -6 : 1 - today.getDay();
     this.currentWeekStart = new Date(today);
     this.currentWeekStart.setDate(today.getDate() + diff);
     this.currentWeekStart.setHours(0, 0, 0, 0);
-
     this.generateWeekDays();
   }
 
-  /**
-   * Génère les 7 jours de la semaine
-   */
   generateWeekDays(): void {
     this.weekDays = [];
-    const daysOfWeek = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+    const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
     const months = ['janv', 'févr', 'mars', 'avr', 'mai', 'juin', 'juil', 'août', 'sept', 'oct', 'nov', 'déc'];
-
     for (let i = 0; i < 7; i++) {
-      const date = new Date(this.currentWeekStart);
-      date.setDate(this.currentWeekStart.getDate() + i);
-
-      const dayName = daysOfWeek[date.getDay()];
-      const dayNum = date.getDate();
-      const monthName = months[date.getMonth()];
-
-      const dateString = this.formatDateToDDMMYYYY(date);
-
+      const d = new Date(this.currentWeekStart);
+      d.setDate(this.currentWeekStart.getDate() + i);
       this.weekDays.push({
-        label: `${dayName} ${dayNum} ${monthName}`,
-        date: date,
-        dateString: dateString,
-        isAvailable: false
+        label: `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`,
+        date: d,
+        dateString: this.toDateString(d),
+        isAvailable: true,
       });
     }
-
-    this.updateWeekAvailability();
   }
 
-  /**
-   * Charge les jours disponibles du mois en cours
-   */
-  loadAvailableDays(): void {
-    if (!this.doctorId) return;
-
-    const month = this.formatMonthToMMYYYY(this.currentWeekStart);
-    this.isLoadingDays = true;
-    this.errorMessage = null;
-
-    this.localGetAvailableDays(this.doctorId, month).subscribe({
-      next: (days) => {
-        this.availableDaysCache = days;
-        this.updateWeekAvailability();
-        this.isLoadingDays = false;
-
-        if (!this.selectedDay) {
-          const firstAvailableDay = this.weekDays.find(day => day.isAvailable);
-          if (firstAvailableDay) {
-            this.selectDay(firstAvailableDay);
-          }
-        }
-      },
-      error: (error: any) => {
-        console.error('Erreur lors du chargement des disponibilités (mock):', error);
-        this.errorMessage = 'Impossible de charger les disponibilités.';
-        this.isLoadingDays = false;
-      }
-    });
-  }
-
-  /**
-   * Met à jour la disponibilité des jours de la semaine
-   */
-  updateWeekAvailability(): void {
-    this.weekDays.forEach(day => {
-      const availability = this.availableDaysCache.find(
-        avail => avail.date === day.dateString
-      );
-      day.isAvailable = !!availability;
-      day.availability = availability;
-    });
-  }
-
-  /**
-   * Navigation vers la semaine précédente
-   */
   previousWeek(): void {
     this.currentWeekStart.setDate(this.currentWeekStart.getDate() - 7);
     this.generateWeekDays();
-
-    // Recharger les disponibilités si on change de mois
-    const newMonth = this.formatMonthToMMYYYY(this.currentWeekStart);
-    const oldMonth = this.formatMonthToMMYYYY(new Date(this.currentWeekStart.getTime() + 7 * 24 * 60 * 60 * 1000));
-
-    if (newMonth !== oldMonth) {
-      this.loadAvailableDays();
-    } else {
-      this.updateWeekAvailability();
-      // Recharger le premier jour disponible
-      const firstAvailableDay = this.weekDays.find(day => day.isAvailable);
-      if (firstAvailableDay) {
-        this.selectDay(firstAvailableDay);
-      }
-    }
+    this.loadCalendarData();
   }
 
-  /**
-   * Navigation vers la semaine suivante
-   */
   nextWeek(): void {
     this.currentWeekStart.setDate(this.currentWeekStart.getDate() + 7);
     this.generateWeekDays();
-
-    // Recharger les disponibilités si on change de mois
-    const newMonth = this.formatMonthToMMYYYY(this.currentWeekStart);
-    const oldMonth = this.formatMonthToMMYYYY(new Date(this.currentWeekStart.getTime() - 7 * 24 * 60 * 60 * 1000));
-
-    if (newMonth !== oldMonth) {
-      this.loadAvailableDays();
-    } else {
-      this.updateWeekAvailability();
-      // Recharger le premier jour disponible
-      const firstAvailableDay = this.weekDays.find(day => day.isAvailable);
-      if (firstAvailableDay) {
-        this.selectDay(firstAvailableDay);
-      }
-    }
+    this.loadCalendarData();
   }
 
-  /**
-   * Sélectionne un jour et charge ses créneaux
-   */
-  selectDay(day: WeekDay): void {
-    if (!day.isAvailable || !this.doctorId) return;
-
-    this.selectedDay = day;
-    this.loadAllWeekSlots();
-  }
-
-  /**
-   * Charge tous les créneaux de la semaine pour affichage dans la grille
-   */
-  loadAllWeekSlots(): void {
-    if (!this.doctorId || !this.selectedDay) return;
-
-    this.slotsErrorMessage = null;
-    this.isLoadingSlots = true;
-    this.timeSlots = [];
-
-    // Charger les créneaux du jour sélectionné
-    this.localGetTimeSlots(this.doctorId, this.selectedDay.dateString).subscribe({
-      next: (slots) => {
-        this.timeSlots = slots;
-        this.isLoadingSlots = false;
-      },
-      error: (error: any) => {
-        console.error('Erreur lors du chargement des créneaux (mock):', error);
-        this.slotsErrorMessage = 'Impossible de charger les créneaux.';
-        this.timeSlots = [];
-        this.isLoadingSlots = false;
-      }
-    });
-  }
-
-  /**
-   * Formate une date en DD-MM-YYYY
-   */
-  formatDateToDDMMYYYY(date: Date): string {
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
-  }
-
-  /**
-   * Formate un mois en MM-YYYY
-   */
-  formatMonthToMMYYYY(date: Date): string {
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${month}-${year}`;
-  }
-
-  /**
-   * Obtient le label de la période de la semaine
-   */
   getWeekLabel(): string {
-    const endDate = new Date(this.currentWeekStart);
-    endDate.setDate(this.currentWeekStart.getDate() + 6);
-
+    const end = new Date(this.currentWeekStart);
+    end.setDate(this.currentWeekStart.getDate() + 6);
     const months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
-
-    const startDay = this.currentWeekStart.getDate();
-    const endDay = endDate.getDate();
-    const startMonth = months[this.currentWeekStart.getMonth()];
-    const endMonth = months[endDate.getMonth()];
-    const year = endDate.getFullYear();
-
-    if (this.currentWeekStart.getMonth() === endDate.getMonth()) {
-      return `${startDay} - ${endDay} ${startMonth} ${year}`;
-    } else {
-      return `${startDay} ${startMonth} - ${endDay} ${endMonth} ${year}`;
+    const s = this.currentWeekStart, e = end;
+    if (s.getMonth() === e.getMonth()) {
+      return `${s.getDate()} - ${e.getDate()} ${months[e.getMonth()]} ${e.getFullYear()}`;
     }
+    return `${s.getDate()} ${months[s.getMonth()]} - ${e.getDate()} ${months[e.getMonth()]} ${e.getFullYear()}`;
   }
 
-  /**
-   * Change d'onglet et charge les données appropriées
-   */
-  setActiveTab(tab: 'agenda' | 'rendez-vous'): void {
-    this.activeTab = tab;
-    if (tab === 'rendez-vous') {
-      // Pour l'onglet rendez-vous, charger avec pagination
-      this.currentPage = 0;
-      this.loadAppointments();
-    }
+  isToday(day: WeekDay): boolean {
+    return day.date.toDateString() === new Date().toDateString();
   }
 
-  /**
-   * Charge les rendez-vous du médecin avec pagination
-   */
-  loadAppointments(): void {
-    if (!this.doctorId) {
-      this.appointmentsErrorMessage = 'Impossible de récupérer vos rendez-vous. Veuillez vous reconnecter.';
-      return;
-    }
+  // === Agenda (calendrier) ===
 
-    this.isLoadingAppointments = true;
-    this.appointmentsErrorMessage = null;
+  loadCalendarData(): void {
+    this.isLoadingCalendar = true;
+    this.errorCalendar = null;
 
-    this.localGetDoctorAppointments(this.doctorId, this.currentPage, this.pageSize).subscribe({
-      next: (response: PagedResponse<Appointment>) => {
-        this.appointments = response.content;
-        this.totalPages = response.totalPages;
-        this.totalElements = response.totalElements;
-        this.currentPage = response.number;
-        this.isFirstPage = response.first;
-        this.isLastPage = response.last;
-        this.isLoadingAppointments = false;
-      },
-      error: (error: any) => {
-        console.error('Erreur lors du chargement des rendez-vous (mock):', error);
-        this.appointmentsErrorMessage = 'Erreur lors du chargement des rendez-vous. Veuillez réessayer.';
-        this.isLoadingAppointments = false;
-      }
-    });
-  }
-
-  /**
-   * Passe à la page précédente
-   */
-  previousPage(): void {
-    if (!this.isFirstPage) {
-      this.currentPage--;
-      this.loadAppointments();
-    }
-  }
-
-  /**
-   * Passe à la page suivante
-   */
-  nextPage(): void {
-    if (!this.isLastPage) {
-      this.currentPage++;
-      this.loadAppointments();
-    }
-  }
-
-  /**
-   * Formate le statut pour l'affichage
-   */
-  getStatusLabel(status: string): string {
-    const statusMap: { [key: string]: string } = {
-      'EN_ATTENTE': 'En attente',
-      'TERMINE': 'Terminé',
-      'ANNULE': 'Annulé'
-    };
-    return statusMap[status] || status;
-  }
-
-  /**
-   * Obtient la classe CSS pour le badge de statut
-   */
-  getStatusClass(status: string): string {
-    const classMap: { [key: string]: string } = {
-      'EN_ATTENTE': 'bg-[#F39C120F] text-[#F39C12]',
-      'TERMINE': 'bg-[#00B8940F] text-[#00B894]',
-      'ANNULE': 'bg-[#FF6B6B0F] text-[#FF6B6B]'
-    };
-    return classMap[status] || 'bg-gray-100 text-gray-600';
-  }
-
-  /**
-   * Filtre les rendez-vous par recherche et statut
-   */
-  getFilteredAppointments(): Appointment[] {
-    return this.appointments.filter(appointment => {
-      // Filtre par recherche (nom du patient)
-      const matchesSearch = this.searchQuery === '' ||
-        appointment.patientName.toLowerCase().includes(this.searchQuery.toLowerCase());
-
-      // Filtre par statut
-      const matchesStatus = this.statusFilter === 'Tous les statuts' ||
-        this.getStatusLabel(appointment.status) === this.statusFilter;
-
-      return matchesSearch && matchesStatus;
-    });
-  }
-
-  /**
-   * Réinitialise les filtres
-   */
-  resetFilters(): void {
-    this.searchQuery = '';
-    this.statusFilter = 'Tous les statuts';
-  }
-
-  openAddSlotModal() {
-    this.formError = '';
-    this.showAddSlotModal = true;
-  }
-
-  closeAddSlotModal() {
-    this.showAddSlotModal = false;
-    this.resetNewSlot();
-  }
-
-  resetNewSlot() {
-    this.newSlot = {
-      date: '',
-      heureDebut: '',
-      heureFin: ''
-    };
-  }
-
-  saveSlot() {
-    this.formError = '';
-
-    if (!this.newSlot.date || !this.newSlot.heureDebut || !this.newSlot.heureFin) {
-      this.formError = 'Veuillez remplir tous les champs';
-      return;
-    }
-
-    if (!this.doctorId) {
-      this.formError = 'Erreur: Impossible de récupérer l\'identifiant du médecin';
-      return;
-    }
-
-    // Convertir la date du format YYYY-MM-DD en DD-MM-YYYY
-    const dateParts = this.newSlot.date.split('-');
-    const formattedDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
-
-    const availabilityData = {
-      doctorId: this.doctorId,
-      date: formattedDate,
-      startTime: this.newSlot.heureDebut,
-      endTime: this.newSlot.heureFin
-    };
-
-    this.localGenerateAvailabilities(availabilityData).subscribe({
-      next: (response: { message: string }) => {
-        console.log('Créneaux créés avec succès (mock):', response);
-        Swal.fire({
-          icon: 'success',
-          title: 'Succès !',
-          text: 'Créneaux ajoutés avec succès',
-          timer: 2000,
-          showConfirmButton: false
+    this.http.get<any[]>(`${environment.baseUrl}/medical/appointments/doctor`)
+      .pipe(takeUntil(this.destroy$), catchError(() => of([])))
+      .subscribe(data => {
+        this.calendarEntries = data.map(a => {
+          const dt = new Date(a.appointmentDate);
+          const startTime = this.isoToTime(a.appointmentDate);
+          return {
+            id: a.id,
+            patientLabel: `Patient #${a.patientId.substring(0, 8).toUpperCase()}`,
+            date: this.toDateString(dt),
+            startTime,
+            endTime: this.addMinutes(startTime, 30),
+            reason: a.reason || 'RDV médical',
+            status: a.status,
+          };
         });
-        this.closeAddSlotModal();
-
-        // Recharger les disponibilités
-        this.loadAvailableDays();
-      },
-      error: (error: any) => {
-        console.error('Erreur lors de la création des créneaux (mock):', error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Erreur',
-          text: 'Erreur lors de l\'ajout des créneaux. Veuillez réessayer.',
-          confirmButtonColor: '#01b894'
-        });
-      }
-    });
+        this.isLoadingCalendar = false;
+      });
   }
 
-  viewAppointment(appointment: Appointment) {
-    console.log('Voir rendez-vous:', appointment);
-  }
-
-  confirmAppointment(appointment: Appointment) {
-    console.log('Confirmer rendez-vous:', appointment);
-  }
-
-  /**
-   * Supprime un rendez-vous après confirmation
-   */
-  deleteAppointment(appointment: Appointment): void {
-    Swal.fire({
-      title: 'Confirmer la suppression',
-      text: `Voulez-vous vraiment supprimer le rendez-vous de ${appointment.patientName} ?`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#01b894',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Oui, supprimer',
-      cancelButtonText: 'Annuler'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        this.localDeleteAppointment(appointment.id).subscribe({
-          next: () => {
-            Swal.fire({
-              icon: 'success',
-              title: 'Supprimé !',
-              text: 'Le rendez-vous a été supprimé avec succès.',
-              timer: 2000,
-              showConfirmButton: false
-            });
-            // Recharger les rendez-vous
-            if (this.activeTab === 'rendez-vous') {
-              this.loadAppointments();
-            } else {
-              this.loadAppointmentsForCalendar();
-            }
-          },
-          error: (error: any) => {
-            console.error('Erreur lors de la suppression (mock):', error);
-            Swal.fire({
-              icon: 'error',
-              title: 'Erreur',
-              text: 'Impossible de supprimer le rendez-vous. Veuillez réessayer.',
-              confirmButtonColor: '#01b894'
-            });
-          }
-        });
-      }
-    });
-  }
-
-  /**
-   * Génère les créneaux horaires de 30 minutes pour la grille calendrier
-   */
   getTimeSlotLabels(): string[] {
     const slots: string[] = [];
-    for (let hour = 8; hour <= 18; hour++) {
-      slots.push(`${String(hour).padStart(2, '0')}:00`);
-      if (hour < 18) {
-        slots.push(`${String(hour).padStart(2, '0')}:30`);
-      }
+    for (let h = 8; h <= 18; h++) {
+      slots.push(`${String(h).padStart(2, '0')}:00`);
+      if (h < 18) slots.push(`${String(h).padStart(2, '0')}:30`);
     }
     return slots;
   }
 
-  /**
-   * Trouve les créneaux pour un jour et une heure donnés
-   */
-  getSlotsForDayAndTime(day: WeekDay, timeLabel: string): TimeSlot[] {
-    if (!day.isAvailable) return [];
-
-    return this.timeSlots.filter(slot => {
-      // Le créneau doit correspondre au jour sélectionné et à l'heure
-      return slot.date === day.dateString && slot.startTime === timeLabel;
-    });
-  }
-
-  /**
-   * Obtient l'heure actuelle au format HH:mm arrondie à la demi-heure
-   */
   getCurrentTime(): string {
     const now = new Date();
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
-
-    // Arrondir à la demi-heure la plus proche
-    const roundedMinutes = minutes < 30 ? '00' : '30';
-
-    return `${String(hours).padStart(2, '0')}:${roundedMinutes}`;
+    const mins = now.getMinutes() < 30 ? '00' : '30';
+    return `${String(now.getHours()).padStart(2, '0')}:${mins}`;
   }
 
-  /**
-   * Vérifie si c'est aujourd'hui
-   */
-  isToday(day: WeekDay): boolean {
-    const today = new Date();
-    return day.date.toDateString() === today.toDateString();
+  getEntriesForDayAndTime(day: WeekDay, timeLabel: string): CalendarEntry[] {
+    return this.calendarEntries.filter(e => e.date === day.dateString && e.startTime === timeLabel);
   }
 
-  /**
-   * Vérifie si tous les jours sont indisponibles
-   */
-  allDaysUnavailable(): boolean {
-    return this.weekDays.every(day => !day.isAvailable);
-  }
-
-  /**
-   * Récupère les rendez-vous pour un jour et une heure donnés
-   */
-  getAppointmentsForDayAndTime(day: WeekDay, timeLabel: string): Appointment[] {
-    if (!day.isAvailable) return [];
-
-    return this.calendarAppointments.filter(appointment => {
-      return appointment.date === day.dateString && appointment.startTime === timeLabel;
-    });
-  }
-
-  /**
-   * Calcule la hauteur du bloc de rendez-vous en fonction de sa durée
-   * 1 slot = 30 minutes = 80px (h-20)
-   */
-  getAppointmentHeight(appointment: Appointment): string {
-    const [startHour, startMin] = appointment.startTime.split(':').map(Number);
-    const [endHour, endMin] = appointment.endTime.split(':').map(Number);
-
-    const startMinutes = startHour * 60 + startMin;
-    const endMinutes = endHour * 60 + endMin;
-    const durationMinutes = endMinutes - startMinutes;
-
-    // 30 minutes = 80px (h-20)
-    // Réduction de 20px : 8px (top-2) + 12px espace bas pour séparation visible entre rendez-vous
-    const heightPx = (durationMinutes / 30) * 80 - 20;
-
-    return `${heightPx}px`;
-  }
-
-  /**
-   * Obtient les classes CSS pour le bloc de rendez-vous selon le statut
-   */
-  getAppointmentBlockClass(status: string): string {
-    const classMap: { [key: string]: string } = {
-      'EN_ATTENTE': 'bg-amber-50',
-      'TERMINE': 'bg-emerald-50',
-      'ANNULE': 'bg-rose-50 opacity-90'
+  getEntryBlockClass(status: string): string {
+    const map: Record<string, string> = {
+      PENDING: 'bg-amber-50', CONFIRMED: 'bg-emerald-50',
+      CANCELLED: 'bg-rose-50 opacity-90', COMPLETED: 'bg-blue-50',
     };
-    return classMap[status] || 'bg-gray-50';
+    return map[status] || 'bg-gray-50';
   }
 
-  /**
-   * Obtient la classe CSS pour la bordure à gauche selon le statut
-   */
-  getAppointmentBorderClass(status: string): string {
-    const classMap: { [key: string]: string } = {
-      'EN_ATTENTE': 'border-amber-500',
-      'TERMINE': 'border-emerald-500',
-      'ANNULE': 'border-rose-500'
+  getEntryBorderClass(status: string): string {
+    const map: Record<string, string> = {
+      PENDING: 'border-amber-500', CONFIRMED: 'border-emerald-500',
+      CANCELLED: 'border-rose-500', COMPLETED: 'border-blue-500',
     };
-    return classMap[status] || 'border-gray-400';
+    return map[status] || 'border-gray-400';
   }
 
-  // ===== Local mock implementations =====
-  private localGetDoctorAppointments(doctorId: number | null, page = 0, size = 10): Observable<PagedResponse<Appointment>> {
-    const mockAppointments: Appointment[] = [
-      { id: 1, doctorName: 'Dr Mock', specialty: 'Généraliste', patientName: 'Alice', date: this.formatDateToDDMMYYYY(new Date()), startTime: '09:00', endTime: '09:30', reason: '', type: null, status: 'EN_ATTENTE', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
-    ];
-    const response: PagedResponse<Appointment> = {
-      content: mockAppointments,
-      totalElements: mockAppointments.length,
-      totalPages: 1,
-      number: page,
-      size: mockAppointments.length,
-      first: true,
-      last: true,
+  // === Activités (rendez-vous + consultations) ===
+
+  setActiveTab(tab: 'agenda' | 'rendez-vous'): void {
+    this.activeTab = tab;
+    if (tab === 'rendez-vous' && !this.activitiesLoaded) {
+      this.loadActivities();
+    }
+  }
+
+  loadActivities(): void {
+    this.isLoadingActivities = true;
+    this.errorActivities = null;
+    this.activitiesLoaded = true;
+
+    forkJoin({
+      labOrders:        this.http.get<any[]>(`${environment.baseUrl}/lab-orders/doctor`).pipe(catchError(() => of([]))),
+      imagingOrders:    this.http.get<any[]>(`${environment.baseUrl}/imaging-orders/doctor`).pipe(catchError(() => of([]))),
+      hospitalizations: this.http.get<any[]>(`${environment.baseUrl}/medical/hospitalizations/doctor`).pipe(catchError(() => of([]))),
+    })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(({ labOrders, imagingOrders, hospitalizations }) => {
+        const labItems: ActivityItem[] = labOrders.map(o => ({
+          id: o.id,
+          type: 'Analyse' as const,
+          patientLabel: `Patient #${o.patientId.substring(0, 8).toUpperCase()}`,
+          dateDisplay: this.formatDate(o.appointmentDate),
+          time: this.isoToTime(o.appointmentDate),
+          description: o.categories?.join(', ') || o.clinicalIndication || 'Analyse biologique',
+          status: o.status,
+        }));
+
+        const imagingItems: ActivityItem[] = imagingOrders.map(o => ({
+          id: o.id,
+          type: 'Imagerie' as const,
+          patientLabel: `Patient #${o.patientId.substring(0, 8).toUpperCase()}`,
+          dateDisplay: this.formatDate(o.appointmentDate),
+          time: this.isoToTime(o.appointmentDate),
+          description: o.examTypes?.join(', ') || o.clinicalIndication || 'Examen d\'imagerie',
+          status: o.status,
+        }));
+
+        const hospItems: ActivityItem[] = hospitalizations.map(h => ({
+          id: h.id,
+          type: 'Hospitalisation' as const,
+          patientLabel: `Patient #${h.patientId.substring(0, 8).toUpperCase()}`,
+          dateDisplay: this.formatDate(h.admissionDate),
+          time: this.isoToTime(h.admissionDate),
+          description: h.motif || h.department || 'Hospitalisation',
+          status: h.status,
+        }));
+
+        this.allActivities = [...labItems, ...imagingItems, ...hospItems]
+          .sort((a, b) => a.dateDisplay.localeCompare(b.dateDisplay));
+        this.applyFilters();
+        this.isLoadingActivities = false;
+      });
+  }
+
+  applyFilters(): void {
+    let list = this.allActivities;
+    if (this.searchQuery.trim()) {
+      const q = this.searchQuery.toLowerCase();
+      list = list.filter(a =>
+        a.patientLabel.toLowerCase().includes(q) ||
+        a.description.toLowerCase().includes(q)
+      );
+    }
+    if (this.statusFilter !== 'Tous les statuts') {
+      list = list.filter(a => this.getStatusLabel(a.status) === this.statusFilter);
+    }
+    this.filteredActivities = list;
+    this.currentPage = 0;
+  }
+
+  get paginatedActivities(): ActivityItem[] {
+    const start = this.currentPage * this.pageSize;
+    return this.filteredActivities.slice(start, start + this.pageSize);
+  }
+
+  get totalElements(): number { return this.filteredActivities.length; }
+  get totalPages(): number { return Math.max(1, Math.ceil(this.filteredActivities.length / this.pageSize)); }
+  get isFirstPage(): boolean { return this.currentPage === 0; }
+  get isLastPage(): boolean { return this.currentPage >= this.totalPages - 1; }
+
+  previousPage(): void {
+    if (!this.isFirstPage) this.currentPage--;
+  }
+
+  nextPage(): void {
+    if (!this.isLastPage) this.currentPage++;
+  }
+
+
+  // === Statuts ===
+
+  getStatusLabel(status: string): string {
+    const map: Record<string, string> = {
+      PENDING:        'En attente',
+      ACCEPTED:       'Accepté',
+      FUNDED:         'Financé',
+      IN_PROGRESS:    'En cours',
+      COMPLETED:      'Terminé',
+      REJECTED:       'Refusé',
+      EXPIRED:        'Expiré',
+      ADMITTED:       'Admis',
+      DISCHARGED:     'Sorti',
     };
-    return of(response).pipe(delay(200));
+    return map[status] || status;
   }
 
-  private localGetAvailableDays(doctorId: number | null, month: string): Observable<AvailableDay[]> {
-    const mock: AvailableDay[] = [
-      { date: this.formatDateToDDMMYYYY(new Date()), startTime: '08:00', endTime: '17:00' }
-    ];
-    return of(mock).pipe(delay(150));
+  getStatusClass(status: string): string {
+    const map: Record<string, string> = {
+      PENDING:     'bg-[#F39C120F] text-[#F39C12]',
+      ACCEPTED:    'bg-[#00B8940F] text-[#00B894]',
+      FUNDED:      'bg-green-100 text-green-700',
+      IN_PROGRESS: 'bg-blue-100 text-blue-700',
+      COMPLETED:   'bg-gray-100 text-gray-600',
+      REJECTED:    'bg-[#FF6B6B0F] text-[#FF6B6B]',
+      EXPIRED:     'bg-orange-100 text-orange-700',
+      ADMITTED:    'bg-purple-100 text-purple-700',
+      DISCHARGED:  'bg-gray-100 text-gray-600',
+    };
+    return map[status] || 'bg-gray-100 text-gray-600';
   }
 
-  private localGetTimeSlots(doctorId: number | null, date: string): Observable<TimeSlot[]> {
-    const mock: TimeSlot[] = [
-      { id: 1, date, startTime: '08:00', endTime: '08:30', booked: false },
-      { id: 2, date, startTime: '08:30', endTime: '09:00', booked: false }
-    ];
-    return of(mock).pipe(delay(150));
+  getTypeClass(type: string): string {
+    const map: Record<string, string> = {
+      'Analyse':        'bg-blue-100 text-blue-700',
+      'Imagerie':       'bg-purple-100 text-purple-700',
+      'Hospitalisation':'bg-rose-100 text-rose-700',
+    };
+    return map[type] || 'bg-gray-100 text-gray-600';
   }
 
-  private localGenerateAvailabilities(data: { doctorId: number; date: string; startTime: string; endTime: string }): Observable<{ message: string }> {
-    return of({ message: 'Generated' }).pipe(delay(180));
+  // === Utilitaires ===
+
+  toDateString(d: Date): string {
+    return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
   }
 
-  private localDeleteAppointment(appointmentId: number): Observable<{ message: string }> {
-    return of({ message: 'Deleted' }).pipe(delay(150));
+  isoToTime(iso: string): string {
+    const d = new Date(iso);
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
   }
+
+  addMinutes(time: string, mins: number): string {
+    const [h, m] = time.split(':').map(Number);
+    const total = h * 60 + m + mins;
+    return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+  }
+
+  formatDate(iso: string): string {
+    if (!iso) return '';
+    return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+
+  allDaysUnavailable(): boolean { return false; }
 }

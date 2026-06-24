@@ -1,23 +1,73 @@
 <div class="min-h-screen bg-[#F4F6F9]">
 
+  <!-- ── Bannière retour TouchPay : succès ─────────────────────────── -->
+  <div *ngIf="paymentStep === 'success'"
+    class="fixed top-4 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-3 bg-white border border-[#D1FAE5] rounded-2xl shadow-lg px-5 py-4 w-[90vw] max-w-md">
+    <div class="w-10 h-10 rounded-full bg-[#D1FAE5] flex items-center justify-center flex-shrink-0">
+      <svg class="w-5 h-5 text-[#059669]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+      </svg>
+    </div>
+    <div class="flex-1">
+      <p class="text-sm font-bold text-gray-900">Paiement confirmé !</p>
+      <p class="text-xs text-gray-500">
+        Votre don a bien été enregistré. Merci !
+      </p>
+    </div>
+    <button (click)="paymentStep = 'idle'" class="text-gray-400 hover:text-gray-600">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- ── Bannière retour TouchPay : échec ──────────────────────────── -->
+  <div *ngIf="paymentStep === 'failed'"
+    class="fixed top-4 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-3 bg-white border border-[#FEE2E2] rounded-2xl shadow-lg px-5 py-4 w-[90vw] max-w-md">
+    <div class="w-10 h-10 rounded-full bg-[#FEE2E2] flex items-center justify-center flex-shrink-0">
+      <svg class="w-5 h-5 text-[#DC2626]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </div>
+    <div class="flex-1">
+      <p class="text-sm font-bold text-gray-900">Paiement annulé</p>
+      <p class="text-xs text-gray-500">Le paiement n'a pas abouti. Vous pouvez réessayer.</p>
+    </div>
+    <button (click)="paymentStep = 'idle'" class="text-gray-400 hover:text-gray-600">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+
   <!-- ── En-tête ─────────────────────────────────────────────────────── -->
   <div class="mb-6">
     <h1 class="text-2xl font-semibold tracking-tight text-[#0F172A] sm:text-3xl">
-     Les Dons
+      Les Dons
     </h1>
     <p class="mt-1 text-sm text-[#747686]">
       Soutenez un besoin médical
     </p>
   </div>
 
+  <!-- ── Barre de recherche ──────────────────────────────────────────── -->
+  <div class="mb-5 relative">
+    <span class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+      <svg class="w-4 h-4 text-[#8BBAE2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+      </svg>
+    </span>
+    <input type="text" [value]="searchQuery" (input)="onSearch($event)"
+      placeholder="Rechercher par patient, médecin, type…" class="w-full sm:w-80 pl-9 pr-4 py-2.5 text-sm rounded-xl border border-[#8BBAE24D] bg-white
+             text-[#191B23] placeholder-[#A0A3B1] shadow-sm
+             focus:outline-none focus:ring-2 focus:ring-[#11458B]/20 focus:border-[#11458B] transition-colors" />
+  </div>
+
   <!-- ── Filtres ──────────────────────────────────────────────────────── -->
   <div class="mb-8 flex items-center gap-3 flex-wrap">
-    <button
-      *ngFor="let filter of filters"
-      type="button"
-      (click)="setFilter(filter.value)"
-      class="rounded-lg px-4 py-1.5 text-sm font-medium transition-colors duration-200"
-      [ngClass]="activeFilter === filter.value
+    <button *ngFor="let filter of filters" type="button" (click)="setFilter(filter.value)"
+      class="rounded-lg px-4 py-1.5 text-sm font-medium transition-colors duration-200" [ngClass]="activeFilter === filter.value
         ? 'bg-[#11458B] text-white shadow-sm'
         : 'bg-[#F4F8FE] border border-[#8BBAE21A] text-[#747686] hover:text-[#191B23]'">
       {{ filter.label }}
@@ -28,7 +78,7 @@
   <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
 
     <!-- Donation Card -->
-    <div *ngFor="let don of filteredDonations; trackBy: trackByDon"
+    <div *ngFor="let don of paginatedDonations; trackBy: trackByDon"
       class="bg-white border border-[#00B89414] rounded-2xl shadow-lg shadow-[#12A0B40D] hover:shadow-xl transition-all duration-300">
 
       <!-- Header card -->
@@ -61,12 +111,18 @@
               d="M18.9547 14.1061V15.8397H24.0204C24.232 15.8397 24.541 16.0289 24.541 16.3603C24.541 19.3118 24.1702 20.7069 22.6149 20.7069C20.9989 20.7069 20.6675 17.2074 18.9552 16.9788V20.3241H16.2465V16.9745C14.4484 17.1095 14.1591 20.7069 12.4802 20.7069C10.9249 20.7069 10.6378 19.3118 10.6378 16.3603C10.6378 16.0289 10.9462 15.8397 11.1595 15.8397H16.2465V14.1061H10.9785C10.9064 14.1063 10.835 14.0922 10.7683 14.0647C10.7016 14.0373 10.641 13.9969 10.5899 13.9461C10.5388 13.8952 10.4983 13.8347 10.4705 13.7682C10.4428 13.7016 10.4285 13.6302 10.4283 13.5581C10.4283 13.2557 10.675 13.0113 10.9785 13.0113H16.2465V11.2766H10.3173C10.1718 11.2766 10.0323 11.2188 9.92946 11.1159C9.82659 11.0131 9.7688 10.8735 9.7688 10.7281C9.7688 10.5826 9.82659 10.4431 9.92946 10.3402C10.0323 10.2373 10.1718 10.1795 10.3173 10.1795H16.2465V8.44595H10.681C10.5354 8.44595 10.3957 8.3881 10.2927 8.28513C10.1898 8.18217 10.1319 8.04251 10.1319 7.89689C10.1319 7.75127 10.1898 7.61161 10.2927 7.50864C10.3957 7.40567 10.5354 7.34783 10.681 7.34783H16.2465V5.61423H11.8879C11.7423 5.61423 11.6027 5.55639 11.4997 5.45342C11.3967 5.35045 11.3389 5.21079 11.3389 5.06517C11.3389 4.91955 11.3967 4.77989 11.4997 4.67693C11.6027 4.57396 11.7423 4.51611 11.8879 4.51611H16.2465V3.55798H18.9552V4.51611H23.3138C23.4594 4.51611 23.5991 4.57396 23.702 4.67693C23.805 4.77989 23.8629 4.91955 23.8629 5.06517C23.8629 5.21079 23.805 5.35045 23.702 5.45342C23.5991 5.55639 23.4594 5.61423 23.3138 5.61423H18.9552V7.34783H24.5366C24.6822 7.34783 24.8219 7.40567 24.9249 7.50864C25.0278 7.61161 25.0857 7.75127 25.0857 7.89689C25.0857 8.04251 25.0278 8.18217 24.9249 8.28513C24.8219 8.3881 24.6822 8.44595 24.5366 8.44595H18.9552V10.1795H24.9014C25.0426 10.1859 25.176 10.2464 25.2737 10.3486C25.3714 10.4508 25.4259 10.5867 25.4259 10.7281C25.4259 10.8694 25.3714 11.0054 25.2737 11.1075C25.176 11.2097 25.0426 11.2703 24.9014 11.2766H18.9552V13.0113H24.2233C24.3684 13.0113 24.5077 13.0689 24.6103 13.1716C24.713 13.2743 24.7707 13.4135 24.7707 13.5587C24.7707 13.7039 24.713 13.8431 24.6103 13.9458C24.5077 14.0484 24.3684 14.1061 24.2233 14.1061H18.9547Z"
               fill="white" />
           </svg>
+          <!-- Hospitalisation SVG -->
+          <svg *ngIf="don.type === 'Hospitalisation'" width="28" height="30" viewBox="0 0 28 30" fill="none"
+            xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M2 30V9L14 2L26 9V30H17V20H11V30H2ZM4 28H9V18H19V28H24V10.15L14 4.35L4 10.15V28ZM12 15H16V12H19V8H16V5H12V8H9V12H12V15Z"
+              fill="white" />
+          </svg>
         </div>
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2">
             <h3 class="text-base sm:text-lg font-bold text-[#8BBAE2]">{{ don.type }}</h3>
-            <span
-              class="px-2.5 py-0.5 text-xs font-medium rounded-full {{ don.urgencyBg }} {{ don.urgencyColor }}">{{
+            <span class="px-2.5 py-0.5 text-xs font-medium rounded-full {{ don.urgencyBg }} {{ don.urgencyColor }}">{{
               don.urgency }}</span>
           </div>
           <p class="text-sm text-[#8BBAE2] mt-0.5">Patient : <span class="text-[#4B5563]">{{ don.patientName }},
@@ -89,8 +145,8 @@
         <p class="text-base font-bold mb-2">Objectif : {{ formatAmount(don.objectif) }} FCFA</p>
         <div class="flex items-center gap-3">
           <div class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-            <div class="h-full bg-[#2AB396] rounded-full transition-all duration-500"
-              [style.width.%]="don.percentage"></div>
+            <div class="h-full bg-[#2AB396] rounded-full transition-all duration-500" [style.width.%]="don.percentage">
+            </div>
           </div>
           <span class="text-base font-bold text-[#2AB396] flex-shrink-0">{{ don.percentage }}%</span>
         </div>
@@ -115,6 +171,63 @@
     </div>
 
   </div>
+
+  <!-- ── État vide ───────────────────────────────────────────────────── -->
+  <div *ngIf="!isLoadingDons && filteredDonations.length === 0"
+    class="flex flex-col items-center justify-center py-16 text-center">
+    <div class="w-16 h-16 rounded-full bg-[#F4F8FE] flex items-center justify-center mb-4">
+      <svg class="w-8 h-8 text-[#8BBAE2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+          d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+      </svg>
+    </div>
+    <p class="text-sm font-semibold text-[#4B5563]">Aucun résultat trouvé</p>
+    <p class="text-xs text-[#A0A3B1] mt-1">Essayez un autre mot-clé ou changez le filtre</p>
+  </div>
+
+  <!-- ── Pagination ───────────────────────────────────────────────────── -->
+  <div *ngIf="!isLoadingDons && filteredDonations.length > pageSize"
+    class="mt-8 flex items-center justify-center gap-1.5">
+
+    <!-- Précédent -->
+    <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1"
+      class="flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-medium transition-colors" [ngClass]="currentPage === 1
+        ? 'text-[#A0A3B1] cursor-not-allowed'
+        : 'text-[#11458B] hover:bg-[#F4F8FE]'">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+      Préc.
+    </button>
+
+    <!-- Numéros de page -->
+    <ng-container *ngFor="let p of visiblePages">
+      <button *ngIf="p !== '...'" (click)="goToPage(p)" class="w-9 h-9 rounded-lg text-xs font-bold transition-colors"
+        [ngClass]="p === currentPage
+          ? 'bg-[#11458B] text-white shadow-sm'
+          : 'text-[#4B5563] hover:bg-[#F4F8FE]'">
+        {{ p }}
+      </button>
+      <span *ngIf="p === '...'" class="w-9 h-9 flex items-end justify-center pb-1.5 text-[#A0A3B1] text-sm">…</span>
+    </ng-container>
+
+    <!-- Suivant -->
+    <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages"
+      class="flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-medium transition-colors" [ngClass]="currentPage === totalPages
+        ? 'text-[#A0A3B1] cursor-not-allowed'
+        : 'text-[#11458B] hover:bg-[#F4F8FE]'">
+      Suiv.
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Compteur -->
+  <p *ngIf="!isLoadingDons && filteredDonations.length > 0" class="mt-3 text-center text-xs text-[#A0A3B1]">
+    {{ pageStart }}–{{ pageEnd }} sur {{ filteredDonations.length }} campagne{{ filteredDonations.length > 1 ? 's' : ''
+    }}
+  </p>
 
 </div>
 
@@ -141,8 +254,8 @@
                 d="M20.5144 29.0237L22.7252 26.8144L17.1048 21.194L14.8954 23.4033C14.1079 24.1908 13.719 25.1276 13.7287 26.2135C13.7375 27.2995 14.1264 28.2362 14.8954 29.0237C15.6819 29.7918 16.6187 30.1807 17.7056 30.1904C18.7926 30.2001 19.7288 29.8112 20.5144 29.0237ZM23.7285 25.8096L25.9394 23.6002C26.7269 22.8127 27.1206 21.876 27.1206 20.79C27.1206 19.704 26.7269 18.7673 25.9394 17.9798C25.1713 17.2117 24.2346 16.8277 23.1292 16.8277C22.0238 16.8277 21.087 17.2117 20.319 17.9798L18.1081 20.1892L23.7285 25.8096ZM5.10417 9.81604H18.2292V8.35771H5.10417V9.81604ZM12.4512 3.25208C12.6574 3.045 12.7604 2.78347 12.7604 2.4675C12.7604 2.15153 12.6574 1.89049 12.4512 1.68437C12.2451 1.47826 11.9836 1.37472 11.6667 1.37375C11.3497 1.37278 11.0887 1.47632 10.8835 1.68437C10.6784 1.89243 10.5749 2.15347 10.5729 2.4675C10.571 2.78153 10.6745 3.04306 10.8835 3.25208C11.0926 3.46111 11.3536 3.56417 11.6667 3.56125C11.9797 3.55833 12.2412 3.45528 12.4512 3.25208ZM9.74604 26.25H0V2.91667H9.21083C9.07764 2.17194 9.25556 1.49965 9.74458 0.899792C10.2326 0.299931 10.8733 0 11.6667 0C12.4785 0 13.1289 0.299931 13.6179 0.899792C14.1069 1.49965 14.2756 2.17194 14.124 2.91667H23.3333V12.8304C22.4058 12.7935 21.508 12.9155 20.6398 13.1965C19.7706 13.4784 18.9671 13.8989 18.2292 14.4579V13.8542H5.10417V15.3125H17.2667L13.2285 19.3521H5.10417V20.8104H11.8212C11.1504 21.5483 10.6322 22.3844 10.2667 23.3187C9.90111 24.2521 9.72757 25.2292 9.74604 26.25Z"
                 fill="white" />
             </svg>
-            <svg *ngIf="selectedDonation.type === 'Analyse médicale'" width="20" height="28" viewBox="0 0 20 28" fill="none"
-              xmlns="http://www.w3.org/2000/svg">
+            <svg *ngIf="selectedDonation.type === 'Analyse médicale'" width="20" height="28" viewBox="0 0 20 28"
+              fill="none" xmlns="http://www.w3.org/2000/svg">
               <path fill-rule="evenodd" clip-rule="evenodd"
                 d="M5.25 3H1.75C1.28587 3 0.840752 3.18437 0.512563 3.51256C0.184375 3.84075 0 4.28587 0 4.75V25.75C0 26.2141 0.184375 26.6593 0.512563 26.9874C0.840752 27.3156 1.28587 27.5 1.75 27.5H17.5C17.9641 27.5 18.4092 27.3156 18.7374 26.9874C19.0656 26.6593 19.25 26.2141 19.25 25.75V4.75C19.25 4.28587 19.0656 3.84075 18.7374 3.51256C18.4092 3.18437 17.9641 3 17.5 3H14C14 3.46413 13.8156 3.90925 13.4874 4.23744C13.1592 4.56563 12.7141 4.75 12.25 4.75H7C6.53587 4.75 6.09075 4.56563 5.76256 4.23744C5.43437 3.90925 5.25 3.46413 5.25 3ZM7.875 20.1973V17.4541C7.87479 17.4498 7.87297 17.4457 7.86989 17.4426C7.86682 17.4395 7.86272 17.4377 7.85838 17.4375H5.11525C4.88319 17.4375 4.66063 17.3453 4.49653 17.1812C4.33244 17.0171 4.24025 16.7946 4.24025 16.5625V14.8125C4.24025 14.5804 4.33244 14.3579 4.49653 14.1938C4.66063 14.0297 4.88319 13.9375 5.11525 13.9375H7.85838C7.86272 13.9373 7.86682 13.9355 7.86989 13.9324C7.87297 13.9293 7.87479 13.9252 7.875 13.9209V11.1777C7.875 10.9457 7.96719 10.7231 8.13128 10.559C8.29537 10.3949 8.51794 10.3027 8.75 10.3027H10.5C10.7321 10.3027 10.9546 10.3949 11.1187 10.559C11.2828 10.7231 11.375 10.9457 11.375 11.1777V13.9209C11.375 13.9296 11.3824 13.9375 11.3921 13.9375H14.1347C14.3668 13.9375 14.5894 14.0297 14.7535 14.1938C14.9176 14.3579 15.0097 14.5804 15.0097 14.8125V16.5625C15.0097 16.7946 14.9176 17.0171 14.7535 17.1812C14.5894 17.3453 14.3668 17.4375 14.1347 17.4375H11.3916C11.3873 17.4377 11.3832 17.4395 11.3801 17.4426C11.377 17.4457 11.3752 17.4498 11.375 17.4541V20.1973C11.375 20.4293 11.2828 20.6519 11.1187 20.816C10.9546 20.9801 10.7321 21.0723 10.5 21.0723H8.75C8.51794 21.0723 8.29537 20.9801 8.13128 20.816C7.96719 20.6519 7.875 20.4293 7.875 20.1973Z"
                 fill="white" />
@@ -150,15 +263,22 @@
                 d="M5.25 3C5.25 2.53587 5.43437 2.09075 5.76256 1.76256C6.09075 1.43437 6.53587 1.25 7 1.25H12.25C12.7141 1.25 13.1592 1.43437 13.4874 1.76256C13.8156 2.09075 14 2.53587 14 3C14 3.46413 13.8156 3.90925 13.4874 4.23744C13.1592 4.56563 12.7141 4.75 12.25 4.75H7C6.53587 4.75 6.09075 4.56563 5.76256 4.23744C5.43437 3.90925 5.25 3.46413 5.25 3ZM8.3125 0.8125C8.3125 0.696468 8.35859 0.585188 8.44064 0.503141C8.52269 0.421094 8.63397 0.375 8.75 0.375H10.5C10.616 0.375 10.7273 0.421094 10.8094 0.503141C10.8914 0.585188 10.9375 0.696468 10.9375 0.8125C10.9375 0.928532 10.8914 1.03981 10.8094 1.12186C10.7273 1.20391 10.616 1.25 10.5 1.25H8.75C8.63397 1.25 8.52269 1.20391 8.44064 1.12186C8.35859 1.03981 8.3125 0.928532 8.3125 0.8125Z"
                 stroke="white" stroke-width="0.75" />
             </svg>
-            <svg *ngIf="selectedDonation.type === 'Imagerie médicale'" width="35" height="35" viewBox="0 0 35 35" fill="none"
-              xmlns="http://www.w3.org/2000/svg">
+            <svg *ngIf="selectedDonation.type === 'Imagerie médicale'" width="35" height="35" viewBox="0 0 35 35"
+              fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
                 d="M30.135 29.8834C30.5944 29.3245 30.9 28.6554 31.0215 27.9422C31.143 27.229 31.0763 26.4964 30.8278 25.8169L30.3532 24.5055H33.2341V0.216553H1.98511V24.5055H18.7895L20.6226 29.534C20.8696 30.2136 21.2896 30.8171 21.8412 31.2848C22.3927 31.7524 23.0568 32.0681 23.7677 32.2005L24.629 34.8075L31.8396 34.8086L30.135 29.8834ZM27.5138 16.7606C26.7737 17.0305 26.1711 17.5832 25.8384 18.2973C25.5057 19.0113 25.4702 19.8283 25.7397 20.5685L26.851 23.6004H2.88909V1.12218H32.3307V23.6009H30.0179L27.5132 16.7612L27.5138 16.7606Z"
                 fill="white" />
               <path
                 d="M18.9547 14.1061V15.8397H24.0204C24.232 15.8397 24.541 16.0289 24.541 16.3603C24.541 19.3118 24.1702 20.7069 22.6149 20.7069C20.9989 20.7069 20.6675 17.2074 18.9552 16.9788V20.3241H16.2465V16.9745C14.4484 17.1095 14.1591 20.7069 12.4802 20.7069C10.9249 20.7069 10.6378 19.3118 10.6378 16.3603C10.6378 16.0289 10.9462 15.8397 11.1595 15.8397H16.2465V14.1061H10.9785C10.9064 14.1063 10.835 14.0922 10.7683 14.0647C10.7016 14.0373 10.641 13.9969 10.5899 13.9461C10.5388 13.8952 10.4983 13.8347 10.4705 13.7682C10.4428 13.7016 10.4285 13.6302 10.4283 13.5581C10.4283 13.2557 10.675 13.0113 10.9785 13.0113H16.2465V11.2766H10.3173C10.1718 11.2766 10.0323 11.2188 9.92946 11.1159C9.82659 11.0131 9.7688 10.8735 9.7688 10.7281C9.7688 10.5826 9.82659 10.4431 9.92946 10.3402C10.0323 10.2373 10.1718 10.1795 10.3173 10.1795H16.2465V8.44595H10.681C10.5354 8.44595 10.3957 8.3881 10.2927 8.28513C10.1898 8.18217 10.1319 8.04251 10.1319 7.89689C10.1319 7.75127 10.1898 7.61161 10.2927 7.50864C10.3957 7.40567 10.5354 7.34783 10.681 7.34783H16.2465V5.61423H11.8879C11.7423 5.61423 11.6027 5.55639 11.4997 5.45342C11.3967 5.35045 11.3389 5.21079 11.3389 5.06517C11.3389 4.91955 11.3967 4.77989 11.4997 4.67693C11.6027 4.57396 11.7423 4.51611 11.8879 4.51611H16.2465V3.55798H18.9552V4.51611H23.3138C23.4594 4.51611 23.5991 4.57396 23.702 4.67693C23.805 4.77989 23.8629 4.91955 23.8629 5.06517C23.8629 5.21079 23.805 5.35045 23.702 5.45342C23.5991 5.55639 23.4594 5.61423 23.3138 5.61423H18.9552V7.34783H24.5366C24.6822 7.34783 24.8219 7.40567 24.9249 7.50864C25.0278 7.61161 25.0857 7.75127 25.0857 7.89689C25.0857 8.04251 25.0278 8.18217 24.9249 8.28513C24.8219 8.3881 24.6822 8.44595 24.5366 8.44595H18.9552V10.1795H24.9014C25.0426 10.1859 25.176 10.2464 25.2737 10.3486C25.3714 10.4508 25.4259 10.5867 25.4259 10.7281C25.4259 10.8694 25.3714 11.0054 25.2737 11.1075C25.176 11.2097 25.0426 11.2703 24.9014 11.2766H18.9552V13.0113H24.2233C24.3684 13.0113 24.5077 13.0689 24.6103 13.1716C24.713 13.2743 24.7707 13.4135 24.7707 13.5587C24.7707 13.7039 24.713 13.8431 24.6103 13.9458C24.5077 14.0484 24.3684 14.1061 24.2233 14.1061H18.9547Z"
                 fill="white" />
-          </svg>
+            </svg>
+            <!-- Hospitalisation SVG -->
+            <svg *ngIf="selectedDonation.type === 'Hospitalisation'" width="28" height="30" viewBox="0 0 28 30"
+              fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M2 30V9L14 2L26 9V30H17V20H11V30H2ZM4 28H9V18H19V28H24V10.15L14 4.35L4 10.15V28ZM12 15H16V12H19V8H16V5H12V8H9V12H12V15Z"
+                fill="white" />
+            </svg>
           </ng-container>
         </div>
         <div>
@@ -231,32 +351,35 @@
         </div>
       </div>
 
-      <!-- Document & Description -->
+      <!-- Document PDF / Prescription -->
       <div class="flex items-start gap-5 pt-2">
-        <!-- Left: Document -->
+        <!-- Carte PDF -->
         <div class="w-1/3 flex-shrink-0">
-          <ng-container *ngIf="selectedDonation.docType === 'photo'">
-            <img [src]="selectedDonation.docUrl || 'assets/images/img-ordinance.png'" alt="Prescription"
-              class="w-full h-auto rounded-xl border border-gray-200 shadow-sm object-cover" />
-          </ng-container>
-          <ng-container *ngIf="selectedDonation.docType === 'pdf'">
-            <div class="bg-[#F8F9FA] border border-gray-200 rounded-xl p-4 flex flex-col items-center justify-center text-center">
-              <img src="assets/icones/pdf.png" alt="PDF Icon" class="w-9 h-11 object-contain mb-3" />
-              <span class="text-[10px] font-bold text-gray-700 truncate w-full mb-3" [title]="selectedDonation.docName">
-                {{ selectedDonation.docName || 'document.pdf' }}
-              </span>
-              <button type="button"
-                class="px-3 py-1 bg-[#11458B] hover:bg-[#1a5bb3] text-white text-[10px] font-extrabold rounded-full transition-colors duration-200 whitespace-nowrap">
-                Ouvrir le fichier
-              </button>
-            </div>
-          </ng-container>
+          <div
+            class="bg-[#F8F9FA] border border-gray-200 rounded-xl p-4 flex flex-col items-center justify-center text-center gap-2">
+            <!-- Icône PDF -->
+            <svg class="w-9 h-11 text-red-500" viewBox="0 0 36 44" fill="none">
+              <rect width="36" height="44" rx="4" fill="#FEE2E2" />
+              <path d="M8 10h14l6 6v18a2 2 0 01-2 2H8a2 2 0 01-2-2V12a2 2 0 012-2z" stroke="#EF4444" stroke-width="1.5"
+                fill="white" />
+              <path d="M22 10v6h6" stroke="#EF4444" stroke-width="1.5" stroke-linejoin="round" />
+              <text x="11" y="30" font-size="7" font-weight="bold" fill="#EF4444" font-family="sans-serif">PDF</text>
+            </svg>
+            <span class="text-[10px] font-bold text-gray-700 leading-tight">
+              {{ selectedDonation.reference || selectedDonation.docName || 'Ordonnance.pdf' }}
+            </span>
+            <button type="button" (click)="showPrescription = true; $event.stopPropagation()"
+              class="px-3 py-1.5 bg-[#11458B] hover:bg-[#1a5bb3] text-white text-[10px] font-extrabold rounded-full transition-colors whitespace-nowrap">
+              Ouvrir le fichier
+            </button>
+          </div>
         </div>
 
-        <!-- Right: Description -->
+        <!-- Description droite -->
         <div class="flex-1">
-          <p class="text-xs text-gray-600 leading-relaxed font-normal">
-            {{ selectedDonation.description }}
+          <p class="text-xs text-gray-600 leading-relaxed">{{ selectedDonation.description }}</p>
+          <p *ngIf="selectedDonation.indication" class="text-xs text-gray-500 mt-2">
+            <span class="font-semibold">Indication :</span> {{ selectedDonation.indication }}
           </p>
         </div>
       </div>
@@ -313,7 +436,8 @@
           <div (click)="selectContributionOption('100')"
             class="flex items-center justify-between p-4 border rounded-xl cursor-pointer transition-all duration-200"
             [class.border-2]="selectedContribution === '100'" [class.border-[#11458B]]="selectedContribution === '100'"
-            [class.bg-[#F4F8FE]]="selectedContribution === '100'" [class.border-gray-200]="selectedContribution !== '100'">
+            [class.bg-[#F4F8FE]]="selectedContribution === '100'"
+            [class.border-gray-200]="selectedContribution !== '100'">
             <div class="space-y-1">
               <div class="flex items-center gap-2">
                 <span class="text-xs font-black text-[#11458B]">100%</span>
@@ -338,7 +462,8 @@
           <div *ngIf="selectedDonation.choicesOption === '100_50'" (click)="selectContributionOption('50')"
             class="flex items-center justify-between p-4 border rounded-xl cursor-pointer transition-all duration-200"
             [class.border-2]="selectedContribution === '50'" [class.border-[#11458B]]="selectedContribution === '50'"
-            [class.bg-[#F4F8FE]]="selectedContribution === '50'" [class.border-gray-200]="selectedContribution !== '50'">
+            [class.bg-[#F4F8FE]]="selectedContribution === '50'"
+            [class.border-gray-200]="selectedContribution !== '50'">
             <div class="space-y-1">
               <span class="text-xs font-black text-[#11458B]">50%</span>
               <p class="text-sm font-black text-gray-900">
@@ -357,21 +482,239 @@
 
     </div>
 
-    <!-- Actions Sticky Footer -->
+    <!-- Footer étape idle -->
     <div class="sticky bottom-0 bg-white border-t border-gray-100 px-6 py-4 flex gap-4 flex-shrink-0 z-10">
       <button (click)="closeDonationDetail()"
         class="flex-1 py-3 border border-gray-200 hover:bg-gray-50 text-gray-700 font-bold rounded-xl transition duration-200 text-center text-sm">
         Annuler
       </button>
-      <button (click)="confirmDonation()"
+      <button (click)="confirmAndPay()"
         class="flex-1 py-3 bg-[#11458B] hover:bg-[#1a5bb3] text-white font-bold rounded-xl transition duration-200 text-center text-sm">
         Confirmer le don
+        <span *ngIf="paymentAmount > 0" class="block text-xs font-normal opacity-80">
+          {{ formatAmount(paymentAmount) }} FCFA
+        </span>
       </button>
+    </div>
+
+    <!-- Erreur paiement -->
+    <div *ngIf="paymentError"
+      class="mt-3 mx-4 mb-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600 flex items-center gap-2">
+      <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+      </svg>
+      {{ paymentError }}
     </div>
 
   </div>
 </div>
 
+
+<!-- ═══ MODAL ORDONNANCE (format document réel) ══════════════════════════ -->
+<div *ngIf="showPrescription && selectedDonation" class="fixed inset-0 z-[70] flex items-center justify-center p-4"
+  (click)="showPrescription = false">
+
+  <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+
+  <!-- Papier ordonnance -->
+  <div class="relative bg-white w-full max-w-lg max-h-[92vh] overflow-y-auto shadow-2xl"
+    style="font-family: 'Georgia', serif; border: 1px solid #ddd;" (click)="$event.stopPropagation()">
+
+    <!-- Bouton fermer -->
+    <button (click)="showPrescription = false"
+      class="absolute top-3 right-3 z-10 bg-white rounded-full p-1 shadow text-gray-400 hover:text-gray-700 transition">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+
+    <div class="p-7">
+
+      <!-- ── EN-TÊTE ─────────────────────────────────────────────────────── -->
+      <div class="flex justify-between items-start mb-1">
+
+        <!-- Gauche : logo + infos médecin / clinique -->
+        <div class="flex items-start gap-3">
+          <div class="w-12 h-12 rounded-full bg-[#11458B] flex items-center justify-center flex-shrink-0">
+            <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
+              <circle cx="20" cy="20" r="20" fill="#11458B" />
+              <path d="M20 8C13.4 8 8 13.4 8 20s5.4 12 12 12 12-5.4 12-12S26.6 8 20 8zm1 17h-2v-6h2v6zm0-8h-2v-2h2v2z"
+                fill="white" />
+            </svg>
+          </div>
+          <div style="font-family: Arial, sans-serif;">
+            <p class="text-[10px] font-bold text-[#11458B] leading-tight uppercase tracking-wide">
+              {{ selectedDonation.doctorName || 'Médecin Traitant' }}
+            </p>
+            <p class="text-[9px] text-gray-500 leading-tight">{{ selectedDonation.doctorSpecialty || 'Médecine Générale'
+              }}</p>
+            <p class="text-[9px] text-gray-400 leading-tight">Dakar, Sénégal</p>
+          </div>
+        </div>
+
+        <!-- Droite : infos patient -->
+        <div style="font-family: Arial, sans-serif; min-width: 180px;">
+          <div class="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[9px]">
+            <span class="text-gray-400 font-semibold">Date :</span>
+            <span class="text-gray-700 font-bold border-b border-dotted border-gray-300">
+              {{ today }}
+            </span>
+            <span class="text-gray-400 font-semibold">Prénom :</span>
+            <span class="text-gray-700 font-bold border-b border-dotted border-gray-300">
+              {{ (selectedDonation.patientName || '').split(' ')[0] }}
+            </span>
+            <span class="text-gray-400 font-semibold">Nom :</span>
+            <span class="text-gray-700 font-bold border-b border-dotted border-gray-300">
+              {{ (selectedDonation.patientName || '').split(' ').slice(1).join(' ') || '—' }}
+            </span>
+            <span class="text-gray-400 font-semibold">Âge :</span>
+            <span class="text-gray-700 font-bold border-b border-dotted border-gray-300">
+              {{ selectedDonation.patientAge || '—' }} ans
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Photos patient + médecin -->
+      <div class="flex items-center gap-4 mt-3 mb-2 pb-2 border-b border-gray-200">
+        <div class="flex items-center gap-2">
+          <img [src]="selectedDonation.patientPhoto || 'assets/images/persona.jpg'"
+            class="w-10 h-10 rounded-full object-cover border border-[#8BBAE2]" alt="Patient" />
+          <div style="font-family: Arial, sans-serif;">
+            <p class="text-[9px] text-gray-400">Patient</p>
+            <p class="text-[10px] font-bold text-gray-800">{{ selectedDonation.patientName }}</p>
+          </div>
+        </div>
+        <div class="flex-1 border-l border-gray-200 pl-4 flex items-center gap-2">
+          <img [src]="selectedDonation.doctorPhoto || 'assets/images/medecin.png'"
+            class="w-10 h-10 rounded-full object-cover border border-[#2AB396]" alt="Médecin" />
+          <div style="font-family: Arial, sans-serif;">
+            <p class="text-[9px] text-gray-400">Médecin</p>
+            <p class="text-[10px] font-bold text-gray-800">{{ selectedDonation.doctorName || 'Médecin traitant' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ref assurance -->
+      <div class="flex items-center gap-2 mb-3" style="font-family: Arial, sans-serif;">
+        <span class="text-[9px] text-gray-500 font-semibold uppercase tracking-wide">Réf. :</span>
+        <span class="text-[9px] font-bold text-gray-700 border-b border-dotted border-gray-400 flex-1 pb-0.5">
+          {{ selectedDonation.reference || '—' }}
+        </span>
+      </div>
+
+      <!-- ── TITRE ORDONNANCE ────────────────────────────────────────────── -->
+      <div class="text-center my-4">
+        <h2 class="text-2xl font-black tracking-widest text-[#11458B] uppercase" style="letter-spacing: 0.15em;">
+          ORDONNANCE
+        </h2>
+        <div class="h-0.5 bg-[#11458B] w-2/3 mx-auto mt-1"></div>
+      </div>
+
+      <!-- ── MÉDICAMENTS ────────────────────────────────────────────────── -->
+      <div class="space-y-4 mt-5" style="font-family: 'Segoe UI', Arial, sans-serif; min-height: 180px;">
+
+        <!-- Ordonnance avec items -->
+        <ng-container *ngIf="selectedDonation.items && selectedDonation.items.length > 0">
+          <div *ngFor="let item of selectedDonation.items; let i = index" class="flex items-start gap-3">
+
+            <!-- Numéro cerclé -->
+            <div
+              class="w-6 h-6 rounded-full border-2 border-gray-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span class="text-[10px] font-black text-gray-600">{{ i + 1 }}</span>
+            </div>
+
+            <!-- Ligne médicament -->
+            <div class="flex-1">
+              <div class="flex items-end gap-1">
+                <span class="text-sm font-bold text-gray-800 leading-none">
+                  {{ item.medicationName }}
+                </span>
+                <span class="text-xs text-gray-500 italic leading-none ml-1">
+                  {{ item.dosage }}
+                </span>
+                <!-- Ligne pointillée jusqu'au prix -->
+                <span class="flex-1 border-b border-dotted border-gray-400 mb-1 mx-1"></span>
+                <span class="text-xs font-bold text-[#11458B] leading-none whitespace-nowrap">
+                  {{ formatAmount(item.unitPrice) }} F
+                </span>
+              </div>
+              <p class="text-[10px] text-gray-500 mt-0.5 pl-0.5">
+                Qté : <strong>{{ item.quantity }}</strong> — {{ item.duration }}
+              </p>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Analyse / Imagerie ou pas de médicaments -->
+        <ng-container *ngIf="!selectedDonation.items || selectedDonation.items.length === 0">
+          <div class="flex items-start gap-3">
+            <div class="w-6 h-6 rounded-full border-2 border-gray-500 flex items-center justify-center flex-shrink-0">
+              <span class="text-[10px] font-black text-gray-600">1</span>
+            </div>
+            <div class="flex-1">
+              <div class="flex items-end gap-1">
+                <span class="text-sm font-bold text-gray-800">{{ selectedDonation.indication || selectedDonation.type
+                  }}</span>
+                <span class="flex-1 border-b border-dotted border-gray-400 mb-1 mx-1"></span>
+                <span class="text-xs font-bold text-[#11458B] whitespace-nowrap">
+                  {{ formatAmount(selectedDonation.objectif) }} F
+                </span>
+              </div>
+              <p class="text-[10px] text-gray-500 mt-0.5">{{ selectedDonation.description }}</p>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Lignes vides -->
+        <div *ngFor="let _ of [1,2]" class="flex items-end gap-3 h-7 opacity-30">
+          <div class="w-6 h-6 rounded-full border-2 border-gray-300"></div>
+          <div class="flex-1 border-b border-dotted border-gray-300"></div>
+        </div>
+      </div>
+
+      <!-- Total -->
+      <div class="flex justify-end mt-4 pt-3 border-t border-gray-200">
+        <div class="text-right" style="font-family: Arial, sans-serif;">
+          <p class="text-[9px] text-gray-400 uppercase tracking-wide">Coût total estimé</p>
+          <p class="text-base font-black text-[#11458B]">{{ formatAmount(selectedDonation.objectif) }} FCFA</p>
+        </div>
+      </div>
+
+      <!-- ── SIGNATURE + TAMPON ─────────────────────────────────────────── -->
+      <div class="flex items-end justify-between mt-6 pt-4">
+
+        <!-- Tampon (cercle) -->
+        <div
+          class="w-20 h-20 rounded-full border-2 border-dashed border-[#11458B] flex items-center justify-center opacity-30">
+          <div class="w-14 h-14 rounded-full border border-[#11458B] flex items-center justify-center">
+            <p class="text-[7px] text-[#11458B] font-bold text-center leading-tight">CACHET<br>MÉDECIN</p>
+          </div>
+        </div>
+
+        <!-- Signature -->
+        <div class="text-center" style="font-family: Arial, sans-serif;">
+          <div class="w-32 h-12 border-b border-gray-400 flex items-end justify-center pb-1">
+            <span class="text-2xl text-gray-300 italic"
+              style="font-family: 'Brush Script MT', cursive; transform: rotate(-5deg); display: inline-block;">
+              {{ (selectedDonation.doctorName || 'Dr').split(' ')[1] || '' }}
+            </span>
+          </div>
+          <p class="text-[9px] text-gray-500 mt-1 font-semibold">Signature du médecin</p>
+        </div>
+      </div>
+
+      <!-- Footer document -->
+      <div class="mt-5 pt-3 border-t border-gray-100 text-center" style="font-family: Arial, sans-serif;">
+        <p class="text-[8px] text-gray-300 tracking-wide uppercase">
+          Document généré par BDY — Baye Defal Yalla — Plateforme de donation médicale
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>
 
 <!-- Modal Faire un don -->
 <!-- <div *ngIf="showDonateModal" class="fixed inset-0 z-[60] flex items-center justify-center" (click)="closeDonateModal()">

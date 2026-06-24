@@ -1,0 +1,218 @@
+<div class="flex h-full bg-[#F8FAFC] gap-4 p-4 min-h-screen">
+
+  <!-- ── Panneau gauche : commandes READY ─────────────────────────────────── -->
+  <div class="w-80 flex-shrink-0 flex flex-col gap-3">
+    <div class="bg-white rounded-2xl shadow-sm border border-[#E2E8F0] p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="font-semibold text-[#1E293B] text-sm">Commandes prêtes</h2>
+        <span class="bg-purple-100 text-purple-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">
+          {{ readyOrders.length }}
+        </span>
+      </div>
+
+      <p class="text-xs text-[#64748B] mb-3">
+        Cliquez sur une commande ou scannez le QR code du patient.
+      </p>
+
+      <!-- Loading -->
+      <div *ngIf="readyLoading" class="flex justify-center py-6">
+        <svg class="animate-spin h-5 w-5 text-[#1A3C6E]" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+        </svg>
+      </div>
+
+      <!-- Liste -->
+      <div *ngIf="!readyLoading" class="flex flex-col gap-2 max-h-[calc(100vh-180px)] overflow-y-auto">
+        <div *ngIf="readyOrders.length === 0" class="text-center py-8">
+          <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+            <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+          </div>
+          <p class="text-sm text-[#94A3B8]">Aucune commande prête</p>
+        </div>
+
+        <button
+          *ngFor="let order of readyOrders"
+          (click)="selectReadyOrder(order)"
+          class="w-full text-left p-3 rounded-xl border border-[#E2E8F0] hover:border-[#1A3C6E] hover:bg-[#EFF6FF] transition-all"
+          [class.border-[#1A3C6E]]="scannedOrder?.id === order.id"
+          [class.bg-[#EFF6FF]]="scannedOrder?.id === order.id"
+        >
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <p class="text-xs font-bold text-[#1E293B]">{{ getRef(order.id) }}</p>
+              <p class="text-xs text-[#64748B] mt-0.5">{{ getPatientDisplay(order.patientId) }}</p>
+              <p class="text-xs text-[#94A3B8] mt-0.5">{{ order.items.length }} médicament(s)</p>
+            </div>
+            <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-purple-100 text-purple-700 flex-shrink-0">
+              Prête
+            </span>
+          </div>
+          <p class="text-xs text-[#94A3B8] mt-1.5">{{ formatDate(order.createdAt) }}</p>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Panneau principal ────────────────────────────────────────────────── -->
+  <div class="flex-1 flex flex-col gap-4">
+
+    <!-- Header -->
+    <div class="bg-white rounded-2xl shadow-sm border border-[#E2E8F0] p-5 flex items-center justify-between">
+      <div>
+        <h1 class="text-lg font-bold text-[#1E293B]">Scanner QR Code patient</h1>
+        <p class="text-sm text-[#64748B] mt-0.5">Scannez le QR code reçu par email par le patient</p>
+      </div>
+      <button
+        *ngIf="view !== 'scanning'"
+        (click)="resetScanner()"
+        class="flex items-center gap-2 text-sm text-[#1A3C6E] border border-[#1A3C6E] rounded-xl px-4 py-2 hover:bg-[#EFF6FF] transition-colors font-medium"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        Rescanner
+      </button>
+    </div>
+
+    <!-- ── VUE : SCANNER ──────────────────────────────────────────────────── -->
+    <div *ngIf="view === 'scanning'" class="bg-white rounded-2xl shadow-sm border border-[#E2E8F0] p-6 flex flex-col items-center gap-6">
+
+      <!-- Erreur caméra -->
+      <div *ngIf="scanError" class="w-full p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm text-center">
+        {{ scanError }}
+      </div>
+
+      <!-- Loading scan -->
+      <div *ngIf="loading" class="flex flex-col items-center gap-3 py-8">
+        <svg class="animate-spin h-8 w-8 text-[#1A3C6E]" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+        </svg>
+        <p class="text-sm text-[#64748B]">Recherche de la commande…</p>
+      </div>
+
+      <!-- Région caméra -->
+      <div *ngIf="!loading" class="relative">
+        <div id="qr-region" #qrRegion class="rounded-2xl overflow-hidden" style="width:320px;height:320px"></div>
+
+        <!-- Coins décoratifs -->
+        <div class="absolute inset-0 pointer-events-none">
+          <div class="absolute top-4 left-4 w-8 h-8 border-t-4 border-l-4 border-[#1A3C6E] rounded-tl-md"></div>
+          <div class="absolute top-4 right-4 w-8 h-8 border-t-4 border-r-4 border-[#1A3C6E] rounded-tr-md"></div>
+          <div class="absolute bottom-4 left-4 w-8 h-8 border-b-4 border-l-4 border-[#1A3C6E] rounded-bl-md"></div>
+          <div class="absolute bottom-4 right-4 w-8 h-8 border-b-4 border-r-4 border-[#1A3C6E] rounded-br-md"></div>
+        </div>
+      </div>
+
+      <p class="text-sm text-[#64748B] text-center max-w-xs">
+        Pointez la caméra vers le QR code affiché sur le téléphone ou l'email imprimé du patient.
+      </p>
+    </div>
+
+    <!-- ── VUE : RÉSULTAT ─────────────────────────────────────────────────── -->
+    <div *ngIf="view === 'result' && scannedOrder" class="flex flex-col gap-4">
+
+      <!-- Carte patient + statut -->
+      <div class="bg-white rounded-2xl shadow-sm border border-[#E2E8F0] p-5">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-[#EFF6FF] rounded-full flex items-center justify-center">
+              <svg class="w-5 h-5 text-[#1A3C6E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="font-semibold text-[#1E293B]">{{ patientName || getPatientDisplay(scannedOrder.patientId) }}</p>
+              <p class="text-xs text-[#64748B]">{{ getRef(scannedOrder.id) }}</p>
+            </div>
+          </div>
+          <span class="text-xs px-3 py-1 rounded-full font-semibold" [ngClass]="getStatusBadge(scannedOrder.status)">
+            {{ getStatusText(scannedOrder.status) }}
+          </span>
+        </div>
+
+        <!-- Alerte si pas READY -->
+        <div *ngIf="scannedOrder.status !== 'READY'" class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 text-sm">
+          ⚠️ Cette commande n'est pas encore marquée comme prête (statut actuel : <strong>{{ getStatusText(scannedOrder.status) }}</strong>).
+          La remise ne peut être confirmée que pour les commandes avec le statut <strong>Prête</strong>.
+        </div>
+      </div>
+
+      <!-- Liste des médicaments -->
+      <div class="bg-white rounded-2xl shadow-sm border border-[#E2E8F0] p-5">
+        <h3 class="font-semibold text-[#1E293B] mb-4 text-sm">
+          Médicaments à remettre ({{ scannedOrder.items.length }})
+        </h3>
+        <div class="flex flex-col gap-3">
+          <div
+            *ngFor="let item of scannedOrder.items"
+            class="flex items-center gap-3 p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]"
+          >
+            <div class="w-8 h-8 bg-[#EFF6FF] rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg class="w-4 h-4 text-[#1A3C6E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-medium text-[#1E293B] text-sm">{{ item.medicationName }}</p>
+              <p class="text-xs text-[#64748B]">{{ item.dosage }} · {{ item.quantity }} unité(s) · {{ item.duration }}</p>
+            </div>
+            <span class="text-xs font-medium"
+              [class.text-green-600]="item.available !== false"
+              [class.text-red-500]="item.available === false">
+              {{ item.available === false ? 'Transféré' : '✓' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Erreur remise -->
+      <div *ngIf="deliverError" class="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+        {{ deliverError }}
+      </div>
+
+      <!-- Bouton confirmer -->
+      <button
+        *ngIf="scannedOrder.status === 'READY'"
+        (click)="confirmerRemise()"
+        [disabled]="loading"
+        class="w-full bg-[#16A34A] disabled:bg-gray-300 text-white font-semibold py-4 rounded-2xl text-base transition-colors hover:bg-[#15803D] flex items-center justify-center gap-2"
+      >
+        <svg *ngIf="!loading" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+        <svg *ngIf="loading" class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+        </svg>
+        {{ loading ? 'Confirmation…' : 'Confirmer la remise au patient' }}
+      </button>
+    </div>
+
+    <!-- ── VUE : REMISE CONFIRMÉE ─────────────────────────────────────────── -->
+    <div *ngIf="view === 'delivered'" class="bg-white rounded-2xl shadow-sm border border-[#E2E8F0] p-10 flex flex-col items-center gap-5">
+      <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
+        <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+      <div class="text-center">
+        <h2 class="text-xl font-bold text-[#1E293B]">Remise confirmée !</h2>
+        <p class="text-sm text-[#64748B] mt-2">
+          Les médicaments ont été remis au patient.<br>
+          La commande est maintenant marquée comme <strong>Livrée</strong>.
+        </p>
+      </div>
+      <button
+        (click)="resetScanner()"
+        class="bg-[#1A3C6E] text-white font-semibold px-8 py-3 rounded-xl text-sm hover:bg-[#142f58] transition-colors"
+      >
+        Scanner une autre commande
+      </button>
+    </div>
+
+  </div>
+</div>

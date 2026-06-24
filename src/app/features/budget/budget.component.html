@@ -1,64 +1,85 @@
 <div class="min-h-screen bg-[#F8F9FA]">
   <div class="max-w-6xl mx-auto space-y-8">
+
     <!-- PAGE HEADER -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div class="space-y-1">
         <h1 class="text-2xl sm:text-3xl font-bold text-[#0F172A] tracking-tight">Mes engagements budgétaires</h1>
-        <p class="text-sm text-gray-500 font-medium">{{ getActiveEngagementsCount() }} engagements actifs</p>
+        <p class="text-sm text-gray-500 font-medium">
+          <ng-container *ngIf="!isLoading">{{ getActiveCount() }} engagement{{ getActiveCount() !== 1 ? 's' : '' }} actif{{ getActiveCount() !== 1 ? 's' : '' }}</ng-container>
+          <span *ngIf="isLoading" class="inline-block w-32 h-3.5 bg-gray-200 rounded animate-pulse align-middle"></span>
+        </p>
       </div>
       <button
         (click)="openModal()"
         class="bg-[#11458B] hover:bg-[#0c336b] text-white font-medium px-5 py-3 rounded-lg flex items-center justify-center gap-2 transition-colors duration-150 shadow-sm text-sm cursor-pointer">
-        <!-- Plus Icon -->
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M8 15C6.14348 15 4.36301 14.2625 3.05025 12.9497C1.7375 11.637 1 9.85652 1 8C1 6.14348 1.7375 4.36301 3.05025 3.05025C4.36301 1.7375 6.14348 1 8 1C9.85652 1 11.637 1.7375 12.9497 3.05025C14.2625 4.36301 15 6.14348 15 8C15 9.85652 14.2625 11.637 12.9497 12.9497C11.637 14.2625 9.85652 15 8 15ZM8 16C10.1217 16 12.1566 15.1571 13.6569 13.6569C15.1571 12.1566 16 10.1217 16 8C16 5.87827 15.1571 3.84344 13.6569 2.34315C12.1566 0.842855 10.1217 0 8 0C5.87827 0 3.84344 0.842855 2.34315 2.34315C0.842855 3.84344 0 5.87827 0 8C0 10.1217 0.842855 12.1566 2.34315 13.6569C3.84344 15.1571 5.87827 16 8 16Z"
-            fill="white" />
-          <path
-            d="M8 4C8.13261 4 8.25979 4.05268 8.35355 4.14645C8.44732 4.24021 8.5 4.36739 8.5 4.5V7.5H11.5C11.6326 7.5 11.7598 7.55268 11.8536 7.64645C11.9473 7.74021 12 7.86739 12 8C12 8.13261 11.9473 8.25979 11.8536 8.35355C11.7598 8.44732 11.6326 8.5 11.5 8.5H8.5V11.5C8.5 11.6326 8.44732 11.7598 8.35355 11.8536C8.25979 11.9473 8.13261 12 8 12C7.86739 12 7.74021 11.9473 7.64645 11.8536C7.55268 11.7598 7.5 11.6326 7.5 11.5V8.5H4.5C4.36739 8.5 4.24021 8.44732 4.14645 8.35355C4.05268 8.25979 4 8.13261 4 8C4 7.86739 4.05268 7.74021 4.14645 7.64645C4.24021 7.55268 4.36739 7.5 4.5 7.5H7.5V4.5C7.5 4.36739 7.55268 4.24021 7.64645 4.14645C7.74021 4.05268 7.86739 4 8 4Z"
-            fill="white" />
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M8 15C6.14348 15 4.36301 14.2625 3.05025 12.9497C1.7375 11.637 1 9.85652 1 8C1 6.14348 1.7375 4.36301 3.05025 3.05025C4.36301 1.7375 6.14348 1 8 1C9.85652 1 11.637 1.7375 12.9497 3.05025C14.2625 4.36301 15 6.14348 15 8C15 9.85652 14.2625 11.637 12.9497 12.9497C11.637 14.2625 9.85652 15 8 15ZM8 16C10.1217 16 12.1566 15.1571 13.6569 13.6569C15.1571 12.1566 16 10.1217 16 8C16 5.87827 15.1571 3.84344 13.6569 2.34315C12.1566 0.842855 10.1217 0 8 0C5.87827 0 3.84344 0.842855 2.34315 2.34315C0.842855 3.84344 0 5.87827 0 8C0 10.1217 0.842855 12.1566 2.34315 13.6569C3.84344 15.1571 5.87827 16 8 16Z" fill="white" />
+          <path d="M8 4C8.13261 4 8.25979 4.05268 8.35355 4.14645C8.44732 4.24021 8.5 4.36739 8.5 4.5V7.5H11.5C11.6326 7.5 11.7598 7.55268 11.8536 7.64645C11.9473 7.74021 12 7.86739 12 8C12 8.13261 11.9473 8.25979 11.8536 8.35355C11.7598 8.44732 11.6326 8.5 11.5 8.5H8.5V11.5C8.5 11.6326 8.44732 11.7598 8.35355 11.8536C8.25979 11.9473 8.13261 12 8 12C7.86739 12 7.74021 11.9473 7.64645 11.8536C7.55268 11.7598 7.5 11.6326 7.5 11.5V8.5H4.5C4.36739 8.5 4.24021 8.44732 4.14645 8.35355C4.05268 8.25979 4 8.13261 4 8C4 7.86739 4.05268 7.74021 4.14645 7.64645C4.24021 7.55268 4.36739 7.5 4.5 7.5H7.5V4.5C7.5 4.36739 7.55268 4.24021 7.64645 4.14645C7.74021 4.05268 7.86739 4 8 4Z" fill="white" />
         </svg>
         Ajouter un budget
       </button>
     </div>
 
     <!-- IMPACT BANNER -->
-    <div
-      class="bg-gradient-to-r from-[#11458B] to-[#5DADE2] rounded-2xl p-6 md:p-8 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-white relative overflow-hidden">
-      <!-- Watermark shape -->
-      <div
-        class="absolute right-10 bottom-10 opacity-10 pointer-events-none transform translate-y-1/4 translate-x-1/4 scale-150">
-        <svg width="100" height="97" viewBox="0 0 100 97" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M100 73.3333L72.3333 46.3333C68.8889 43 65.9722 39.3056 63.5833 35.25C61.1944 31.1944 60 26.7778 60 22C60 15.8889 62.1389 10.6944 66.4167 6.41667C70.6944 2.13889 75.8889 0 82 0C85.5556 0 88.8889 0.75 92 2.25C95.1111 3.75 97.7778 5.77778 100 8.33333C102.222 5.77778 104.889 3.75 108 2.25C111.111 0.75 114.444 0 118 0C124.111 0 129.306 2.13889 133.583 6.41667C137.861 10.6944 140 15.8889 140 22C140 26.7778 138.833 31.1944 136.5 35.25C134.167 39.3056 131.278 43 127.833 46.3333L100 73.3333ZM100 54.6667L118.167 36.8333C120.278 34.7222 122.222 32.4722 124 30.0833C125.778 27.6944 126.667 25 126.667 22C126.667 19.5556 125.833 17.5 124.167 15.8333C122.5 14.1667 120.444 13.3333 118 13.3333C116.444 13.3333 114.972 13.6389 113.583 14.25C112.194 14.8611 111 15.7778 110 17L100 29L90 17C89 15.7778 87.8055 14.8611 86.4167 14.25C85.0278 13.6389 83.5556 13.3333 82 13.3333C79.5556 13.3333 77.5 14.1667 75.8333 15.8333C74.1667 17.5 73.3333 19.5556 73.3333 22C73.3333 25 74.2222 27.6944 76 30.0833C77.7778 32.4722 79.7222 34.7222 81.8333 36.8333L100 54.6667ZM40 110L86.3333 122.667L126 110.333C125.444 109.333 124.639 108.472 123.583 107.75C122.528 107.028 121.333 106.667 120 106.667H86.3333C83.3333 106.667 80.9444 106.556 79.1667 106.333C77.3889 106.111 75.5555 105.667 73.6667 105L58.1667 99.8333L61.8333 86.8333L75.3333 91.3333C77.2222 91.8889 79.4444 92.3333 82 92.6667C84.5556 93 88.3333 93.2222 93.3333 93.3333C93.3333 92.1111 92.9722 90.9445 92.25 89.8333C91.5278 88.7222 90.6667 88 89.6667 87.6667L50.6667 73.3333H40V110ZM0 133.333V60H50.6667C51.4444 60 52.2222 60.0833 53 60.25C53.7778 60.4167 54.5 60.6111 55.1667 60.8333L94.3333 75.3333C98 76.6667 100.972 79 103.25 82.3333C105.528 85.6667 106.667 89.3333 106.667 93.3333H120C125.556 93.3333 130.278 95.1667 134.167 98.8333C138.056 102.5 140 107.333 140 113.333V120L86.6667 136.667L40 123.667V133.333H0ZM13.3333 120H26.6667V73.3333H13.3333V120Z"
-            fill="#F0F0FF" />
+    <div class="bg-gradient-to-r from-[#11458B] to-[#5DADE2] rounded-2xl p-6 md:p-8 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-white relative overflow-hidden">
+      <div class="absolute right-10 bottom-10 opacity-10 pointer-events-none transform translate-y-1/4 translate-x-1/4 scale-150">
+        <svg width="100" height="97" viewBox="0 0 100 97" fill="none">
+          <path d="M100 73.3333L72.3333 46.3333C68.8889 43 65.9722 39.3056 63.5833 35.25C61.1944 31.1944 60 26.7778 60 22C60 15.8889 62.1389 10.6944 66.4167 6.41667C70.6944 2.13889 75.8889 0 82 0C85.5556 0 88.8889 0.75 92 2.25C95.1111 3.75 97.7778 5.77778 100 8.33333C102.222 5.77778 104.889 3.75 108 2.25C111.111 0.75 114.444 0 118 0C124.111 0 129.306 2.13889 133.583 6.41667C137.861 10.6944 140 15.8889 140 22C140 26.7778 138.833 31.1944 136.5 35.25C134.167 39.3056 131.278 43 127.833 46.3333L100 73.3333ZM100 54.6667L118.167 36.8333C120.278 34.7222 122.222 32.4722 124 30.0833C125.778 27.6944 126.667 25 126.667 22C126.667 19.5556 125.833 17.5 124.167 15.8333C122.5 14.1667 120.444 13.3333 118 13.3333C116.444 13.3333 114.972 13.6389 113.583 14.25C112.194 14.8611 111 15.7778 110 17L100 29L90 17C89 15.7778 87.8055 14.8611 86.4167 14.25C85.0278 13.6389 83.5556 13.3333 82 13.3333C79.5556 13.3333 77.5 14.1667 75.8333 15.8333C74.1667 17.5 73.3333 19.5556 73.3333 22C73.3333 25 74.2222 27.6944 76 30.0833C77.7778 32.4722 79.7222 34.7222 81.8333 36.8333L100 54.6667Z" fill="#F0F0FF"/>
         </svg>
       </div>
-
       <div class="space-y-1 relative z-10">
-        <p class="text-sm font-semibold text-[#F0F0FFCC] tracking-wider">
-          Impact Total
-        </p>
+        <p class="text-sm font-semibold text-[#F0F0FFCC] tracking-wider">Impact Total</p>
         <h2 class="text-3xl sm:text-4xl text-[#F0F0FF] font-bold tracking-tight">
-          {{ getTotalImpact() }}
+          <ng-container *ngIf="!isLoading">{{ getTotalImpact() }}</ng-container>
+          <span *ngIf="isLoading" class="inline-block w-48 h-9 bg-white/20 rounded animate-pulse align-middle"></span>
         </h2>
       </div>
-
-      <div
-        class="bg-white/15 backdrop-blur-md border border-white/20 px-4 py-2 rounded-full flex items-center gap-2 relative z-10 self-start md:self-auto">
-        <!-- Shield icon -->
+      <div class="bg-white/15 backdrop-blur-md border border-white/20 px-4 py-2 rounded-full flex items-center gap-2 relative z-10 self-start md:self-auto">
         <svg class="w-4 h-4 text-blue-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
         </svg>
         <span class="text-xs font-medium tracking-wide">
-          46 vies impactées
+          <ng-container *ngIf="!isLoading">{{ livesImpacted }} vie{{ livesImpacted !== 1 ? 's' : '' }} impactée{{ livesImpacted !== 1 ? 's' : '' }}</ng-container>
+          <span *ngIf="isLoading" class="inline-block w-24 h-3 bg-white/30 rounded animate-pulse align-middle"></span>
         </span>
       </div>
     </div>
 
+    <!-- Erreur -->
+    <div *ngIf="!isLoading && error" class="bg-red-50 border border-red-200 rounded-2xl p-8 text-center">
+      <p class="text-red-600 text-sm">{{ error }}</p>
+      <button (click)="ngOnInit()" class="mt-4 text-sm text-red-500 underline cursor-pointer">Réessayer</button>
+    </div>
+
+    <!-- Skeleton -->
+    <div *ngIf="isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngFor="let _ of [1,2,3]" class="bg-white rounded-2xl p-6 animate-pulse space-y-4">
+        <div class="h-5 bg-gray-200 rounded w-2/3"></div>
+        <div class="h-4 bg-gray-100 rounded w-1/2"></div>
+        <div class="space-y-2 pt-2">
+          <div class="h-3 bg-gray-100 rounded w-full"></div>
+          <div class="h-3 bg-gray-100 rounded w-4/5"></div>
+        </div>
+        <div class="flex gap-2 pt-2">
+          <div class="h-6 bg-blue-50 rounded-full w-20"></div>
+          <div class="h-6 bg-blue-50 rounded-full w-24"></div>
+        </div>
+        <div class="border-t border-gray-100 pt-4 grid grid-cols-2 gap-4">
+          <div class="h-8 bg-gray-100 rounded"></div>
+          <div class="h-8 bg-gray-100 rounded"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Aucun budget -->
+    <div *ngIf="!isLoading && !error && engagements.length === 0"
+      class="bg-white rounded-2xl p-12 text-center border border-gray-100">
+      <p class="text-gray-400 text-sm">Aucun engagement budgétaire. Créez votre premier budget.</p>
+    </div>
+
     <!-- BUDGET CARDS GRID -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div *ngIf="!isLoading && engagements.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div *ngFor="let budget of engagements"
         class="bg-white rounded-2xl p-6 transition-all duration-200 flex flex-col justify-between">
 
@@ -66,33 +87,29 @@
         <div>
           <div class="flex items-start justify-between mb-4">
             <div>
-              <h2 class="text-base sm:text-lg font-bold text-[#333333] tracking-tight">{{ budget.amount }}</h2>
+              <h2 class="text-base sm:text-lg font-bold text-[#333333] tracking-tight">{{ formatAmount(budget.amount) }} FCFA</h2>
               <div class="flex items-center gap-2 mt-2">
                 <span [ngClass]="{
-                'bg-[#00B8941A] text-[#00B894]': budget.status === 'Actif',
-                'bg-gray-100 text-gray-600': budget.status === 'Terminé'
-              }" class="px-2.5 py-0.5 rounded-full text-xs font-medium tracking-wide">
-                  {{ budget.status }}
+                  'bg-[#00B8941A] text-[#00B894]': budget.status === 'ACTIF',
+                  'bg-gray-100 text-gray-600': budget.status === 'TERMINÉ'
+                }" class="px-2.5 py-0.5 rounded-full text-xs font-medium tracking-wide">
+                  {{ budget.status === 'ACTIF' ? 'Actif' : 'Terminé' }}
                 </span>
                 <span class="text-xs text-[#777777] font-medium">Créé le {{ budget.createdDate }}</span>
               </div>
             </div>
-
-            <!-- Trend Up Indicator -->
             <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                stroke-linecap="round" stroke-linejoin="round">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
                 <polyline points="17 6 23 6 23 12"></polyline>
               </svg>
             </div>
           </div>
 
-          <!-- DETAILS SECTION -->
+          <!-- DETAILS -->
           <div class="space-y-4 pt-2">
-            <!-- Calendar Type -->
+            <!-- Type -->
             <div class="flex items-center gap-2 text-sm text-gray-700">
-              <!-- Calendar Icon -->
               <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                 <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -103,12 +120,10 @@
               <span class="text-gray-900 font-medium">{{ budget.type }}</span>
             </div>
 
-            <!-- Beneficiaries -->
+            <!-- Bénéficiaires -->
             <div class="flex flex-col gap-1.5">
               <div class="flex items-center gap-2 text-sm text-gray-700">
-                <!-- Users Icon -->
-                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                  stroke-width="2">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                   <circle cx="9" cy="7" r="4"></circle>
                   <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -118,46 +133,41 @@
               </div>
               <div class="flex flex-wrap gap-1.5">
                 <span *ngFor="let b of budget.beneficiaries"
-                  class="bg-[#2C7BE51A] text-[#2C7BE5] px-3 py-1 rounded-full text-xs font-medium">
-                  {{ b }}
-                </span>
+                  class="bg-[#2C7BE51A] text-[#2C7BE5] px-3 py-1 rounded-full text-xs font-medium">{{ b }}</span>
+                <span *ngIf="!budget.beneficiaries?.length" class="text-xs text-gray-400 italic">Non précisé</span>
               </div>
             </div>
 
-            <!-- Needs -->
+            <!-- Besoins -->
             <div class="flex flex-col gap-1.5">
               <div class="flex items-center gap-2 text-sm text-gray-700">
-                <!-- Needs/Document Icon -->
-                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                  stroke-width="2">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                   <polyline points="14 2 14 8 20 8"></polyline>
                   <line x1="16" y1="13" x2="8" y2="13"></line>
                   <line x1="16" y1="17" x2="8" y2="17"></line>
-                  <polyline points="10 9 9 9 8 9"></polyline>
                 </svg>
                 <span class="text-[#777777]">Besoins financés:</span>
               </div>
               <div class="flex flex-wrap gap-1.5">
                 <span *ngFor="let n of budget.needs"
-                  class="bg-[#00B8941A] text-[#00B894] px-3 py-1 rounded-full text-xs font-semibold">
-                  {{ n }}
-                </span>
+                  class="bg-[#00B8941A] text-[#00B894] px-3 py-1 rounded-full text-xs font-semibold">{{ n }}</span>
+                <span *ngIf="!budget.needs?.length" class="text-xs text-gray-400 italic">Non précisé</span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- FOOTER USED / REMAINING -->
-        <div *ngIf="budget.usedAmount && budget.remainingAmount" class="border-t border-gray-100 pt-4 mt-6">
+        <!-- FOOTER utilisé / restant -->
+        <div class="border-t border-gray-100 pt-4 mt-6">
           <div class="grid grid-cols-2 gap-4">
             <div>
               <p class="text-xs text-[#777777]">Budget utilisé</p>
-              <p class="text-sm font-bold text-red-500 mt-0.5">{{ budget.usedAmount }}</p>
+              <p class="text-sm font-bold text-red-500 mt-0.5">{{ formatAmount(budget.usedAmount) }} F</p>
             </div>
             <div>
               <p class="text-xs text-[#777777]">Budget restant</p>
-              <p class="text-sm font-bold text-[#00B894] mt-0.5">{{ budget.remainingAmount }}</p>
+              <p class="text-sm font-bold text-[#00B894] mt-0.5">{{ formatAmount(budget.remainingAmount) }} F</p>
             </div>
           </div>
         </div>
@@ -165,14 +175,12 @@
     </div>
   </div>
 
-  <!-- Nouveau Budget Modal -->
-  <div *ngIf="isModalOpen" class="fixed inset-0 bg-black/30 flex items-center justify-center p-4 z-50 transition-all duration-200">
-    <!-- Modal Card -->
+  <!-- ─── MODAL Nouveau Budget ──────────────────────────────────────────────── -->
+  <div *ngIf="isModalOpen" class="fixed inset-0 bg-black/30 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-[24px] shadow-2xl max-w-xl w-full max-h-[100vh] overflow-y-auto flex flex-col p-6 relative">
-      
-      <!-- Étape 1 : Formulaire de création -->
+
+      <!-- Étape 1 : Formulaire -->
       <div *ngIf="modalStep === 'form'" class="space-y-6">
-        <!-- Header -->
         <div class="flex items-center justify-between pb-2">
           <h2 class="text-xl font-bold text-[#1e293b]">Nouveau budget</h2>
           <button (click)="closeModal()" class="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
@@ -183,216 +191,135 @@
           </button>
         </div>
 
-        <!-- Input Montant -->
+        <!-- Montant -->
         <div class="space-y-2">
           <label class="block text-sm font-bold text-[#344054]">Montant du budget (FCFA)</label>
-          <input 
-            type="number" 
-            [(ngModel)]="newAmount" 
-            placeholder="Ex: 1000000" 
-            class="w-full px-4 py-3 border border-[#d0d5dd] rounded-xl text-base text-[#1d2939] placeholder-[#98a2b3] focus:outline-none focus:border-[#2C7BE5] focus:ring-1 focus:ring-[#2C7BE5] transition-all"
-          />
+          <input type="number" [(ngModel)]="newAmount" placeholder="Ex: 1000000"
+            class="w-full px-4 py-3 border border-[#d0d5dd] rounded-xl text-base text-[#1d2939] placeholder-[#98a2b3] focus:outline-none focus:border-[#2C7BE5] focus:ring-1 focus:ring-[#2C7BE5] transition-all"/>
         </div>
 
-        <!-- Type d'engagement -->
+        <!-- Type -->
         <div class="space-y-2">
           <label class="block text-sm font-bold text-[#344054]">Type d'engagement</label>
           <div class="grid grid-cols-2 gap-4">
-            <!-- Option Mensuel -->
-            <div 
-              (click)="newType = 'Mensuel'"
-              [ngClass]="newType === 'Mensuel' ? 'border-[#2C7BE5] bg-[#EEF4FF]' : 'border-[#e4e7ec] bg-white'"
-              class="flex items-center justify-between px-4 py-3.5 border-2 rounded-xl cursor-pointer hover:shadow-xs transition-all"
-            >
-              <span [ngClass]="newType === 'Mensuel' ? 'text-[#104382] font-semibold' : 'text-[#475467] font-medium'" class="text-sm">Mensuel</span>
-              <span [ngClass]="newType === 'Mensuel' ? 'border-[5px] border-[#2C7BE5]' : 'border border-[#d0d5dd]'" class="w-4 h-4 rounded-full transition-all"></span>
+            <div (click)="newType = 'MENSUEL'"
+              [ngClass]="newType === 'MENSUEL' ? 'border-[#2C7BE5] bg-[#EEF4FF]' : 'border-[#e4e7ec] bg-white'"
+              class="flex items-center justify-between px-4 py-3.5 border-2 rounded-xl cursor-pointer transition-all">
+              <span [ngClass]="newType === 'MENSUEL' ? 'text-[#104382] font-semibold' : 'text-[#475467] font-medium'" class="text-sm">Mensuel</span>
+              <span [ngClass]="newType === 'MENSUEL' ? 'border-[5px] border-[#2C7BE5]' : 'border border-[#d0d5dd]'" class="w-4 h-4 rounded-full transition-all"></span>
             </div>
-            <!-- Option Annuel -->
-            <div 
-              (click)="newType = 'Annuel'"
-              [ngClass]="newType === 'Annuel' ? 'border-[#2C7BE5] bg-[#EEF4FF]' : 'border-[#e4e7ec] bg-white'"
-              class="flex items-center justify-between px-4 py-3.5 border-2 rounded-xl cursor-pointer hover:shadow-xs transition-all"
-            >
-              <span [ngClass]="newType === 'Annuel' ? 'text-[#104382] font-semibold' : 'text-[#475467] font-medium'" class="text-sm">Annuel</span>
-              <span [ngClass]="newType === 'Annuel' ? 'border-[5px] border-[#2C7BE5]' : 'border border-[#d0d5dd]'" class="w-4 h-4 rounded-full transition-all"></span>
+            <div (click)="newType = 'ANNUEL'"
+              [ngClass]="newType === 'ANNUEL' ? 'border-[#2C7BE5] bg-[#EEF4FF]' : 'border-[#e4e7ec] bg-white'"
+              class="flex items-center justify-between px-4 py-3.5 border-2 rounded-xl cursor-pointer transition-all">
+              <span [ngClass]="newType === 'ANNUEL' ? 'text-[#104382] font-semibold' : 'text-[#475467] font-medium'" class="text-sm">Annuel</span>
+              <span [ngClass]="newType === 'ANNUEL' ? 'border-[5px] border-[#2C7BE5]' : 'border border-[#d0d5dd]'" class="w-4 h-4 rounded-full transition-all"></span>
             </div>
           </div>
         </div>
 
-        <!-- Bénéficiaires ciblés -->
+        <!-- Bénéficiaires -->
         <div class="space-y-3">
           <label class="block text-sm font-bold text-[#344054]">Bénéficiaires ciblés</label>
           <div class="space-y-2">
-            <div 
-              (click)="newBeneficiaries['Nouveau-nés'] = !newBeneficiaries['Nouveau-nés']"
-              class="flex items-center gap-3 px-4 py-3 bg-[#F4F6F9] hover:bg-slate-100 rounded-xl cursor-pointer transition-all"
-            >
-              <div 
-                [ngClass]="newBeneficiaries['Nouveau-nés'] ? 'bg-[#00B894] border-[#00B894]' : 'bg-white border-2 border-[#d0d5dd]'" 
-                class="w-5 h-5 rounded flex items-center justify-center transition-all"
-              >
-                <svg *ngIf="newBeneficiaries['Nouveau-nés']" class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+            <div *ngFor="let key of ['Tous','Nouveau-nés','Enfants','Adultes','Personnes âgées']"
+              (click)="newBeneficiaries[key] = !newBeneficiaries[key]"
+              class="flex items-center gap-3 px-4 py-3 bg-[#F4F6F9] hover:bg-slate-100 rounded-xl cursor-pointer transition-all">
+              <div [ngClass]="newBeneficiaries[key] ? 'bg-[#00B894] border-[#00B894]' : 'bg-white border-2 border-[#d0d5dd]'"
+                class="w-5 h-5 rounded flex items-center justify-center transition-all">
+                <svg *ngIf="newBeneficiaries[key]" class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
               </div>
-              <span class="text-sm font-semibold text-[#1d2939]">Nouveau-nés</span>
-            </div>
-            <div 
-              (click)="newBeneficiaries['Personnes âgées'] = !newBeneficiaries['Personnes âgées']"
-              class="flex items-center gap-3 px-4 py-3 bg-[#F4F6F9] hover:bg-slate-100 rounded-xl cursor-pointer transition-all"
-            >
-              <div 
-                [ngClass]="newBeneficiaries['Personnes âgées'] ? 'bg-[#00B894] border-[#00B894]' : 'bg-white border-2 border-[#d0d5dd]'" 
-                class="w-5 h-5 rounded flex items-center justify-center transition-all"
-              >
-                <svg *ngIf="newBeneficiaries['Personnes âgées']" class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-              </div>
-              <span class="text-sm font-semibold text-[#1d2939]">Personnes âgées</span>
+              <span class="text-sm font-semibold text-[#1d2939]">{{ key }}</span>
             </div>
           </div>
         </div>
 
-        <!-- Types de besoins financés -->
+        <!-- Besoins -->
         <div class="space-y-3">
           <label class="block text-sm font-bold text-[#344054]">Types de besoins financés</label>
           <div class="space-y-2">
-            <div 
-              (click)="newNeeds['Analyses'] = !newNeeds['Analyses']"
-              class="flex items-center gap-3 px-4 py-3 bg-[#F4F6F9] hover:bg-slate-100 rounded-xl cursor-pointer transition-all"
-            >
-              <div 
-                [ngClass]="newNeeds['Analyses'] ? 'bg-[#00B894] border-[#00B894]' : 'bg-white border-2 border-[#d0d5dd]'" 
-                class="w-5 h-5 rounded flex items-center justify-center transition-all"
-              >
-                <svg *ngIf="newNeeds['Analyses']" class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+            <div *ngFor="let key of ['Analyses','Imagerie','Ordonnances']"
+              (click)="newNeeds[key] = !newNeeds[key]"
+              class="flex items-center gap-3 px-4 py-3 bg-[#F4F6F9] hover:bg-slate-100 rounded-xl cursor-pointer transition-all">
+              <div [ngClass]="newNeeds[key] ? 'bg-[#00B894] border-[#00B894]' : 'bg-white border-2 border-[#d0d5dd]'"
+                class="w-5 h-5 rounded flex items-center justify-center transition-all">
+                <svg *ngIf="newNeeds[key]" class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
               </div>
-              <span class="text-sm font-semibold text-[#1d2939]">Analyses</span>
-            </div>
-            <div 
-              (click)="newNeeds['Imagerie'] = !newNeeds['Imagerie']"
-              class="flex items-center gap-3 px-4 py-3 bg-[#F4F6F9] hover:bg-slate-100 rounded-xl cursor-pointer transition-all"
-            >
-              <div 
-                [ngClass]="newNeeds['Imagerie'] ? 'bg-[#00B894] border-[#00B894]' : 'bg-white border-2 border-[#d0d5dd]'" 
-                class="w-5 h-5 rounded flex items-center justify-center transition-all"
-              >
-                <svg *ngIf="newNeeds['Imagerie']" class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-              </div>
-              <span class="text-sm font-semibold text-[#1d2939]">Imagerie</span>
-            </div>
-            <div 
-              (click)="newNeeds['Ordonnances'] = !newNeeds['Ordonnances']"
-              class="flex items-center gap-3 px-4 py-3 bg-[#F4F6F9] hover:bg-slate-100 rounded-xl cursor-pointer transition-all"
-            >
-              <div 
-                [ngClass]="newNeeds['Ordonnances'] ? 'bg-[#00B894] border-[#00B894]' : 'bg-white border-2 border-[#d0d5dd]'" 
-                class="w-5 h-5 rounded flex items-center justify-center transition-all"
-              >
-                <svg *ngIf="newNeeds['Ordonnances']" class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-              </div>
-              <span class="text-sm font-semibold text-[#1d2939]">Ordonnances</span>
+              <span class="text-sm font-semibold text-[#1d2939]">{{ key }}</span>
             </div>
           </div>
         </div>
 
-        <!-- Action Buttons -->
+        <!-- Boutons -->
         <div class="grid grid-cols-2 gap-4 pt-4">
-          <button 
-            (click)="goToSummary()" 
-            class="bg-[#11458B] hover:bg-[#0c336b] text-white font-semibold py-3.5 rounded-xl transition-all cursor-pointer text-sm flex items-center justify-center shadow-xs"
-          >
+          <button (click)="goToSummary()"
+            class="bg-[#11458B] hover:bg-[#0c336b] text-white font-semibold py-3.5 rounded-xl transition-all cursor-pointer text-sm flex items-center justify-center shadow-xs">
             Continuer
           </button>
-          <button 
-            (click)="closeModal()" 
-            class="bg-[#F2F4F7] hover:bg-slate-200 text-[#344054] font-semibold py-3.5 rounded-xl transition-all cursor-pointer text-sm flex items-center justify-center"
-          >
+          <button (click)="closeModal()"
+            class="bg-[#F2F4F7] hover:bg-slate-200 text-[#344054] font-semibold py-3.5 rounded-xl transition-all cursor-pointer text-sm flex items-center justify-center">
             Annuler
           </button>
         </div>
       </div>
 
-      <!-- Étape 2 : Résumé de l'engagement -->
+      <!-- Étape 2 : Résumé -->
       <div *ngIf="modalStep === 'summary'" class="space-y-6">
-        <!-- Top Success Icon -->
         <div class="flex flex-col items-center space-y-4 pt-2">
-          <div class="w-16 h-16 rounded-full bg-[#E6F4EA] flex items-center justify-center text-[#137333]">
-           <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M43.5993 19.9982C44.5127 24.4806 43.8617 29.1406 41.7551 33.2012C39.6485 37.2617 36.2135 40.4774 32.0229 42.3118C27.8323 44.1462 23.1396 44.4886 18.7271 43.2819C14.3147 42.0751 10.4493 39.3921 7.77559 35.6803C5.10189 31.9686 3.78148 27.4524 4.03455 22.8849C4.28762 18.3174 6.09888 13.9747 9.16628 10.581C12.2337 7.18735 16.3718 4.94782 20.8905 4.2359C25.4093 3.52398 30.0355 4.3827 33.9978 6.66887" stroke="#00B894" stroke-width="3.99981" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M18 21.9993L23.9997 27.999L43.9988 8" stroke="#00B894" stroke-width="3.99981" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
+          <div class="w-16 h-16 rounded-full bg-[#E6F4EA] flex items-center justify-center">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+              <path d="M43.5993 19.9982C44.5127 24.4806 43.8617 29.1406 41.7551 33.2012C39.6485 37.2617 36.2135 40.4774 32.0229 42.3118C27.8323 44.1462 23.1396 44.4886 18.7271 43.2819C14.3147 42.0751 10.4493 39.3921 7.77559 35.6803C5.10189 31.9686 3.78148 27.4524 4.03455 22.8849C4.28762 18.3174 6.09888 13.9747 9.16628 10.581C12.2337 7.18735 16.3718 4.94782 20.8905 4.2359C25.4093 3.52398 30.0355 4.3827 33.9978 6.66887" stroke="#00B894" stroke-width="3.99981" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M18 21.9993L23.9997 27.999L43.9988 8" stroke="#00B894" stroke-width="3.99981" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
           </div>
           <p class="text-center text-sm font-medium text-[#777777]">
-            Veuillez vérifier les informations de votre engagement avant de confirmer
+            Vérifiez les informations de votre engagement avant de confirmer
           </p>
         </div>
 
-        <!-- Engagement Summary Box -->
         <div class="bg-[#F8F9FA] rounded-2xl p-5 border border-[#eaecf0] space-y-4">
           <h3 class="text-base font-bold text-[#1d2939] pb-1">Résumé de l'engagement</h3>
-          
-          <!-- Montant Row -->
           <div class="flex items-center justify-between text-sm py-2 border-b border-[#eaecf0]">
             <span class="text-[#667085]">Montant</span>
-            <span class="font-bold text-[#104382] text-base">{{ formatNumber(newAmount || 0) }} FCFA</span>
+            <span class="font-bold text-[#104382] text-base">{{ formatAmount(newAmount || 0) }} FCFA</span>
           </div>
-
-          <!-- Type Row -->
           <div class="flex items-center justify-between text-sm py-2 border-b border-[#eaecf0]">
             <span class="text-[#667085]">Type d'engagement</span>
-            <span class="font-bold text-[#1d2939]">{{ newType }}</span>
+            <span class="font-bold text-[#1d2939]">{{ newType === 'MENSUEL' ? 'Mensuel' : 'Annuel' }}</span>
           </div>
-
-          <!-- Beneficiaries Row -->
           <div class="space-y-2 py-2 border-b border-[#eaecf0]">
             <span class="text-xs font-semibold text-[#667085] block">Bénéficiaires ciblés</span>
             <div class="flex flex-wrap gap-1.5">
-              <span *ngFor="let b of getBeneficiaryKeys()" class="bg-[#EEF4FF] text-[#104382] px-3 py-1 rounded-full text-xs font-medium">
-                {{ b }}
-              </span>
+              <span *ngFor="let b of getBeneficiaryKeys()" class="bg-[#EEF4FF] text-[#104382] px-3 py-1 rounded-full text-xs font-medium">{{ b }}</span>
               <span *ngIf="getBeneficiaryKeys().length === 0" class="text-xs text-gray-400 italic">Aucun sélectionné</span>
             </div>
           </div>
-
-          <!-- Needs Row -->
           <div class="space-y-2 py-2">
             <span class="text-xs font-semibold text-[#667085] block">Types de besoins financés</span>
             <div class="flex flex-wrap gap-1.5">
-              <span *ngFor="let n of getNeedKeys()" class="bg-[#E6F4EA] text-[#137333] px-3 py-1 rounded-full text-xs font-medium">
-                {{ n }}
-              </span>
+              <span *ngFor="let n of getNeedKeys()" class="bg-[#E6F4EA] text-[#137333] px-3 py-1 rounded-full text-xs font-medium">{{ n }}</span>
               <span *ngIf="getNeedKeys().length === 0" class="text-xs text-gray-400 italic">Aucun sélectionné</span>
             </div>
           </div>
         </div>
 
-        <!-- Blue Warning / Info Banner -->
         <div class="flex gap-3 bg-[#EEF4FF] border-l-4 border-[#104382] rounded-r-xl p-4">
           <p class="text-xs text-[#104382] font-medium leading-relaxed">
             Une fois confirmé, cet engagement sera actif et les demandes correspondant à vos critères vous seront notifiées.
           </p>
         </div>
 
-        <!-- Action Buttons -->
         <div class="grid grid-cols-2 gap-4 pt-2">
-          <button 
-            (click)="confirmBudget()" 
-            class="bg-[#11458B] hover:bg-[#0c336b] text-white font-semibold py-3.5 rounded-xl transition-all cursor-pointer text-sm flex items-center justify-center shadow-xs"
-          >
-            Continuer le budget
+          <button (click)="confirmBudget()" [disabled]="isSaving"
+            class="bg-[#11458B] hover:bg-[#0c336b] text-white font-semibold py-3.5 rounded-xl transition-all cursor-pointer text-sm flex items-center justify-center shadow-xs disabled:opacity-60">
+            <span *ngIf="!isSaving">Confirmer le budget</span>
+            <span *ngIf="isSaving">Enregistrement…</span>
           </button>
-          <button 
-            (click)="closeModal()" 
-            class="bg-[#F2F4F7] hover:bg-slate-200 text-[#344054] font-semibold py-3.5 rounded-xl transition-all cursor-pointer text-sm flex items-center justify-center"
-          >
+          <button (click)="closeModal()" [disabled]="isSaving"
+            class="bg-[#F2F4F7] hover:bg-slate-200 text-[#344054] font-semibold py-3.5 rounded-xl transition-all cursor-pointer text-sm flex items-center justify-center">
             Annuler
           </button>
         </div>

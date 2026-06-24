@@ -1,94 +1,19 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
-import { of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { environment } from '../../../../environments/environment';
 
-interface Authority {
-  authority: string;
-}
-
-interface User {
-  id: number;
-  reference: string | null;
-  lat: number;
-  lon: number;
-  nom: string;
-  prenom: string;
-  email: string;
-  password: string;
-  adress: string;
-  technicalSheet: string | null;
-  profil: string;
-  activated: boolean;
-  notifiable: boolean;
-  online: boolean;
-  telephone: string;
-  funds: number;
-  photo: string | null;
-  validated: boolean;
-  accountNonExpired: boolean;
-  credentialsNonExpired: boolean;
-  authorities: Authority[];
-  username: string;
-  accountNonLocked: boolean;
-  averageRating: number;
-  enabled: boolean;
-}
-
-interface FacilityType {
-  id: number;
-  name: string;
-}
-
-interface Facility {
-  id: number;
-  name: string;
-  address: string;
-  phone: string;
-  email: string;
-  type: FacilityType;
-}
-
-interface Department {
-  id: number;
-  name: string;
-  description: string;
-  facility: Facility;
-}
-
-interface Hospitalization {
-  id: number;
-  patient: User;
-  facility: Facility;
-  department: Department;
-  responsibleMedical: User;
-  hospitalizationReason: string;
-  initialDiagnosis: string;
-  observation: string;
-  entryDateTime: string;
-  exitDateTime: string | null;
-  room: string;
-  bedNumber: string;
-  priority: 'NORMAL' | 'URGENCE';
-}
-
-interface CreateHospitalizationRequest {
-  patientId: number;
-  facilityId: number;
-  departmentId: number;
-  responsibleMedicalId: number;
-  hospitalizationReason: string;
-  initialDiagnosis: string;
-  observation: string;
-  entryDateTime: string;
-  exitDateTime: string;
-  room: string;
-  bedNumber: string;
-  priority: string;
-}
+const STATUS_LABELS: Record<string, { label: string; color: string }> = {
+  PENDING:    { label: 'En attente', color: 'bg-yellow-100 text-yellow-800' },
+  ACCEPTED:   { label: 'Acceptée',   color: 'bg-blue-100 text-blue-800'     },
+  FUNDED:     { label: 'Financée',   color: 'bg-purple-100 text-purple-800' },
+  ADMITTED:   { label: 'Admis',      color: 'bg-indigo-100 text-indigo-800' },
+  DISCHARGED: { label: 'Sorti',      color: 'bg-green-100 text-green-800'   },
+  REJECTED:   { label: 'Rejeté',     color: 'bg-red-100 text-red-800'       },
+};
 
 @Component({
   selector: 'app-hospitalisation',
@@ -98,546 +23,395 @@ interface CreateHospitalizationRequest {
   styleUrl: './hospitalisation.component.css'
 })
 export class HospitalisationComponent implements OnInit {
+  private http   = inject(HttpClient);
   private router = inject(Router);
+  private api    = environment.baseUrl;
 
-  // Local auth mock
-  private mockCurrentUser: any = { id: 999, nom: 'Dr Mock', prenom: 'User', telephone: '+221700000000' };
+  // ── vue ──────────────────────────────────────────────────────────────────
+  viewMode: 'list' | 'detail' | 'create' = 'list';
+  selectedOrder: any = null;
 
-  private localGetCurrentUserById(id: number) {
-    return of({ ...this.mockCurrentUser, id }).pipe(delay(120));
-  }
+  // ── liste ─────────────────────────────────────────────────────────────────
+  hospitalisations: any[] = [];
+  loadingList = false;
+  listError   = '';
 
-  private localGetUserByPhone(phone: string) {
-    return of({ ...this.mockCurrentUser, telephone: phone, id: Math.floor(Math.random() * 1000) }).pipe(delay(150));
-  }
+  // ── recherche & pagination ─────────────────────────────────────────────────
+  searchQuery  = '';
+  currentPage  = 1;
+  readonly pageSize = 10;
 
-  private localGetUserByReference(reference: string) {
-    return of({ ...this.mockCurrentUser, reference, id: Math.floor(Math.random() * 1000) }).pipe(delay(150));
-  }
-
-  // Local mocks (sandbox)
-  private mockEtablissements: Facility[] = [
-    { id: 1, name: 'Hôpital Central', address: 'Rue Principale', phone: '000000000', email: 'contact@hopital.example', type: { id: 1, name: 'Hôpital' } }
-  ];
-
-  private mockDepartements: Department[] = [
-    { id: 10, name: 'Urgences', description: 'Service des urgences', facility: this.mockEtablissements[0] }
-  ];
-
-  private localGetEtablissements() {
-    return of(this.mockEtablissements).pipe(delay(120));
-  }
-
-  private localGetDepartements(facilityId: number) {
-    const deps = this.mockDepartements.filter(d => d.facility && d.facility.id === facilityId);
-    return of(deps.length ? deps : this.mockDepartements).pipe(delay(120));
-  }
-
-  private localCreateHospitalisation(request: CreateHospitalizationRequest) {
-    const created: Hospitalization = {
-      id: Math.floor(Math.random() * 100000),
-      patient: {
-        id: request.patientId,
-        reference: null,
-        lat: 0,
-        lon: 0,
-        nom: this.selectedPatient?.nom || 'Nom',
-        prenom: this.selectedPatient?.prenom || 'Prenom',
-        email: '',
-        password: '',
-        adress: '',
-        technicalSheet: null,
-        profil: 'PATIENT',
-        activated: true,
-        notifiable: false,
-        online: false,
-        telephone: this.selectedPatient?.telephone || '',
-        funds: 0,
-        photo: null,
-        validated: true,
-        accountNonExpired: true,
-        credentialsNonExpired: true,
-        authorities: [],
-        username: `${this.selectedPatient?.nom || 'user'}`,
-        accountNonLocked: true,
-        averageRating: 0,
-        enabled: true
-      },
-      facility: this.mockEtablissements.find(e => e.id === request.facilityId) || this.mockEtablissements[0],
-      department: this.mockDepartements.find(d => d.id === request.departmentId) || this.mockDepartements[0],
-      responsibleMedical: this.currentUser || {
-        id: request.responsibleMedicalId,
-        reference: null,
-        lat: 0,
-        lon: 0,
-        nom: 'Dr',
-        prenom: 'Responsable',
-        email: '',
-        password: '',
-        adress: '',
-        technicalSheet: null,
-        profil: 'DOCTOR',
-        activated: true,
-        notifiable: false,
-        online: false,
-        telephone: '',
-        funds: 0,
-        photo: null,
-        validated: true,
-        accountNonExpired: true,
-        credentialsNonExpired: true,
-        authorities: [],
-        username: 'dr',
-        accountNonLocked: true,
-        averageRating: 0,
-        enabled: true
-      },
-      hospitalizationReason: request.hospitalizationReason,
-      initialDiagnosis: request.initialDiagnosis,
-      observation: request.observation,
-      entryDateTime: request.entryDateTime,
-      exitDateTime: request.exitDateTime || null,
-      room: request.room,
-      bedNumber: request.bedNumber,
-      priority: (request.priority as any) || 'NORMAL'
-    } as Hospitalization;
-    return of(created).pipe(delay(200));
-  }
-
-  // Sections collapse state
-  patientInfoExpanded = true;
-  generalInfoExpanded = true;
-  datesExpanded = true;
-  responsableExpanded = true;
+  // ── Sections collapse ─────────────────────────────────────────────────────
+  patientInfoExpanded   = true;
+  generalInfoExpanded   = true;
+  datesExpanded         = true;
+  responsableExpanded   = true;
   complementaryExpanded = true;
 
-  // Données des listes
-  etablissements: Facility[] = [];
-  departements: Department[] = [];
-  departementsFiltered: Department[] = [];
+  // ── Hôpitaux ──────────────────────────────────────────────────────────────
+  allHospitals: any[]      = [];
+  filteredHospitals: any[] = [];
+  hospitalSearch           = '';
+  hospitalKeycloakId       = '';
+  showHospitalDropdown     = false;
 
-  // Patient sélectionné
+  // ── Patient ───────────────────────────────────────────────────────────────
   selectedPatient: any = null;
-  currentUser: any = null;
+  currentUser: any     = null;
 
-  // État de chargement du patient
-  isLoadingPatient = false;
-  patientLoadError: string | null = null;
+  // ── Recherche patient ──────────────────────────────────────────────────────
+  patientSearch        = '';
+  patientSearchResults: any[] = [];
+  patientSearchLoading = false;
 
-  // Form data
+  // ── Form data ─────────────────────────────────────────────────────────────
   formData = {
-    patientId: 0,
-    facilityId: 0,
-    departmentId: 0,
-    responsibleMedicalId: 0,
+    patientId:             '',
+    facilityName:          '',
+    departmentName:        '',
+    doctorName:            '',
+    serviceContact:        '',
     hospitalizationReason: '',
-    initialDiagnosis: '',
-    observation: '',
-    entryDate: '',
-    entryTime: '',
-    exitDate: '',
-    exitTime: '',
-    room: '',
-    bedNumber: '',
-    priority: 'NORMAL'
+    initialDiagnosis:      '',
+    observation:           '',
+    entryDate:             '',
+    entryTime:             '',
+    exitDate:              '',
+    room:                  '',
+    bedNumber:             '',
+    priority:              'Normal',
   };
 
+  isSaving = false;
+
+  // ── pagination computed ────────────────────────────────────────────────────
+  get filteredOrders(): any[] {
+    const q = this.searchQuery.toLowerCase().trim();
+    if (!q) return this.hospitalisations;
+    return this.hospitalisations.filter(h =>
+      h.patientName?.toLowerCase().includes(q) ||
+      h.establishmentName?.toLowerCase().includes(q) ||
+      h.department?.toLowerCase().includes(q) ||
+      h.motif?.toLowerCase().includes(q) ||
+      STATUS_LABELS[h.status]?.label.toLowerCase().includes(q)
+    );
+  }
+
+  get totalPages(): number { return Math.max(1, Math.ceil(this.filteredOrders.length / this.pageSize)); }
+
+  get paginatedOrders(): any[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredOrders.slice(start, start + this.pageSize);
+  }
+
+  get pageNumbers(): number[] { return Array.from({ length: this.totalPages }, (_, i) => i + 1); }
+
+  minVal(a: number, b: number): number { return Math.min(a, b); }
+
+  onSearch(): void { this.currentPage = 1; }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) this.currentPage = page;
+  }
+
+  openDetail(order: any): void {
+    this.selectedOrder = order;
+    this.viewMode = 'detail';
+  }
+
+  printOrder(): void {
+    const h = this.selectedOrder;
+    if (!h) return;
+    const st = this.statusInfo(h.status);
+    const date = h.admissionDate ? new Date(h.admissionDate).toLocaleDateString('fr-FR') : '—';
+    const exitDate = h.expectedDischargeDate ? new Date(h.expectedDischargeDate).toLocaleDateString('fr-FR') : '—';
+    const created = h.createdAt ? new Date(h.createdAt).toLocaleDateString('fr-FR') : '—';
+    const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+<title>Demande d'hospitalisation</title>
+<style>
+  body{font-family:Arial,sans-serif;margin:40px;color:#222;font-size:14px}
+  h1{color:#104382;border-bottom:2px solid #104382;padding-bottom:8px}
+  h2{color:#104382;font-size:15px;margin-top:24px;border-bottom:1px solid #ddd;padding-bottom:4px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;margin-bottom:16px}
+  .field label{font-weight:600;color:#555;font-size:12px}
+  .field p{margin:2px 0 0;font-size:14px}
+  @media print{body{margin:20px}}
+</style></head><body>
+<h1>Demande d'hospitalisation</h1>
+<p style="color:#555;font-size:13px">Date de création : <strong>${created}</strong> &nbsp;|&nbsp; Statut : <strong>${st.label}</strong></p>
+<h2>Patient</h2>
+<div class="grid">
+  <div class="field"><label>Nom</label><p>${h.patientName ?? '—'}</p></div>
+</div>
+<h2>Établissement</h2>
+<div class="grid">
+  <div class="field"><label>Établissement</label><p>${h.establishmentName ?? h.hospitalName ?? '—'}</p></div>
+  <div class="field"><label>Service</label><p>${h.department ?? '—'}</p></div>
+</div>
+<h2>Informations médicales</h2>
+<div class="grid">
+  <div class="field"><label>Motif</label><p>${h.motif ?? '—'}</p></div>
+  <div class="field"><label>Diagnostic initial</label><p>${h.initialDiagnosis ?? '—'}</p></div>
+  <div class="field"><label>Priorité</label><p>${h.priority ?? 'Normal'}</p></div>
+  <div class="field"><label>Chambre / Lit</label><p>${h.room ?? '—'} / ${h.bed ?? '—'}</p></div>
+</div>
+<h2>Dates</h2>
+<div class="grid">
+  <div class="field"><label>Date d'entrée</label><p>${date}</p></div>
+  <div class="field"><label>Date prévisionnelle de sortie</label><p>${exitDate}</p></div>
+</div>
+<h2>Responsable médical</h2>
+<div class="grid">
+  <div class="field"><label>Médecin référent</label><p>${h.referentDoctorName ?? '—'}</p></div>
+  <div class="field"><label>Contact service</label><p>${h.serviceContact ?? '—'}</p></div>
+</div>
+${h.medicalObservations ? `<h2>Observations</h2><p>${h.medicalObservations}</p>` : ''}
+</body></html>`;
+    const w = window.open('', '_blank', 'width=800,height=700');
+    if (w) { w.document.open(); w.document.write(html); w.document.close(); setTimeout(() => w.print(), 400); }
+  }
+
+  statusInfo(status: string) {
+    return STATUS_LABELS[status] ?? { label: status, color: 'bg-gray-100 text-gray-700' };
+  }
+
   ngOnInit(): void {
-    // Local current user
-    this.currentUser = this.mockCurrentUser;
-    if (this.currentUser) {
-      this.formData.responsibleMedicalId = this.currentUser.id;
+    this.loadList();
+    this.loadDoctor();
+    this.loadHospitals();
+    if (localStorage.getItem('openCreateMode') === '1') {
+      localStorage.removeItem('openCreateMode');
+      if (localStorage.getItem('selectedPatient')) {
+        this.openCreate();
+      }
     }
-
-    // Récupérer le patient sélectionné depuis localStorage
-    const storedPatient = localStorage.getItem('selectedPatient');
-    if (storedPatient) {
-      this.selectedPatient = JSON.parse(storedPatient);
-      console.log('Patient sélectionné depuis localStorage:', this.selectedPatient);
-
-      // Récupérer l'ID réel du patient via l'API
-      this.loadPatientIdFromApi();
-    }
-
-    // Charger les établissements (mock)
-    this.loadEtablissements();
   }
 
-  loadEtablissements(): void {
-    this.localGetEtablissements().subscribe({
+  // ── Liste ──────────────────────────────────────────────────────────────────
+
+  loadList(): void {
+    this.loadingList = true;
+    this.listError   = '';
+    this.http.get<any>(`${this.api}/medical/hospitalizations/doctor`).subscribe({
       next: (data) => {
-        this.etablissements = data;
-        console.log('Établissements mock chargés:', this.etablissements);
+        this.hospitalisations = Array.isArray(data) ? data : (data?.content ?? data?.data ?? []);
+        this.loadingList = false;
       },
-      error: (error) => {
-        console.error('Erreur lors du chargement des établissements (mock):', error);
-        this.etablissements = [];
+      error: () => {
+        this.listError   = 'Impossible de charger les hospitalisations.';
+        this.loadingList = false;
       }
     });
   }
 
-  /**
-   * Récupère l'ID réel du patient via l'API
-   * Utilise le téléphone ou la référence pour obtenir l'ID numérique
-   */
-  private loadPatientIdFromApi(): void {
-    if (!this.selectedPatient) {
-      this.patientLoadError = 'Aucun patient sélectionné';
-      return;
-    }
-
-    this.isLoadingPatient = true;
-    this.patientLoadError = null;
-
-    // Priorité 1: Si on a déjà un ID numérique valide (non PT-)
-    if (this.selectedPatient.id && typeof this.selectedPatient.id === 'number' && this.selectedPatient.id > 0) {
-      this.formData.patientId = this.selectedPatient.id;
-      this.isLoadingPatient = false;
-      console.log('✅ ID patient déjà numérique:', this.formData.patientId);
-      return;
-    }
-
-    // Priorité 2: Recherche par téléphone
-    const telephone = this.selectedPatient.telephone || this.selectedPatient.phone;
-    if (telephone) {
-      this.fetchPatientByPhone(telephone);
-      return;
-    }
-
-    // Priorité 3: Recherche par référence
-    const reference = this.selectedPatient.reference || this.selectedPatient.id;
-    if (reference) {
-      this.fetchPatientByReference(reference.toString());
-      return;
-    }
-
-    // Aucune donnée pour rechercher
-    this.isLoadingPatient = false;
-    this.patientLoadError = 'Impossible de récupérer les informations du patient';
-    console.error('❌ Aucune donnée disponible pour rechercher le patient');
+  openCreate(): void {
+    this.loadPatientFromStorage();
+    this.formData = {
+      patientId:             localStorage.getItem('selectedPatientId') || this.selectedPatient?.id || '',
+      facilityName:          '',
+      departmentName:        '',
+      doctorName:            this.getDoctorFullName(),
+      serviceContact:        this.currentUser?.telephone ?? '',
+      hospitalizationReason: '',
+      initialDiagnosis:      '',
+      observation:           '',
+      entryDate:             '',
+      entryTime:             '',
+      exitDate:              '',
+      room:                  '',
+      bedNumber:             '',
+      priority:              'Normal',
+    };
+    this.hospitalSearch    = '';
+    this.hospitalKeycloakId = '';
+    this.viewMode = 'create';
   }
 
-  /**
-   * Recherche le patient par numéro de téléphone
-   */
-  private fetchPatientByPhone(phone: string): void {
-    console.log('🔍 Recherche patient par téléphone:', phone);
+  // ── Chargement données ────────────────────────────────────────────────────
 
-    this.localGetUserByPhone(phone).subscribe({
-      next: (user) => {
-        this.handlePatientFound(user);
+  private loadDoctor(): void {
+    this.http.get<any>(`${this.api}/users/me`).subscribe({
+      next: (me) => {
+        this.currentUser = {
+          id:        me.keycloakId ?? me.id,
+          nom:       me.lastName  ?? '',
+          prenom:    me.firstName ?? '',
+          telephone: me.phone     ?? '',
+        };
+        this.formData.doctorName    = this.getDoctorFullName();
+        this.formData.serviceContact = this.currentUser.telephone || '';
       },
-      error: (error) => {
-        console.warn('⚠️ Patient non trouvé par téléphone (mock), essai par référence...');
-        const reference = this.selectedPatient.reference || this.selectedPatient.id;
-        if (reference) {
-          this.fetchPatientByReference(reference.toString());
-        } else {
-          this.handlePatientNotFound(error);
+      error: () => {
+        const raw = localStorage.getItem('user_data');
+        if (raw) {
+          try { this.currentUser = JSON.parse(raw); } catch { /* ignore */ }
+        }
+        if (this.currentUser) {
+          this.formData.doctorName    = this.getDoctorFullName();
+          this.formData.serviceContact = this.currentUser.telephone || '';
         }
       }
     });
   }
 
-  /**
-   * Recherche le patient par référence
-   */
-  private fetchPatientByReference(reference: string): void {
-    console.log('🔍 Recherche patient par référence:', reference);
-
-    this.localGetUserByReference(reference).subscribe({
-      next: (user) => {
-        this.handlePatientFound(user);
-      },
-      error: (error) => {
-        this.handlePatientNotFound(error);
-      }
+  loadHospitals(): void {
+    this.http.get<any[]>(`${this.api}/admin/hospitals`).subscribe({
+      next:  (data) => { this.allHospitals = data ?? []; },
+      error: ()     => { this.allHospitals = []; }
     });
   }
 
-  /**
-   * Gère le cas où le patient est trouvé via l'API
-   */
-  private handlePatientFound(user: any): void {
-    this.isLoadingPatient = false;
-    this.patientLoadError = null;
-
-    if (user && user.id) {
-      // Mettre à jour l'ID du patient
-      this.formData.patientId = user.id;
-
-      // Enrichir les données du patient sélectionné
-      this.selectedPatient = {
-        ...this.selectedPatient,
-        id: user.id,
-        nom: user.nom || this.selectedPatient.nom,
-        prenom: user.prenom || this.selectedPatient.prenom,
-        telephone: user.telephone || this.selectedPatient.telephone,
-        adress: user.adress || this.selectedPatient.adress,
-        reference: user.reference || this.selectedPatient.reference
-      };
-
-      console.log('✅ Patient trouvé via API:', {
-        id: this.formData.patientId,
-        nom: this.selectedPatient.nom,
-        prenom: this.selectedPatient.prenom
-      });
-    } else {
-      this.patientLoadError = 'Données patient invalides';
-      console.error('❌ Réponse API invalide:', user);
+  private loadPatientFromStorage(): void {
+    const stored = localStorage.getItem('selectedPatient');
+    if (stored) {
+      this.selectedPatient = JSON.parse(stored);
+      const id = localStorage.getItem('selectedPatientId') ?? this.selectedPatient?.id ?? '';
+      if (id) {
+        this.formData.patientId = String(id);
+      }
+      this.patientSearch = this.getPatientFullName();
     }
   }
 
-  /**
-   * Gère le cas où le patient n'est pas trouvé
-   */
-  private handlePatientNotFound(error: any): void {
-    this.isLoadingPatient = false;
-    this.patientLoadError = 'Patient non trouvé dans le système';
-    console.error('❌ Patient non trouvé:', error);
+  // ── Recherche patient ──────────────────────────────────────────────────────
+
+  searchPatient(q: string): void {
+    if (q.trim().length < 2) { this.patientSearchResults = []; return; }
+    this.patientSearchLoading = true;
+    this.http.get<any[]>(`${this.api}/users/patients/search`, { params: { q } }).subscribe({
+      next:  (r) => { this.patientSearchResults = r ?? []; this.patientSearchLoading = false; },
+      error: ()  => { this.patientSearchResults = [];      this.patientSearchLoading = false; }
+    });
   }
 
-  onEtablissementChange(): void {
-    if (this.formData.facilityId) {
-      // Réinitialiser le département sélectionné
-      this.formData.departmentId = 0;
-      this.departementsFiltered = [];
-      // Charger les départements (mock)
-      this.localGetDepartements(this.formData.facilityId).subscribe({
-        next: (data) => {
-          this.departementsFiltered = data;
-          console.log('Départements mock chargés:', this.departementsFiltered);
-        },
-        error: (error) => {
-          console.error('Erreur lors du chargement des départements (mock):', error);
-          this.departementsFiltered = [];
-        }
-      });
-    } else {
-      this.departementsFiltered = [];
-    }
+  selectPatient(p: any): void {
+    const id = p.keycloakId ?? p.id ?? '';
+    this.selectedPatient = {
+      id,
+      nom:       p.lastName  ?? p.nom    ?? '',
+      prenom:    p.firstName ?? p.prenom ?? '',
+      telephone: p.phone     ?? p.telephone ?? '',
+    };
+    this.formData.patientId = String(id);
+    this.patientSearch = this.getPatientFullName();
+    this.patientSearchResults = [];
+    localStorage.setItem('selectedPatient', JSON.stringify(this.selectedPatient));
+    localStorage.setItem('selectedPatientId', String(id));
   }
 
-  /**
-   * Formate une date et heure au format attendu par le backend: DD-MM-YYYY HH:mm
-   */
-  private formatDateTimeToBackend(date: string, time: string): string {
-    if (!date || !time) return '';
+  // ── Hôpital autocomplete ───────────────────────────────────────────────────
 
-    // date est au format YYYY-MM-DD (input HTML)
-    // time est au format HH:mm (input HTML)
-    const [year, month, day] = date.split('-');
-
-    // Retourner au format DD-MM-YYYY HH:mm
-    return `${day}-${month}-${year} ${time}`;
+  onHospitalInput(): void {
+    const q = this.hospitalSearch.toLowerCase().trim();
+    this.formData.facilityName = this.hospitalSearch.trim();
+    this.hospitalKeycloakId    = '';
+    this.filteredHospitals     = q.length < 1
+      ? this.allHospitals.slice(0, 10)
+      : this.allHospitals.filter(h => h.name?.toLowerCase().includes(q)).slice(0, 10);
+    this.showHospitalDropdown  = true;
   }
 
-  /**
-   * Formate une date du format YYYY-MM-DD vers DD-MM-YYYY
-   */
-  private formatDateToBackend(dateString: string): string {
-    if (!dateString) return '';
-    const [year, month, day] = dateString.split('-');
-    return `${day}-${month}-${year}`;
+  selectHospital(h: any): void {
+    this.hospitalSearch      = h.name;
+    this.formData.facilityName = h.name;
+    this.hospitalKeycloakId  = h.keycloakId ?? h.id ?? '';
+    this.showHospitalDropdown = false;
+    this.filteredHospitals    = [];
   }
 
-  toggleSection(section: string) {
+  clearHospital(): void {
+    this.hospitalSearch      = '';
+    this.formData.facilityName = '';
+    this.hospitalKeycloakId  = '';
+    this.filteredHospitals   = [];
+    this.showHospitalDropdown = false;
+  }
+
+  onHospitalBlur(): void {
+    setTimeout(() => { this.showHospitalDropdown = false; }, 200);
+  }
+
+  // ── Sections collapse ─────────────────────────────────────────────────────
+
+  toggleSection(section: string): void {
     switch (section) {
-      case 'patient':
-        this.patientInfoExpanded = !this.patientInfoExpanded;
-        break;
-      case 'general':
-        this.generalInfoExpanded = !this.generalInfoExpanded;
-        break;
-      case 'dates':
-        this.datesExpanded = !this.datesExpanded;
-        break;
-      case 'responsable':
-        this.responsableExpanded = !this.responsableExpanded;
-        break;
-      case 'complementary':
-        this.complementaryExpanded = !this.complementaryExpanded;
-        break;
+      case 'patient':       this.patientInfoExpanded   = !this.patientInfoExpanded;   break;
+      case 'general':       this.generalInfoExpanded   = !this.generalInfoExpanded;   break;
+      case 'dates':         this.datesExpanded         = !this.datesExpanded;         break;
+      case 'responsable':   this.responsableExpanded   = !this.responsableExpanded;   break;
+      case 'complementary': this.complementaryExpanded = !this.complementaryExpanded; break;
     }
   }
 
-  onSubmit() {
-    // Vérifier si le chargement du patient est en cours
-    if (this.isLoadingPatient) {
-      Swal.fire({
-        title: 'Chargement en cours',
-        text: 'Veuillez patienter, les informations du patient sont en cours de chargement...',
-        icon: 'info',
-        confirmButtonColor: '#01b894',
-        width: '400px'
-      });
+  // ── Soumission ────────────────────────────────────────────────────────────
+
+  onSubmit(): void {
+    if (!this.formData.patientId) {
+      Swal.fire({ title: 'Patient manquant', text: 'Veuillez sélectionner un patient.', icon: 'error', confirmButtonColor: '#104382', width: '400px' });
       return;
     }
-
-    // Validation du patient
-    if (!this.formData.patientId || this.formData.patientId === 0) {
-      const errorText = this.patientLoadError
-        ? `${this.patientLoadError}. Veuillez retourner à la liste des patients et réessayer.`
-        : 'Impossible de récupérer l\'ID du patient. Veuillez sélectionner un patient et réessayer.';
-
-      Swal.fire({
-        title: 'Patient manquant',
-        text: errorText,
-        icon: 'error',
-        confirmButtonColor: '#01b894',
-        width: '400px'
-      });
+    if (!this.formData.facilityName.trim() || !this.formData.departmentName.trim()) {
+      Swal.fire({ title: 'Informations incomplètes', text: 'Veuillez renseigner l\'établissement et le service.', icon: 'warning', confirmButtonColor: '#104382', width: '400px' });
       return;
     }
-
-    // Validation du médecin responsable
-    if (!this.formData.responsibleMedicalId || this.formData.responsibleMedicalId === 0) {
-      Swal.fire({
-        title: 'Médecin responsable manquant',
-        text: 'Veuillez vous reconnecter pour continuer.',
-        icon: 'error',
-        confirmButtonColor: '#01b894',
-        width: '400px'
-      });
-      return;
-    }
-
-    // Validation établissement et service
-    if (!this.formData.facilityId || !this.formData.departmentId) {
-      Swal.fire({
-        title: 'Informations incomplètes',
-        text: 'Veuillez sélectionner un établissement et un service',
-        icon: 'warning',
-        confirmButtonColor: '#01b894',
-        width: '400px'
-      });
-      return;
-    }
-
-    // Validation motif et diagnostic
     if (!this.formData.hospitalizationReason || !this.formData.initialDiagnosis) {
-      Swal.fire({
-        title: 'Informations incomplètes',
-        text: 'Veuillez remplir le motif d\'hospitalisation et le diagnostic initial',
-        icon: 'warning',
-        confirmButtonColor: '#01b894',
-        width: '400px'
-      });
+      Swal.fire({ title: 'Informations incomplètes', text: 'Veuillez remplir le motif et le diagnostic initial.', icon: 'warning', confirmButtonColor: '#104382', width: '400px' });
       return;
     }
-
-    // Validation dates
     if (!this.formData.entryDate || !this.formData.entryTime) {
-      Swal.fire({
-        title: 'Date d\'entrée manquante',
-        text: 'Veuillez renseigner la date et l\'heure d\'entrée',
-        icon: 'warning',
-        confirmButtonColor: '#01b894',
-        width: '400px'
-      });
+      Swal.fire({ title: 'Date d\'entrée manquante', text: 'Veuillez renseigner la date et l\'heure d\'entrée.', icon: 'warning', confirmButtonColor: '#104382', width: '400px' });
       return;
     }
 
-    // Validation chambre
-    if (!this.formData.room) {
-      Swal.fire({
-        title: 'Chambre manquante',
-        text: 'Veuillez renseigner le numéro de chambre',
-        icon: 'warning',
-        confirmButtonColor: '#01b894',
-        width: '400px'
-      });
-      return;
-    }
-
-    // Préparer les données pour l'API
-    const requestData: CreateHospitalizationRequest = {
-      patientId: this.formData.patientId,
-      facilityId: this.formData.facilityId,
-      departmentId: this.formData.departmentId,
-      responsibleMedicalId: this.formData.responsibleMedicalId,
-      hospitalizationReason: this.formData.hospitalizationReason,
-      initialDiagnosis: this.formData.initialDiagnosis,
-      observation: this.formData.observation,
-      entryDateTime: this.formatDateTimeToBackend(this.formData.entryDate, this.formData.entryTime),
-      exitDateTime: this.formData.exitDate && this.formData.exitTime
-        ? this.formatDateTimeToBackend(this.formData.exitDate, this.formData.exitTime)
-        : '',
-      room: this.formData.room,
-      bedNumber: this.formData.bedNumber,
-      priority: this.formData.priority
+    const payload: Record<string, any> = {
+      patientId:            this.formData.patientId,
+      patientName:          this.getPatientFullName() || undefined,
+      hospitalId:           this.hospitalKeycloakId || undefined,
+      establishmentName:    this.formData.facilityName,
+      department:           this.formData.departmentName,
+      motif:                this.formData.hospitalizationReason,
+      initialDiagnosis:     this.formData.initialDiagnosis || undefined,
+      admissionDate:        `${this.formData.entryDate}T${this.formData.entryTime}:00`,
+      expectedDischargeDate: this.formData.exitDate || undefined,
+      referentDoctorName:   this.formData.doctorName || undefined,
+      serviceContact:       this.formData.serviceContact || undefined,
+      room:                 this.formData.room || undefined,
+      bed:                  this.formData.bedNumber || undefined,
+      priority:             this.formData.priority,
+      medicalObservations:  this.formData.observation || undefined,
     };
 
-    console.log('📤 Données envoyées à l\'API:', requestData);
-
-    // Mock create
-    this.localCreateHospitalisation(requestData).subscribe({
-      next: (response) => {
-        console.log('✅ Hospitalisation mock créée:', response);
+    this.isSaving = true;
+    this.http.post(`${this.api}/medical/hospitalizations`, payload).subscribe({
+      next: () => {
+        this.isSaving = false;
         Swal.fire({
-          title: 'Succès!',
-          text: 'Hospitalisation enregistrée (mock)',
-          icon: 'success',
-          confirmButtonColor: '#01b894',
-          confirmButtonText: 'OK',
-          width: '400px'
+          title: 'Demande envoyée !',
+          text: 'La demande d\'hospitalisation a été transmise à l\'établissement.',
+          icon: 'success', confirmButtonColor: '#104382', confirmButtonText: 'OK', width: '420px'
         }).then(() => {
-          this.router.navigate(['/patients']);
+          this.router.navigate(['/doctor/patients'], { queryParams: { tab: 'hospitalisation' } });
         });
       },
-      error: (error) => {
-        console.error('❌ Erreur lors de la création (mock):', error);
-        Swal.fire({
-          title: 'Erreur!',
-          text: 'Une erreur est survenue lors de l\'enregistrement (mock)',
-          icon: 'error',
-          confirmButtonColor: '#01b894',
-          confirmButtonText: 'OK',
-          width: '400px'
-        });
+      error: (err) => {
+        this.isSaving = false;
+        Swal.fire({ title: 'Erreur', text: err?.error?.message ?? 'Erreur lors de la création.', icon: 'error', confirmButtonColor: '#104382', width: '400px' });
       }
     });
   }
 
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
   getPatientFullName(): string {
-    if (!this.selectedPatient) {
-      return 'Aucun patient sélectionné';
-    }
-
-    const firstName = this.selectedPatient.prenom || this.selectedPatient.firstName || '';
-    const lastName = this.selectedPatient.nom || this.selectedPatient.lastName || this.selectedPatient.name || '';
-
-    if (!firstName && !lastName) {
-      return 'Nom non disponible';
-    }
-
-    return `${firstName} ${lastName}`.trim();
+    if (!this.selectedPatient) return '';
+    return `${this.selectedPatient.prenom ?? ''} ${this.selectedPatient.nom ?? ''}`.trim();
   }
 
-  /**
-   * Retourne le nom complet du médecin référent formaté
-   * Format: "Dr. Prénom Nom"
-   */
   getDoctorFullName(): string {
-    if (!this.currentUser) {
-      return 'Non défini';
-    }
-
-    const firstName = this.currentUser.prenom || this.currentUser.firstName || '';
-    const lastName = this.currentUser.nom || this.currentUser.lastName || this.currentUser.name || '';
-
-    if (!firstName && !lastName) {
-      return 'Dr. Non défini';
-    }
-
-    return `Dr. ${firstName} ${lastName}`.trim();
+    if (!this.currentUser) return '';
+    return `Dr. ${this.currentUser.prenom ?? ''} ${this.currentUser.nom ?? ''}`.trim();
   }
 
-  onCancel() {
-    this.router.navigate(['/patients']);
-  }
-
-  goBack() {
-    this.router.navigate(['/patients']);
-  }
+  goBack(): void   { this.viewMode = 'list'; }
+  onCancel(): void { this.viewMode = 'list'; }
 }

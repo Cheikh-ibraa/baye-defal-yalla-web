@@ -1,39 +1,28 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
-type DevisStatut = 'Validé Technique' | 'En révision' | 'Attente Signature' | 'Rejeté';
+interface FournisseurCard {
+  id:              string;
+  nom:             string;
+  note:            number;
+  avis:            number;
+  prixTotal:       number;
+  delaiLivraison:  string;
+  dateReception:   string;
+  statut:          string;
+}
 
 type KpiId = 'devis' | 'prix' | 'delai' | 'echeance';
 
 interface KpiDetail {
-  id: KpiId;
-  label: string;
-  value: string | number;
-  iconBg: string;
+  id:        KpiId;
+  label:     string;
+  value:     string | number;
+  iconBg:    string;
   iconColor: string;
-}
-
-interface Fournisseur {
-  nom: string;
-  slug: string;
-  note: number;
-  avis: number;
-  prixTotal: string;
-  delaiLivraison: string;
-  dateReception: string;
-  statut: DevisStatut;
-}
-
-interface DetailDemandeOrganisation {
-  ref: string;
-  titre: string;
-  description: string;
-  devisRecus: number;
-  meilleurPrix: string;
-  delaiMoyen: string;
-  echeance: string;
-  fournisseurs: Fournisseur[];
 }
 
 @Component({
@@ -44,189 +33,126 @@ interface DetailDemandeOrganisation {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DetailDemandeOrganisationComponent implements OnInit {
-  id: string | null = null;
-  detail: DetailDemandeOrganisation | undefined;
+  requestId: string | null = null;
+
+  titre       = '—';
+  description = '';
+  fournisseurs: FournisseurCard[] = [];
   kpis: KpiDetail[] = [];
 
-  private readonly data: DetailDemandeOrganisation[] = [
-    {
-      ref: '1',
-      titre: 'Equipements de bloc — Demande Organisation',
-      description:
-        'Série d’équipements pour établissements : monitoring, anesthésie et consommables critiques.',
-      devisRecus: 3,
-      meilleurPrix: '4 000 000 FCFA',
-      delaiMoyen: '5 jours',
-      echeance: '12/05/26',
-      fournisseurs: [
-        {
-          nom: 'Eurohealth Distrib',
-          slug: 'eurohealth-distrib',
-          note: 4.7,
-          avis: 94,
-          prixTotal: '4 000 000 FCFA',
-          delaiLivraison: '5 jours',
-          dateReception: '14 Oct 2025',
-          statut: 'En révision'
-        },
-        {
-          nom: 'MedTech Solutions',
-          slug: 'medtech-solutions',
-          note: 4.9,
-          avis: 128,
-          prixTotal: '5 500 000 FCFA',
-          delaiLivraison: '48h',
-          dateReception: '12 Oct 2025',
-          statut: 'Validé Technique'
-        },
-        {
-          nom: 'BioCore Advance',
-          slug: 'biocore-advance',
-          note: 4.2,
-          avis: 42,
-          prixTotal: '6 000 000 FCFA',
-          delaiLivraison: '24h',
-          dateReception: '15 Oct 2025',
-          statut: 'Attente Signature'
-        }
-      ]
-    },
-    {
-      ref: '2',
-      titre: 'Imagerie IRM — Demande Organisation',
-      description:
-        'Approvisionnement d’équipements et accessoires pour la mise en service d’une salle d’imagerie.',
-      devisRecus: 5,
-      meilleurPrix: '5 000 000 FCFA',
-      delaiMoyen: '7 jours',
-      echeance: '30/07/26',
-      fournisseurs: [
-        {
-          nom: 'BioCore Advance',
-          slug: 'biocore-advance',
-          note: 4.2,
-          avis: 42,
-          prixTotal: '6 000 000 FCFA',
-          delaiLivraison: '24h',
-          dateReception: '10 Nov 2025',
-          statut: 'Validé Technique'
-        },
-        {
-          nom: 'MedTech Solutions',
-          slug: 'medtech-solutions',
-          note: 4.9,
-          avis: 128,
-          prixTotal: '5 500 000 FCFA',
-          delaiLivraison: '48h',
-          dateReception: '17 Nov 2025',
-          statut: 'En révision'
-        }
-      ]
-    }
-  ];
+  isLoading = true;
+  error: string | null = null;
 
-  constructor(private route: ActivatedRoute, private router: Router) {}
+  private get authHeaders() {
+    const token = localStorage.getItem('access_token');
+    return { Authorization: `Bearer ${token}` };
+  }
+
+  constructor(
+    private route:  ActivatedRoute,
+    private router: Router,
+    private http:   HttpClient,
+    private cdr:    ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
-    // param route: /demande-organisation/:id
-    this.id = this.route.snapshot.paramMap.get('id');
-    this.detail = this.data.find(d => d.ref === this.id);
+    this.requestId = this.route.snapshot.paramMap.get('id');
+    if (this.requestId) this.load();
+  }
 
-    if (!this.detail) {
-      this.detail = {
-        ref: this.id || 'N/A',
-        titre: 'Demande Générique — Organisation',
-        description: 'Détails de la demande générés automatiquement. Cette demande concerne l\'approvisionnement d\'équipements.',
-        devisRecus: 2,
-        meilleurPrix: '2 500 000 FCFA',
-        delaiMoyen: '5 jours',
-        echeance: '31/12/2026',
-        fournisseurs: [
-          {
-            nom: 'Fournisseur Médical Alpha',
-            slug: 'fournisseur-medical-alpha',
-            note: 4.5,
-            avis: 50,
-            prixTotal: '2 500 000 FCFA',
-            delaiLivraison: '5 jours',
-            dateReception: '20 Nov 2025',
-            statut: 'En révision'
-          },
-          {
-            nom: 'Santé Plus Logistique',
-            slug: 'sante-plus-logistique',
-            note: 4.8,
-            avis: 110,
-            prixTotal: '2 800 000 FCFA',
-            delaiLivraison: '3 jours',
-            dateReception: '22 Nov 2025',
-            statut: 'Validé Technique'
-          }
-        ]
-      };
-    }
+  private load(): void {
+    this.isLoading = true;
+    this.http.get<any>(
+      `${environment.baseUrl}/organization/requests/${this.requestId}/quotes`,
+      { headers: this.authHeaders }
+    ).subscribe({
+      next: (res) => {
+        const req = res.request ?? {};
+        this.titre       = req.institutionName ?? 'Demande de matériels';
+        this.description = req.description     ?? '';
 
-    if (this.detail) {
-      this.kpis = [
-        {
-          id: 'devis',
-          label: 'Devis reçus',
-          value: this.detail.devisRecus,
-          iconBg: 'bg-[#DCE1FF]',
-          iconColor: 'text-[#00339E]'
-        },
-        {
-          id: 'prix',
-          label: 'Meilleur prix',
-          value: this.detail.meilleurPrix,
-          iconBg: 'bg-[#00B894]',
-          iconColor: 'text-white'
-        },
-        {
-          id: 'delai',
-          label: 'Délai moyen',
-          value: this.detail.delaiMoyen,
-          iconBg: 'bg-[#F39C121A]',
-          iconColor: 'text-[#F39C12]'
-        },
-        {
-          id: 'echeance',
-          label: 'Échéance',
-          value: this.detail.echeance,
-          iconBg: 'bg-[#E2E1ED]',
-          iconColor: 'text-[#747686]'
+        const bestPrice   = Number(res.bestPrice   ?? 0);
+        const avgDelivery = Number(res.avgDelivery ?? 0);
+        const quotesCount = Number(res.quotesCount ?? 0);
+
+        let echeance = '—';
+        if (res.deadline) {
+          const d = new Date(res.deadline);
+          echeance = d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' });
         }
-      ];
+
+        this.kpis = [
+          { id: 'devis',    label: 'Devis reçus',    value: quotesCount,                    iconBg: 'bg-[#DCE1FF]',    iconColor: 'text-[#00339E]' },
+          { id: 'prix',     label: 'Meilleur prix',  value: this.formatAmount(bestPrice),   iconBg: 'bg-[#00B894]',    iconColor: 'text-white'     },
+          { id: 'delai',    label: 'Délai moyen',    value: avgDelivery ? `${avgDelivery}j` : '—', iconBg: 'bg-[#F39C121A]', iconColor: 'text-[#F39C12]' },
+          { id: 'echeance', label: 'Échéance',       value: echeance,                       iconBg: 'bg-[#E2E1ED]',    iconColor: 'text-[#747686]' },
+        ];
+
+        this.fournisseurs = (res.quotes ?? []).map((q: any) => this.mapQuote(q));
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.error = 'Impossible de charger les devis.';
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  private mapQuote(q: any): FournisseurCard {
+    const d   = new Date(q.receivedAt);
+    const rec = d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+    return {
+      id:             q.id,
+      nom:            q.supplierName,
+      note:           Number(q.rating      ?? 0),
+      avis:           Number(q.reviewCount ?? 0),
+      prixTotal:      Number(q.totalPrice  ?? 0),
+      delaiLivraison: q.deliveryDays ? `${q.deliveryDays} jour${q.deliveryDays > 1 ? 's' : ''}` : '—',
+      dateReception:  rec,
+      statut:         q.status,
+    };
+  }
+
+  formatAmount(n: number): string {
+    return (n ?? 0).toLocaleString('fr-FR') + ' FCFA';
+  }
+
+  statutLabel(s: string): string {
+    const m: Record<string, string> = {
+      EN_REVISION:       'En révision',
+      VALIDÉ_TECHNIQUE:  'Validé Technique',
+      ATTENTE_SIGNATURE: 'Attente Signature',
+      VALIDÉ:            'Validé',
+      REJETÉ:            'Rejeté',
+    };
+    return m[s] ?? s;
+  }
+
+  statutClass(s: string): string {
+    switch (s) {
+      case 'VALIDÉ':
+      case 'VALIDÉ_TECHNIQUE': return 'text-[#16A34A]';
+      case 'EN_REVISION':      return 'text-[#475569]';
+      case 'ATTENTE_SIGNATURE':return 'text-[#791C00]';
+      case 'REJETÉ':           return 'text-[#DC2626]';
+      default:                 return 'text-[#475569]';
     }
+  }
+
+  statutIconType(s: string): 'check' | 'clock' | 'warning' {
+    if (s === 'VALIDÉ' || s === 'VALIDÉ_TECHNIQUE') return 'check';
+    if (s === 'EN_REVISION') return 'clock';
+    return 'warning';
+  }
+
+  openDevis(quoteId: string): void {
+    if (!this.requestId) return;
+    this.router.navigate(['/organization/demande', this.requestId, 'devis', quoteId]);
   }
 
   back(): void {
-    this.router.navigate(['/demande-organisation']);
-  }
-
-  openDevis(fournisseurSlug: string): void {
-    // Rediriger vers le détail du devis de la demande d'organisation
-    if (!this.id) return;
-    this.router.navigate(['/demande-organisation', this.id, 'devis']);
-  }
-
-  statutClass(s: DevisStatut): string {
-    switch (s) {
-      case 'Validé Technique':
-        return 'text-[#16A34A]';
-      case 'En révision':
-        return 'text-[#475569]';
-      case 'Attente Signature':
-        return 'text-[#791C00]';
-      case 'Rejeté':
-        return 'text-[#DC2626]';
-    }
-  }
-
-  statutIconType(s: DevisStatut): 'check' | 'clock' | 'warning' {
-    if (s === 'Validé Technique') return 'check';
-    if (s === 'En révision') return 'clock';
-    return 'warning';
+    this.router.navigate(['/organization/demande']);
   }
 }
-

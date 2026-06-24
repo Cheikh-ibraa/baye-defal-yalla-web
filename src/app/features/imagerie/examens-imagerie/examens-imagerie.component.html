@@ -23,14 +23,14 @@
                 <path d="M13.154 12.207L10.68 9.754a5.973 5.973 0 10-1.925 1.925l2.454 2.454a.667.667 0 00.944-.944zM1.25 6.014a4.764 4.764 0 119.528 0 4.764 4.764 0 01-9.528 0z" fill="#777"/>
               </svg>
             </span>
-            <input type="text" placeholder="Rechercher un patient"
-              class="pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-xs text-[#777] outline-none focus:ring-2 focus:ring-blue-500 w-48"
+            <input type="text" placeholder="Rechercher patient, type, réf."
+              class="pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-xs text-[#777] outline-none focus:ring-2 focus:ring-blue-500 w-52"
               [(ngModel)]="searchTerm" (input)="onSearchChange()" />
           </div>
 
           <!-- Filtre statut -->
           <div class="relative">
-            <button (click)="showStatusMenu = !showStatusMenu; showPriorityMenu = false"
+            <button (click)="showStatusMenu = !showStatusMenu; showPriorityMenu = false; $event.stopPropagation()"
               class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-xs font-medium text-[#343A40] bg-white hover:bg-gray-50 transition whitespace-nowrap">
               <svg width="14" height="10" viewBox="0 0 14 10" fill="none">
                 <path d="M0.625.625H13.125M2.708 4.792h8.334M5.208 8.958h3.334" stroke="#777" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
@@ -41,7 +41,7 @@
               class="absolute right-0 mt-1 w-48 bg-white border border-gray-100 rounded-xl shadow-lg z-50 py-1">
               <button *ngFor="let opt of statusOptions"
                 class="w-full text-left px-4 py-2 text-sm text-[#343A40] hover:bg-gray-50 transition"
-                (click)="setStatus(opt)">
+                (click)="setStatus(opt); $event.stopPropagation()">
                 {{ opt.label }}
               </button>
             </div>
@@ -49,7 +49,7 @@
 
           <!-- Filtre priorité -->
           <div class="relative">
-            <button (click)="showPriorityMenu = !showPriorityMenu; showStatusMenu = false"
+            <button (click)="showPriorityMenu = !showPriorityMenu; showStatusMenu = false; $event.stopPropagation()"
               class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-xs font-medium text-[#343A40] bg-white hover:bg-gray-50 transition whitespace-nowrap">
               <svg width="14" height="10" viewBox="0 0 14 10" fill="none">
                 <path d="M0.625.625H13.125M2.708 4.792h8.334M5.208 8.958h3.334" stroke="#777" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
@@ -60,7 +60,7 @@
               class="absolute right-0 mt-1 w-48 bg-white border border-gray-100 rounded-xl shadow-lg z-50 py-1">
               <button *ngFor="let opt of priorityOptions"
                 class="w-full text-left px-4 py-2 text-sm text-[#343A40] hover:bg-gray-50 transition"
-                (click)="setPriority(opt)">
+                (click)="setPriority(opt); $event.stopPropagation()">
                 {{ opt.label }}
               </button>
             </div>
@@ -69,9 +69,15 @@
         </div>
       </div>
 
+      <!-- Loading -->
+      <div *ngIf="loading" class="flex items-center justify-center py-16 gap-3">
+        <div class="animate-spin rounded-full h-7 w-7 border-b-2 border-[#2C7BE5]"></div>
+        <span class="text-sm text-gray-500">Chargement…</span>
+      </div>
+
       <!-- ── TABLE ──────────────────────────────────────────────────────── -->
-      <div class="overflow-x-auto">
-        <table class="w-full min-w-[800px]">
+      <div *ngIf="!loading" class="overflow-x-auto">
+        <table class="w-full min-w-[900px]">
           <thead class="bg-[#F5F7FA] border-b border-gray-100">
             <tr>
               <th class="px-6 py-3.5 text-left text-xs font-semibold text-[#343A40]">Patient</th>
@@ -80,22 +86,19 @@
               <th class="px-4 py-3.5 text-left text-xs font-semibold text-[#343A40]">Équipements</th>
               <th class="px-4 py-3.5 text-left text-xs font-semibold text-[#343A40]">Reçu le</th>
               <th class="px-4 py-3.5 text-left text-xs font-semibold text-[#343A40]">Priorité</th>
+              <th class="px-4 py-3.5 text-left text-xs font-semibold text-[#343A40]">Statut</th>
               <th class="px-4 py-3.5 text-left text-xs font-semibold text-[#343A40]">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
 
-            <!-- Rows -->
             <tr *ngFor="let exam of exams" class="hover:bg-gray-50 transition-colors">
 
               <!-- Patient -->
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center gap-3">
-                  <div class="relative shrink-0">
-                    <div class="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-[#343A40] text-xs font-semibold">
-                      {{ exam.initials }}
-                    </div>
-                    <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white"></span>
+                  <div class="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-[#343A40] text-xs font-semibold shrink-0">
+                    {{ exam.initials }}
                   </div>
                   <div>
                     <p class="text-sm font-semibold text-[#343A40]">{{ exam.patientName }}</p>
@@ -105,18 +108,23 @@
               </td>
 
               <!-- Examen -->
-              <td class="px-4 py-4 text-sm text-[#343A40] whitespace-nowrap">{{ exam.type }}</td>
+              <td class="px-4 py-4 text-sm text-[#343A40] max-w-[160px] truncate">{{ exam.type }}</td>
 
               <!-- Prescripteur -->
               <td class="px-4 py-4 text-sm text-[#343A40] whitespace-nowrap">{{ exam.prescripteur }}</td>
 
               <!-- Équipements -->
               <td class="px-4 py-4">
-                <div class="flex items-center gap-1.5">
-                  <span *ngFor="let eq of exam.equipements"
-                    class="px-2 py-0.5 rounded bg-gray-100 text-xs font-medium text-[#343A40]">
-                    {{ eq }}
-                  </span>
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <ng-container *ngIf="exam.equipements.length > 0; else noEquip">
+                    <span *ngFor="let eq of exam.equipements"
+                      class="px-2 py-0.5 rounded bg-gray-100 text-xs font-medium text-[#343A40]">
+                      {{ eq }}
+                    </span>
+                  </ng-container>
+                  <ng-template #noEquip>
+                    <span class="text-xs text-gray-400">—</span>
+                  </ng-template>
                 </div>
               </td>
 
@@ -131,9 +139,16 @@
                 </span>
               </td>
 
+              <!-- Statut -->
+              <td class="px-4 py-4 whitespace-nowrap">
+                <span class="px-2.5 py-1 rounded text-xs font-semibold" [ngClass]="getStatusClass(exam.status)">
+                  {{ getStatusLabel(exam.status) }}
+                </span>
+              </td>
+
               <!-- Actions -->
               <td class="px-4 py-4">
-                <button [routerLink]="['/detail-examen-imagerie', exam.id]"
+                <button (click)="viewExam(exam.id)"
                   class="text-gray-400 hover:text-gray-600 transition-colors" aria-label="Voir détails">
                   <svg width="22" height="16" viewBox="0 0 20 14" fill="none">
                     <path d="M20 6.875S16.25 0 10 0 0 6.875 0 6.875 3.75 13.75 10 13.75 20 6.875 20 6.875zM1.466 6.875A15.3 15.3 0 013.541 4.32C5.15 2.71 7.35 1.25 10 1.25s4.849 1.46 6.46 3.07a15.3 15.3 0 012.074 2.555 15.3 15.3 0 01-2.074 2.554C14.849 11.04 12.65 12.5 10 12.5S5.15 11.04 3.54 9.43A15.3 15.3 0 011.466 6.875z" fill="#4B4848"/>
@@ -146,7 +161,7 @@
 
             <!-- Empty state -->
             <tr *ngIf="exams.length === 0">
-              <td colspan="7" class="text-center py-12 text-gray-400 text-sm">
+              <td colspan="8" class="text-center py-16 text-gray-400 text-sm">
                 Aucun examen trouvé
               </td>
             </tr>
@@ -156,9 +171,9 @@
       </div>
 
       <!-- ── PAGINATION ─────────────────────────────────────────────────── -->
-      <div class="px-6 py-4 flex justify-end items-center gap-4 text-sm text-gray-500 border-t border-gray-100">
+      <div *ngIf="!loading" class="px-6 py-4 flex justify-end items-center gap-4 text-sm text-gray-500 border-t border-gray-100">
 
-        <span class="whitespace-nowrap">éléments par page:</span>
+        <span class="whitespace-nowrap">éléments par page :</span>
 
         <div class="relative">
           <select [value]="size" (change)="onSizeChange(+$any($event.target).value)"
@@ -174,7 +189,6 @@
 
         <span class="whitespace-nowrap">{{ startItem }} - {{ endItem }} sur {{ totalElements }}</span>
 
-        <!-- Précédent -->
         <button (click)="prevPage()" [disabled]="page === 0"
           class="p-1 rounded hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors" aria-label="Page précédente">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -182,7 +196,6 @@
           </svg>
         </button>
 
-        <!-- Suivant -->
         <button (click)="nextPage()" [disabled]="page >= totalPages - 1"
           class="p-1 rounded hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors" aria-label="Page suivante">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">

@@ -1,0 +1,220 @@
+<div class="min-h-screen bg-[#F4F6F9] p-6">
+
+  <!-- Back button -->
+  <button (click)="back()" class="flex items-center gap-2 text-sm text-gray-500 hover:text-[#00339E] transition-colors mb-5">
+    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+    </svg>
+    Mes hospitalisations
+  </button>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex items-center justify-center py-20">
+    <svg class="animate-spin h-8 w-8 text-[#00339E]" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+    </svg>
+  </div>
+
+  <!-- Not found -->
+  <div *ngIf="!loading && !detail" class="bg-white rounded-xl shadow-sm p-10 text-center">
+    <p class="text-gray-500">Hospitalisation introuvable.</p>
+    <button (click)="back()" class="mt-4 px-4 py-2 bg-[#00339E] text-white rounded-lg text-sm hover:bg-[#002b80] transition-colors">
+      Retour
+    </button>
+  </div>
+
+  <ng-container *ngIf="!loading && detail">
+
+    <!-- Header card -->
+    <div class="bg-white rounded-xl shadow-sm p-5 mb-5">
+      <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+        <div>
+          <h2 class="text-xl font-semibold text-[#191B23]">{{ hospitalDisplay() }}</h2>
+          <p class="text-sm text-gray-500 mt-0.5">{{ detail.department || '—' }}</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span *ngIf="detail.priority === 'Urgent'" class="text-xs font-medium bg-red-100 text-red-700 rounded-full px-3 py-1">Urgent</span>
+          <span class="text-xs font-medium rounded-full px-3 py-1" [ngClass]="statusClass(detail.status)">
+            {{ statusLabel(detail.status) }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex gap-1 bg-white rounded-xl shadow-sm p-1 mb-5 w-fit">
+      <button
+        *ngFor="let tab of [
+          { id: 'resume',  label: 'Résumé' },
+          { id: 'journal', label: 'Journal infirmier' },
+          { id: 'sortie',  label: 'Sortie' }
+        ]"
+        (click)="setTab(tab.id)"
+        class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+        [ngClass]="activeTab === tab.id
+          ? 'bg-[#00339E] text-white'
+          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'"
+      >
+        {{ tab.label }}
+      </button>
+    </div>
+
+    <!-- ─── TAB: RÉSUMÉ ─── -->
+    <div *ngIf="activeTab === 'resume'" class="flex flex-col gap-4">
+
+      <!-- Info générales -->
+      <div class="bg-white rounded-xl shadow-sm p-5">
+        <h3 class="text-base font-semibold text-[#191B23] mb-4">Informations générales</h3>
+        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <dt class="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Établissement</dt>
+            <dd class="text-sm font-medium text-gray-800">{{ hospitalDisplay() }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Service</dt>
+            <dd class="text-sm font-medium text-gray-800">{{ detail.department || '—' }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Motif d'hospitalisation</dt>
+            <dd class="text-sm font-medium text-gray-800">{{ detail.motif || '—' }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Diagnostic initial</dt>
+            <dd class="text-sm font-medium text-gray-800">{{ detail.initialDiagnosis || '—' }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Date d'admission</dt>
+            <dd class="text-sm font-medium text-gray-800">{{ formatDateTime(detail.admissionDate) }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Sortie prévue</dt>
+            <dd class="text-sm font-medium text-gray-800">{{ formatDate(detail.expectedDischargeDate) }}</dd>
+          </div>
+          <div *ngIf="detail.referentDoctorName">
+            <dt class="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Médecin référent</dt>
+            <dd class="text-sm font-medium text-gray-800">{{ detail.referentDoctorName }}</dd>
+          </div>
+          <div *ngIf="detail.room || detail.bed">
+            <dt class="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Chambre / Lit</dt>
+            <dd class="text-sm font-medium text-gray-800">{{ roomBedLabel() }}</dd>
+          </div>
+        </dl>
+      </div>
+
+      <!-- Observations médicales -->
+      <div class="bg-white rounded-xl shadow-sm p-5" *ngIf="detail.medicalObservations">
+        <h3 class="text-base font-semibold text-[#191B23] mb-3">Observations médicales</h3>
+        <p class="text-sm text-gray-700 leading-relaxed">{{ detail.medicalObservations }}</p>
+      </div>
+
+      <!-- Note hôpital / Prise en charge -->
+      <div class="bg-white rounded-xl shadow-sm p-5" *ngIf="detail.acceptedPrice || detail.hospitalNote">
+        <h3 class="text-base font-semibold text-[#191B23] mb-4">Prise en charge</h3>
+        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div *ngIf="detail.acceptedPrice">
+            <dt class="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Montant estimé</dt>
+            <dd class="text-sm font-medium text-gray-800">{{ priceDisplay }}</dd>
+          </div>
+          <div *ngIf="detail.hospitalNote">
+            <dt class="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Note de l'hôpital</dt>
+            <dd class="text-sm text-gray-700">{{ detail.hospitalNote }}</dd>
+          </div>
+        </dl>
+      </div>
+
+    </div>
+
+    <!-- ─── TAB: JOURNAL INFIRMIER ─── -->
+    <div *ngIf="activeTab === 'journal'">
+
+      <div *ngIf="journalSorted.length === 0" class="bg-white rounded-xl shadow-sm p-10 text-center">
+        <p class="text-gray-400 text-sm">Aucune entrée dans le journal infirmier.</p>
+      </div>
+
+      <div *ngIf="journalSorted.length > 0" class="flex flex-col gap-3">
+        <div
+          *ngFor="let entry of journalSorted"
+          class="bg-white rounded-xl shadow-sm p-5"
+        >
+          <div class="flex items-start gap-4">
+            <div class="text-2xl shrink-0 mt-0.5">{{ journalTypeIcon(entry.type) }}</div>
+            <div class="flex-1 min-w-0">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-2">
+                <span class="text-sm font-semibold text-[#191B23]">{{ entry.type }}</span>
+                <span class="text-xs text-gray-400">{{ entry.date }} à {{ entry.time }}</span>
+              </div>
+              <p class="text-sm text-gray-700 mb-2">{{ entry.description }}</p>
+              <div class="flex flex-wrap gap-3 text-xs text-gray-500">
+                <span *ngIf="entry.dose"><span class="font-medium">Dose :</span> {{ entry.dose }}</span>
+                <span *ngIf="entry.observations"><span class="font-medium">Obs :</span> {{ entry.observations }}</span>
+                <span *ngIf="entry.nurseName"><span class="font-medium">Infirmier(ère) :</span> {{ entry.nurseName }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ─── TAB: SORTIE ─── -->
+    <div *ngIf="activeTab === 'sortie'">
+
+      <!-- Pas encore sorti -->
+      <div *ngIf="!detail.dischargeInfo" class="bg-white rounded-xl shadow-sm p-10 text-center">
+        <svg class="mx-auto h-12 w-12 text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        <p class="text-gray-500 font-medium">Pas encore de compte rendu de sortie</p>
+        <p class="text-gray-400 text-sm mt-1">
+          <ng-container *ngIf="detail.expectedDischargeDate">
+            Sortie prévue le {{ formatDate(detail.expectedDischargeDate) }}
+          </ng-container>
+          <ng-container *ngIf="!detail.expectedDischargeDate">
+            Le compte rendu sera disponible après votre sortie.
+          </ng-container>
+        </p>
+      </div>
+
+      <!-- Compte rendu de sortie -->
+      <div *ngIf="detail.dischargeInfo" class="flex flex-col gap-4">
+
+        <div class="bg-white rounded-xl shadow-sm p-5">
+          <h3 class="text-base font-semibold text-[#191B23] mb-4">Compte rendu de sortie</h3>
+          <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <dt class="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Date de sortie</dt>
+              <dd class="text-sm font-medium text-gray-800">{{ formatDate(detail.dischargeInfo.dischargeDate) }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Heure</dt>
+              <dd class="text-sm font-medium text-gray-800">{{ detail.dischargeInfo.dischargeTime || '—' }}</dd>
+            </div>
+            <div class="sm:col-span-2" *ngIf="detail.dischargeInfo.patientState">
+              <dt class="text-xs text-gray-400 uppercase tracking-wide mb-0.5">État à la sortie</dt>
+              <dd class="text-sm text-gray-700 leading-relaxed">{{ detail.dischargeInfo.patientState }}</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-5" *ngIf="detail.dischargeInfo.recommendations">
+          <h3 class="text-base font-semibold text-[#191B23] mb-2">Recommandations post-hospitalisation</h3>
+          <p class="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{{ detail.dischargeInfo.recommendations }}</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-5" *ngIf="detail.dischargeInfo.homeTreatment">
+          <h3 class="text-base font-semibold text-[#191B23] mb-2">Traitement à domicile</h3>
+          <p class="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{{ detail.dischargeInfo.homeTreatment }}</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-5" *ngIf="detail.dischargeInfo.medicalComments">
+          <h3 class="text-base font-semibold text-[#191B23] mb-2">Commentaires médicaux</h3>
+          <p class="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{{ detail.dischargeInfo.medicalComments }}</p>
+        </div>
+
+      </div>
+    </div>
+
+  </ng-container>
+
+</div>

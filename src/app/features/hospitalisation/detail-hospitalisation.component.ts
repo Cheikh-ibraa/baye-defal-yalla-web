@@ -1,161 +1,230 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
+import Swal from 'sweetalert2';
+
+interface HospitalizationApi {
+  id: string;
+  admissionRef: string;
+  patientName: string;
+  patientAge: number;
+  patientRef: string;
+  service: string;
+  room: string;
+  bed: string;
+  treatingDoctorName: string;
+  bloodGroup: string;
+  admissionDate: string;
+  expectedDischargeDate: string;
+  actualDischargeDate: string;
+  lastObservation: string;
+  stateEvolution: string;
+  recoveryPercent: number;
+  totalAmount: number;
+  fundingStatus: string;
+  careJourney: Array<{
+    step: string;
+    status: 'done' | 'in_progress' | 'pending';
+    date?: string;
+    description?: string;
+    location?: string;
+    tags?: string[];
+  }>;
+  status: 'ADMITTED' | 'IN_PROGRESS' | 'URGENT' | 'DISCHARGED';
+}
+
+interface StayInfoField {
+  icon: 'calendar' | 'service' | 'room' | 'doctor';
+  label: string;
+  value: string;
+}
+
+interface TimelineStep {
+  status: 'completed' | 'active' | 'pending';
+  title: string;
+  subtitle: string;
+  note?: string;
+  tags?: string[];
+}
+
+interface HospDetail {
+  fullname: string;
+  displayId: string;
+  statusLabel: string;
+  statusBadgeClass: string;
+  age: number;
+  bloodGroup: string;
+  stayInfo: StayInfoField[];
+  lastObservation: { badge: string; text: string };
+  evolution: { status: string; text: string; recoveryPercent: number };
+  financial: { totalAmount: string; fundingStatus: string };
+  timeline: TimelineStep[];
+  canDischarge: boolean;
+}
 
 @Component({
   selector: 'app-detail-hospitalisation',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './detail-hospitalisation.component.html',
-  styleUrls: []
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DetailHospitalisationComponent implements OnInit {
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly http = inject(HttpClient);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly api = environment.baseUrl;
+
   hospitalisationId = '';
-  detail: any = null;
-
-  private mockDetails: { [key: string]: any } = {
-    '44920': {
-      headerName: 'Dossier Hospitalisation',
-      displayId: 'HOSP-2023-020',
-      fullname: 'Jean Dupont',
-      statusLabel: 'Urgent',
-      hospitalId: '44920',
-      age: 72,
-      bloodGroup: 'O+',
-      stayInfo: [
-        { icon: 'calendar', label: 'Date d\'admission', value: '12 Oct 2023' },
-        { icon: 'service', label: 'Service', value: 'Cardiologie' },
-        { icon: 'room', label: 'Chambre', value: 'B-204' },
-        { icon: 'doctor', label: 'Médecin traitant', value: 'Dr. Awa Diop' }
-      ],
-      lastObservation: {
-        badge: 'Aujourd\'hui, 09:15',
-        text: 'Patient stable. La douleur thoracique a diminué suite à l\'intervention. Fréquence cardiaque régulière. Poursuite du protocole médicamenteux en cours.'
-      },
-      evolution: {
-        status: 'En amélioration',
-        text: 'Processus de rétablissement post-opératoire conforme aux attentes cliniques.',
-        recoveryPercent: 75
-      },
-      financial: {
-        totalAmount: '450 000 FCFA',
-        fundingStatus: 'Totalement pris en charge'
-      },
-      timeline: [
-        { status: 'completed', title: 'Admission', subtitle: '12 Octobre, 08:30 • Urgences', note: '"Admis pour suspicion de syndrome coronaire aigu. Stabilisé par l\'équipe mobile."' },
-        { status: 'completed', title: 'Examens terminés', subtitle: '12 Octobre, 11:45 • Plateau Technique', tags: ['ECG', 'Biologie', 'Scanner'] },
-        { status: 'active', title: 'Traitement en cours', subtitle: 'Depuis le 13 Octobre, 09:00', note: 'Perfusion continue et surveillance tensionnelle permanente (H24).' },
-        { status: 'pending', title: 'Sortie prévue', subtitle: 'Date estimée: 16 Octobre 2023' }
-      ]
-    },
-    '44921': {
-      headerName: 'Dossier Hospitalisation',
-      displayId: 'HOSP-2023-021',
-      fullname: 'Marie Lefebvre',
-      statusLabel: 'En cours',
-      hospitalId: '44921',
-      age: 34,
-      bloodGroup: 'A-',
-      stayInfo: [
-        { icon: 'calendar', label: 'Date d\'admission', value: '10 Oct 2023' },
-        { icon: 'service', label: 'Service', value: 'Maternité' },
-        { icon: 'room', label: 'Chambre', value: 'A-112' },
-        { icon: 'doctor', label: 'Médecin traitant', value: 'Dr. Mamadou Sarr' }
-      ],
-      lastObservation: {
-        badge: 'Stable',
-        text: 'Suivi post-accouchement immédiat. Mère et nouveau-né se portent bien.'
-      },
-      evolution: {
-        status: 'Rétablissement normal',
-        text: 'Suivi post-natal standard. Sortie envisagée à J+3 après validation pédiatrique.',
-        recoveryPercent: 100
-      },
-      financial: {
-        totalAmount: '200 000 FCFA',
-        fundingStatus: 'Partiellement pris en charge'
-      },
-      timeline: [
-        { status: 'completed', title: 'Admission', subtitle: '10 Octobre, 02:00 • Maternité', note: '"Admise pour travail actif et suivi d\'accouchement."' },
-        { status: 'completed', title: 'Examens terminés', subtitle: '10 Octobre, 06:15 • Plateau Technique', tags: ['Suivi biologique', 'Obstétrique'] },
-        { status: 'active', title: 'Traitement en cours', subtitle: 'Depuis le 10 Octobre, 08:00', note: 'Repos en chambre individuelle et surveillance post-partum standard.' },
-        { status: 'pending', title: 'Sortie prévue', subtitle: 'Date estimée: 13 Octobre 2023' }
-      ]
-    },
-    '44899': {
-      headerName: 'Dossier Hospitalisation',
-      displayId: 'HOSP-2023-099',
-      fullname: 'Marc Vasseur',
-      statusLabel: 'Sorti',
-      hospitalId: '44899',
-      age: 45,
-      bloodGroup: 'B+',
-      stayInfo: [
-        { icon: 'calendar', label: 'Date d\'admission', value: '05 Oct 2023' },
-        { icon: 'service', label: 'Service', value: 'Orthopédie' },
-        { icon: 'room', label: 'Chambre', value: 'Sorti' },
-        { icon: 'doctor', label: 'Médecin traitant', value: 'Dr. Demba Thioune' }
-      ],
-      lastObservation: {
-        badge: 'Rétabli',
-        text: 'Réduction de fracture du fémur réussie. Séance de kinésithérapie de sortie validée.'
-      },
-      evolution: {
-        status: 'Rétablissement complet',
-        text: 'Consolidation osseuse satisfaisante. Kinésithérapie ambulatoire prescrite.',
-        recoveryPercent: 85
-      },
-      financial: {
-        totalAmount: '850 000 FCFA',
-        fundingStatus: 'Totalement pris en charge'
-      },
-      timeline: [
-        { status: 'completed', title: 'Admission', subtitle: '05 Octobre, 14:00 • Orthopédie', note: '"Admis suite à un accident de la voie publique pour fracture fémorale."' },
-        { status: 'completed', title: 'Examens terminés', subtitle: '06 Octobre, 10:00 • Plateau Technique', tags: ['Radiographie', 'Bilan pré-opératoire'] },
-        { status: 'completed', title: 'Traitement en cours', subtitle: 'Depuis le 06 Octobre, 12:00', note: 'Ostéosynthèse réalisée avec succès, suivi kinésithérapeutique en cours.' },
-        { status: 'completed', title: 'Sortie prévue', subtitle: 'Date de sortie effective: 15 Octobre 2023' }
-      ]
-    }
-  };
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router
-  ) {}
+  loading = true;
+  detail: HospDetail | null = null;
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe(params => {
-      const id = params.get('id');
-      this.hospitalisationId = id || '';
-      this.loadDetail(this.hospitalisationId);
+    this.hospitalisationId = this.route.snapshot.paramMap.get('id') ?? '';
+    this.loadDetail();
+  }
+
+  private loadDetail(): void {
+    this.http.get<HospitalizationApi>(`${this.api}/hospital/hospitalizations/${this.hospitalisationId}`).subscribe({
+      next: h => {
+        this.detail = this.mapDetail(h);
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
     });
   }
 
-  loadDetail(id: string): void {
-    let cleanId = id;
-    if (id.includes('-')) {
-      cleanId = id.split('-')[0];
+  private mapDetail(h: HospitalizationApi): HospDetail {
+    const statusLabelMap: Record<string, string> = {
+      ADMITTED:    'En cours',
+      IN_PROGRESS: 'En cours',
+      URGENT:      'Urgent',
+      DISCHARGED:  'Sorti',
+    };
+    const statusBadgeMap: Record<string, string> = {
+      ADMITTED:    'bg-[#FFF3E8] text-[#F97316]',
+      IN_PROGRESS: 'bg-[#FFF3E8] text-[#F97316]',
+      URGENT:      'bg-[#FEE2E2] text-[#DC2626]',
+      DISCHARGED:  'bg-[#ECFDF5] text-[#059669]',
+    };
+
+    const admDate = new Date(h.admissionDate);
+    const admLabel = admDate.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+    const chambre = [h.room, h.bed].filter(Boolean).join(' / ') || '—';
+
+    const stayInfo: StayInfoField[] = [
+      { icon: 'calendar', label: "Date d'admission", value: admLabel },
+      { icon: 'service',  label: 'Service',          value: h.service ?? '—' },
+      { icon: 'room',     label: 'Chambre / Lit',    value: chambre },
+      { icon: 'doctor',   label: 'Médecin traitant', value: h.treatingDoctorName ?? '—' },
+    ];
+
+    const timeline: TimelineStep[] = (h.careJourney ?? []).map(e => ({
+      status:   e.status === 'done' ? 'completed' : e.status === 'in_progress' ? 'active' : 'pending',
+      title:    e.step,
+      subtitle: e.date
+        ? new Date(e.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+        : (e.location ?? ''),
+      note:  e.description,
+      tags:  [],
+    }));
+
+    // Ajouter étape "Sortie prévue" si pas encore sorti
+    if (h.status !== 'DISCHARGED' && h.expectedDischargeDate) {
+      timeline.push({
+        status:   'pending',
+        title:    'Sortie prévue',
+        subtitle: 'Date estimée : ' + new Date(h.expectedDischargeDate).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }),
+      });
     }
-    this.detail = this.mockDetails[cleanId] || this.mockDetails['44920'];
+    if (h.status === 'DISCHARGED' && h.actualDischargeDate) {
+      timeline.push({
+        status:   'completed',
+        title:    'Sortie effective',
+        subtitle: new Date(h.actualDischargeDate).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      });
+    }
+
+    const totalAmountFmt = h.totalAmount
+      ? Number(h.totalAmount).toLocaleString('fr-FR') + ' FCFA'
+      : '—';
+
+    const fundingLabel = h.fundingStatus ?? (h.totalAmount ? 'Pris en charge' : 'Non renseigné');
+
+    return {
+      fullname:         h.patientName ?? '—',
+      displayId:        h.admissionRef ?? h.patientRef ?? '—',
+      statusLabel:      statusLabelMap[h.status] ?? h.status,
+      statusBadgeClass: statusBadgeMap[h.status] ?? 'bg-slate-100 text-slate-600',
+      age:              h.patientAge ?? 0,
+      bloodGroup:       h.bloodGroup ?? '—',
+      stayInfo,
+      lastObservation: {
+        badge: h.status === 'DISCHARGED' ? 'Sorti' : h.status === 'URGENT' ? 'Urgent' : 'En cours',
+        text:  h.lastObservation ?? 'Aucune observation enregistrée.',
+      },
+      evolution: {
+        status:          h.stateEvolution ?? (h.status === 'DISCHARGED' ? 'Rétablissement complet' : 'Suivi en cours'),
+        text:            h.stateEvolution ?? '',
+        recoveryPercent: h.recoveryPercent ?? 0,
+      },
+      financial: {
+        totalAmount:   totalAmountFmt,
+        fundingStatus: fundingLabel,
+      },
+      timeline,
+      canDischarge: h.status !== 'DISCHARGED',
+    };
   }
 
   back(): void {
-    this.router.navigate(['/hospitalisations']);
+    this.router.navigate(['/hospital/hospitalisations']);
+  }
+
+  dischargePatient(): void {
+    if (!this.detail) return;
+    Swal.fire({
+      title: 'Autoriser la sortie',
+      html: `<p style="color:#6B7280;font-size:14px">Confirmer la sortie de <strong style="color:#191B23">${this.detail.fullname}</strong> ?<br>Cette action ne peut pas être annulée.</p>`,
+      confirmButtonText: 'Confirmer la sortie',
+      cancelButtonText: 'Annuler',
+      showCancelButton: true,
+      confirmButtonColor: '#059669',
+      icon: 'warning',
+    }).then(result => {
+      if (!result.isConfirmed) return;
+      this.http.patch<HospitalizationApi>(`${this.api}/hospital/hospitalizations/${this.hospitalisationId}/discharge`, {}).subscribe({
+        next: h => {
+          this.detail = this.mapDetail(h);
+          this.cdr.markForCheck();
+          Swal.fire({ icon: 'success', title: 'Patient sorti', timer: 1500, showConfirmButton: false });
+        },
+        error: () => Swal.fire({ icon: 'error', title: 'Erreur', text: 'Impossible d\'autoriser la sortie.' }),
+      });
+    });
   }
 
   stepIconClass(status: string): string {
     switch (status) {
       case 'completed': return 'bg-[#1E6B34] text-white';
-      case 'active': return 'bg-[#00339E] text-white';
-      default: return 'bg-[#CBD5E1] text-[#94A3B8]';
+      case 'active':    return 'bg-[#00339E] text-white';
+      default:          return 'bg-[#CBD5E1] text-[#94A3B8]';
     }
   }
 
   stepTitleClass(status: string): string {
     switch (status) {
       case 'completed': return 'text-[#0F172A] font-bold';
-      case 'active': return 'text-[#00339E] font-bold';
-      default: return 'text-[#94A3B8] font-bold';
+      case 'active':    return 'text-[#00339E] font-bold';
+      default:          return 'text-[#94A3B8] font-bold';
     }
   }
 }

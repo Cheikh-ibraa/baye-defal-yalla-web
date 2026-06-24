@@ -1,8 +1,11 @@
 import { Component, HostListener, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { Router, NavigationEnd } from '@angular/router';
 import { User } from '../../../core/auth.types';
 import { Subscription, filter } from 'rxjs';
+import { environment } from '../../../../environments/environment';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
     selector: 'app-header',
@@ -43,8 +46,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
     { label: 'État du Patrimoine Immobilier', link: null, active: true }
   ];
 
+  private userSub?: Subscription;
+
   constructor(
-    private router: Router
+    private router:      Router,
+    private http:        HttpClient,
+    private authService: AuthService,
   ) {
   }
 
@@ -68,12 +75,24 @@ export class HeaderComponent implements OnInit, OnDestroy {
         }
         this.updateUserDisplay();
       });
+
+    // Réagir aux changements de profil sans navigation (refresh token, mise à jour profil)
+    this.userSub = this.authService.user$.subscribe(user => {
+      if (user) {
+        this.currentUser = { ...user };
+        const url = this.router.url;
+        const detectedProfile = this.detectProfileFromUrl(url);
+        if (detectedProfile && this.currentUser) {
+          this.currentUser.profil = detectedProfile;
+        }
+        this.updateUserDisplay();
+      }
+    });
   }
 
   ngOnDestroy(): void {
-    if (this.userSubscription) {
-      this.userSubscription.unsubscribe();
-    }
+    this.userSubscription?.unsubscribe();
+    this.userSub?.unsubscribe();
   }
 
   /**
@@ -95,19 +114,22 @@ export class HeaderComponent implements OnInit, OnDestroy {
     if (this.currentUser) {
       const profile = this.currentUser.profil.toUpperCase();
       if (profile === 'ORGANISATION' || profile === 'ORGANIZATION') {
-        this.userDisplayName = 'GRET';
+        this.userDisplayName = this.currentUser.prenom || this.currentUser.nom || this.currentUser.email || 'Organisation';
         this.userRole = 'Organisation';
         this.userAvatar = 'assets/images/gret.png';
       } else if (profile === 'HOSPITAL' || profile === 'HOPITAL') {
-        this.userDisplayName = 'Hôpital Principal';
+        this.userDisplayName = this.currentUser.prenom || this.currentUser.nom || this.currentUser.email || 'Hôpital';
         this.userRole = 'Hôpital';
-        this.userAvatar = 'assets/images/hospital1.png';
+        this.userAvatar = this.currentUser.avatar || '';
+        if (!this.currentUser.avatar) this.fetchAndCacheHospitalAvatar();
       } else if (profile === 'FOURNISSEUR' || profile === 'SUPPLIER') {
-        this.userDisplayName = 'Fournisseur Médical';
+        this.userDisplayName = this.currentUser.prenom || this.currentUser.nom || this.currentUser.email || 'Fournisseur';
         this.userRole = 'Fournisseur';
         this.userAvatar = 'assets/images/logoPharmacie.png';
       } else if (profile === 'DONOR' || profile === 'DONATEUR') {
-        this.userDisplayName = 'Donateur';
+        const prenom = this.currentUser.prenom || '';
+        const nom    = this.currentUser.nom    || '';
+        this.userDisplayName = (prenom && nom) ? `${prenom} ${nom}` : prenom || nom || this.currentUser.email || 'Donateur';
         this.userRole = 'Donateur';
         this.userAvatar = 'assets/images/Donateur.png';
       } else {
@@ -279,10 +301,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   onLogout() {
-    localStorage.clear();
+    this.authService.logout();
     this.currentUser = null;
     this.updateUserDisplay();
-    this.router.navigate(['/portail']);
     this.closeMenus();
   }
 
@@ -360,6 +381,26 @@ private capitalizeWords(text: string): string {
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 }
+
+  private fetchAndCacheHospitalAvatar(): void {
+    if (!localStorage.getItem('access_token')) return;
+    this.http.get<any>(`${environment.baseUrl}/hospital/profile`).subscribe({
+      next: (profile) => {
+        const logoUrl = profile?.logoUrl || null;
+        this.userAvatar = logoUrl || '';
+        const stored = localStorage.getItem('user_data');
+        if (stored) {
+          try {
+            const data = JSON.parse(stored);
+            data.avatar = logoUrl;
+            localStorage.setItem('user_data', JSON.stringify(data));
+            if (this.currentUser) this.currentUser.avatar = logoUrl;
+          } catch { /* ignore */ }
+        }
+      },
+      error: () => { /* pas de logo — le fallback initiales s'affiche */ }
+    });
+  }
 
   private getMockCurrentUser(): User {
     const stored = localStorage.getItem('user_data');

@@ -1,5 +1,6 @@
 <div class="min-h-[calc(100vh-4rem)] bg-[#F4F6F9]">
   <div class="mx-auto max-w-[1200px]">
+
     <!-- En-tête de page -->
     <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
       <div>
@@ -7,38 +8,17 @@
           Demandes Médicales
         </h1>
         <p class="mt-2 text-xs text-[#495057] sm:text-sm">
-          Gérer les dossiers patients et leurs demande
+          Gérer les dossiers patients et leurs demandes
         </p>
       </div>
 
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
         <button type="button"
-          class="inline-flex min-w-[200px] items-center justify-between gap-4 rounded-lg bg-white px-5 py-3 text-base text-[#334155] ring-1 ring-slate-100 transition hover:-translate-y-0.5">
-          <span class="flex items-center gap-3">
-            <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path fill-rule="evenodd" clip-rule="evenodd"
-                d="M3.75 0C4.09518 0 4.375 0.279822 4.375 0.625V1.875H11.875V0.625C11.875 0.279822 12.1548 0 12.5 0C12.8452 0 13.125 0.279822 13.125 0.625V1.875H13.75C15.1307 1.875 16.25 2.99429 16.25 4.375V13.75C16.25 15.1307 15.1307 16.25 13.75 16.25H2.5C1.11929 16.25 0 15.1307 0 13.75V4.375C0 2.99429 1.11929 1.875 2.5 1.875H3.125V0.625C3.125 0.279822 3.40482 0 3.75 0ZM15 7.5C15 6.80964 14.4404 6.25 13.75 6.25H2.5C1.80964 6.25 1.25 6.80964 1.25 7.5V13.75C1.25 14.4404 1.80964 15 2.5 15H13.75C14.4404 15 15 14.4404 15 13.75V7.5Z"
-                fill="#777777" />
-            </svg>
-            <span>{{ periodLabel }}</span>
-          </span>
-          <svg class="h-5 w-5 text-[#7A7F87]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 9l6 6 6-6"></path>
-          </svg>
-        </button>
-
-        <button type="button"
           class="inline-flex items-center justify-center gap-3 rounded-lg bg-[#124A92] px-5 py-3 text-base text-white transition hover:bg-[#0F3E79]">
-         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M11.37 10.384C11.0888 10.6653 10.9308 11.0468 10.9308 11.4445C10.9308 11.8422 11.0888 12.2237 11.37 12.505L11.437 12.572C11.5763 12.7114 11.7417 12.822 11.9238 12.8974C12.1058 12.9728 12.3009 13.0117 12.498 13.0117C12.6951 13.0117 12.8902 12.9728 13.0722 12.8974C13.2543 12.822 13.4197 12.7114 13.559 12.572L16.674 9.457C16.818 9.313 16.927 9.147 17 8.969V17C17 17.5304 16.7893 18.0391 16.4142 18.4142C16.0391 18.7893 15.5304 19 15 19H7C6.46957 19 5.96086 18.7893 5.58579 18.4142C5.21071 18.0391 5 17.5304 5 17V9C5 8.46957 5.21071 7.96086 5.58579 7.58579C5.96086 7.21071 6.46957 7 7 7H14.851C14.7161 7.07057 14.5926 7.16127 14.485 7.269L11.37 10.384Z"
-              fill="white" />
-            <path fill-rule="evenodd" clip-rule="evenodd"
-              d="M19.2183 4.78214C19.2648 4.82858 19.3018 4.88376 19.327 4.9445C19.3522 5.00525 19.3652 5.07037 19.3652 5.13614C19.3652 5.2019 19.3522 5.26702 19.327 5.32777C19.3018 5.38851 19.2648 5.44369 19.2183 5.49014L12.8543 11.8541C12.7605 11.948 12.6333 12.0008 12.5006 12.0009C12.368 12.001 12.2407 11.9484 12.1468 11.8546C12.0529 11.7609 12.0001 11.6337 12 11.501C11.9999 11.3683 12.0525 11.241 12.1463 11.1471L18.5103 4.78214C18.604 4.6884 18.7312 4.63574 18.8638 4.63574C18.9964 4.63574 19.1235 4.6884 19.2173 4.78214"
-              fill="white" />
-            <path fill-rule="evenodd" clip-rule="evenodd"
-              d="M14 4.5C14 4.36739 14.0527 4.24021 14.1464 4.14645C14.2402 4.05268 14.3674 4 14.5 4H19.5C19.6326 4 19.7598 4.05268 19.8536 4.14645C19.9473 4.24021 20 4.36739 20 4.5V9.5C20 9.63261 19.9473 9.75979 19.8536 9.85355C19.7598 9.94732 19.6326 10 19.5 10C19.3674 10 19.2402 9.94732 19.1464 9.85355C19.0527 9.75979 19 9.63261 19 9.5V5H14.5C14.3674 5 14.2402 4.94732 14.1464 4.85355C14.0527 4.75979 14 4.63261 14 4.5Z"
-              fill="white" />
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M11.37 10.384C11.0888 10.6653 10.9308 11.0468 10.9308 11.4445C10.9308 11.8422 11.0888 12.2237 11.37 12.505L11.437 12.572C11.5763 12.7114 11.7417 12.822 11.9238 12.8974C12.1058 12.9728 12.3009 13.0117 12.498 13.0117C12.6951 13.0117 12.8902 12.9728 13.0722 12.8974C13.2543 12.822 13.4197 12.7114 13.559 12.572L16.674 9.457C16.818 9.313 16.927 9.147 17 8.969V17C17 17.5304 16.7893 18.0391 16.4142 18.4142C16.0391 18.7893 15.5304 19 15 19H7C6.46957 19 5.96086 18.7893 5.58579 18.4142C5.21071 18.0391 5 17.5304 5 17V9C5 8.46957 5.21071 7.96086 5.58579 7.58579C5.96086 7.21071 6.46957 7 7 7H14.851C14.7161 7.07057 14.5926 7.16127 14.485 7.269L11.37 10.384Z" fill="white"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M19.2183 4.78214C19.2648 4.82858 19.3018 4.88376 19.327 4.9445C19.3522 5.00525 19.3652 5.07037 19.3652 5.13614C19.3652 5.2019 19.3522 5.26702 19.327 5.32777C19.3018 5.38851 19.2648 5.44369 19.2183 5.49014L12.8543 11.8541C12.7605 11.948 12.6333 12.0008 12.5006 12.0009C12.368 12.001 12.2407 11.9484 12.1468 11.8546C12.0529 11.7609 12.0001 11.6337 12 11.501C11.9999 11.3683 12.0525 11.241 12.1463 11.1471L18.5103 4.78214C18.604 4.6884 18.7312 4.63574 18.8638 4.63574C18.9964 4.63574 19.1235 4.6884 19.2173 4.78214" fill="white"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M14 4.5C14 4.36739 14.0527 4.24021 14.1464 4.14645C14.2402 4.05268 14.3674 4 14.5 4H19.5C19.6326 4 19.7598 4.05268 19.8536 4.14645C19.9473 4.24021 20 4.36739 20 4.5V9.5C20 9.63261 19.9473 9.75979 19.8536 9.85355C19.7598 9.94732 19.6326 10 19.5 10C19.3674 10 19.2402 9.94732 19.1464 9.85355C19.0527 9.75979 19 9.63261 19 9.5V5H14.5C14.3674 5 14.2402 4.94732 14.1464 4.85355C14.0527 4.75979 14 4.63261 14 4.5Z" fill="white"/>
           </svg>
           Exporter
         </button>
@@ -47,232 +27,402 @@
 
     <!-- Cartes KPI -->
     <div class="mt-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-      <article *ngFor="let card of cards"
-        class="rounded-[22px] bg-white px-6 py-6">
+
+      <!-- Total -->
+      <article class="rounded-[22px] bg-white px-6 py-6">
         <div class="flex items-start justify-between">
-          <div class="flex h-12 w-12 items-center justify-center rounded-lg" [ngClass]="card.accentClass">
-            <ng-container [ngSwitch]="card.icon">
-              <svg *ngSwitchCase="'clipboard'" width="18" height="20" viewBox="0 0 18 20" fill="none"
-                xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V4C0 3.45 0.195833 2.97917 0.5875 2.5875C0.979167 2.19583 1.45 2 2 2H6.2C6.41667 1.4 6.77917 0.916667 7.2875 0.55C7.79583 0.183333 8.36667 0 9 0C9.63333 0 10.2042 0.183333 10.7125 0.55C11.2208 0.916667 11.5833 1.4 11.8 2H16C16.55 2 17.0208 2.19583 17.4125 2.5875C17.8042 2.97917 18 3.45 18 4V18C18 18.55 17.8042 19.0208 17.4125 19.4125C17.0208 19.8042 16.55 20 16 20H2ZM2 18H16V4H2V18ZM4 16H11V14H4V16ZM4 12H14V10H4V12ZM4 8H14V6H4V8ZM9 3.25C9.21667 3.25 9.39583 3.17917 9.5375 3.0375C9.67917 2.89583 9.75 2.71667 9.75 2.5C9.75 2.28333 9.67917 2.10417 9.5375 1.9625C9.39583 1.82083 9.21667 1.75 9 1.75C8.78333 1.75 8.60417 1.82083 8.4625 1.9625C8.32083 2.10417 8.25 2.28333 8.25 2.5C8.25 2.71667 8.32083 2.89583 8.4625 3.0375C8.60417 3.17917 8.78333 3.25 9 3.25ZM2 18V4V18Z"
-                  fill="#00339E" />
-              </svg>
-              <svg *ngSwitchCase="'pending'" width="16" height="20" viewBox="0 0 16 20" fill="none"
-                xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M4 18H12V15C12 13.9 11.6083 12.9583 10.825 12.175C10.0417 11.3917 9.1 11 8 11C6.9 11 5.95833 11.3917 5.175 12.175C4.39167 12.9583 4 13.9 4 15V18ZM8 9C9.1 9 10.0417 8.60833 10.825 7.825C11.6083 7.04167 12 6.1 12 5V2H4V5C4 6.1 4.39167 7.04167 5.175 7.825C5.95833 8.60833 6.9 9 8 9ZM0 20V18H2V15C2 13.9833 2.2375 13.0292 2.7125 12.1375C3.1875 11.2458 3.85 10.5333 4.7 10C3.85 9.46667 3.1875 8.75417 2.7125 7.8625C2.2375 6.97083 2 6.01667 2 5V2H0V0H16V2H14V5C14 6.01667 13.7625 6.97083 13.2875 7.8625C12.8125 8.75417 12.15 9.46667 11.3 10C12.15 10.5333 12.8125 11.2458 13.2875 12.1375C13.7625 13.0292 14 13.9833 14 15V18H16V20H0Z"
-                  fill="#EA580C" />
-              </svg>
-
-              <svg *ngSwitchCase="'approved'" width="20" height="20" viewBox="0 0 20 20" fill="none"
-                xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M8.6 14.6L15.65 7.55L14.25 6.15L8.6 11.8L5.75 8.95L4.35 10.35L8.6 14.6ZM10 20C8.61667 20 7.31667 19.7375 6.1 19.2125C4.88333 18.6875 3.825 17.975 2.925 17.075C2.025 16.175 1.3125 15.1167 0.7875 13.9C0.2625 12.6833 0 11.3833 0 10C0 8.61667 0.2625 7.31667 0.7875 6.1C1.3125 4.88333 2.025 3.825 2.925 2.925C3.825 2.025 4.88333 1.3125 6.1 0.7875C7.31667 0.2625 8.61667 0 10 0C11.3833 0 12.6833 0.2625 13.9 0.7875C15.1167 1.3125 16.175 2.025 17.075 2.925C17.975 3.825 18.6875 4.88333 19.2125 6.1C19.7375 7.31667 20 8.61667 20 10C20 11.3833 19.7375 12.6833 19.2125 13.9C18.6875 15.1167 17.975 16.175 17.075 17.075C16.175 17.975 15.1167 18.6875 13.9 19.2125C12.6833 19.7375 11.3833 20 10 20ZM10 18C12.2333 18 14.125 17.225 15.675 15.675C17.225 14.125 18 12.2333 18 10C18 7.76667 17.225 5.875 15.675 4.325C14.125 2.775 12.2333 2 10 2C7.76667 2 5.875 2.775 4.325 4.325C2.775 5.875 2 7.76667 2 10C2 12.2333 2.775 14.125 4.325 15.675C5.875 17.225 7.76667 18 10 18Z"
-                  fill="#006E2A" />
-              </svg>
-
-              <svg *ngSwitchCase="'revenue'" width="22" height="16" viewBox="0 0 22 16" fill="none"
-                xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M13 9C12.1667 9 11.4583 8.70833 10.875 8.125C10.2917 7.54167 10 6.83333 10 6C10 5.16667 10.2917 4.45833 10.875 3.875C11.4583 3.29167 12.1667 3 13 3C13.8333 3 14.5417 3.29167 15.125 3.875C15.7083 4.45833 16 5.16667 16 6C16 6.83333 15.7083 7.54167 15.125 8.125C14.5417 8.70833 13.8333 9 13 9ZM6 12C5.45 12 4.97917 11.8042 4.5875 11.4125C4.19583 11.0208 4 10.55 4 10V2C4 1.45 4.19583 0.979167 4.5875 0.5875C4.97917 0.195833 5.45 0 6 0H20C20.55 0 21.0208 0.195833 21.4125 0.5875C21.8042 0.979167 22 1.45 22 2V10C22 10.55 21.8042 11.0208 21.4125 11.4125C21.0208 11.8042 20.55 12 20 12H6ZM8 10H18C18 9.45 18.1958 8.97917 18.5875 8.5875C18.9792 8.19583 19.45 8 20 8V4C19.45 4 18.9792 3.80417 18.5875 3.4125C18.1958 3.02083 18 2.55 18 2H8C8 2.55 7.80417 3.02083 7.4125 3.4125C7.02083 3.80417 6.55 4 6 4V8C6.55 8 7.02083 8.19583 7.4125 8.5875C7.80417 8.97917 8 9.45 8 10ZM19 16H2C1.45 16 0.979167 15.8042 0.5875 15.4125C0.195833 15.0208 0 14.55 0 14V3H2V14H19V16ZM6 10V2V10Z"
-                  fill="white" />
-              </svg>
-
-            </ng-container>
-          </div>
-
-          <div *ngIf="card.title === 'Total Demandes'" class="text-sm font-semibold text-[#2E7D32]">
-            +12%↗
+          <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-[#EAF2FF]">
+            <svg width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V4C0 3.45 0.195833 2.97917 0.5875 2.5875C0.979167 2.19583 1.45 2 2 2H6.2C6.41667 1.4 6.77917 0.916667 7.2875 0.55C7.79583 0.183333 8.36667 0 9 0C9.63333 0 10.2042 0.183333 10.7125 0.55C11.2208 0.916667 11.5833 1.4 11.8 2H16C16.55 2 17.0208 2.19583 17.4125 2.5875C17.8042 2.97917 18 3.45 18 4V18C18 18.55 17.8042 19.0208 17.4125 19.4125C17.0208 19.8042 16.55 20 16 20H2ZM2 18H16V4H2V18ZM4 16H11V14H4V16ZM4 12H14V10H4V12ZM4 8H14V6H4V8ZM9 3.25C9.21667 3.25 9.39583 3.17917 9.5375 3.0375C9.67917 2.89583 9.75 2.71667 9.75 2.5C9.75 2.28333 9.67917 2.10417 9.5375 1.9625C9.39583 1.82083 9.21667 1.75 9 1.75C8.78333 1.75 8.60417 1.82083 8.4625 1.9625C8.32083 2.10417 8.25 2.28333 8.25 2.5C8.25 2.71667 8.32083 2.89583 8.4625 3.0375C8.60417 3.17917 8.78333 3.25 9 3.25Z" fill="#00339E"/>
+            </svg>
           </div>
         </div>
+        <div class="mt-4 text-xs sm:text-sm font-medium text-[#6B7280]">Total Demandes</div>
+        <div class="mt-1 text-2xl font-semibold tracking-[-0.04em] text-[#1F2937]">{{ totalReqs }}</div>
+      </article>
 
-        <div class="mt-4 text-xs sm:text-sm font-medium text-[#6B7280]">
-          {{ card.title }}
+      <!-- En attente -->
+      <article class="rounded-[22px] bg-white px-6 py-6">
+        <div class="flex items-start justify-between">
+          <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-[#FFF1E1]">
+            <svg width="16" height="20" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 18H12V15C12 13.9 11.6083 12.9583 10.825 12.175C10.0417 11.3917 9.1 11 8 11C6.9 11 5.95833 11.3917 5.175 12.175C4.39167 12.9583 4 13.9 4 15V18ZM8 9C9.1 9 10.0417 8.60833 10.825 7.825C11.6083 7.04167 12 6.1 12 5V2H4V5C4 6.1 4.39167 7.04167 5.175 7.825C5.95833 8.60833 6.9 9 8 9ZM0 20V18H2V15C2 13.9833 2.2375 13.0292 2.7125 12.1375C3.1875 11.2458 3.85 10.5333 4.7 10C3.85 9.46667 3.1875 8.75417 2.7125 7.8625C2.2375 6.97083 2 6.01667 2 5V2H0V0H16V2H14V5C14 6.01667 13.7625 6.97083 13.2875 7.8625C12.8125 8.75417 12.15 9.46667 11.3 10C12.15 10.5333 12.8125 11.2458 13.2875 12.1375C13.7625 13.0292 14 13.9833 14 15V18H16V20H0Z" fill="#EA580C"/>
+            </svg>
+          </div>
         </div>
+        <div class="mt-4 text-xs sm:text-sm font-medium text-[#6B7280]">En attente</div>
+        <div class="mt-1 text-2xl font-semibold tracking-[-0.04em] text-[#F97316]">{{ pendingReqs }}</div>
+      </article>
 
-        <div class="mt-1 text-2xl font-semibold tracking-[-0.04em]" [ngClass]="card.valueClass">
-          {{ card.value }}
+      <!-- Validées -->
+      <article class="rounded-[22px] bg-white px-6 py-6">
+        <div class="flex items-start justify-between">
+          <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-[#E6F7EE]">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8.6 14.6L15.65 7.55L14.25 6.15L8.6 11.8L5.75 8.95L4.35 10.35L8.6 14.6ZM10 20C8.61667 20 7.31667 19.7375 6.1 19.2125C4.88333 18.6875 3.825 17.975 2.925 17.075C2.025 16.175 1.3125 15.1167 0.7875 13.9C0.2625 12.6833 0 11.3833 0 10C0 8.61667 0.2625 7.31667 0.7875 6.1C1.3125 4.88333 2.025 3.825 2.925 2.925C3.825 2.025 4.88333 1.3125 6.1 0.7875C7.31667 0.2625 8.61667 0 10 0C11.3833 0 12.6833 0.2625 13.9 0.7875C15.1167 1.3125 16.175 2.025 17.075 2.925C17.975 3.825 18.6875 4.88333 19.2125 6.1C19.7375 7.31667 20 8.61667 20 10C20 11.3833 19.7375 12.6833 19.2125 13.9C18.6875 15.1167 17.975 16.175 17.075 17.075C16.175 17.975 15.1167 18.6875 13.9 19.2125C12.6833 19.7375 11.3833 20 10 20ZM10 18C12.2333 18 14.125 17.225 15.675 15.675C17.225 14.125 18 12.2333 18 10C18 7.76667 17.225 5.875 15.675 4.325C14.125 2.775 12.2333 2 10 2C7.76667 2 5.875 2.775 4.325 4.325C2.775 5.875 2 7.76667 2 10C2 12.2333 2.775 14.125 4.325 15.675C5.875 17.225 7.76667 18 10 18Z" fill="#006E2A"/>
+            </svg>
+          </div>
         </div>
+        <div class="mt-4 text-xs sm:text-sm font-medium text-[#6B7280]">Validées</div>
+        <div class="mt-1 text-2xl font-semibold tracking-[-0.04em] text-[#22A06B]">{{ validatedReqs }}</div>
+      </article>
+
+      <!-- Revenus du mois -->
+      <article class="rounded-[22px] bg-[#124A92] px-6 py-6">
+        <div class="flex items-start justify-between">
+          <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-white/20">
+            <svg width="22" height="16" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13 9C12.1667 9 11.4583 8.70833 10.875 8.125C10.2917 7.54167 10 6.83333 10 6C10 5.16667 10.2917 4.45833 10.875 3.875C11.4583 3.29167 12.1667 3 13 3C13.8333 3 14.5417 3.29167 15.125 3.875C15.7083 4.45833 16 5.16667 16 6C16 6.83333 15.7083 7.54167 15.125 8.125C14.5417 8.70833 13.8333 9 13 9ZM6 12C5.45 12 4.97917 11.8042 4.5875 11.4125C4.19583 11.0208 4 10.55 4 10V2C4 1.45 4.19583 0.979167 4.5875 0.5875C4.97917 0.195833 5.45 0 6 0H20C20.55 0 21.0208 0.195833 21.4125 0.5875C21.8042 0.979167 22 1.45 22 2V10C22 10.55 21.8042 11.0208 21.4125 11.4125C21.0208 11.8042 20.55 12 20 12H6ZM8 10H18C18 9.45 18.1958 8.97917 18.5875 8.5875C18.9792 8.19583 19.45 8 20 8V4C19.45 4 18.9792 3.80417 18.5875 3.4125C18.1958 3.02083 18 2.55 18 2H8C8 2.55 7.80417 3.02083 7.4125 3.4125C7.02083 3.80417 6.55 4 6 4V8C6.55 8 7.02083 8.19583 7.4125 8.5875C7.80417 8.97917 8 9.45 8 10ZM19 16H2C1.45 16 0.979167 15.8042 0.5875 15.4125C0.195833 15.0208 0 14.55 0 14V3H2V14H19V16Z" fill="white"/>
+            </svg>
+          </div>
+        </div>
+        <div class="mt-4 text-xs sm:text-sm font-medium text-white/70">Revenus du mois</div>
+        <div class="mt-1 text-2xl font-semibold tracking-[-0.04em] text-white">{{ formatRevenue(monthRevenue) }}</div>
       </article>
     </div>
 
     <!-- Tableau de suivi principal -->
-    <section
-      class="mt-6 overflow-hidden rounded-[24px] bg-white shadow-[0_14px_30px_rgba(15,23,42,0.04)] ring-1 ring-slate-100">
-      <div
-        class="flex flex-col gap-4 border-b border-slate-100 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <div>
-          <h2 class="text-[18px] font-semibold tracking-[-0.02em] text-[#334155] sm:text-[20px]">
-            Liste des médecins
-          </h2>
-        </div>
+    <section class="mt-6 overflow-hidden rounded-[24px] bg-white shadow-[0_14px_30px_rgba(15,23,42,0.04)] ring-1 ring-slate-100">
+
+      <!-- Barre de filtres -->
+      <div class="flex flex-col gap-4 border-b border-slate-100 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <h2 class="text-[18px] font-semibold tracking-[-0.02em] text-[#334155] sm:text-[20px]">
+          Liste des demandes
+        </h2>
 
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <!-- Recherche -->
           <div class="relative">
             <svg class="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#8A94A6]"
               viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <circle cx="11" cy="11" r="7" stroke-width="1.8"></circle>
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="m20 20-3.2-3.2"></path>
             </svg>
-            <input type="text" placeholder="Rechercher un médecin"
-              class="h-11 w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 text-xs text-[#334155] outline-none transition placeholder:text-[#8A94A6] focus:border-[#124A92] sm:w-[200px]" />
+            <input
+              type="text"
+              placeholder="Rechercher un patient…"
+              [(ngModel)]="searchQuery"
+              (input)="onSearchInput()"
+              class="h-11 w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 text-xs text-[#334155] outline-none transition placeholder:text-[#8A94A6] focus:border-[#124A92] sm:w-[220px]"
+            />
           </div>
 
-          <button type="button"
-            class="inline-flex h-11 items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-[#334155] transition hover:bg-slate-50 sm:min-w-[160px]">
-            <svg class="h-4 w-4 text-[#8A94A6]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 6h16M7 12h10M10 18h4">
-              </path>
-            </svg>
-            <span>Tous les statuts</span>
-          </button>
+          <!-- Filtre statut -->
+          <select
+            [(ngModel)]="statusFilter"
+            (change)="onFilterChange()"
+            class="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-[#334155] outline-none transition focus:border-[#124A92] sm:min-w-[160px]">
+            <option *ngFor="let opt of statusOptions" [value]="opt.value">{{ opt.label }}</option>
+          </select>
 
-          <button type="button"
-            class="inline-flex h-11 items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-[#334155] transition hover:bg-slate-50 sm:min-w-[160px]">
-            <svg class="h-4 w-4 text-[#8A94A6]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 6h16M7 12h10M10 18h4">
-              </path>
-            </svg>
-            <span>Tous les types</span>
-          </button>
+          <!-- Filtre type -->
+          <select
+            [(ngModel)]="typeFilter"
+            (change)="onFilterChange()"
+            class="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-[#334155] outline-none transition focus:border-[#124A92] sm:min-w-[160px]">
+            <option *ngFor="let opt of typeOptions" [value]="opt.value">{{ opt.label }}</option>
+          </select>
         </div>
       </div>
 
-      <div class="overflow-x-auto">
+      <!-- Loading -->
+      <div *ngIf="loading" class="flex items-center justify-center py-20">
+        <div class="h-8 w-8 animate-spin rounded-full border-4 border-[#124A92] border-t-transparent"></div>
+      </div>
+
+      <!-- Erreur -->
+      <div *ngIf="!loading && loadError" class="flex items-center justify-center py-20 text-sm text-red-500">
+        {{ loadError }}
+      </div>
+
+      <!-- Tableau -->
+      <div *ngIf="!loading && !loadError" class="overflow-x-auto">
         <table class="min-w-full border-collapse">
           <thead class="bg-[#F7F9FD] text-left">
             <tr>
-              <th *ngFor="let column of tableColumns"
+              <th *ngFor="let col of tableColumns"
                 class="whitespace-nowrap px-4 py-4 text-sm font-semibold text-[#475569] first:pl-6 last:pr-6">
-                {{ column }}
+                {{ col }}
               </th>
             </tr>
           </thead>
 
           <tbody class="divide-y divide-slate-100 bg-white">
-            <tr *ngFor="let row of requestRows" class="hover:bg-slate-50/40">
+            <!-- Vide -->
+            <tr *ngIf="rows.length === 0">
+              <td [colSpan]="tableColumns.length" class="py-16 text-center text-sm text-[#94A3B8]">
+                Aucune demande trouvée
+              </td>
+            </tr>
+
+            <!-- Lignes -->
+            <tr *ngFor="let row of rows; let i = index" class="hover:bg-slate-50/40">
+
+              <!-- Patient -->
               <td class="px-4 py-4 first:pl-6">
                 <div class="flex items-center gap-4">
-                  <div class="flex h-10 w-10 items-center justify-center rounded-full text-[13px] font-semibold"
-                    [ngClass]="row.initials === 'FB' ? 'bg-[#F3E8FF] text-[#8B5CF6]' : row.initials === 'CD' ? 'bg-[#DDF7E8] text-[#16A34A]' : row.initials === 'AM' ? 'bg-[#E6ECF7] text-[#334155]' : 'bg-[#E5F0FF] text-[#1D4ED8]'">
-                    {{ row.initials }}
+                  <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-[13px] font-semibold"
+                    [ngClass]="avatarClass(i)">
+                    {{ initials(row.patientName) }}
                   </div>
                   <div>
-                    <div class="text-[16px] font-semibold text-[#1F2937]">
-                      {{ row.patient }}
-                    </div>
-                    <div class="text-[12px] uppercase tracking-[0.12em] text-[#94A3B8]">
-                      {{ row.identifier }}
-                    </div>
+                    <div class="text-[15px] font-semibold text-[#1F2937]">{{ row.patientName }}</div>
+                    <div class="text-[11px] uppercase tracking-[0.12em] text-[#94A3B8]">{{ row.reference }}</div>
                   </div>
                 </div>
               </td>
 
+              <!-- Référence -->
+              <td class="px-4 py-4 text-[14px] text-[#6B7280]">
+                {{ row.reference }}
+              </td>
+
+              <!-- Type de demande -->
               <td class="px-4 py-4 text-[15px] text-[#6B7280]">
                 <div class="flex items-center gap-2">
                   <div class="flex h-8 w-8 items-center justify-center text-[#94A3B8]">
-                    <ng-container [ngSwitch]="row.rowIcon">
-                      <svg *ngSwitchCase="'document'" width="16" height="20" viewBox="0 0 16 20" fill="none"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path
-                          d="M4 16H12V14H4V16ZM4 12H12V10H4V12ZM2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H10L16 6V18C16 18.55 15.8042 19.0208 15.4125 19.4125C15.0208 19.8042 14.55 20 14 20H2ZM9 7V2H2V18H14V7H9ZM2 2V7V2V7V18V2Z"
-                          fill="#94A3B8" />
+                    <ng-container [ngSwitch]="typeIcon(row.type)">
+
+                      <svg *ngSwitchCase="'document'" width="16" height="20" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 16H12V14H4V16ZM4 12H12V10H4V12ZM2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H10L16 6V18C16 18.55 15.8042 19.0208 15.4125 19.4125C15.0208 19.8042 14.55 20 14 20H2ZM9 7V2H2V18H14V7H9Z" fill="#94A3B8"/>
                       </svg>
-                      <svg *ngSwitchCase="'surgery'" width="19" height="21" viewBox="0 0 19 21" fill="none"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path
-                          d="M6 20.5L4 19V15H3C2.45 15 1.97917 14.8042 1.5875 14.4125C1.19583 14.0208 1 13.55 1 13V5.5C0.716667 5.5 0.479167 5.40417 0.2875 5.2125C0.0958333 5.02083 0 4.78333 0 4.5C0 4.21667 0.0958333 3.97917 0.2875 3.7875C0.479167 3.59583 0.716667 3.5 1 3.5H4V2H3.5C3.21667 2 2.97917 1.90417 2.7875 1.7125C2.59583 1.52083 2.5 1.28333 2.5 1C2.5 0.716667 2.59583 0.479167 2.7875 0.2875C2.97917 0.0958333 3.21667 0 3.5 0H6.5C6.78333 0 7.02083 0.0958333 7.2125 0.2875C7.40417 0.479167 7.5 0.716667 7.5 1C7.5 1.28333 7.40417 1.52083 7.2125 1.7125C7.02083 1.90417 6.78333 2 6.5 2H6V3.5H9C9.28333 3.5 9.52083 3.59583 9.7125 3.7875C9.90417 3.97917 10 4.21667 10 4.5C10 4.78333 9.90417 5.02083 9.7125 5.2125C9.52083 5.40417 9.28333 5.5 9 5.5V13C9 13.55 8.80417 14.0208 8.4125 14.4125C8.02083 14.8042 7.55 15 7 15H6V20.5ZM3 13H7V11.5H5.25C5.05 11.5 4.875 11.425 4.725 11.275C4.575 11.125 4.5 10.95 4.5 10.75C4.5 10.55 4.575 10.375 4.725 10.225C4.875 10.075 5.05 10 5.25 10H7V8.5H5.25C5.05 8.5 4.875 8.425 4.725 8.275C4.575 8.125 4.5 7.95 4.5 7.75C4.5 7.55 4.575 7.375 4.725 7.225C4.875 7.075 5.05 7 5.25 7H7V5.5H3V13ZM13 20C12.45 20 11.9792 19.8042 11.5875 19.4125C11.1958 19.0208 11 18.55 11 18V11.5C11 11.0167 11.0833 10.6167 11.25 10.3C11.4167 9.98333 11.5917 9.70833 11.775 9.475C11.9583 9.24167 12.125 9.05417 12.275 8.9125C12.425 8.77083 12.5 8.63333 12.5 8.5V8C12.2167 8 11.9792 7.90417 11.7875 7.7125C11.5958 7.52083 11.5 7.28333 11.5 7C11.5 6.71667 11.5958 6.47917 11.7875 6.2875C11.9792 6.09583 12.2167 6 12.5 6H17.5C17.7833 6 18.0208 6.09583 18.2125 6.2875C18.4042 6.47917 18.5 6.71667 18.5 7C18.5 7.28333 18.4042 7.52083 18.2125 7.7125C18.0208 7.90417 17.7833 8 17.5 8V8.5C17.5 8.63333 17.5833 8.78333 17.75 8.95C17.9167 9.11667 18.1 9.31667 18.3 9.55C18.4833 9.78333 18.6458 10.0583 18.7875 10.375C18.9292 10.6917 19 11.0667 19 11.5V18C19 18.55 18.8042 19.0208 18.4125 19.4125C18.0208 19.8042 17.55 20 17 20H13ZM13 12H17V11.5C17 11.25 16.925 11.0333 16.775 10.85C16.625 10.6667 16.4583 10.4667 16.275 10.25C16.0917 10.0333 15.9167 9.79167 15.75 9.525C15.5833 9.25833 15.5 8.91667 15.5 8.5V8H14.5V8.5C14.5 8.9 14.4208 9.23333 14.2625 9.5C14.1042 9.76667 13.9333 10.0083 13.75 10.225C13.5667 10.4417 13.3958 10.6458 13.2375 10.8375C13.0792 11.0292 13 11.25 13 11.5V12ZM13 15H17V13.5H13V15ZM13 18H17V16.5H13V18ZM13 15H17H13Z"
-                          fill="#94A3B8" />
+
+                      <svg *ngSwitchCase="'surgery'" width="19" height="21" viewBox="0 0 19 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 20.5L4 19V15H3C2.45 15 1.97917 14.8042 1.5875 14.4125C1.19583 14.0208 1 13.55 1 13V5.5C0.716667 5.5 0.479167 5.40417 0.2875 5.2125C0.0958333 5.02083 0 4.78333 0 4.5C0 4.21667 0.0958333 3.97917 0.2875 3.7875C0.479167 3.59583 0.716667 3.5 1 3.5H4V2H3.5C3.21667 2 2.97917 1.90417 2.7875 1.7125C2.59583 1.52083 2.5 1.28333 2.5 1C2.5 0.716667 2.59583 0.479167 2.7875 0.2875C2.97917 0.0958333 3.21667 0 3.5 0H6.5C6.78333 0 7.02083 0.0958333 7.2125 0.2875C7.40417 0.479167 7.5 0.716667 7.5 1C7.5 1.28333 7.40417 1.52083 7.2125 1.7125C7.02083 1.90417 6.78333 2 6.5 2H6V3.5H9C9.28333 3.5 9.52083 3.59583 9.7125 3.7875C9.90417 3.97917 10 4.21667 10 4.5C10 4.78333 9.90417 5.02083 9.7125 5.2125C9.52083 5.40417 9.28333 5.5 9 5.5V13C9 13.55 8.80417 14.0208 8.4125 14.4125C8.02083 14.8042 7.55 15 7 15H6V20.5ZM13 20C12.45 20 11.9792 19.8042 11.5875 19.4125C11.1958 19.0208 11 18.55 11 18V11.5C11 11.0167 11.0833 10.6167 11.25 10.3C11.4167 9.98333 11.5917 9.70833 11.775 9.475C11.9583 9.24167 12.125 9.05417 12.275 8.9125C12.425 8.77083 12.5 8.63333 12.5 8.5V8H17.5V8.5C17.5 8.63333 17.5833 8.78333 17.75 8.95C17.9167 9.11667 18.1 9.31667 18.3 9.55C18.4833 9.78333 18.6458 10.0583 18.7875 10.375C18.9292 10.6917 19 11.0667 19 11.5V18C19 18.55 18.8042 19.0208 18.4125 19.4125C18.0208 19.8042 17.55 20 17 20H13Z" fill="#94A3B8"/>
                       </svg>
-                      <svg *ngSwitchCase="'lab'" width="19" height="18" viewBox="0 0 19 18" fill="none"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path
-                          d="M2.0285 18C1.1785 18 0.574338 17.6208 0.216005 16.8625C-0.142329 16.1042 -0.0548287 15.4 0.478505 14.75L6.0285 8V2H5.0285C4.74517 2 4.50767 1.90417 4.316 1.7125C4.12434 1.52083 4.0285 1.28333 4.0285 1C4.0285 0.716667 4.12434 0.479167 4.316 0.2875C4.50767 0.0958333 4.74517 0 5.0285 0H13.0285C13.3118 0 13.5493 0.0958333 13.741 0.2875C13.9327 0.479167 14.0285 0.716667 14.0285 1C14.0285 1.28333 13.9327 1.52083 13.741 1.7125C13.5493 1.90417 13.3118 2 13.0285 2H12.0285V8L17.5785 14.75C18.1118 15.4 18.1993 16.1042 17.841 16.8625C17.4827 17.6208 16.8785 18 16.0285 18H2.0285ZM2.0285 16H16.0285L10.0285 8.7V2H8.0285V8.7L2.0285 16Z"
-                          fill="#94A3B8" />
+
+                      <svg *ngSwitchCase="'lab'" width="19" height="18" viewBox="0 0 19 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2.0285 18C1.1785 18 0.574338 17.6208 0.216005 16.8625C-0.142329 16.1042 -0.0548287 15.4 0.478505 14.75L6.0285 8V2H5.0285C4.74517 2 4.50767 1.90417 4.316 1.7125C4.12434 1.52083 4.0285 1.28333 4.0285 1C4.0285 0.716667 4.12434 0.479167 4.316 0.2875C4.50767 0.0958333 4.74517 0 5.0285 0H13.0285C13.3118 0 13.5493 0.0958333 13.741 0.2875C13.9327 0.479167 14.0285 0.716667 14.0285 1C14.0285 1.28333 13.9327 1.52083 13.741 1.7125C13.5493 1.90417 13.3118 2 13.0285 2H12.0285V8L17.5785 14.75C18.1118 15.4 18.1993 16.1042 17.841 16.8625C17.4827 17.6208 16.8785 18 16.0285 18H2.0285ZM2.0285 16H16.0285L10.0285 8.7V2H8.0285V8.7L2.0285 16Z" fill="#94A3B8"/>
                       </svg>
-                      <svg *ngSwitchCase="'consultation'" width="20" height="20" viewBox="0 0 20 20" fill="none"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path
-                          d="M11.5 20C9.7 20 8.16667 19.3667 6.9 18.1C5.63333 16.8333 5 15.3 5 13.5V12.925C3.56667 12.6917 2.375 12.0208 1.425 10.9125C0.475 9.80417 0 8.5 0 7V1H3V0H5V4H3V3H2V7C2 8.1 2.39167 9.04167 3.175 9.825C3.95833 10.6083 4.9 11 6 11C7.1 11 8.04167 10.6083 8.825 9.825C9.60833 9.04167 10 8.1 10 7V3H9V4H7V0H9V1H12V7C12 8.5 11.525 9.80417 10.575 10.9125C9.625 12.0208 8.43333 12.6917 7 12.925V13.5C7 14.75 7.4375 15.8125 8.3125 16.6875C9.1875 17.5625 10.25 18 11.5 18C12.75 18 13.8125 17.5625 14.6875 16.6875C15.5625 15.8125 16 14.75 16 13.5V11.825C15.4167 11.625 14.9375 11.2667 14.5625 10.75C14.1875 10.2333 14 9.65 14 9C14 8.16667 14.2917 7.45833 14.875 6.875C15.4583 6.29167 16.1667 6 17 6C17.8333 6 18.5417 6.29167 19.125 6.875C19.7083 7.45833 20 8.16667 20 9C20 9.65 19.8125 10.2333 19.4375 10.75C19.0625 11.2667 18.5833 11.625 18 11.825V13.5C18 15.3 17.3667 16.8333 16.1 18.1C14.8333 19.3667 13.3 20 11.5 20ZM17 10C17.2833 10 17.5208 9.90417 17.7125 9.7125C17.9042 9.52083 18 9.28333 18 9C18 8.71667 17.9042 8.47917 17.7125 8.2875C17.5208 8.09583 17.2833 8 17 8C16.7167 8 16.4792 8.09583 16.2875 8.2875C16.0958 8.47917 16 8.71667 16 9C16 9.28333 16.0958 9.52083 16.2875 9.7125C16.4792 9.90417 16.7167 10 17 10Z"
-                          fill="#94A3B8" />
+
+                      <svg *ngSwitchCase="'consultation'" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M11.5 20C9.7 20 8.16667 19.3667 6.9 18.1C5.63333 16.8333 5 15.3 5 13.5V12.925C3.56667 12.6917 2.375 12.0208 1.425 10.9125C0.475 9.80417 0 8.5 0 7V1H3V0H5V4H3V3H2V7C2 8.1 2.39167 9.04167 3.175 9.825C3.95833 10.6083 4.9 11 6 11C7.1 11 8.04167 10.6083 8.825 9.825C9.60833 9.04167 10 8.1 10 7V3H9V4H7V0H9V1H12V7C12 8.5 11.525 9.80417 10.575 10.9125C9.625 12.0208 8.43333 12.6917 7 12.925V13.5C7 14.75 7.4375 15.8125 8.3125 16.6875C9.1875 17.5625 10.25 18 11.5 18C12.75 18 13.8125 17.5625 14.6875 16.6875C15.5625 15.8125 16 14.75 16 13.5V11.825C15.4167 11.625 14.9375 11.2667 14.5625 10.75C14.1875 10.2333 14 9.65 14 9C14 8.16667 14.2917 7.45833 14.875 6.875C15.4583 6.29167 16.1667 6 17 6C17.8333 6 18.5417 6.29167 19.125 6.875C19.7083 7.45833 20 8.16667 20 9C20 9.65 19.8125 10.2333 19.4375 10.75C19.0625 11.2667 18.5833 11.625 18 11.825V13.5C18 15.3 17.3667 16.8333 16.1 18.1C14.8333 19.3667 13.3 20 11.5 20Z" fill="#94A3B8"/>
                       </svg>
 
                     </ng-container>
                   </div>
-                  <span>{{ getRequestTypeLabel(row) }}</span>
+                  <span>{{ typeLabel(row.type) }}</span>
                 </div>
               </td>
 
-              <td class="px-4 py-4 text-[15px] text-[#6B7280]">
-                {{ row.service }}
-              </td>
+              <!-- Service -->
+              <td class="px-4 py-4 text-[15px] text-[#6B7280]">{{ row.service }}</td>
 
+              <!-- Montant -->
               <td class="px-4 py-4 text-[16px] font-semibold text-[#1F2937]">
-                {{ row.amount }}
+                {{ formatAmount(row.totalAmount) }}
               </td>
 
-              <td class="px-4 py-4 text-[15px] text-[#6B7280]">
-                {{ row.date }}
-              </td>
+              <!-- Date -->
+              <td class="px-4 py-4 text-[15px] text-[#6B7280]">{{ formatDate(row.createdAt) }}</td>
 
+              <!-- Statut -->
               <td class="px-4 py-4">
                 <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[13px] font-semibold"
-                  [ngClass]="row.statusClass">
-                  <span class="h-2 w-2 rounded-full" [ngClass]="row.statusDotClass"></span>
-                  {{ row.status }}
+                  [ngClass]="statusBadge(row.status)">
+                  <span class="h-2 w-2 rounded-full" [ngClass]="statusDot(row.status)"></span>
+                  {{ statusLabel(row.status) }}
                 </span>
               </td>
 
-              <td class="px-4 py-4 pr-6 text-center text-[#1F2937]">
-                <a [routerLink]="['/demandes', row.detailId]"
-                  class="inline-flex h-8 w-8 items-center justify-center rounded-full transition hover:bg-slate-100"
-                  aria-label="Voir le détail">
-                  <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-                      d="M2.5 12s3.5-6.5 9.5-6.5 9.5 6.5 9.5 6.5-3.5 6.5-9.5 6.5S2.5 12 2.5 12Z"></path>
-                    <circle cx="12" cy="12" r="2.5" stroke-width="1.8"></circle>
-                  </svg>
-                </a>
+              <!-- Actions -->
+              <td class="px-4 py-4 pr-6">
+                <div class="flex items-center justify-center gap-1">
+                  <!-- Voir le détail -->
+                  <a [routerLink]="['/hospital/demandes', row.id]"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-full transition hover:bg-slate-100 text-[#6B7280]"
+                    title="Voir le détail">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                        d="M2.5 12s3.5-6.5 9.5-6.5 9.5 6.5 9.5 6.5-3.5 6.5-9.5 6.5S2.5 12 2.5 12Z"></path>
+                      <circle cx="12" cy="12" r="2.5" stroke-width="1.8"></circle>
+                    </svg>
+                  </a>
+
+                  <!-- Valider (PENDING uniquement) -->
+                  <button *ngIf="isPending(row)" type="button"
+                    (click)="openValidate(row, $event)"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-full transition hover:bg-green-50 text-[#16A34A]"
+                    title="Valider">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                  </button>
+
+                  <!-- Rejeter (PENDING uniquement) -->
+                  <button *ngIf="isPending(row)" type="button"
+                    (click)="openReject(row, $event)"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-full transition hover:bg-red-50 text-[#DC2626]"
+                    title="Rejeter">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <div
-        class="flex flex-col gap-4 border-t border-slate-100 px-4 py-4 text-[#6B7280] sm:flex-row sm:items-center sm:justify-end sm:px-6">
-        <div class="flex items-center gap-2 text-sm">
-          <span>éléments par page:</span>
+      <!-- Pagination -->
+      <div *ngIf="!loading && !loadError && rows.length > 0"
+        class="flex flex-col gap-4 border-t border-slate-100 px-4 py-4 text-[#6B7280] sm:flex-row sm:items-center sm:justify-between sm:px-6">
+
+        <span class="text-sm">
+          {{ startItem }}–{{ endItem }} sur {{ total }} demande{{ total > 1 ? 's' : '' }}
+        </span>
+
+        <div class="flex items-center gap-2">
+          <!-- Précédent -->
           <button type="button"
-            class="inline-flex items-center gap-1 rounded-md px-2 py-1 font-medium text-[#334155] transition hover:bg-slate-100">
-            10
-            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 9l6 6 6-6"></path>
+            (click)="goToPage(page - 1)"
+            [disabled]="page === 1"
+            class="flex h-9 w-9 items-center justify-center rounded-full transition"
+            [ngClass]="page === 1 ? 'text-[#C6CBD4] cursor-not-allowed' : 'text-[#6B7280] hover:bg-slate-100'"
+            aria-label="Précédent">
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="m15 18-6-6 6-6"></path>
+            </svg>
+          </button>
+
+          <!-- Numéros de pages -->
+          <button *ngFor="let p of pageNumbers"
+            type="button"
+            (click)="goToPage(p)"
+            class="flex h-9 w-9 items-center justify-center rounded-full text-sm font-medium transition"
+            [ngClass]="p === page
+              ? 'bg-[#124A92] text-white'
+              : 'text-[#6B7280] hover:bg-slate-100'">
+            {{ p }}
+          </button>
+
+          <!-- Suivant -->
+          <button type="button"
+            (click)="goToPage(page + 1)"
+            [disabled]="page === totalPages"
+            class="flex h-9 w-9 items-center justify-center rounded-full transition"
+            [ngClass]="page === totalPages ? 'text-[#C6CBD4] cursor-not-allowed' : 'text-[#6B7280] hover:bg-slate-100'"
+            aria-label="Suivant">
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="m9 6 6 6-6 6"></path>
             </svg>
           </button>
         </div>
-
-        <div class="flex items-center gap-5 text-sm">
-          <span>{{ paginationLabel }}</span>
-          <div class="flex items-center gap-2">
-            <button type="button"
-              class="flex h-9 w-9 items-center justify-center rounded-full text-[#C6CBD4] transition hover:bg-slate-100 hover:text-[#6B7280]"
-              aria-label="Précédent">
-              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="m15 18-6-6 6-6"></path>
-              </svg>
-            </button>
-            <button type="button"
-              class="flex h-9 w-9 items-center justify-center rounded-full text-[#6B7280] transition hover:bg-slate-100"
-              aria-label="Suivant">
-              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="m9 6 6 6-6 6"></path>
-              </svg>
-            </button>
-          </div>
-        </div>
       </div>
+
     </section>
+  </div>
+</div>
+
+<!-- ── Modal Valider ──────────────────────────────────────────────────────── -->
+<div *ngIf="showValidateModal"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+  (click)="closeModals()">
+  <div class="w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl" (click)="$event.stopPropagation()">
+
+    <!-- Icône -->
+    <div class="mb-5 flex justify-center">
+      <svg width="72" height="72" viewBox="0 0 95 95" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M51.2402 58.166L43.8184 58.166L43.8184 28.4785L51.2402 28.4785L51.2402 58.166Z" fill="#EFBD8E"/>
+        <path d="M47.5 65.291C45.3685 65.291 43.6406 67.0189 43.6406 69.1504C43.6406 71.2819 45.3685 73.0098 47.5 73.0098C49.6315 73.0098 51.3594 71.2819 51.3594 69.1504C51.3594 67.0189 49.6315 65.291 47.5 65.291Z" fill="#EFBD8E"/>
+        <path d="M47.5 94.9776C59.6972 95.3703 71.5436 90.595 80.446 81.6968C89.3483 72.7986 94.5815 60.5025 95 47.5C94.5815 34.4975 89.3483 22.2014 80.446 13.3032C71.5436 4.40504 59.6972 -0.370316 47.5 0.0224457C35.3028 -0.370316 23.4564 4.40504 14.554 13.3032C5.65166 22.2014 0.418472 34.4975 0 47.5C0.418472 60.5025 5.65166 72.7986 14.554 81.6968C23.4564 90.595 35.3028 95.3703 47.5 94.9776ZM47.5 7.93537C57.7293 7.54133 67.6886 11.4827 75.1994 18.8972C82.7101 26.3117 87.1609 36.5959 87.5781 47.5C87.1609 58.4041 82.7101 68.6883 75.1994 76.1028C67.6886 83.5174 57.7293 87.4587 47.5 87.0646C37.2707 87.4587 27.3114 83.5174 19.8006 76.1028C12.2899 68.6883 7.83908 58.4041 7.42188 47.5C7.83908 36.5959 12.2899 26.3117 19.8006 18.8972C27.3114 11.4827 37.2707 7.54133 47.5 7.93537Z" fill="#EFBD8E"/>
+      </svg>
+    </div>
+
+    <h2 class="mb-2 text-center text-xl font-semibold text-[#1F2937]">Valider la demande</h2>
+    <p class="mb-6 text-center text-sm text-[#6B7280]">
+      <ng-container *ngIf="selectedRow?.type === 'HOSPITALIZATION'">
+        Proposez une <strong>date</strong>, une <strong>heure</strong> et un <strong>montant</strong>. Le patient recevra une notification automatique.
+      </ng-container>
+      <ng-container *ngIf="selectedRow?.type !== 'HOSPITALIZATION'">
+        Confirmez la validation de cette demande.
+      </ng-container>
+    </p>
+
+    <!-- Date + Heure (hospitalisation) -->
+    <div *ngIf="selectedRow?.type === 'HOSPITALIZATION'" class="mb-4 grid grid-cols-2 gap-4">
+      <div>
+        <label class="mb-1 block text-sm font-medium text-[#374151]">Date du rendez-vous</label>
+        <input type="date" [(ngModel)]="validateDate"
+          class="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm text-[#334155] outline-none transition focus:border-[#124A92]"/>
+      </div>
+      <div>
+        <label class="mb-1 block text-sm font-medium text-[#374151]">Heure</label>
+        <input type="time" [(ngModel)]="validateTime"
+          class="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm text-[#334155] outline-none transition focus:border-[#124A92]"/>
+      </div>
+    </div>
+
+    <!-- Montant (hospitalisation) -->
+    <div *ngIf="selectedRow?.type === 'HOSPITALIZATION'" class="mb-4">
+      <label class="mb-1 block text-sm font-medium text-[#374151]">
+        Montant (FCFA) <span class="text-red-500">*</span>
+      </label>
+      <input type="number" [(ngModel)]="validatePrice" placeholder="ex: 25000" min="1"
+        class="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm text-[#334155] outline-none transition focus:border-[#124A92] placeholder:text-[#9CA3AF]"/>
+    </div>
+
+    <!-- Notes -->
+    <div class="mb-6">
+      <label class="mb-1 block text-sm font-medium text-[#374151]">Notes complémentaires (optionnel)</label>
+      <textarea [(ngModel)]="validateNote" rows="3"
+        placeholder="Instructions particulières pour le patient"
+        class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-[#334155] outline-none transition resize-none focus:border-[#124A92] placeholder:text-[#9CA3AF]"></textarea>
+    </div>
+
+    <!-- Boutons -->
+    <div class="flex gap-3">
+      <button type="button" (click)="confirmValidate()" [disabled]="isSubmitting"
+        class="flex-1 rounded-xl bg-[#124A92] py-3 text-sm font-semibold text-white transition hover:bg-[#0F3E79] disabled:opacity-60">
+        {{ isSubmitting ? 'En cours…' : 'Valider' }}
+      </button>
+      <button type="button" (click)="closeModals()" [disabled]="isSubmitting"
+        class="flex-1 rounded-xl border border-slate-200 bg-slate-50 py-3 text-sm font-semibold text-[#374151] transition hover:bg-slate-100 disabled:opacity-60">
+        Annuler
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal Rejeter ──────────────────────────────────────────────────────── -->
+<div *ngIf="showRejectModal"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+  (click)="closeModals()">
+  <div class="w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl" (click)="$event.stopPropagation()">
+
+    <!-- Icône -->
+    <div class="mb-5 flex justify-center">
+      <div class="flex h-16 w-16 items-center justify-center rounded-full border-2 border-[#DC2626]">
+        <svg class="h-7 w-7 text-[#DC2626]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </div>
+    </div>
+
+    <h2 class="mb-2 text-center text-xl font-semibold text-[#1F2937]">Rejeter la demande</h2>
+    <p class="mb-6 text-center text-sm text-[#6B7280]">
+      Indiquez le motif du rejet. Le patient sera informé automatiquement.
+    </p>
+
+    <!-- Motif -->
+    <div class="mb-6">
+      <label class="mb-1 block text-sm font-medium text-[#374151]">Motif du rejet (optionnel)</label>
+      <textarea [(ngModel)]="rejectReason" rows="4"
+        placeholder="Ex : capacité insuffisante, dossier incomplet…"
+        class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-[#334155] outline-none transition resize-none focus:border-[#DC2626] placeholder:text-[#9CA3AF]"></textarea>
+    </div>
+
+    <!-- Boutons -->
+    <div class="flex gap-3">
+      <button type="button" (click)="confirmReject()" [disabled]="isSubmitting"
+        class="flex-1 rounded-xl bg-[#DC2626] py-3 text-sm font-semibold text-white transition hover:bg-[#B91C1C] disabled:opacity-60">
+        {{ isSubmitting ? 'En cours…' : 'Confirmer le rejet' }}
+      </button>
+      <button type="button" (click)="closeModals()" [disabled]="isSubmitting"
+        class="flex-1 rounded-xl border border-slate-200 bg-slate-50 py-3 text-sm font-semibold text-[#374151] transition hover:bg-slate-100 disabled:opacity-60">
+        Annuler
+      </button>
+    </div>
   </div>
 </div>

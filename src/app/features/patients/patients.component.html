@@ -3,9 +3,18 @@
   <div class="max-w-6xl mx-auto">
 
     <!-- En-tête -->
-    <div class="mb-8">
-      <h1 class="text-2xl font-semibold text-[#343A40] mb-2">Dossiers patients</h1>
-      <p class="text-[#343A40]">Recherchez un patient et accédez à son dossier médical en toute sécurité.</p>
+    <div class="mb-8 flex items-start justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-semibold text-[#343A40] mb-2">Dossiers patients</h1>
+        <p class="text-[#343A40]">Recherchez un patient et accédez à son dossier médical en toute sécurité.</p>
+      </div>
+      <button (click)="openAddPatientModal()"
+        class="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 bg-[#104382] text-white rounded-lg text-sm font-medium hover:bg-[#0d3568] transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Nouveau patient
+      </button>
     </div>
 
     <!-- Carte de recherche -->
@@ -17,9 +26,45 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          <input type="text" [(ngModel)]="rechercheTexte" placeholder="Téléphone du patient ou ID dossier"
-            class="w-full pl-10 pr-4 py-3 text-[#777777] border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none required" />
+          <input
+            type="text"
+            [(ngModel)]="rechercheTexte"
+            (input)="onSearchInput()"
+            (keydown.enter)="handleOpenDossier()"
+            (blur)="hideAutocompleteDelayed()"
+            placeholder="Téléphone du patient ou référence (ex: NDIAYE-G000025)"
+            class="w-full pl-10 pr-4 py-3 text-[#777777] border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none"
+            autocomplete="off" />
+
+          <!-- Dropdown autocomplete -->
+          <div *ngIf="showAutocomplete && autocompleteResults.length > 0"
+            class="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-xl z-50 mt-1 max-h-64 overflow-y-auto">
+            <div *ngFor="let s of autocompleteResults"
+              (mousedown)="selectFromAutocomplete(s)"
+              class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0">
+              <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0"
+                [ngClass]="getInitialesColor(s.initiales)">
+                {{ s.initiales }}
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-[#343A40] truncate">{{ s.nom }}</p>
+                <p class="text-xs text-[#777777] truncate">{{ s.telephone }} · {{ s.id }}</p>
+              </div>
+              <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Spinner de recherche -->
+          <div *ngIf="searchLoading" class="absolute right-3 top-1/2 -translate-y-1/2">
+            <svg class="animate-spin h-4 w-4 text-[#104382]" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+          </div>
         </div>
+
         <button (click)="handleOpenDossier()"
           class="bg-[#104382] text-sm text-white px-6 py-3 rounded-lg transition flex items-center gap-2">
           Ouvrir le dossier
@@ -28,198 +73,46 @@
           </svg>
         </button>
       </div>
-      <p class="text-xs text-[#343A40] mt-3">Exemple : 77 123 45 67 ou PT-000245</p>
+      <p class="text-xs text-[#343A40] mt-3">Exemple : 77 123 45 67 ou NDIAYE-G000025</p>
     </div>
-  </div>
-</div>
 
-<!-- Modal d'accès -->
-<div *ngIf="showAccessModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-  <div class="bg-white rounded-lg shadow-xl max-w-xl w-full">
-    <div class="p-6">
-      <!-- En-tête du modal -->
-      <div class="flex items-start gap-4 mb-6">
-        <div class="w-12 h-12 rounded-lg flex items-center justify-center font-bold text-lg flex-shrink-0"
-          [ngClass]="getInitialesColor(selectedPatient?.initiales || '')">
-          {{ selectedPatient?.initiales }}
-        </div>
-        <div class="flex-1">
-          <h3 class="text-xl font-semibold text-gray-900">{{ selectedPatient?.nom }}</h3>
-          <p class="text-sm text-gray-600">{{ selectedPatient?.telephone }}</p>
-        </div>
-        <button (click)="closeModal()" class="text-gray-400 hover:text-gray-600 transition">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-
-      <div class="text-right text-sm text-gray-600 mb-6">
-        Dernière consultation : {{ selectedPatient?.lastVisit }}
-      </div>
-
-      <!-- Options d'accès -->
-      <div class="space-y-3 mb-6">
-        <!-- Accès partiel -->
-        <div aria-disabled="true"
-          class="border border-gray-200 rounded-lg p-4 bg-gray-50 opacity-50 cursor-not-allowed pointer-events-none transition">
-          <div class="flex items-start gap-3">
-
-            <svg width="18" height="24" viewBox="0 0 18 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M5.25 10.5C5.05109 10.5 4.86032 10.579 4.71967 10.7197C4.57902 10.8603 4.5 11.0511 4.5 11.25C4.5 11.4489 4.57902 11.6397 4.71967 11.7803C4.86032 11.921 5.05109 12 5.25 12H12.75C12.9489 12 13.1397 11.921 13.2803 11.7803C13.421 11.6397 13.5 11.4489 13.5 11.25C13.5 11.0511 13.421 10.8603 13.2803 10.7197C13.1397 10.579 12.9489 10.5 12.75 10.5H5.25ZM4.5 14.25C4.5 14.0511 4.57902 13.8603 4.71967 13.7197C4.86032 13.579 5.05109 13.5 5.25 13.5H12.75C12.9489 13.5 13.1397 13.579 13.2803 13.7197C13.421 13.8603 13.5 14.0511 13.5 14.25C13.5 14.4489 13.421 14.6397 13.2803 14.7803C13.1397 14.921 12.9489 15 12.75 15H5.25C5.05109 15 4.86032 14.921 4.71967 14.7803C4.57902 14.6397 4.5 14.4489 4.5 14.25ZM4.5 17.25C4.5 17.0511 4.57902 16.8603 4.71967 16.7197C4.86032 16.579 5.05109 16.5 5.25 16.5H8.25C8.44891 16.5 8.63968 16.579 8.78033 16.7197C8.92098 16.8603 9 17.0511 9 17.25C9 17.4489 8.92098 17.6397 8.78033 17.7803C8.63968 17.921 8.44891 18 8.25 18H5.25C5.05109 18 4.86032 17.921 4.71967 17.7803C4.57902 17.6397 4.5 17.4489 4.5 17.25Z"
-                fill="black" />
-              <path
-                d="M11.25 0H3C2.20435 0 1.44129 0.316071 0.87868 0.87868C0.31607 1.44129 0 2.20435 0 3V21C0 21.7956 0.31607 22.5587 0.87868 23.1213C1.44129 23.6839 2.20435 24 3 24H15C15.7956 24 16.5587 23.6839 17.1213 23.1213C17.6839 22.5587 18 21.7956 18 21V6.75L11.25 0ZM11.25 1.5V4.5C11.25 5.09674 11.4871 5.66903 11.909 6.09099C12.331 6.51295 12.9033 6.75 13.5 6.75H16.5V21C16.5 21.3978 16.342 21.7794 16.0607 22.0607C15.7794 22.342 15.3978 22.5 15 22.5H3C2.60218 22.5 2.22064 22.342 1.93934 22.0607C1.65804 21.7794 1.5 21.3978 1.5 21V3C1.5 2.60218 1.65804 2.22064 1.93934 1.93934C2.22064 1.65804 2.60218 1.5 3 1.5H11.25Z"
-                fill="black" />
-            </svg>
-            <div class="flex-1">
-              <div class="font-semibold text-gray-700 mb-1">Accès partiel</div>
-              <div class="text-sm text-gray-600">Vous verrez uniquement les ordonnances que vous avez prescrites.</div>
-            </div>
-            <div class="flex-shrink-0">
-              <div class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center">
-              </div>
-            </div>
+    <!-- 3 derniers patients inscrits -->
+    <div *ngIf="!loadingRecents && patientsRecents.length > 0" class="mt-6">
+      <h2 class="text-base font-semibold text-[#343A40] mb-4">Derniers patients inscrits</h2>
+      <div class="space-y-3">
+        <div *ngFor="let p of patientsRecents"
+          class="bg-white rounded-lg shadow-sm p-4 flex items-center gap-4 cursor-pointer hover:shadow-md transition-shadow"
+          (click)="openPatientDossierFromRecent(p)">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold text-base flex-shrink-0"
+            [ngClass]="getInitialesColor(p.initiales)">
+            {{ p.initiales }}
           </div>
-        </div>
-
-        <!-- Accès complet (OTP) -->
-        <div (click)="selectAccessType('complet')" [class.ring-2]="accessType === 'complet'"
-          [class.ring-[#104382]]="accessType === 'complet'"
-          class="border border-gray-300 rounded-lg p-4 cursor-pointer hover:border-[#104382] transition">
-          <div class="flex items-start gap-3">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M16.5 7.5C16.5 8.69347 16.0259 9.83807 15.182 10.682C14.3381 11.5259 13.1935 12 12 12C10.8065 12 9.66193 11.5259 8.81802 10.682C7.97411 9.83807 7.5 8.69347 7.5 7.5C7.5 6.30653 7.97411 5.16193 8.81802 4.31802C9.66193 3.47411 10.8065 3 12 3C13.1935 3 14.3381 3.47411 15.182 4.31802C16.0259 5.16193 16.5 6.30653 16.5 7.5ZM12 10.5C12.7956 10.5 13.5587 10.1839 14.1213 9.62132C14.6839 9.05871 15 8.29565 15 7.5C15 6.70435 14.6839 5.94129 14.1213 5.37868C13.5587 4.81607 12.7956 4.5 12 4.5C11.2044 4.5 10.4413 4.81607 9.87868 5.37868C9.31607 5.94129 9 6.70435 9 7.5C9 8.29565 9.31607 9.05871 9.87868 9.62132C10.4413 10.1839 11.2044 10.5 12 10.5ZM12 19.494V21H4.5C4.5 21 3 21 3 19.5C3 18 4.5 13.5 12 13.5C12.845 13.502 13.617 13.5555 14.316 13.6605C13.8539 14.0627 13.4486 14.526 13.1115 15.0375C12.7415 15.0125 12.3708 15 12 15C8.565 15 6.726 16.02 5.748 16.998C4.731 18.015 4.503 19.125 4.5 19.494H12ZM13.5 19.5C13.5 19.1022 13.658 18.7206 13.9393 18.4393C14.2206 18.158 14.6022 18 15 18V16.5C15 15.7044 15.3161 14.9413 15.8787 14.3787C16.4413 13.8161 17.2044 13.5 18 13.5C18.7956 13.5 19.5587 13.8161 20.1213 14.3787C20.6839 14.9413 21 15.7044 21 16.5V18C21.3978 18 21.7794 18.158 22.0607 18.4393C22.342 18.7206 22.5 19.1022 22.5 19.5V22.5C22.5 22.8978 22.342 23.2794 22.0607 23.5607C21.7794 23.842 21.3978 24 21 24H15C14.6022 24 14.2206 23.842 13.9393 23.5607C13.658 23.2794 13.5 22.8978 13.5 22.5V19.5ZM18 15C17.6022 15 17.2206 15.158 16.9393 15.4393C16.658 15.7206 16.5 16.1022 16.5 16.5V18H19.5V16.5C19.5 16.1022 19.342 15.7206 19.0607 15.4393C18.7794 15.158 18.3978 15 18 15Z"
-                fill="black" />
-            </svg>
-
-            <div class="flex-1">
-              <div class="font-semibold text-gray-900 mb-1">Accès complet (OTP)</div>
-              <div class="text-sm text-gray-600">Nécessite l'autorisation du patient via code OTP.</div>
-            </div>
-            <div class="flex-shrink-0">
-              <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center"
-                [class.border-[#104382]]="accessType === 'complet'" [class.border-gray-300]="accessType !== 'complet'">
-                <div *ngIf="accessType === 'complet'" class="w-3 h-3 rounded-full bg-[#104382]"></div>
-              </div>
-            </div>
+          <div class="flex-1">
+            <p class="text-sm font-semibold text-[#343A40]">{{ p.nom }}</p>
+            <p class="text-xs text-[#777777] mt-0.5">{{ p.id }}</p>
           </div>
+          <div class="text-right flex-shrink-0">
+            <p class="text-xs text-[#777777]">{{ getRelativeDate(p.dateVisite) }}</p>
+          </div>
+          <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
         </div>
       </div>
+    </div>
 
-      <!-- Message d'erreur OTP -->
-      <p *ngIf="otpError" class="text-sm text-red-500 text-center -mb-2">{{ otpError }}</p>
-
-      <!-- Boutons -->
-      <div class="flex gap-3">
-        <button (click)="closeModal()" [disabled]="otpLoading"
-          class="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed">
-          Fermer
-        </button>
-
-        <button (click)="handleContinue()" [disabled]="!accessType || otpLoading"
-          class="flex-1 px-4 py-3 bg-[#104382] text-white rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-          <svg *ngIf="otpLoading" class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-          </svg>
-          {{ otpLoading ? 'Envoi en cours...' : 'Continuer' }}
-        </button>
+    <!-- Squelette de chargement -->
+    <div *ngIf="loadingRecents" class="mt-6 space-y-3">
+      <div *ngFor="let _ of [1,2,3]" class="bg-white rounded-lg shadow-sm p-4 flex items-center gap-4 animate-pulse">
+        <div class="w-12 h-12 rounded-full bg-gray-200 flex-shrink-0"></div>
+        <div class="flex-1 space-y-2">
+          <div class="h-3 bg-gray-200 rounded w-1/3"></div>
+          <div class="h-2 bg-gray-100 rounded w-1/4"></div>
+        </div>
       </div>
     </div>
   </div>
 </div>
-
-<!-- ===== POPUP : CODE ENVOYÉ ===== -->
-<div *ngIf="showOtpSentPopup" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/40"
-  (click)="cancelOtpSent()">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 flex flex-col items-center gap-4"
-    (click)="$event.stopPropagation()">
-
-    <!-- Icône succès -->
-    <div class="flex items-center justify-center">
-      <svg width="95" height="95" viewBox="0 0 95 95" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path
-          d="M70.2452 34.0264C70.9106 34.7294 71.27 35.6677 71.2443 36.6353C71.2186 37.6029 70.81 38.5208 70.1082 39.1875L43.3438 64.7644C42.6518 65.4153 41.736 65.7751 40.7861 65.7692C39.8501 65.7728 38.9494 65.4125 38.2741 64.7644L24.8918 51.976C24.5207 51.6521 24.2188 51.2566 24.0044 50.8131C23.79 50.3696 23.6675 49.8874 23.6442 49.3954C23.6209 48.9033 23.6973 48.4117 23.8689 47.9499C24.0405 47.4882 24.3037 47.0659 24.6426 46.7085C24.9816 46.3511 25.3893 46.0659 25.8413 45.87C26.2932 45.6742 26.7801 45.5718 27.2727 45.5689C27.7653 45.566 28.2534 45.6628 28.7076 45.8534C29.1618 46.044 29.5728 46.3244 29.9159 46.6779L40.7861 57.0457L65.0841 33.8894C65.7871 33.224 66.7254 32.8646 67.693 32.8903C68.6606 32.916 69.5785 33.3246 70.2452 34.0264ZM95 47.5C95 56.8946 92.2142 66.0782 86.9948 73.8896C81.7754 81.7009 74.357 87.7891 65.6775 91.3843C56.998 94.9794 47.4473 95.9201 38.2332 94.0873C29.0191 92.2545 20.5554 87.7305 13.9124 81.0876C7.26945 74.4446 2.74552 65.9809 0.91272 56.7668C-0.920077 47.5527 0.020581 38.002 3.61574 29.3225C7.2109 20.643 13.2991 13.2246 21.1104 8.00519C28.9218 2.78583 38.1054 0 47.5 0C60.0904 0.0241427 72.1582 5.03635 81.0609 13.9391C89.9637 22.8418 94.9759 34.9096 95 47.5ZM87.6923 47.5C87.6923 39.5507 85.3351 31.7799 80.9187 25.1703C76.5023 18.5608 70.2251 13.4092 62.8809 10.3671C55.5368 7.32509 47.4554 6.52915 39.6589 8.07997C31.8623 9.6308 24.7008 13.4587 19.0798 19.0797C13.4588 24.7007 9.63082 31.8623 8.08 39.6589C6.52917 47.4554 7.32511 55.5367 10.3672 62.8809C13.4092 70.2251 18.5608 76.5023 25.1704 80.9187C31.78 85.3351 39.5507 87.6923 47.5 87.6923C58.156 87.6802 68.372 83.4418 75.9069 75.9069C83.4418 68.372 87.6802 58.1559 87.6923 47.5Z"
-          fill="#00B894" />
-      </svg>
-
-    </div>
-
-    <!-- Titre -->
-    <h2 class="text-2xl font-mem text-[#231F20] mt-2">Code envoyé</h2>
-
-    <!-- Description -->
-    <p class="text-base text-[#231F20] text-center leading-relaxed">
-      Le patient a reçu un code (OTP).<br />
-      Il doit vous le communiquer pour autoriser l'accès complet.
-    </p>
-
-    <!-- Boutons -->
-    <div class="flex items-center gap-6 mt-2">
-      <button (click)="openOtpInput()"
-        class="px-6 py-3 bg-[#104382] hover:bg-[#00a07e] text-white text-base font-semibold rounded-md transition-colors">
-        Saisir le code
-      </button>
-      <button (click)="cancelOtpSent()"
-        class="text-base font-medium text-[#FF6B6B] hover:text-[#c0392b] transition-colors">
-        Annuler
-      </button>
-    </div>
-
-  </div>
-</div>
-
-<!-- ===== POPUP : SAISIE CODE OTP ===== -->
-<div *ngIf="showOtpPopup" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/40"
-  (click)="cancelOtpInput()">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 flex flex-col items-center gap-4"
-    (click)="$event.stopPropagation()">
-
-    <!-- Icône succès -->
-    <div class=" flex items-center justify-center">
-      <svg width="95" height="95" viewBox="0 0 95 95" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path
-          d="M70.2452 34.0264C70.9106 34.7294 71.27 35.6677 71.2443 36.6353C71.2186 37.6029 70.81 38.5208 70.1082 39.1875L43.3438 64.7644C42.6518 65.4153 41.736 65.7751 40.7861 65.7692C39.8501 65.7728 38.9494 65.4125 38.2741 64.7644L24.8918 51.976C24.5207 51.6521 24.2188 51.2566 24.0044 50.8131C23.79 50.3696 23.6675 49.8874 23.6442 49.3954C23.6209 48.9033 23.6973 48.4117 23.8689 47.9499C24.0405 47.4882 24.3037 47.0659 24.6426 46.7085C24.9816 46.3511 25.3893 46.0659 25.8413 45.87C26.2932 45.6742 26.7801 45.5718 27.2727 45.5689C27.7653 45.566 28.2534 45.6628 28.7076 45.8534C29.1618 46.044 29.5728 46.3244 29.9159 46.6779L40.7861 57.0457L65.0841 33.8894C65.7871 33.224 66.7254 32.8646 67.693 32.8903C68.6606 32.916 69.5785 33.3246 70.2452 34.0264ZM95 47.5C95 56.8946 92.2142 66.0782 86.9948 73.8896C81.7754 81.7009 74.357 87.7891 65.6775 91.3843C56.998 94.9794 47.4473 95.9201 38.2332 94.0873C29.0191 92.2545 20.5554 87.7305 13.9124 81.0876C7.26945 74.4446 2.74552 65.9809 0.91272 56.7668C-0.920077 47.5527 0.020581 38.002 3.61574 29.3225C7.2109 20.643 13.2991 13.2246 21.1104 8.00519C28.9218 2.78583 38.1054 0 47.5 0C60.0904 0.0241427 72.1582 5.03635 81.0609 13.9391C89.9637 22.8418 94.9759 34.9096 95 47.5ZM87.6923 47.5C87.6923 39.5507 85.3351 31.7799 80.9187 25.1703C76.5023 18.5608 70.2251 13.4092 62.8809 10.3671C55.5368 7.32509 47.4554 6.52915 39.6589 8.07997C31.8623 9.6308 24.7008 13.4587 19.0798 19.0797C13.4588 24.7007 9.63082 31.8623 8.08 39.6589C6.52917 47.4554 7.32511 55.5367 10.3672 62.8809C13.4092 70.2251 18.5608 76.5023 25.1704 80.9187C31.78 85.3351 39.5507 87.6923 47.5 87.6923C58.156 87.6802 68.372 83.4418 75.9069 75.9069C83.4418 68.372 87.6802 58.1559 87.6923 47.5Z"
-          fill="#00B894" />
-      </svg>
-
-    </div>
-
-    <!-- Titre -->
-    <h2 class="text-2xl font-medium text-[#231F20] mt-1">Saisir le code</h2>
-
-    <!-- Description -->
-    <p class="text-base text-[#231F20] text-center">Entrez le code communiqué par le patient.</p>
-
-    <!-- Inputs OTP (ng-otp-input) -->
-    <ng-otp-input (onInputChange)="onOtpChange($event)" [config]="otpConfig" [disabled]="otpValidating">
-    </ng-otp-input>
-
-    <!-- Erreur -->
-    <p *ngIf="otpError" class="text-sm text-red-500 text-center">{{ otpError }}</p>
-
-    <!-- Boutons -->
-    <div class="flex items-center gap-6 mt-1">
-      <button (click)="validateOtpCode()" [disabled]="otpValue.length < 4 || otpValidating"
-        class="px-6 py-3 bg-[#104382] hover:bg-[#00a07e] text-white text-sm font-semibold rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-        <svg *ngIf="otpValidating" class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-        </svg>
-        {{ otpValidating ? 'Validation...' : 'Valider le code' }}
-      </button>
-      <button (click)="cancelOtpInput()"
-        class="text-sm font-medium text-[#E74C3C] hover:text-[#c0392b] transition-colors">
-        Annuler
-      </button>
-    </div>
-
-  </div>
-</div>
-
 <!-- ==================== MODAL NOUVELLE DEMANDE ==================== -->
 <div *ngIf="showNouvelleDemandeModal" class="fixed inset-0 z-50 flex items-start justify-end pt-40 pr-8"
   (click)="closeNouvelleDemandeModal()">
@@ -307,30 +200,30 @@
           </button>
 
           <!-- Certificat médical -->
-          <button type="button" (click)="goTocertificatmedical()"
-            class="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors duration-200 group">
-            <div
-              class="flex-shrink-0 w-10 h-10 shadow-sm bg-white rounded-lg flex items-center justify-center group-hover:bg-gray-200 transition-colors">
-              <svg width="21" height="23" viewBox="0 0 21 23" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M20.7273 17.4545H17.4545V14.1818H15.2727V17.4545H12V19.6364H15.2727V22.9091H17.4545V19.6364H20.7273M2.18182 0C1.60316 0 1.04821 0.229869 0.63904 0.63904C0.229869 1.04821 0 1.60316 0 2.18182V19.6364C0 20.8473 0.970909 21.8182 2.18182 21.8182H10.7018C10.3091 21.1418 10.0364 20.4 9.90545 19.6364H2.18182V2.18182H9.81818V7.63636H15.2727V12.0873C15.6327 12.0327 16.0036 12 16.3636 12C16.7345 12 17.0945 12.0327 17.4545 12.0873V6.54545L10.9091 0M4.36364 10.9091V13.0909H13.0909V10.9091M4.36364 15.2727V17.4545H9.81818V15.2727H4.36364Z"
-                  fill="#343A40" />
-              </svg>
-            </div>
-            <div class="flex-1 text-left">
-              <h3 class="text-base font-semibold text-[#111111]">Certificat médical</h3>
-              <p class="text-sm text-[#6B7280] mt-0.5">Consultation, soins</p>
-            </div>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M12 22.5C9.21523 22.5 6.54451 21.3938 4.57538 19.4246C2.60625 17.4555 1.5 14.7848 1.5 12C1.5 9.21523 2.60625 6.54451 4.57538 4.57538C6.54451 2.60625 9.21523 1.5 12 1.5C14.7848 1.5 17.4555 2.60625 19.4246 4.57538C21.3938 6.54451 22.5 9.21523 22.5 12C22.5 14.7848 21.3938 17.4555 19.4246 19.4246C17.4555 21.3938 14.7848 22.5 12 22.5ZM12 24C15.1826 24 18.2348 22.7357 20.4853 20.4853C22.7357 18.2348 24 15.1826 24 12C24 8.8174 22.7357 5.76516 20.4853 3.51472C18.2348 1.26428 15.1826 0 12 0C8.8174 0 5.76516 1.26428 3.51472 3.51472C1.26428 5.76516 0 8.8174 0 12C0 15.1826 1.26428 18.2348 3.51472 20.4853C5.76516 22.7357 8.8174 24 12 24Z"
-                fill="#95A5A6" />
-              <path
-                d="M12 6C12.1989 6 12.3897 6.07902 12.5303 6.21967C12.671 6.36032 12.75 6.55109 12.75 6.75V11.25H17.25C17.4489 11.25 17.6397 11.329 17.7803 11.4697C17.921 11.6103 18 11.8011 18 12C18 12.1989 17.921 12.3897 17.7803 12.5303C17.6397 12.671 17.4489 12.75 17.25 12.75H12.75V17.25C12.75 17.4489 12.671 17.6397 12.5303 17.7803C12.3897 17.921 12.1989 18 12 18C11.8011 18 11.6103 17.921 11.4697 17.7803C11.329 17.6397 11.25 17.4489 11.25 17.25V12.75H6.75C6.55109 12.75 6.36032 12.671 6.21967 12.5303C6.07902 12.3897 6 12.1989 6 12C6 11.8011 6.07902 11.6103 6.21967 11.4697C6.36032 11.329 6.55109 11.25 6.75 11.25H11.25V6.75C11.25 6.55109 11.329 6.36032 11.4697 6.21967C11.6103 6.07902 11.8011 6 12 6Z"
-                fill="#95A5A6" />
-            </svg>
+<!--          <button type="button" (click)="goTocertificatmedical()"-->
+<!--            class="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors duration-200 group">-->
+<!--            <div-->
+<!--              class="flex-shrink-0 w-10 h-10 shadow-sm bg-white rounded-lg flex items-center justify-center group-hover:bg-gray-200 transition-colors">-->
+<!--              <svg width="21" height="23" viewBox="0 0 21 23" fill="none" xmlns="http://www.w3.org/2000/svg">-->
+<!--                <path-->
+<!--                  d="M20.7273 17.4545H17.4545V14.1818H15.2727V17.4545H12V19.6364H15.2727V22.9091H17.4545V19.6364H20.7273M2.18182 0C1.60316 0 1.04821 0.229869 0.63904 0.63904C0.229869 1.04821 0 1.60316 0 2.18182V19.6364C0 20.8473 0.970909 21.8182 2.18182 21.8182H10.7018C10.3091 21.1418 10.0364 20.4 9.90545 19.6364H2.18182V2.18182H9.81818V7.63636H15.2727V12.0873C15.6327 12.0327 16.0036 12 16.3636 12C16.7345 12 17.0945 12.0327 17.4545 12.0873V6.54545L10.9091 0M4.36364 10.9091V13.0909H13.0909V10.9091M4.36364 15.2727V17.4545H9.81818V15.2727H4.36364Z"-->
+<!--                  fill="#343A40" />-->
+<!--              </svg>-->
+<!--            </div>-->
+<!--            <div class="flex-1 text-left">-->
+<!--              <h3 class="text-base font-semibold text-[#111111]">Certificat médical</h3>-->
+<!--              <p class="text-sm text-[#6B7280] mt-0.5">Consultation, soins</p>-->
+<!--            </div>-->
+<!--            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">-->
+<!--              <path-->
+<!--                d="M12 22.5C9.21523 22.5 6.54451 21.3938 4.57538 19.4246C2.60625 17.4555 1.5 14.7848 1.5 12C1.5 9.21523 2.60625 6.54451 4.57538 4.57538C6.54451 2.60625 9.21523 1.5 12 1.5C14.7848 1.5 17.4555 2.60625 19.4246 4.57538C21.3938 6.54451 22.5 9.21523 22.5 12C22.5 14.7848 21.3938 17.4555 19.4246 19.4246C17.4555 21.3938 14.7848 22.5 12 22.5ZM12 24C15.1826 24 18.2348 22.7357 20.4853 20.4853C22.7357 18.2348 24 15.1826 24 12C24 8.8174 22.7357 5.76516 20.4853 3.51472C18.2348 1.26428 15.1826 0 12 0C8.8174 0 5.76516 1.26428 3.51472 3.51472C1.26428 5.76516 0 8.8174 0 12C0 15.1826 1.26428 18.2348 3.51472 20.4853C5.76516 22.7357 8.8174 24 12 24Z"-->
+<!--                fill="#95A5A6" />-->
+<!--              <path-->
+<!--                d="M12 6C12.1989 6 12.3897 6.07902 12.5303 6.21967C12.671 6.36032 12.75 6.55109 12.75 6.75V11.25H17.25C17.4489 11.25 17.6397 11.329 17.7803 11.4697C17.921 11.6103 18 11.8011 18 12C18 12.1989 17.921 12.3897 17.7803 12.5303C17.6397 12.671 17.4489 12.75 17.25 12.75H12.75V17.25C12.75 17.4489 12.671 17.6397 12.5303 17.7803C12.3897 17.921 12.1989 18 12 18C11.8011 18 11.6103 17.921 11.4697 17.7803C11.329 17.6397 11.25 17.4489 11.25 17.25V12.75H6.75C6.55109 12.75 6.36032 12.671 6.21967 12.5303C6.07902 12.3897 6 12.1989 6 12C6 11.8011 6.07902 11.6103 6.21967 11.4697C6.36032 11.329 6.55109 11.25 6.75 11.25H11.25V6.75C11.25 6.55109 11.329 6.36032 11.4697 6.21967C11.6103 6.07902 11.8011 6 12 6Z"-->
+<!--                fill="#95A5A6" />-->
+<!--            </svg>-->
 
-          </button>
+<!--          </button>-->
 
           <!-- Imagerie médicale -->
           <button type="button" (click)="goToimageriemedical()"
@@ -425,24 +318,24 @@
             <span>•</span>
             <span>Né(e) le {{ selectedPatient.dateNaissance | date:'dd-MM-yyyy' }}</span>
             <span>•</span>
-            <span class="flex items-center gap-1">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M5.5712 1.85776L5.82404 1.60492C5.79087 1.57166 5.75146 1.54527 5.70807 1.52727C5.66469 1.50927 5.61817 1.5 5.5712 1.5C5.52423 1.5 5.47772 1.50927 5.43433 1.52727C5.39094 1.54527 5.35153 1.57166 5.31836 1.60492L5.5712 1.85776ZM5.5712 1.85776L5.31836 1.60492L5.31765 1.60563C5.31765 1.60706 5.31693 1.60801 5.3155 1.60849L5.30765 1.61635L5.27908 1.64563L5.17265 1.75705C4.62857 2.34123 4.12685 2.96349 3.67132 3.61907C2.85923 4.78971 2 6.38461 2 7.9288H2.71424C2.71424 6.61531 3.46205 5.17469 4.25771 4.02548C4.72069 3.36037 5.23331 2.73123 5.79119 2.14345L5.81619 2.11774L5.8219 2.11203L5.82333 2.1106L5.5712 1.85776ZM9.1424 7.9288C9.1424 6.38533 8.28317 4.79043 7.47179 3.61836C7.01601 2.96299 6.51405 2.34098 5.96975 1.75705L5.86333 1.64563L5.83476 1.61635L5.82761 1.60849L5.82476 1.60635L5.82404 1.60492L5.5712 1.85776L5.31836 2.10989L5.31979 2.11203L5.32622 2.11774C5.36823 2.15957 5.40919 2.20244 5.44907 2.24631C5.96921 2.8043 6.44896 3.39862 6.88469 4.02476C7.68035 5.1754 8.42816 6.61603 8.42816 7.9288H9.1424ZM8.42816 7.9288C8.42816 8.68651 8.12716 9.41319 7.59138 9.94897C7.05559 10.4848 6.32891 10.7858 5.5712 10.7858V11.5C6.51834 11.5 7.42669 11.1237 8.09642 10.454C8.76615 9.78429 9.1424 8.87594 9.1424 7.9288H8.42816ZM5.5712 10.7858C4.81349 10.7858 4.08681 10.4848 3.55102 9.94897C3.01524 9.41319 2.71424 8.68651 2.71424 7.9288H2C2 8.87594 2.37625 9.78429 3.04598 10.454C3.71571 11.1237 4.62406 11.5 5.5712 11.5V10.7858Z"
-                  fill="#6B7280" />
-              </svg>
+<!--            <span class="flex items-center gap-1">-->
+<!--              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">-->
+<!--                <path-->
+<!--                  d="M5.5712 1.85776L5.82404 1.60492C5.79087 1.57166 5.75146 1.54527 5.70807 1.52727C5.66469 1.50927 5.61817 1.5 5.5712 1.5C5.52423 1.5 5.47772 1.50927 5.43433 1.52727C5.39094 1.54527 5.35153 1.57166 5.31836 1.60492L5.5712 1.85776ZM5.5712 1.85776L5.31836 1.60492L5.31765 1.60563C5.31765 1.60706 5.31693 1.60801 5.3155 1.60849L5.30765 1.61635L5.27908 1.64563L5.17265 1.75705C4.62857 2.34123 4.12685 2.96349 3.67132 3.61907C2.85923 4.78971 2 6.38461 2 7.9288H2.71424C2.71424 6.61531 3.46205 5.17469 4.25771 4.02548C4.72069 3.36037 5.23331 2.73123 5.79119 2.14345L5.81619 2.11774L5.8219 2.11203L5.82333 2.1106L5.5712 1.85776ZM9.1424 7.9288C9.1424 6.38533 8.28317 4.79043 7.47179 3.61836C7.01601 2.96299 6.51405 2.34098 5.96975 1.75705L5.86333 1.64563L5.83476 1.61635L5.82761 1.60849L5.82476 1.60635L5.82404 1.60492L5.5712 1.85776L5.31836 2.10989L5.31979 2.11203L5.32622 2.11774C5.36823 2.15957 5.40919 2.20244 5.44907 2.24631C5.96921 2.8043 6.44896 3.39862 6.88469 4.02476C7.68035 5.1754 8.42816 6.61603 8.42816 7.9288H9.1424ZM8.42816 7.9288C8.42816 8.68651 8.12716 9.41319 7.59138 9.94897C7.05559 10.4848 6.32891 10.7858 5.5712 10.7858V11.5C6.51834 11.5 7.42669 11.1237 8.09642 10.454C8.76615 9.78429 9.1424 8.87594 9.1424 7.9288H8.42816ZM5.5712 10.7858C4.81349 10.7858 4.08681 10.4848 3.55102 9.94897C3.01524 9.41319 2.71424 8.68651 2.71424 7.9288H2C2 8.87594 2.37625 9.78429 3.04598 10.454C3.71571 11.1237 4.62406 11.5 5.5712 11.5V10.7858Z"-->
+<!--                  fill="#6B7280" />-->
+<!--              </svg>-->
 
-              Groupe {{ selectedPatient.groupe }}
-            </span>
-            <span>•</span>
-            <span class="flex items-center gap-1">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M1.5 6H3L4.5 1.5L7.5 10.5L9 6H10.5" stroke="#6B7280" stroke-width="0.75" stroke-linecap="round"
-                  stroke-linejoin="round" />
-              </svg>
+<!--              Groupe {{ selectedPatient.groupe }}-->
+<!--            </span>-->
+<!--            <span>•</span>-->
+<!--            <span class="flex items-center gap-1">-->
+<!--              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">-->
+<!--                <path d="M1.5 6H3L4.5 1.5L7.5 10.5L9 6H10.5" stroke="#6B7280" stroke-width="0.75" stroke-linecap="round"-->
+<!--                  stroke-linejoin="round" />-->
+<!--              </svg>-->
 
-              IMC {{ selectedPatient.imc }}
-            </span>
+<!--              IMC {{ selectedPatient.imc }}-->
+<!--            </span>-->
           </div>
         </div>
       </div>
@@ -634,8 +527,8 @@
 
     <!-- Tabs Navigation -->
     <div class="flex items-center gap-8 overflow-x-auto mb-6 border-b border-gray-200">
-      <button *ngFor="let tab of tabs" (click)="selectTab(tab.id)" [class]="activeTab === tab.id 
-          ? 'pb-3 text-sm font-medium text-[#104382] border-b-2 border-[#104382] whitespace-nowrap' 
+      <button *ngFor="let tab of tabs" (click)="selectTab(tab.id)" [class]="activeTab === tab.id
+          ? 'pb-3 text-sm font-medium text-[#104382] border-b-2 border-[#104382] whitespace-nowrap'
           : 'pb-3 text-sm font-medium text-gray-600 hover:text-gray-900 whitespace-nowrap'">
         {{ tab.label }}
       </button>
@@ -699,7 +592,7 @@
           <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6" (click)="$event.stopPropagation()">
             <div class="flex items-center justify-between mb-6">
               <h3 class="text-lg font-semibold text-gray-800">Modifier les données cliniques</h3>
-              <button (click)="closeCliniqueDataModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+              <button (click)="closeCliniqueDataModal()" class="text-gray-400 hover:text-gray-600">âœ•</button>
             </div>
 
             <div class="space-y-4">
@@ -808,7 +701,7 @@
           <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6" (click)="$event.stopPropagation()">
             <div class="flex items-center justify-between mb-6">
               <h3 class="text-lg font-semibold text-gray-800">Ajouter une allergie</h3>
-              <button (click)="closeAllergieModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+              <button (click)="closeAllergieModal()" class="text-gray-400 hover:text-gray-600">âœ•</button>
             </div>
 
             <div class="space-y-4">
@@ -888,7 +781,7 @@
           <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6" (click)="$event.stopPropagation()">
             <div class="flex items-center justify-between mb-6">
               <h3 class="text-lg font-semibold text-gray-800">Ajouter une maladie chronique</h3>
-              <button (click)="closeMaladieChroniqueModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+              <button (click)="closeMaladieChroniqueModal()" class="text-gray-400 hover:text-gray-600">âœ•</button>
             </div>
 
             <div class="space-y-4">
@@ -961,7 +854,7 @@
           <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6" (click)="$event.stopPropagation()">
             <div class="flex items-center justify-between mb-6">
               <h3 class="text-lg font-semibold text-gray-800">Ajouter un antécédent chirurgical</h3>
-              <button (click)="closeAntecedentChirurgicalModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+              <button (click)="closeAntecedentChirurgicalModal()" class="text-gray-400 hover:text-gray-600">âœ•</button>
             </div>
 
             <div class="space-y-4">
@@ -1043,7 +936,7 @@
           <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6" (click)="$event.stopPropagation()">
             <div class="flex items-center justify-between mb-6">
               <h3 class="text-lg font-semibold text-gray-800">Ajouter une intorlérance médicamenteuse</h3>
-              <button (click)="closeIntoleranceModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+              <button (click)="closeIntoleranceModal()" class="text-gray-400 hover:text-gray-600">âœ•</button>
             </div>
 
             <div class="space-y-4">
@@ -1126,7 +1019,7 @@
           <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6" (click)="$event.stopPropagation()">
             <div class="flex items-center justify-between mb-6">
               <h3 class="text-lg font-semibold text-gray-800">Ajouter un antécédent familial</h3>
-              <button (click)="closeAntecedentFamilialModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+              <button (click)="closeAntecedentFamilialModal()" class="text-gray-400 hover:text-gray-600">âœ•</button>
             </div>
 
             <div class="space-y-4">
@@ -1250,7 +1143,7 @@
           <div class="text-sm text-gray-600 mb-1">Température</div>
           <div class="flex items-baseline gap-1 text-center justify-center">
             <div class="text-2xl font-bold text-gray-900 text-center">{{ signesVitaux.temperature }}</div>
-            <div class="text-xs text-gray-500">°C</div>
+            <div class="text-xs text-gray-500">Â°C</div>
           </div>
         </div>
 
@@ -1263,7 +1156,7 @@
                 stroke="#0891B2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </div>
-          <div class="text-sm text-gray-600 mb-1">Saturation O₂</div>
+          <div class="text-sm text-gray-600 mb-1">Saturation Oâ‚‚</div>
           <div class="flex items-baseline gap-1 text-center justify-center">
             <div class="text-2xl font-bold text-gray-900">{{ signesVitaux.oxygenSaturation }}</div>
             <div class="text-xs text-gray-500">%</div>
@@ -1289,7 +1182,7 @@
                 <th class="px-4 py-2 text-left">FC</th>
                 <th class="px-4 py-2 text-left">FR</th>
                 <th class="px-4 py-2 text-left">Temp.</th>
-                <th class="px-4 py-2 text-left">SpO₂</th>
+                <th class="px-4 py-2 text-left">SpOâ‚‚</th>
               </tr>
             </thead>
             <tbody class="divide-y">
@@ -1298,7 +1191,7 @@
                 <td class="px-4 py-2">{{ h.bloodPressure }} mmHg</td>
                 <td class="px-4 py-2">{{ h.heartRate }} bpm</td>
                 <td class="px-4 py-2">{{ h.respiratoryRate }} /min</td>
-                <td class="px-4 py-2">{{ h.temperature }} °C</td>
+                <td class="px-4 py-2">{{ h.temperature }} Â°C</td>
                 <td class="px-4 py-2">{{ h.oxygenSaturation }}%</td>
               </tr>
             </tbody>
@@ -1573,7 +1466,7 @@
       <!-- Liste des hospitalisations -->
       <div *ngIf="!loadingHospitalisations && hospitalisationsData.length > 0"
         class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div *ngFor="let hosp of hospitalisationsData"
+        <div *ngFor="let hosp of hospitalisationsPage"
           class="border border-gray-200 rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
           <div class="flex items-start gap-4 mb-4">
             <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
@@ -1592,12 +1485,9 @@
                 formatDateFr(hosp.entryDateTime) }}</p>
             </div>
 
-            <!-- Badge Statut (En cours / Sortie) -->
-            <span class="px-2 py-1 text-xs font-medium rounded-full" [ngClass]="{
-          'bg-green-100 text-green-700': getHospitalizationStatus(hosp) === 'sortie-autorisee',
-          'bg-blue-100 text-blue-700': getHospitalizationStatus(hosp) === 'en-cours'
-        }">
-              {{ getHospitalizationStatusLabelShort(hosp) }}
+            <!-- Badge Statut -->
+            <span class="px-2 py-1 text-xs font-medium rounded-full" [ngClass]="getApiStatusClass(hosp)">
+              {{ getApiStatusLabel(hosp) }}
             </span>
           </div>
 
@@ -1616,10 +1506,38 @@
             </span>
             <button (click)="openHospitalisationDetailData(hosp.id)"
               class="text-xs text-[#343A40] font-medium border border-[#CBD5E1] rounded-full px-3 py-2 hover:bg-teal-50 transition-colors">
-              Voir détails →
+              Voir détails
+              <svg width="14" height="9" viewBox="0 0 14 9" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M0 4.50063C0 4.36802 0.0526784 4.24085 0.146447 4.14708C0.240215 4.05331 0.367392 4.00063 0.5 4.00063H12.293L9.146 0.854632C9.05211 0.760745 8.99937 0.633407 8.99937 0.500632C8.99937 0.367856 9.05211 0.240518 9.146 0.146631C9.23989 0.0527448 9.36722 3.1283e-09 9.5 0C9.63278 -3.1283e-09 9.76011 0.0527449 9.854 0.146631L13.854 4.14663C13.9006 4.19308 13.9375 4.24825 13.9627 4.309C13.9879 4.36974 14.0009 4.43486 14.0009 4.50063C14.0009 4.5664 13.9879 4.63152 13.9627 4.69226C13.9375 4.75301 13.9006 4.80819 13.854 4.85463L9.854 8.85463C9.76011 8.94852 9.63278 9.00126 9.5 9.00126C9.36722 9.00126 9.23989 8.94852 9.146 8.85463C9.05211 8.76075 8.99937 8.63341 8.99937 8.50063C8.99937 8.36786 9.05211 8.24052 9.146 8.14663L12.293 5.00063H0.5C0.367392 5.00063 0.240215 4.94795 0.146447 4.85419C0.0526784 4.76042 0 4.63324 0 4.50063Z" fill="#343A40"/>
+            </svg>
+
             </button>
           </div>
         </div>
+      </div>
+
+      <!-- Pagination hospitalisation -->
+      <div *ngIf="!loadingHospitalisations && totalPagesHospitalisation > 1"
+        class="mt-8 flex items-center justify-center gap-2">
+        <button (click)="changePageHospitalisation(currentPageHospitalisation - 1)" [disabled]="currentPageHospitalisation === 0"
+          class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+          Précédent
+        </button>
+        <div class="flex items-center gap-1">
+          <span *ngFor="let p of [].constructor(totalPagesHospitalisation); let i = index"
+            (click)="changePageHospitalisation(i)" [ngClass]="{
+              'bg-[#104382] text-white': i === currentPageHospitalisation,
+              'bg-white text-gray-700 hover:bg-gray-50': i !== currentPageHospitalisation
+            }"
+            class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 text-sm font-medium cursor-pointer">
+            {{ i + 1 }}
+          </span>
+        </div>
+        <button (click)="changePageHospitalisation(currentPageHospitalisation + 1)"
+          [disabled]="currentPageHospitalisation >= totalPagesHospitalisation - 1"
+          class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+          Suivant
+        </button>
       </div>
 
       <!-- État vide -->
@@ -1635,14 +1553,155 @@
       </div>
     </div>
 
-    <!-- Examens et Analyses -->
-    <div *ngIf="activeTab === 'examens'">
-      <app-examens></app-examens>
+    <!-- Analyses médicales -->
+    <div *ngIf="activeTab === 'examens'" class="space-y-6">
+
+      <!-- Résultats biologiques -->
+      <div class="bg-white rounded-xl shadow-sm p-6">
+        <h2 class="text-lg font-semibold text-[#343A40] mb-4">Résultats biologiques</h2>
+
+        <div *ngIf="loadingLabResults" class="flex justify-center py-10">
+          <svg class="animate-spin h-6 w-6 text-[#104382]" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+        </div>
+
+        <div *ngIf="!loadingLabResults && labResults.length === 0"
+          class="text-center py-10 text-gray-400">
+          <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <p class="text-sm">Aucun résultat biologique disponible</p>
+        </div>
+
+        <div *ngIf="!loadingLabResults && labResults.length > 0" class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-gray-200">
+                <th class="text-left py-3 px-4 text-gray-500 font-medium">Date</th>
+                <th class="text-left py-3 px-4 text-gray-500 font-medium">Examen</th>
+                <th class="text-left py-3 px-4 text-gray-500 font-medium">Valeur</th>
+                <th class="text-left py-3 px-4 text-gray-500 font-medium">Référence</th>
+                <th class="text-left py-3 px-4 text-gray-500 font-medium">État</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of labResultsPage" class="border-b border-gray-100 hover:bg-gray-50 transition">
+                <td class="py-3 px-4 text-gray-600">{{ r.date }}</td>
+                <td class="py-3 px-4 font-medium text-[#343A40]">{{ r.examen }}</td>
+                <td class="py-3 px-4 font-semibold text-[#343A40]">{{ r.valeur }}</td>
+                <td class="py-3 px-4 text-gray-500">{{ r.reference }}</td>
+                <td class="py-3 px-4">
+                  <span [ngClass]="{
+                    'text-[#00B894] font-medium': r.etat === 'Normal',
+                    'text-[#E74C3C] font-medium': r.etat === 'Anormal',
+                    'text-[#FF6B35] font-semibold': r.etat === 'Critique'
+                  }">{{ r.etat }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination examens -->
+        <div *ngIf="!loadingLabResults && totalPagesExamens > 1"
+          class="mt-6 flex items-center justify-center gap-2">
+          <button (click)="changePageExamens(currentPageExamens - 1)" [disabled]="currentPageExamens === 0"
+            class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+            Précédent
+          </button>
+          <div class="flex items-center gap-1">
+            <span *ngFor="let p of [].constructor(totalPagesExamens); let i = index"
+              (click)="changePageExamens(i)" [ngClass]="{
+                'bg-[#104382] text-white': i === currentPageExamens,
+                'bg-white text-gray-700 hover:bg-gray-50': i !== currentPageExamens
+              }"
+              class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 text-sm font-medium cursor-pointer">
+              {{ i + 1 }}
+            </span>
+          </div>
+          <button (click)="changePageExamens(currentPageExamens + 1)"
+            [disabled]="currentPageExamens >= totalPagesExamens - 1"
+            class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+            Suivant
+          </button>
+        </div>
+      </div>
+
     </div>
 
-    <!-- Imagerie -->
-    <div *ngIf="activeTab === 'imagerie'">
-      <app-imagerie-list></app-imagerie-list>
+    <!-- Imagerie médicale -->
+    <div *ngIf="activeTab === 'imagerie'" class="space-y-6">
+      <div class="bg-white rounded-xl shadow-sm p-6">
+        <h2 class="text-lg font-semibold text-[#343A40] mb-4">Imagerie médicale</h2>
+
+        <div *ngIf="loadingImaging" class="flex justify-center py-10">
+          <svg class="animate-spin h-6 w-6 text-[#104382]" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+        </div>
+
+        <div *ngIf="!loadingImaging && imagingOrders.length === 0"
+          class="text-center py-10 text-gray-400">
+          <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <p class="text-sm">Aucune imagerie médicale disponible</p>
+        </div>
+
+        <div class="space-y-4" *ngIf="!loadingImaging && imagingOrders.length > 0">
+          <div *ngFor="let img of imagingOrdersPage"
+            class="border border-gray-200 rounded-xl p-5 flex items-start justify-between gap-4 hover:border-gray-300 transition">
+            <div class="flex-1 min-w-0">
+              <h3 class="font-semibold text-[#343A40] mb-1">
+                {{ (img.examTypes && img.examTypes.length ? img.examTypes.join(' + ') : img.reportTitle || 'Imagerie') }}
+                <span *ngIf="img.bodyRegions && img.bodyRegions.length"> - {{ img.bodyRegions.join(', ') }}</span>
+              </h3>
+              <p class="text-sm text-gray-600 mb-2 line-clamp-2">
+                {{ img.observations || img.clinicalIndication || 'Aucune observation' }}
+              </p>
+              <p class="text-xs text-gray-400">
+                {{ img.createdAt | date:'dd/MM/yyyy' }}
+              </p>
+            </div>
+            <a *ngIf="img.resultFileUrl" [href]="img.resultFileUrl" target="_blank"
+              class="flex-shrink-0 p-2 text-gray-400 hover:text-[#104382] transition-colors" title="Télécharger">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Pagination imagerie -->
+        <div *ngIf="!loadingImaging && totalPagesImagerie > 1"
+          class="mt-6 flex items-center justify-center gap-2">
+          <button (click)="changePageImagerie(currentPageImagerie - 1)" [disabled]="currentPageImagerie === 0"
+            class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+            Précédent
+          </button>
+          <div class="flex items-center gap-1">
+            <span *ngFor="let p of [].constructor(totalPagesImagerie); let i = index"
+              (click)="changePageImagerie(i)" [ngClass]="{
+                'bg-[#104382] text-white': i === currentPageImagerie,
+                'bg-white text-gray-700 hover:bg-gray-50': i !== currentPageImagerie
+              }"
+              class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 text-sm font-medium cursor-pointer">
+              {{ i + 1 }}
+            </span>
+          </div>
+          <button (click)="changePageImagerie(currentPageImagerie + 1)"
+            [disabled]="currentPageImagerie >= totalPagesImagerie - 1"
+            class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+            Suivant
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Consultations -->
@@ -1841,7 +1900,7 @@
             <span class="text-xs text-[#6B7280]">
               Expire le {{ formatExpiryDate(ordonnance.createdAt) }}
             </span>
-            <button
+            <button (click)="downloadOrdonnancePdf(ordonnance)"
               class="flex items-center gap-2 px-4 py-2 text-sm text-[#2C7BE5] font-medium border border-[#2C7BE5] rounded-full hover:bg-blue-50 transition-colors">
               Télécharger
               <svg width="16" height="14" viewBox="0 0 16 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1952,7 +2011,7 @@
         <h3 class="text-lg font-semibold text-gray-800">
           {{ isEditingModeDeVie ? 'Modifier le mode de vie' : 'Ajouter un mode de vie' }}
         </h3>
-        <button (click)="closeModeVieModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+        <button (click)="closeModeVieModal()" class="text-gray-400 hover:text-gray-600">âœ•</button>
       </div>
 
       <div class="space-y-4">
@@ -2071,7 +2130,7 @@
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6" (click)="$event.stopPropagation()">
       <div class="flex items-center justify-between mb-6">
         <h3 class="text-lg font-semibold text-gray-800">Ajouter un traitement</h3>
-        <button (click)="closeTraitementModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+        <button (click)="closeTraitementModal()" class="text-gray-400 hover:text-gray-600">âœ•</button>
       </div>
 
       <div class="space-y-4">
@@ -2169,7 +2228,7 @@
         <!-- Température -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            Température (°C)
+            Température (Â°C)
           </label>
           <input type="text" [(ngModel)]="formData.temperature" placeholder="Ex: 36.8" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm
                         focus:outline-none focus:ring-2 focus:ring-[#104382] focus:border-transparent
@@ -2209,7 +2268,7 @@
   class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-20 p-4"
   (click)="closeHospitalisationDetailData()">
 
-  <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] overflow-hidden flex flex-col"
+  <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full h-[95vh] overflow-hidden flex flex-col"
     (click)="$event.stopPropagation()">
 
     <!-- Header -->
@@ -2254,17 +2313,14 @@
         </div>
 
         <!-- Badge statut (En cours / Sortie autorisée) -->
-        <span class="px-3 py-1 text-xs font-medium rounded-full" [ngClass]="{
-          'text-[#00B894]': getHospitalizationStatus(selectedHospitalisationData) === 'sortie-autorisee',
-          'bg-blue-50 text-blue-600': getHospitalizationStatus(selectedHospitalisationData) === 'en-cours'
-        }"
-          [style.background-color]="getHospitalizationStatus(selectedHospitalisationData) === 'sortie-autorisee' ? '#00B8940F' : ''">
-          {{ getHospitalizationStatusLabel(selectedHospitalisationData) }}
+        <span class="px-3 py-1 text-xs font-medium rounded-full" [ngClass]="getApiStatusClass(selectedHospitalisationData)">
+          {{ getApiStatusLabel(selectedHospitalisationData) }}
         </span>
       </div>
+    </div>
 
-      <!-- Tabs -->
-      <div class="flex border-b px-4">
+    <!-- Tabs -->
+    <div class="flex border-b px-4 flex-shrink-0">
         <button *ngFor="let tab of detailTabs" (click)="activeDetailTab = tab.id"
           [class.text-[#00B894]]="activeDetailTab === tab.id" [class.border-[#00B894]]="activeDetailTab === tab.id"
           [class.text-[#333333]]="activeDetailTab !== tab.id"
@@ -2275,7 +2331,7 @@
       </div>
 
       <!-- Content - avec flex-1 et overflow -->
-      <div class="flex-1 overflow-y-auto p-5">
+      <div class="flex-1 min-h-0 overflow-y-auto p-5">
 
         <!-- ==================== ONGLET RÉSUMÉ ==================== -->
         <div *ngIf="activeDetailTab === 'resume'">
@@ -2616,8 +2672,6 @@
           </div>
         </div>
       </div>
-
-    </div>
   </div>
 
 
@@ -2908,3 +2962,106 @@
       </div>
     </div>
   </div>
+</div>
+
+<!-- MODAL : Ajouter un nouveau patient -->
+<div *ngIf="showAddPatientModal"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between p-6 border-b">
+      <h2 class="text-lg font-semibold text-gray-900">Nouveau patient</h2>
+      <button (click)="closeAddPatientModal()" class="text-gray-400 hover:text-gray-600 transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="p-6 space-y-4">
+
+      <!-- Succès -->
+      <div *ngIf="addPatientSuccess"
+        class="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        Patient créé avec succès. Les identifiants ont été envoyés par email.
+      </div>
+
+      <!-- Conflit : patient déjà existant -->
+      <div *ngIf="addPatientConflict"
+        class="p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800">
+        <p class="font-semibold mb-1">Patient déjà enregistré</p>
+        <p><strong>{{ addPatientConflict.name }}</strong> est déjà dans le système avec cet email. Recherchez-le dans la barre de recherche.</p>
+      </div>
+
+      <!-- Erreur -->
+      <div *ngIf="addPatientError"
+        class="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+        {{ addPatientError }}
+      </div>
+
+      <div *ngIf="!addPatientSuccess" class="space-y-4">
+        <!-- Prénom / Nom -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Prénom <span class="text-red-500">*</span></label>
+            <input type="text" [(ngModel)]="addPatientForm.firstName" placeholder="Aminata"
+              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Nom <span class="text-red-500">*</span></label>
+            <input type="text" [(ngModel)]="addPatientForm.lastName" placeholder="Diallo"
+              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none" />
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">Email <span class="text-red-500">*</span></label>
+          <input type="email" [(ngModel)]="addPatientForm.email" placeholder="aminata.diallo@email.com"
+            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none" />
+        </div>
+
+        <!-- Téléphone -->
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">Téléphone <span class="text-red-500">*</span></label>
+          <input type="tel" [(ngModel)]="addPatientForm.phone" placeholder="77 123 45 67"
+            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none" />
+        </div>
+
+        <!-- Date de naissance + âge calculé -->
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">Date de naissance</label>
+          <div class="flex items-center gap-3">
+            <input type="date" [(ngModel)]="addPatientForm.dateOfBirth"
+              class="flex-1 px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#104382] focus:border-transparent outline-none" />
+            <span *ngIf="addPatientAge !== null"
+              class="flex-shrink-0 text-sm font-semibold text-[#104382] bg-blue-50 px-3 py-2 rounded-lg">
+              {{ addPatientAge }} ans
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div *ngIf="!addPatientSuccess" class="flex gap-3 p-6 border-t bg-gray-50 rounded-b-2xl">
+      <button (click)="submitAddPatient()" [disabled]="addPatientLoading"
+        class="flex-1 bg-[#104382] text-white font-medium py-3 px-6 rounded-lg hover:bg-[#0d3568] disabled:opacity-60 transition flex items-center justify-center gap-2">
+        <svg *ngIf="addPatientLoading" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+        {{ addPatientLoading ? 'Création...' : 'Créer le patient' }}
+      </button>
+      <button (click)="closeAddPatientModal()"
+        class="flex-1 bg-gray-200 text-gray-700 font-medium py-3 px-6 rounded-lg hover:bg-gray-300 transition">
+        Annuler
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-[#F4F6F9] ">
+<div class="min-h-screen bg-[#F4F6F9]">
   <div class="mx-auto max-w-[1200px]">
 
     <!-- Header -->
@@ -6,213 +6,253 @@
       <div class="flex items-start gap-4">
         <button (click)="back()"
           class="mt-1 flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-white transition hover:bg-slate-50">
-         <svg width="18" height="14" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M16.75 6.75H0.75M6.75 12.75L0.75 6.75L6.75 0.75" stroke="#2B3674" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
+          <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+            <path d="M16.75 6.75H0.75M6.75 12.75L0.75 6.75L6.75 0.75" stroke="#2B3674" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </button>
         <div>
           <h1 class="text-2xl font-bold tracking-tight text-[#0F172A] sm:text-3xl">
-            {{ devis?.fournisseurNom ?? '—' }}
+            <ng-container *ngIf="!isLoading">{{ quote?.supplierName ?? '—' }}</ng-container>
+            <span *ngIf="isLoading" class="inline-block w-48 h-7 bg-gray-200 rounded animate-pulse align-middle"></span>
           </h1>
-          <p class="mt-1 text-sm text-[#64748B]">{{ devis?.fournisseurDescription }}</p>
+          <p class="mt-1 text-sm text-[#64748B]">{{ quote?.additionalNotes ?? 'Détail du devis fournisseur' }}</p>
         </div>
       </div>
 
-      <div class="flex shrink-0 gap-3">
-        <button class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-[#475569] transition hover:bg-slate-50">
+      <div *ngIf="!validated && !isLoading" class="flex shrink-0 gap-3">
+        <button (click)="back()"
+          class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-[#475569] transition hover:bg-slate-50">
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <polyline stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" points="6 9 6 2 18 2 18 9"/>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-              d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-            <rect x="6" y="14" width="12" height="8" stroke-width="1.8"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
           </svg>
-          Annuler
+          Retour
         </button>
-        <button class="inline-flex items-center gap-2 rounded-lg bg-[#124A92] px-5 py-3 text-sm text-white transition hover:bg-[#0F3E79]">
-          Valider le devis
+        <button (click)="validate()" [disabled]="isValidating || quote?.status === 'VALIDÉ'"
+          class="inline-flex items-center gap-2 rounded-lg bg-[#124A92] px-5 py-3 text-sm text-white transition hover:bg-[#0F3E79] disabled:opacity-60 disabled:cursor-not-allowed">
+          <span *ngIf="!isValidating">{{ quote?.status === 'VALIDÉ' ? 'Déjà validé' : 'Valider le devis' }}</span>
+          <span *ngIf="isValidating">Validation en cours…</span>
         </button>
       </div>
     </div>
 
-    <!-- LIGNE 1 : Contact | Historique | Collaboration — 3 colonnes égales -->
-    <div class="mb-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <!-- Skeleton -->
+    <ng-container *ngIf="isLoading">
+      <div class="mb-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div *ngFor="let _ of [1,2,3]" class="rounded-2xl bg-white p-5 animate-pulse space-y-4">
+          <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+          <div class="h-3 bg-gray-100 rounded w-3/4"></div>
+          <div class="h-3 bg-gray-100 rounded w-2/3"></div>
+        </div>
+      </div>
+    </ng-container>
 
-          <!-- Contact fournisseur -->
-          <div class="rounded-2xl bg-white p-5 ring-1 ring-slate-100">
-            <!-- Avatar -->
-            <div class="flex items-center gap-3">
-              <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#F1F5F9] text-[#94A3B8]">
-               <img src="assets/icones/avatar.svg" alt="Avatar" class="h-5 w-5 object-cover">
-              </div>
-              <div>
-                <p class="text-lg sm:text-xl font-bold text-[#191B23]">{{ devis?.contact?.nom }}</p>
-                <p class="text-sm sm:text-base text-[#434655]">{{ devis?.contact?.poste }}</p>
-              </div>
-            </div>
-
-            <div class="mt-4 space-y-2.5">
-              <div class="flex items-center gap-2.5 rounded-xl bg-[#F4F6F9] px-3 py-2.5 text-sm sm:text-base text-[#191B23]">
-                <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M2 16C1.45 16 0.979167 15.8042 0.5875 15.4125C0.195833 15.0208 0 14.55 0 14V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H18C18.55 0 19.0208 0.195833 19.4125 0.5875C19.8042 0.979167 20 1.45 20 2V14C20 14.55 19.8042 15.0208 19.4125 15.4125C19.0208 15.8042 18.55 16 18 16H2ZM10 9L2 4V14H18V4L10 9ZM10 7L18 2H2L10 7ZM2 4V2V4V14V4Z" fill="#00339E"/>
-</svg>
-                <span class="truncate">{{ devis?.contact?.email }}</span>
-              </div>
-              <div class="flex items-center gap-2.5 rounded-xl bg-[#F4F6F9] px-3 py-2.5 text-sm sm:text-base text-[#191B23]">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M16.95 18C14.8667 18 12.8083 17.5458 10.775 16.6375C8.74167 15.7292 6.89167 14.4417 5.225 12.775C3.55833 11.1083 2.27083 9.25833 1.3625 7.225C0.454167 5.19167 0 3.13333 0 1.05C0 0.75 0.1 0.5 0.3 0.3C0.5 0.1 0.75 0 1.05 0H5.1C5.33333 0 5.54167 0.0791667 5.725 0.2375C5.90833 0.395833 6.01667 0.583333 6.05 0.8L6.7 4.3C6.73333 4.56667 6.725 4.79167 6.675 4.975C6.625 5.15833 6.53333 5.31667 6.4 5.45L3.975 7.9C4.30833 8.51667 4.70417 9.1125 5.1625 9.6875C5.62083 10.2625 6.125 10.8167 6.675 11.35C7.19167 11.8667 7.73333 12.3458 8.3 12.7875C8.86667 13.2292 9.46667 13.6333 10.1 14L12.45 11.65C12.6 11.5 12.7958 11.3875 13.0375 11.3125C13.2792 11.2375 13.5167 11.2167 13.75 11.25L17.2 11.95C17.4333 12.0167 17.625 12.1375 17.775 12.3125C17.925 12.4875 18 12.6833 18 12.9V16.95C18 17.25 17.9 17.5 17.7 17.7C17.5 17.9 17.25 18 16.95 18ZM3.025 6L4.675 4.35L4.25 2H2.025C2.10833 2.68333 2.225 3.35833 2.375 4.025C2.525 4.69167 2.74167 5.35 3.025 6ZM11.975 14.95C12.625 15.2333 13.2875 15.4583 13.9625 15.625C14.6375 15.7917 15.3167 15.9 16 15.95V13.75L13.65 13.275L11.975 14.95Z" fill="#00339E"/>
-</svg>
-                <span>{{ devis?.contact?.telephone }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Historique (timeline) -->
-          <div class="rounded-2xl bg-white p-5 ring-1 ring-slate-100">
-            <p class="mb-4 text-xs font-bold uppercase tracking-widest text-[#434655]">Historique</p>
-            <div class="relative">
-              <div class="absolute bottom-0 left-[13px] top-0 w-px bg-[#E2E8F0]" aria-hidden="true"></div>
-              <div *ngFor="let step of devis?.historique; let last = last"
-                class="relative flex gap-3" [ngClass]="last ? '' : 'pb-5'">
-                <div class="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
-                  [ngClass]="stepIconBg(step.status)">
-                  <svg *ngIf="step.icon === 'check'" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m5 13 4 4L19 7"/>
-                  </svg>
-                  <svg *ngIf="step.icon === 'user'" width="10" height="12" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M0 11.6667V8.16667C0 7.84583 0.114236 7.57118 0.342708 7.34271C0.571181 7.11424 0.845833 7 1.16667 7H8.16667C8.4875 7 8.76215 7.11424 8.99063 7.34271C9.2191 7.57118 9.33333 7.84583 9.33333 8.16667V11.6667H0ZM1.16667 9.33333H8.16667V8.16667H1.16667V9.33333ZM4.66667 7L1.75 2.91667C1.75 2.10972 2.03438 1.42188 2.60313 0.853125C3.17188 0.284375 3.85972 0 4.66667 0C5.47361 0 6.16146 0.284375 6.73021 0.853125C7.29896 1.42188 7.58333 2.10972 7.58333 2.91667L4.66667 7ZM4.66667 5.36667L6.41667 2.91667C6.41667 2.43056 6.24653 2.01736 5.90625 1.67708C5.56597 1.33681 5.15278 1.16667 4.66667 1.16667C4.18056 1.16667 3.76736 1.33681 3.42708 1.67708C3.08681 2.01736 2.91667 2.43056 2.91667 2.91667L4.66667 5.36667Z" fill="white"/>
-</svg>
-                  <svg *ngIf="step.icon === 'doc'" width="10" height="12" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M2.33333 9.33333H7V8.16667H2.33333V9.33333ZM2.33333 7H7V5.83333H2.33333V7ZM1.16667 11.6667C0.845833 11.6667 0.571181 11.5524 0.342708 11.324C0.114236 11.0955 0 10.8208 0 10.5V1.16667C0 0.845833 0.114236 0.571181 0.342708 0.342708C0.571181 0.114236 0.845833 0 1.16667 0H5.83333L9.33333 3.5V10.5C9.33333 10.8208 9.2191 11.0955 8.99063 11.324C8.76215 11.5524 8.4875 11.6667 8.16667 11.6667H1.16667ZM5.25 4.08333V1.16667H1.16667V10.5H8.16667V4.08333H5.25ZM1.16667 1.16667V4.08333V1.16667V4.08333V10.5V1.16667Z" fill="#747686"/>
-</svg>
-
-                </div>
-                <div class="min-w-0 flex-1 pt-0.5">
-                  <p class="text-sm sm:text-base font-semibold text-[#191B23]">{{ step.label }}</p>
-                  <p *ngIf="step.date" class="mt-0.5 text-xs text-[#434655]">{{ step.date }}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Historique collaboration -->
-          <div class="rounded-2xl bg-white p-5 ring-1 ring-slate-100">
-            <p class="mb-4 text-xs font-bold uppercase tracking-widest text-[#434655]">Historique de collaboration</p>
-            <div class="space-y-4">
-              <div class="border-l-4 border-[#E2E8F0] pl-3">
-                <p class="text-sm sm:text-base font-semibold text-[#191B23]">Dernière Commande</p>
-                <p class="mt-0.5 text-xs text-[#434655]">{{ devis?.collaboration?.derniereCommande }}</p>
-              </div>
-              <div class="border-l-4 border-[#E2E8F0] pl-3">
-                <p class="text-sm sm:text-base font-semibold text-[#191B23]">Taux de Livraison On-Time</p>
-                <p class="mt-0.5 text-xs font-semibold text-[#006E2A]">{{ devis?.collaboration?.tauxLivraison }}</p>
-              </div>
-              <div class="border-l-4 border-[#E2E8F0] pl-3">
-                <p class="text-sm sm:text-base font-semibold text-[#191B23]">Évaluation Qualité</p>
-                <div class="mt-1 flex gap-0.5">
-                  <ng-container *ngFor="let filled of stars(devis?.collaboration?.evaluation ?? 0)">
-                    <svg class="h-4 w-4" [ngClass]="filled ? 'text-[#00339E]' : 'text-[#E2E8F0]'"
-                      viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                  </ng-container>
-                </div>
-              </div>
-            </div>
-          </div>
-
+    <!-- Erreur -->
+    <div *ngIf="!isLoading && error" class="bg-red-50 border border-red-200 rounded-2xl p-8 text-center">
+      <p class="text-red-600 text-sm">{{ error }}</p>
     </div>
-    <!-- FIN LIGNE 1 -->
 
-    <!-- LIGNE 2 : Tableau produits (2 col) + Sidebar droite (1 col) -->
-    <div class="grid gap-6 lg:grid-cols-3">
+    <!-- Succès validation -->
+    <div *ngIf="validated" class="mb-6 bg-emerald-50 border border-emerald-200 rounded-2xl p-6 flex items-center gap-4">
+      <div class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+        <svg class="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+      <div>
+        <p class="font-bold text-emerald-800">Devis validé avec succès !</p>
+        <p class="text-sm text-emerald-700 mt-0.5">Le fournisseur a été sélectionné. Le montant sera déduit de votre budget actif.</p>
+      </div>
+    </div>
 
-      <!-- Tableau produits : 2 colonnes gauche -->
-      <div class="lg:col-span-2">
+    <!-- Contenu -->
+    <ng-container *ngIf="!isLoading && !error && quote">
+
+      <!-- LIGNE 1 : Contact | Historique | Collaboration -->
+      <div class="mb-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+
+        <!-- Contact fournisseur -->
+        <div class="rounded-2xl bg-white p-5 ring-1 ring-slate-100">
+          <div class="flex items-center gap-3">
+            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#F1F5F9] text-[#94A3B8]">
+              <img src="assets/icones/avatar.svg" alt="Avatar" class="h-5 w-5 object-cover">
+            </div>
+            <div>
+              <p class="text-lg sm:text-xl font-bold text-[#191B23]">{{ quote?.supplierContact?.name ?? quote?.supplierName }}</p>
+              <p class="text-sm sm:text-base text-[#434655]">{{ quote?.supplierContact?.title ?? '—' }}</p>
+            </div>
+          </div>
+          <div class="mt-4 space-y-2.5">
+            <div class="flex items-center gap-2.5 rounded-xl bg-[#F4F6F9] px-3 py-2.5 text-sm sm:text-base text-[#191B23]">
+              <svg width="20" height="16" viewBox="0 0 20 16" fill="none">
+                <path d="M2 16C1.45 16 0.979167 15.8042 0.5875 15.4125C0.195833 15.0208 0 14.55 0 14V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H18C18.55 0 19.0208 0.195833 19.4125 0.5875C19.8042 0.979167 20 1.45 20 2V14C20 14.55 19.8042 15.0208 19.4125 15.4125C19.0208 15.8042 18.55 16 18 16H2ZM10 9L2 4V14H18V4L10 9ZM10 7L18 2H2L10 7ZM2 4V2V4V14V4Z" fill="#00339E"/>
+              </svg>
+              <span class="truncate">{{ quote?.supplierContact?.email ?? '—' }}</span>
+            </div>
+            <div class="flex items-center gap-2.5 rounded-xl bg-[#F4F6F9] px-3 py-2.5 text-sm sm:text-base text-[#191B23]">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <path d="M16.95 18C14.8667 18 12.8083 17.5458 10.775 16.6375C8.74167 15.7292 6.89167 14.4417 5.225 12.775C3.55833 11.1083 2.27083 9.25833 1.3625 7.225C0.454167 5.19167 0 3.13333 0 1.05C0 0.75 0.1 0.5 0.3 0.3C0.5 0.1 0.75 0 1.05 0H5.1C5.33333 0 5.54167 0.0791667 5.725 0.2375C5.90833 0.395833 6.01667 0.583333 6.05 0.8L6.7 4.3C6.73333 4.56667 6.725 4.79167 6.675 4.975C6.625 5.15833 6.53333 5.31667 6.4 5.45L3.975 7.9C4.30833 8.51667 4.70417 9.1125 5.1625 9.6875C5.62083 10.2625 6.125 10.8167 6.675 11.35C7.19167 11.8667 7.73333 12.3458 8.3 12.7875C8.86667 13.2292 9.46667 13.6333 10.1 14L12.45 11.65C12.6 11.5 12.7958 11.3875 13.0375 11.3125C13.2792 11.2375 13.5167 11.2167 13.75 11.25L17.2 11.95C17.4333 12.0167 17.625 12.1375 17.775 12.3125C17.925 12.4875 18 12.6833 18 12.9V16.95C18 17.25 17.9 17.5 17.7 17.7C17.5 17.9 17.25 18 16.95 18ZM3.025 6L4.675 4.35L4.25 2H2.025C2.10833 2.68333 2.225 3.35833 2.375 4.025C2.525 4.69167 2.74167 5.35 3.025 6ZM11.975 14.95C12.625 15.2333 13.2875 15.4583 13.9625 15.625C14.6375 15.7917 15.3167 15.9 16 15.95V13.75L13.65 13.275L11.975 14.95Z" fill="#00339E"/>
+              </svg>
+              <span>{{ quote?.supplierContact?.phone ?? '—' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="rounded-2xl bg-white p-5 ring-1 ring-slate-100">
+          <p class="mb-4 text-xs font-bold uppercase tracking-widest text-[#434655]">Historique</p>
+          <div class="relative">
+            <div class="absolute bottom-0 left-[13px] top-0 w-px bg-[#E2E8F0]" aria-hidden="true"></div>
+            <div *ngFor="let step of timeline; let last = last"
+              class="relative flex gap-3" [ngClass]="last ? '' : 'pb-5'">
+              <div class="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
+                [ngClass]="stepIconBg(step.status)">
+                <svg *ngIf="step.icon === 'check'" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m5 13 4 4L19 7"/>
+                </svg>
+                <svg *ngIf="step.icon === 'user'" width="10" height="12" viewBox="0 0 10 12" fill="none">
+                  <path d="M0 11.6667V8.16667C0 7.84583 0.114236 7.57118 0.342708 7.34271C0.571181 7.11424 0.845833 7 1.16667 7H8.16667C8.4875 7 8.76215 7.11424 8.99063 7.34271C9.2191 7.57118 9.33333 7.84583 9.33333 8.16667V11.6667H0ZM1.16667 9.33333H8.16667V8.16667H1.16667V9.33333ZM4.66667 7L1.75 2.91667C1.75 2.10972 2.03438 1.42188 2.60313 0.853125C3.17188 0.284375 3.85972 0 4.66667 0C5.47361 0 6.16146 0.284375 6.73021 0.853125C7.29896 1.42188 7.58333 2.10972 7.58333 2.91667L4.66667 7ZM4.66667 5.36667L6.41667 2.91667C6.41667 2.43056 6.24653 2.01736 5.90625 1.67708C5.56597 1.33681 5.15278 1.16667 4.66667 1.16667C4.18056 1.16667 3.76736 1.33681 3.42708 1.67708C3.08681 2.01736 2.91667 2.43056 2.91667 2.91667L4.66667 5.36667Z" fill="white"/>
+                </svg>
+                <svg *ngIf="step.icon === 'doc'" width="10" height="12" viewBox="0 0 10 12" fill="none">
+                  <path d="M2.33333 9.33333H7V8.16667H2.33333V9.33333ZM2.33333 7H7V5.83333H2.33333V7ZM1.16667 11.6667C0.845833 11.6667 0.571181 11.5524 0.342708 11.324C0.114236 11.0955 0 10.8208 0 10.5V1.16667C0 0.845833 0.114236 0.571181 0.342708 0.342708C0.571181 0.114236 0.845833 0 1.16667 0H5.83333L9.33333 3.5V10.5C9.33333 10.8208 9.2191 11.0955 8.99063 11.324C8.76215 11.5524 8.4875 11.6667 8.16667 11.6667H1.16667ZM5.25 4.08333V1.16667H1.16667V10.5H8.16667V4.08333H5.25Z" fill="#747686"/>
+                </svg>
+              </div>
+              <div class="min-w-0 flex-1 pt-0.5">
+                <p class="text-sm sm:text-base font-semibold text-[#191B23]">{{ step.label }}</p>
+                <p *ngIf="step.date" class="mt-0.5 text-xs text-[#434655]">{{ step.date }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Collaboration -->
+        <div class="rounded-2xl bg-white p-5 ring-1 ring-slate-100">
+          <p class="mb-4 text-xs font-bold uppercase tracking-widest text-[#434655]">Historique de collaboration</p>
+          <div class="space-y-4">
+            <div class="border-l-4 border-[#E2E8F0] pl-3">
+              <p class="text-sm sm:text-base font-semibold text-[#191B23]">Dernière Commande</p>
+              <p class="mt-0.5 text-xs text-[#434655]">{{ collab?.derniereCommande ?? '—' }}</p>
+            </div>
+            <div class="border-l-4 border-[#E2E8F0] pl-3">
+              <p class="text-sm sm:text-base font-semibold text-[#191B23]">Taux de Livraison On-Time</p>
+              <p class="mt-0.5 text-xs font-semibold text-[#006E2A]">{{ collab?.tauxLivraison ?? '—' }}</p>
+            </div>
+            <div class="border-l-4 border-[#E2E8F0] pl-3">
+              <p class="text-sm sm:text-base font-semibold text-[#191B23]">Évaluation Qualité</p>
+              <div class="mt-1 flex gap-0.5">
+                <ng-container *ngFor="let filled of stars(collab?.evaluation ?? 0)">
+                  <svg class="h-4 w-4" [ngClass]="filled ? 'text-[#00339E]' : 'text-[#E2E8F0]'" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                </ng-container>
+                <span *ngIf="!collab" class="text-xs text-gray-400">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- LIGNE 2 : Produits + Sidebar -->
+      <div class="grid gap-6 lg:grid-cols-3">
 
         <!-- Tableau produits -->
-        <div class="rounded-2xl bg-white ring-1 ring-slate-100">
-          <div class="flex items-center gap-3 px-6 py-5">
-            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#EFF6FF] text-[#104382]">
-             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M5 14C5.28333 14 5.52083 13.9042 5.7125 13.7125C5.90417 13.5208 6 13.2833 6 13C6 12.7167 5.90417 12.4792 5.7125 12.2875C5.52083 12.0958 5.28333 12 5 12C4.71667 12 4.47917 12.0958 4.2875 12.2875C4.09583 12.4792 4 12.7167 4 13C4 13.2833 4.09583 13.5208 4.2875 13.7125C4.47917 13.9042 4.71667 14 5 14ZM5 10C5.28333 10 5.52083 9.90417 5.7125 9.7125C5.90417 9.52083 6 9.28333 6 9C6 8.71667 5.90417 8.47917 5.7125 8.2875C5.52083 8.09583 5.28333 8 5 8C4.71667 8 4.47917 8.09583 4.2875 8.2875C4.09583 8.47917 4 8.71667 4 9C4 9.28333 4.09583 9.52083 4.2875 9.7125C4.47917 9.90417 4.71667 10 5 10ZM5 6C5.28333 6 5.52083 5.90417 5.7125 5.7125C5.90417 5.52083 6 5.28333 6 5C6 4.71667 5.90417 4.47917 5.7125 4.2875C5.52083 4.09583 5.28333 4 5 4C4.71667 4 4.47917 4.09583 4.2875 4.2875C4.09583 4.47917 4 4.71667 4 5C4 5.28333 4.09583 5.52083 4.2875 5.7125C4.47917 5.9042 4.71667 6 5 6ZM8 14H14V12H8V14ZM8 10H14V8H8V10ZM8 6H14V4H8V6ZM2 18C1.45 18 0.979167 17.8042 0.5875 17.4125C0.195833 17.0208 0 16.55 0 16V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H16C16.55 0 17.0208 0.195833 17.4125 0.5875C17.8042 0.979167 18 1.45 18 2V16C18 16.55 17.8042 17.0208 17.4125 17.4125C17.0208 17.8042 16.55 18 16 18H2ZM2 16H16V2H2V16ZM2 2V16V2Z" fill="#104382"/>
-</svg>
-            </span>
-            <h2 class="text-lg sm:text-xl font-semibold text-[#104382]">Détail des Produits</h2>
-          </div>
+        <div class="lg:col-span-2">
+          <div class="rounded-2xl bg-white ring-1 ring-slate-100">
+            <div class="flex items-center gap-3 px-6 py-5">
+              <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#EFF6FF] text-[#104382]">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                  <path d="M5 14C5.28333 14 5.52083 13.9042 5.7125 13.7125C5.90417 13.5208 6 13.2833 6 13C6 12.7167 5.90417 12.4792 5.7125 12.2875C5.52083 12.0958 5.28333 12 5 12C4.71667 12 4.47917 12.0958 4.2875 12.2875C4.09583 12.4792 4 12.7167 4 13C4 13.2833 4.09583 13.5208 4.2875 13.7125C4.47917 13.9042 4.71667 14 5 14ZM5 10C5.28333 10 5.52083 9.90417 5.7125 9.7125C5.90417 9.52083 6 9.28333 6 9C6 8.71667 5.90417 8.47917 5.7125 8.2875C5.52083 8.09583 5.28333 8 5 8C4.71667 8 4.47917 8.09583 4.2875 8.2875C4.09583 8.47917 4 8.71667 4 9C4 9.28333 4.09583 9.52083 4.2875 9.7125C4.47917 9.90417 4.71667 10 5 10ZM5 6C5.28333 6 5.52083 5.90417 5.7125 5.7125C5.90417 5.52083 6 5.28333 6 5C6 4.71667 5.90417 4.47917 5.7125 4.2875C5.52083 4.09583 5.28333 4 5 4C4.71667 4 4.47917 4.09583 4.2875 4.2875C4.09583 4.47917 4 4.71667 4 5C4 5.28333 4.09583 5.52083 4.2875 5.7125C4.47917 5.9042 4.71667 6 5 6ZM8 14H14V12H8V14ZM8 10H14V8H8V10ZM8 6H14V4H8V6ZM2 18C1.45 18 0.979167 17.8042 0.5875 17.4125C0.195833 17.0208 0 16.55 0 16V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H16C16.55 0 17.0208 0.195833 17.4125 0.5875C17.8042 0.979167 18 1.45 18 2V16C18 16.55 17.8042 17.0208 17.4125 17.4125C17.0208 17.8042 16.55 18 16 18H2Z" fill="#104382"/>
+                </svg>
+              </span>
+              <h2 class="text-lg sm:text-xl font-semibold text-[#104382]">Détail des Produits</h2>
+            </div>
 
-          <div class="overflow-x-auto">
-            <table class="w-full min-w-[500px] text-sm">
-              <thead>
-                <tr class="border-y border-[#C3C5D7] bg-[#F4F6F9]">
-                  <th class="px-6 py-3 text-left text-sm sm:text-base font-semibold text-[#747686]">Désignation</th>
-                  <th class="px-4 py-3 text-center text-sm sm:text-base font-semibold text-[#747686]">Qté</th>
-                  <th class="px-4 py-3 text-right text-sm sm:text-base font-semibold text-[#747686]">Prix Unitaire</th>
-                  <th class="px-6 py-3 text-right text-sm sm:text-base font-semibold text-[#747686]">Total HT</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-[#C3C5D7]">
-                <tr *ngFor="let p of devis?.produits" class="hover:bg-[#F8FAFC]">
-                  <td class="px-6 py-4">
-                    <p class="font-semibold text-[#104382]">{{ p.designation }}</p>
-                    <p class="mt-0.5 text-xs text-[#94A3B8]">{{ p.sousDetail }}</p>
-                  </td>
-                  <td class="px-4 py-4 text-center text-[#475569]">{{ p.qte }}</td>
-                  <td class="px-4 py-4 text-right text-[#475569]">{{ p.prixUnitaire }}</td>
-                  <td class="px-6 py-4 text-right font-semibold text-[#0F172A]">{{ p.totalHT }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[500px] text-sm">
+                <thead>
+                  <tr class="border-y border-[#C3C5D7] bg-[#F4F6F9]">
+                    <th class="px-6 py-3 text-left text-sm sm:text-base font-semibold text-[#747686]">Désignation</th>
+                    <th class="px-4 py-3 text-center text-sm sm:text-base font-semibold text-[#747686]">Qté</th>
+                    <th class="px-4 py-3 text-right text-sm sm:text-base font-semibold text-[#747686]">Prix Unitaire</th>
+                    <th class="px-6 py-3 text-right text-sm sm:text-base font-semibold text-[#747686]">Total HT</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-[#C3C5D7]">
+                  <tr *ngFor="let p of quote?.items" class="hover:bg-[#F8FAFC]">
+                    <td class="px-6 py-4">
+                      <p class="font-semibold text-[#104382]">{{ p.designation }}</p>
+                      <p class="mt-0.5 text-xs text-[#94A3B8]">{{ p.model }}</p>
+                    </td>
+                    <td class="px-4 py-4 text-center text-[#475569]">{{ p.quantity }}</td>
+                    <td class="px-4 py-4 text-right text-[#475569]">{{ formatAmount(p.unitPrice) }}</td>
+                    <td class="px-6 py-4 text-right font-semibold text-[#0F172A]">{{ formatAmount(p.totalHT) }}</td>
+                  </tr>
+                  <tr *ngIf="!quote?.items?.length">
+                    <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-400">Aucun produit renseigné</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
-          <!-- Totaux -->
-          <div class="border-t border-slate-100 bg-[#F4F6F9] px-6 py-5">
-            <div class="ml-auto max-w-xs space-y-2 text-sm">
-              <div class="flex items-center justify-between text-[#475569]">
-                <span>Sous-total HT</span>
-                <span>{{ devis?.sousTotal }}</span>
-              </div>
-              <div class="flex items-center justify-between text-[#475569]">
-                <span>TTC</span>
-                <span>{{ devis?.ttc }}</span>
-              </div>
-              <div class="flex items-center justify-between border-t border-slate-200 pt-2">
-                <span class="text-base font-bold text-[#104382]">Total TTC</span>
-                <span class="text-lg sm:text-2xl font-bold text-[#104382]">{{ devis?.totalTTC }}</span>
+            <!-- Totaux -->
+            <div class="border-t border-slate-100 bg-[#F4F6F9] px-6 py-5">
+              <div class="ml-auto max-w-xs space-y-2 text-sm">
+                <div class="flex items-center justify-between text-[#475569]">
+                  <span>Sous-total HT</span>
+                  <span>{{ formatAmount(quote?.subtotalHT) }}</span>
+                </div>
+                <div class="flex items-center justify-between text-[#475569]">
+                  <span>TVA</span>
+                  <span>{{ formatAmount(quote?.tvaAmount) }}</span>
+                </div>
+                <div class="flex items-center justify-between border-t border-slate-200 pt-2">
+                  <span class="text-base font-bold text-[#104382]">Total TTC</span>
+                  <span class="text-lg sm:text-2xl font-bold text-[#104382]">{{ formatAmount(quote?.totalPrice) }}</span>
+                </div>
               </div>
             </div>
           </div>
-      </div>
-      </div>
-      <!-- FIN tableau produits -->
-
-      <!-- Sidebar droite : 1 colonne -->
-      <aside class="flex flex-col gap-5 lg:col-span-1">
-
-        <!-- Délais livraison -->
-        <div class="rounded-2xl bg-white p-6 ring-1 ring-slate-100">
-          <div class="mb-3 flex items-center gap-3">
-           <svg width="22" height="16" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M5 16C4.16667 16 3.45833 15.7083 2.875 15.125C2.29167 14.5417 2 13.8333 2 13H0V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H16V4H19L22 8V13H20C20 13.8333 19.7083 14.5417 19.125 15.125C18.5417 15.7083 17.8333 16 17 16C16.1667 16 15.4583 15.7083 14.875 15.125C14.2917 14.5417 14 13.8333 14 13H8C8 13.8333 7.70833 14.5417 7.125 15.125C6.54167 15.7083 5.83333 16 5 16ZM5 14C5.28333 14 5.52083 13.9042 5.7125 13.7125C5.90417 13.5208 6 13.2833 6 13C6 12.7167 5.90417 12.4792 5.7125 12.2875C5.52083 12.0958 5.28333 12 5 12C4.71667 12 4.47917 12.0958 4.2875 12.2875C4.09583 12.4792 4 12.7167 4 13C4 13.2833 4.09583 13.5208 4.2875 13.7125C4.47917 13.9042 4.71667 14 5 14ZM2 11H2.8C3.08333 10.7 3.40833 10.4583 3.775 10.275C4.14167 10.0917 4.55 10 5 10C5.45 10 5.85833 10.0917 6.225 10.275C6.59167 10.4583 6.91667 10.7 7.2 11H14V2H2V11ZM17 14C17.2833 14 17.5208 13.9042 17.7125 13.7125C17.9042 13.5208 18 13.2833 18 13C18 12.7167 17.9042 12.4792 17.7125 12.2875C17.5208 12.0958 17.2833 12 17 12C16.7167 12 16.4792 12.0958 16.2875 12.2875C16.0958 12.4792 16 12.7167 16 13C16 13.2833 16.0958 13.5208 16.2875 13.7125C16.4792 13.9042 16.7167 14 17 14ZM16 9H20.25L18 6H16V9Z" fill="#006E2A"/>
-</svg>
-            <h3 class="text-lg sm:text-xl font-semibold text-[#191B23]">Délais de Livraison</h3>
-          </div>
-          <p class="text-sm sm:text-base leading-relaxed text-[#434655]" [innerHTML]="formatText(devis?.delaisLivraison)"></p>
         </div>
 
-        <!-- Conditions paiement -->
-        <div class="rounded-2xl bg-white p-6 ring-1 ring-slate-100">
-          <div class="mb-3 flex items-center gap-3">
-            <svg width="22" height="16" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M13 9C12.1667 9 11.4583 8.70833 10.875 8.125C10.2917 7.54167 10 6.83333 10 6C10 5.16667 10.2917 4.45833 10.875 3.875C11.4583 3.29167 12.1667 3 13 3C13.8333 3 14.5417 3.29167 15.125 3.875C15.7083 4.45833 16 5.16667 16 6C16 6.83333 15.7083 7.54167 15.125 8.125C14.5417 8.70833 13.8333 9 13 9ZM6 12C5.45 12 4.97917 11.8042 4.5875 11.4125C4.19583 11.0208 4 10.55 4 10V2C4 1.45 4.19583 0.979167 4.5875 0.5875C4.97917 0.195833 5.45 0 6 0H20C20.55 0 21.0208 0.195833 21.4125 0.5875C21.8042 0.979167 22 1.45 22 2V10C22 10.55 21.8042 11.0208 21.4125 11.4125C21.0208 11.8042 20.55 12 20 12H6ZM8 10H18C18 9.45 18.1958 8.97917 18.5875 8.5875C18.9792 8.19583 19.45 8 20 8V4C19.45 4 18.9792 3.80417 18.5875 3.4125C18.1958 3.02083 18 2.55 18 2H8C8 2.55 7.80417 3.02083 7.4125 3.4125C7.02083 3.80417 6.55 4 6 4V8C6.55 8 7.02083 8.19583 7.4125 8.5875C7.80417 8.97917 8 9.45 8 10ZM19 16H2C1.45 16 0.979167 15.8042 0.5875 15.4125C0.195833 15.0208 0 14.55 0 14V3H2V14H19V16ZM6 10V2V10Z" fill="#791C00"/>
-</svg>
-            <h3 class="text-lg sm:text-xl font-semibold text-[#191B23]">Conditions de Paiement</h3>
+        <!-- Sidebar -->
+        <aside class="flex flex-col gap-5 lg:col-span-1">
+
+          <!-- Délais livraison -->
+          <div class="rounded-2xl bg-white p-6 ring-1 ring-slate-100">
+            <div class="mb-3 flex items-center gap-3">
+              <svg width="22" height="16" viewBox="0 0 22 16" fill="none">
+                <path d="M5 16C4.16667 16 3.45833 15.7083 2.875 15.125C2.29167 14.5417 2 13.8333 2 13H0V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H16V4H19L22 8V13H20C20 13.8333 19.7083 14.5417 19.125 15.125C18.5417 15.7083 17.8333 16 17 16C16.1667 16 15.4583 15.7083 14.875 15.125C14.2917 14.5417 14 13.8333 14 13H8C8 13.8333 7.70833 14.5417 7.125 15.125C6.54167 15.7083 5.83333 16 5 16ZM5 14C5.28333 14 5.52083 13.9042 5.7125 13.7125C5.90417 13.5208 6 13.2833 6 13C6 12.7167 5.90417 12.4792 5.7125 12.2875C5.52083 12.0958 5.28333 12 5 12C4.71667 12 4.47917 12.0958 4.2875 12.2875C4.09583 12.4792 4 12.7167 4 13C4 13.2833 4.09583 13.5208 4.2875 13.7125C4.47917 13.9042 4.71667 14 5 14ZM2 11H2.8C3.08333 10.7 3.40833 10.4583 3.775 10.275C4.14167 10.0917 4.55 10 5 10C5.45 10 5.85833 10.0917 6.225 10.275C6.59167 10.4583 6.91667 10.7 7.2 11H14V2H2V11ZM17 14C17.2833 14 17.5208 13.9042 17.7125 13.7125C17.9042 13.5208 18 13.2833 18 13C18 12.7167 17.9042 12.4792 17.7125 12.2875C17.5208 12.0958 17.2833 12 17 12C16.7167 12 16.4792 12.0958 16.2875 12.2875C16.0958 12.4792 16 12.7167 16 13C16 13.2833 16.0958 13.5208 16.2875 13.7125C16.4792 13.9042 16.7167 14 17 14ZM16 9H20.25L18 6H16V9Z" fill="#006E2A"/>
+              </svg>
+              <h3 class="text-lg sm:text-xl font-semibold text-[#191B23]">Délais de Livraison</h3>
+            </div>
+            <p class="text-sm sm:text-base leading-relaxed text-[#434655]">
+              {{ quote?.deliveryTerms ?? (quote?.deliveryDays ? quote.deliveryDays + ' jours ouvrés' : '—') }}
+            </p>
           </div>
-          <p class="text-sm sm:text-base leading-relaxed text-[#434655]" [innerHTML]="formatText(devis?.conditionsPaiement)"></p>
-        </div>
 
-      </aside>
+          <!-- Conditions paiement -->
+          <div class="rounded-2xl bg-white p-6 ring-1 ring-slate-100">
+            <div class="mb-3 flex items-center gap-3">
+              <svg width="22" height="16" viewBox="0 0 22 16" fill="none">
+                <path d="M13 9C12.1667 9 11.4583 8.70833 10.875 8.125C10.2917 7.54167 10 6.83333 10 6C10 5.16667 10.2917 4.45833 10.875 3.875C11.4583 3.29167 12.1667 3 13 3C13.8333 3 14.5417 3.29167 15.125 3.875C15.7083 4.45833 16 5.16667 16 6C16 6.83333 15.7083 7.54167 15.125 8.125C14.5417 8.70833 13.8333 9 13 9ZM6 12C5.45 12 4.97917 11.8042 4.5875 11.4125C4.19583 11.0208 4 10.55 4 10V2C4 1.45 4.19583 0.979167 4.5875 0.5875C4.97917 0.195833 5.45 0 6 0H20C20.55 0 21.0208 0.195833 21.4125 0.5875C21.8042 0.979167 22 1.45 22 2V10C22 10.55 21.8042 11.0208 21.4125 11.4125C21.0208 11.8042 20.55 12 20 12H6ZM8 10H18C18 9.45 18.1958 8.97917 18.5875 8.5875C18.9792 8.19583 19.45 8 20 8V4C19.45 4 18.9792 3.80417 18.5875 3.4125C18.1958 3.02083 18 2.55 18 2H8C8 2.55 7.80417 3.02083 7.4125 3.4125C7.02083 3.80417 6.55 4 6 4V8C6.55 8 7.02083 8.19583 7.4125 8.5875C7.80417 8.97917 8 9.45 8 10ZM19 16H2C1.45 16 0.979167 15.8042 0.5875 15.4125C0.195833 15.0208 0 14.55 0 14V3H2V14H19V16Z" fill="#791C00"/>
+              </svg>
+              <h3 class="text-lg sm:text-xl font-semibold text-[#191B23]">Conditions de Paiement</h3>
+            </div>
+            <p class="text-sm sm:text-base leading-relaxed text-[#434655]">
+              {{ quote?.paymentConditions ?? '—' }}
+            </p>
+          </div>
 
-    </div>
+          <!-- Garantie -->
+          <div *ngIf="quote?.guarantee" class="rounded-2xl bg-white p-6 ring-1 ring-slate-100">
+            <p class="mb-2 text-xs font-bold uppercase tracking-widest text-[#434655]">Garantie</p>
+            <p class="text-sm text-[#434655]">{{ quote?.guarantee }}</p>
+          </div>
+
+        </aside>
+
+      </div>
+
+    </ng-container>
   </div>
 </div>
-

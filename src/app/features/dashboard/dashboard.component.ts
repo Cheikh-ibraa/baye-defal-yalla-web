@@ -1,636 +1,282 @@
-
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, inject, PLATFORM_ID, OnDestroy } from '@angular/core';
-import { CommonModule, CurrencyPipe, isPlatformBrowser } from '@angular/common';
-import { Subject, of } from 'rxjs';
-import { takeUntil, delay } from 'rxjs/operators';
+import {
+  Component, OnInit, ViewChild, ElementRef,
+  AfterViewInit, OnDestroy, inject, PLATFORM_ID,
+} from '@angular/core';
+import { CommonModule, isPlatformBrowser, UpperCasePipe } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { Chart, registerables } from 'chart.js';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-// Inlined dashboard types (replacing DashboardService dependency)
+import { environment } from '../../../environments/environment';
 
-interface PharmacyCounter {
-  pendingCount: number;
-  inPreparationCount: number;
-  readyCount: number;
-  deliveredCount: number;
+Chart.register(...registerables);
+
+type PeriodType = 'DAILY' | 'WEEKLY' | 'MONTHLY';
+
+interface DashboardData {
+  todayOrders: number;
+  pending: number;
+  inPreparation: number;
+  ready: number;
+  delivered: number;
   pendingPercentage: number;
   inPreparationPercentage: number;
   readyPercentage: number;
   deliveredPercentage: number;
-  averagePrepTime: string | number;
+  pharmacy: {
+    id: string;
+    name: string;
+    address: string;
+    phone: string;
+    logoUrl: string | null;
+    openingHours: string | null;
+    isOpen: boolean;
+  } | null;
 }
 
-interface DeliveryEvolution {
-  label: string;
-  count: number;
-}
-
-interface PaymentStats {
-  todayTotal: number;
-  yesterdayTotal: number;
-  last7DaysTotal: number;
-  last30DaysTotal: number;
-}
-
-type PeriodType = 'DAILY' | 'WEEKLY' | 'MONTHLY';
-import { User } from '../../core/auth.types';
-// AuthFacade removed — using local mock current user for static UI
-// Local PharmacyByPharmacistInfo inlined from pharmacie.service
-interface PharmacistBasic {
-  id: number;
-  nom: string;
-  prenom: string;
-}
-
-interface PharmacyByPharmacistInfo {
-  id: number;
-  name: string;
-  address: string;
-  phone: string;
-  email: string;
-  logo: string;
-  hourly: string | null;
-  pharmacist: PharmacistBasic;
-}
-import { environment } from '../../../environments/environment';
-
-Chart.register(...registerables);
+interface EvolutionPoint { label: string; count: number; }
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
-  imports: [CommonModule],
-  standalone: true
+  imports: [CommonModule, UpperCasePipe],
+  standalone: true,
 })
 export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('pieChart', { static: false }) pieChart!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('lineChart', { static: false }) lineChart!: ElementRef<HTMLCanvasElement>;
-
-  isBrowser: boolean = false;
-  isOpen = false;
-  selectedRegion = '';
-  selectedPeriod: PeriodType = 'WEEKLY';
-
-  // ID de la pharmacie récupéré dynamiquement
-  pharmacyId: number = 0;
-  currentUser: User | null = null;
-
-  // Données de la pharmacie (header)
-  pharmacyInfo: PharmacyByPharmacistInfo | null = null;
-  isLoadingPharmacyInfo = true;
-  pharmacyInfoError = false;
-  readonly filesBaseUrl = environment.filesUrl;
-
-  // Données dynamiques
-  pharmacyCounter: PharmacyCounter | null = null;
-  paymentStats: PaymentStats | null = null;
-  deliveryEvolution: DeliveryEvolution[] = [];
-
-  // Variables pour les graphiques
-  pieChartInstance: Chart | null = null;
-  lineChartInstance: Chart | null = null;
-
-  // Loading states
-  isLoadingCounter = true;
-  isLoadingPayments = true;
-  isLoadingEvolution = true;
-  isLoadingUser = true;
-  isExporting = false;
-
-  // États d'erreur
-  error: boolean = false;
-  errorMessage: string = '';
-
-  private destroy$ = new Subject<void>();
-  private readonly localPharmacyInfo: PharmacyByPharmacistInfo = {
-    id: 1,
-    name: 'Pharmacie Centrale',
-    address: 'Dakar, 89 Avenue du Principal',
-    phone: '33 000 00 00',
-    email: 'contact@pharmacie-centrale.local',
-    hourly: null,
-    logo: 'assets/images/pharmacy-logo.png',
-    pharmacist: {
-      id: 1,
-      nom: 'Ndiaye',
-      prenom: 'Awa'
-    }
-  };
+  @ViewChild('pieChart',  { static: false }) pieChartRef!:  ElementRef<HTMLCanvasElement>;
+  @ViewChild('lineChart', { static: false }) lineChartRef!: ElementRef<HTMLCanvasElement>;
 
   private platformId = inject(PLATFORM_ID);
+  private http = inject(HttpClient);
+  private destroy$ = new Subject<void>();
 
-  constructor() {
-    this.isBrowser = isPlatformBrowser(this.platformId);
-  }
+  isBrowser = isPlatformBrowser(this.platformId);
+  selectedPeriod: PeriodType = 'WEEKLY';
 
-  // Local mock current user
-  private getMockCurrentUser(): User {
-    return {
-      id: 1,
-      prenom: 'Admin',
-      nom: 'Pharmacie',
-      profil: 'PHARMACIE',
-      lat: 14.7,
-      lon: -17.45,
-      pharmacyId: 1,
-      email: 'admin@pharmacie.local',
-      telephone: '330000000'
-    } as any;
-  }
+  pharmacistName = '';
+  avgPreparationTime = '—';
 
-  // Local replacement for getCurrentUserById
-  private localGetCurrentUserById(id: number) {
-    const mock: User = { id, prenom: 'Admin', nom: 'Pharmacie', profil: 'PHARMACIE', lat: 14.7, lon: -17.45, pharmacyId: 1 } as any;
-    return of(mock).pipe(delay(150));
-  }
+  dashboard: DashboardData | null = null;
+  evolution: EvolutionPoint[] = [];
 
-  // ===== Local mock implementations for dashboard data =====
-  private localGetPharmatieCounter(pharmacyId: number) {
-    const counter: PharmacyCounter = {
-      pendingCount: 8,
-      inPreparationCount: 5,
-      readyCount: 3,
-      deliveredCount: 12,
-      pendingPercentage: 20,
-      inPreparationPercentage: 12,
-      readyPercentage: 8,
-      deliveredPercentage: 60,
-      averagePrepTime: '00:12:00'
-    };
-    return of(counter).pipe(delay(200));
-  }
+  loadingDashboard = true;
+  loadingEvolution = true;
+  errorDashboard = '';
+  errorEvolution = '';
 
-  private localGetPaymentState(pharmacyId: number) {
-    const stats: PaymentStats = {
-      todayTotal: 120000,
-      yesterdayTotal: 90000,
-      last7DaysTotal: 560000,
-      last30DaysTotal: 2300000
-    };
-    return of(stats).pipe(delay(200));
-  }
+  isExporting = false;
+  isOpen = false;
 
-  private localGetEvolution(pharmacyId: number, period: PeriodType) {
-    const mock: DeliveryEvolution[] = [
-      { label: period === 'DAILY' ? '00:00' : 'Semaine 1', count: 10 },
-      { label: period === 'DAILY' ? '06:00' : 'Semaine 2', count: 12 },
-      { label: period === 'DAILY' ? '12:00' : 'Semaine 3', count: 8 },
-      { label: period === 'DAILY' ? '18:00' : 'Semaine 4', count: 15 }
-    ];
-    return of(mock).pipe(delay(250));
-  }
+  pieChartInstance:  Chart | null = null;
+  lineChartInstance: Chart | null = null;
+
+  readonly filesBaseUrl = environment.filesUrl;
 
   ngOnInit(): void {
-
-    const currentUser = this.getMockCurrentUser();
-
-    if (!currentUser) {
-      console.error('❌ Aucun utilisateur connecté');
-      this.error = true;
-      this.errorMessage = 'Vous devez être connecté pour accéder à cette page';
-      return;
-    }
-
-
-    // Si l'utilisateur n'a pas de pharmacyId OU si les données semblent incomplètes, recharger localement
-    if ((!currentUser.pharmacyId || currentUser.pharmacyId === null) && currentUser.id) {
-      this.loadCompleteUserData(currentUser.id);
-    } else if (currentUser.pharmacyId) {
-      // L'utilisateur a déjà le pharmacyId
-      this.initializeWithUser(currentUser);
-    } else {
-      console.error('❌ ID utilisateur manquant');
-      this.error = true;
-      this.errorMessage = 'Erreur lors de la récupération de vos informations';
-      this.isLoadingUser = false;
-      return;
-    }
+    this.extractPharmacistName();
+    this.loadDashboard();
+    this.loadEvolution();
   }
 
-  /**
-   * Charge les données complètes de l'utilisateur depuis l'API
-   */
-  private loadCompleteUserData(userId: number): void {
-    this.isLoadingUser = true;
-
-    this.localGetCurrentUserById(userId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (user: User) => {
-          // Mettre à jour le localStorage avec les données complètes
-          localStorage.setItem('user_data', JSON.stringify(user));
-          // Update local currentUser
-          this.currentUser = user;
-          this.isLoadingUser = false;
-          this.initializeWithUser(user);
-        },
-        error: (error: any) => {
-          console.error('❌ Erreur lors du chargement des données utilisateur (mock):', error);
-          this.error = true;
-          this.errorMessage = 'Impossible de charger vos informations utilisateur';
-          this.isLoadingUser = false;
-        }
-      });
-  }
-
-  /**
-   * Initialise le dashboard avec les données utilisateur
-   */
-  private initializeWithUser(user: User): void {
-    this.currentUser = user;
-
-
-
-    // Vérifier que l'utilisateur appartient à une pharmacie
-    if (!user.pharmacyId || user.pharmacyId === null) {
-      console.error('❌ Aucune pharmacie associée à cet utilisateur');
-      console.error('💡 Données utilisateur reçues:', JSON.stringify(user, null, 2));
-      this.error = true;
-      this.errorMessage = `Aucune pharmacie associée à votre compte. Veuillez contacter l'administrateur pour vous assigner une pharmacie.`;
-      this.isLoadingCounter = false;
-      this.isLoadingPayments = false;
-      this.isLoadingEvolution = false;
-      return;
-    }
-
-    this.pharmacyId = user.pharmacyId;
-
-    this.loadPharmacyInfo(user.id);
-    this.loadDashboardData();
-  }
-
-  /**
-   * Charge les informations de la pharmacie depuis l'endpoint by-pharmacist
-   */
-  private loadPharmacyInfo(pharmacistId: number): void {
-    this.isLoadingPharmacyInfo = true;
-    this.pharmacyInfoError = false;
-
-    setTimeout(() => {
-      this.pharmacyInfo = {
-        ...this.localPharmacyInfo,
-        pharmacist: { ...this.localPharmacyInfo.pharmacist, id: pharmacistId }
-      };
-      this.isLoadingPharmacyInfo = false;
-    }, 250);
-  }
-
-  /**
-   * Retourne l'URL complète du logo de la pharmacie
-   */
-  getLogoUrl(): string | null {
-    if (!this.pharmacyInfo?.logo) return null;
-    return `${this.filesBaseUrl}/${this.pharmacyInfo.logo}`;
+  private extractPharmacistName(): void {
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const first = payload.given_name ?? payload.firstName ?? '';
+      const last  = payload.family_name ?? payload.lastName ?? '';
+      const full  = `${first} ${last}`.trim();
+      this.pharmacistName = full || payload.preferred_username || payload.name || '';
+    } catch { /* token absent ou invalide */ }
   }
 
   ngAfterViewInit(): void {
-    if (this.isBrowser) {
-      setTimeout(() => {
-        this.createCharts();
-      }, 100);
-    }
+    if (this.isBrowser) setTimeout(() => this.buildCharts(), 100);
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-
-    // Détruire les graphiques pour éviter les fuites mémoire
-    if (this.pieChartInstance) {
-      this.pieChartInstance.destroy();
-    }
-    if (this.lineChartInstance) {
-      this.lineChartInstance.destroy();
-    }
+    this.pieChartInstance?.destroy();
+    this.lineChartInstance?.destroy();
   }
 
-  loadDashboardData(): void {
-    this.loadPharmatieCounter();
-    this.loadPaymentStats();
-    this.loadDeliveryEvolution();
-  }
-
-  loadPharmatieCounter(): void {
-    this.isLoadingCounter = true;
-    this.localGetPharmatieCounter(this.pharmacyId)
+  loadDashboard(): void {
+    this.loadingDashboard = true;
+    this.errorDashboard = '';
+    this.http.get<DashboardData>(`${environment.baseUrl}/pharmacy/pharmacy/dashboard`)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (data: PharmacyCounter) => {
-          this.pharmacyCounter = data;
-          this.isLoadingCounter = false;
-
-          if (this.pieChartInstance) {
-            this.updatePieChart();
-          }
+        next: (data) => {
+          this.dashboard = data;
+          this.loadingDashboard = false;
+          this.updatePieChart();
         },
-        error: (error: any) => {
-          console.error('❌ Erreur lors du chargement des compteurs (mock):', error);
-          this.isLoadingCounter = false;
-          this.handleError('Erreur lors du chargement des compteurs', error);
-        }
+        error: () => {
+          this.errorDashboard = 'Impossible de charger le tableau de bord.';
+          this.loadingDashboard = false;
+        },
       });
   }
 
-  loadPaymentStats(): void {
-    this.isLoadingPayments = true;
-    this.localGetPaymentState(this.pharmacyId)
+  loadEvolution(): void {
+    this.loadingEvolution = true;
+    this.errorEvolution = '';
+    this.http.get<EvolutionPoint[]>(`${environment.baseUrl}/pharmacy/orders/evolution?period=${this.selectedPeriod}`)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (data: PaymentStats) => {
-          this.paymentStats = data;
-          this.isLoadingPayments = false;
+        next: (data) => {
+          this.evolution = data;
+          this.loadingEvolution = false;
+          this.updateLineChart();
         },
-        error: (error: any) => {
-          console.error('❌ Erreur lors du chargement des stats de paiement (mock):', error);
-          this.isLoadingPayments = false;
-          this.handleError('Erreur lors du chargement des statistiques de paiement', error);
-        }
-      });
-  }
-
-  loadDeliveryEvolution(): void {
-    this.isLoadingEvolution = true;
-    this.localGetEvolution(this.pharmacyId, this.selectedPeriod)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (data: DeliveryEvolution[]) => {
-          this.deliveryEvolution = data;
-          this.isLoadingEvolution = false;
-
-          if (this.lineChartInstance) {
-            this.updateLineChart();
-          }
+        error: () => {
+          this.errorEvolution = 'Impossible de charger l\'évolution.';
+          this.loadingEvolution = false;
         },
-        error: (error: any) => {
-          console.error('❌ Erreur lors du chargement de l\'évolution (mock):', error);
-          this.isLoadingEvolution = false;
-          this.handleError('Erreur lors du chargement de l\'évolution des livraisons', error);
-        }
       });
   }
 
   onPeriodChange(event: Event): void {
-    const target = event.target as HTMLSelectElement;
-    this.selectedPeriod = target.value as PeriodType;
-    this.loadDeliveryEvolution();
+    this.selectedPeriod = (event.target as HTMLSelectElement).value as PeriodType;
+    this.loadEvolution();
   }
 
-  onCardClick(cardTitle: string): void {
-    // Ajoutez ici votre logique de navigation
-    // Exemple: this.router.navigate(['/orders'], { queryParams: { status: cardTitle } });
+  refresh(): void {
+    this.loadDashboard();
+    this.loadEvolution();
   }
 
-  toggleDropdown(): void {
-    this.isOpen = !this.isOpen;
+  // ─── Graphiques ──────────────────────────────────────────────────────────────
+
+  buildCharts(): void {
+    this.buildPieChart();
+    this.buildLineChart();
   }
 
-  closeDropdown(): void {
-    this.isOpen = false;
+  buildPieChart(): void {
+    const ctx = this.pieChartRef?.nativeElement?.getContext('2d');
+    if (!ctx) return;
+    this.pieChartInstance = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: ['En attente', 'Préparation', 'Prêtes', 'Livrées'],
+        datasets: [{ data: this.pieData(), backgroundColor: ['#FDE047', '#60A5FA', '#2563EB', '#14B8A6'], borderWidth: 0 }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+      },
+    });
   }
 
-  exportToPDF(): void {
-    this.closeDropdown();
-    // TODO: Implémenter l'export PDF
+  buildLineChart(): void {
+    const ctx = this.lineChartRef?.nativeElement?.getContext('2d');
+    if (!ctx) return;
+    this.lineChartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: this.evolution.map(e => e.label),
+        datasets: [{
+          label: 'Commandes',
+          data: this.evolution.map(e => e.count),
+          borderColor: '#14B8A6', backgroundColor: 'transparent',
+          borderWidth: 2, pointBackgroundColor: '#14B8A6',
+          pointRadius: 4, tension: 0.4,
+        }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          x: { grid: { display: false }, border: { display: false } },
+          y: { beginAtZero: true, grid: { color: '#F3F4F6' }, border: { display: false }, ticks: { stepSize: 1 } },
+        },
+        plugins: { legend: { display: false } },
+      },
+    });
   }
+
+  updatePieChart(): void {
+    if (!this.pieChartInstance) return;
+    this.pieChartInstance.data.datasets[0].data = this.pieData();
+    this.pieChartInstance.update();
+  }
+
+  updateLineChart(): void {
+    if (!this.lineChartInstance) return;
+    this.lineChartInstance.data.labels = this.evolution.map(e => e.label);
+    this.lineChartInstance.data.datasets[0].data = this.evolution.map(e => e.count);
+    this.lineChartInstance.update();
+  }
+
+  get evolutionIsEmpty(): boolean {
+    return this.evolution.length > 0 && this.evolution.every(e => e.count === 0);
+  }
+
+  pieData(): number[] {
+    if (!this.dashboard) return [0, 0, 0, 0];
+    return [
+      this.dashboard.pendingPercentage ?? 0,
+      this.dashboard.inPreparationPercentage ?? 0,
+      this.dashboard.readyPercentage ?? 0,
+      this.dashboard.deliveredPercentage ?? 0,
+    ];
+  }
+
+  // ─── Export Excel ─────────────────────────────────────────────────────────────
+
+  toggleDropdown(): void { this.isOpen = !this.isOpen; }
+  closeDropdown(): void  { this.isOpen = false; }
+  exportToPDF(): void    { this.closeDropdown(); }
 
   exportToExcel(): void {
     this.closeDropdown();
     this.isExporting = true;
-
     try {
-      const wb = XLSX.utils.book_new();
-      const timestamp = new Date().toISOString().split('T')[0];
+      const wb   = XLSX.utils.book_new();
+      const ts   = new Date().toISOString().split('T')[0];
+      const d    = this.dashboard;
+      const name = d?.pharmacy?.name ?? '—';
 
-      // ── Feuille 1 : Vue d'ensemble ──────────────────────────────────────
-      const overviewData: any[][] = [];
-
-      // Section : Informations générales
-      overviewData.push(['TABLEAU DE BORD PHARMACIE']);
-      overviewData.push([`Généré le : ${new Date().toLocaleString('fr-FR')}`]);
-      overviewData.push([`Pharmacie : ${this.pharmacyInfo?.name ?? '—'}  •  Pharmacien : ${this.pharmacyInfo?.pharmacist?.prenom ?? ''} ${this.pharmacyInfo?.pharmacist?.nom ?? ''}`]);
-      overviewData.push([]);
-
-      // Section : Compteurs de commandes
-      overviewData.push(['--- STATISTIQUES DES COMMANDES ---']);
-      overviewData.push(['Statut', 'Nombre', 'Pourcentage (%)']);
-      overviewData.push(['En attente', this.pharmacyCounter?.pendingCount ?? 0, this.pharmacyCounter?.pendingPercentage ?? 0]);
-      overviewData.push(['En préparation', this.pharmacyCounter?.inPreparationCount ?? 0, this.pharmacyCounter?.inPreparationPercentage ?? 0]);
-      overviewData.push(['Prêtes', this.pharmacyCounter?.readyCount ?? 0, this.pharmacyCounter?.readyPercentage ?? 0]);
-      overviewData.push(['Livrées', this.pharmacyCounter?.deliveredCount ?? 0, this.pharmacyCounter?.deliveredPercentage ?? 0]);
-      overviewData.push(['Temps moyen de préparation', this.pharmacyCounter?.averagePrepTime ?? '—', '']);
-      overviewData.push([]);
-
-      // Section : Revenus
-      overviewData.push(['--- VUE D\'ENSEMBLE DES REVENUS ---']);
-      overviewData.push(['Période', 'Montant (Fcfa)']);
-      overviewData.push(["Aujourd'hui", this.paymentStats?.todayTotal ?? 0]);
-      overviewData.push(['Hier', this.paymentStats?.yesterdayTotal ?? 0]);
-      overviewData.push(['7 derniers jours', this.paymentStats?.last7DaysTotal ?? 0]);
-      overviewData.push(['30 derniers jours', this.paymentStats?.last30DaysTotal ?? 0]);
-
-      const ws1 = XLSX.utils.aoa_to_sheet(overviewData);
-      ws1['!cols'] = [
-        { wch: 35 },
-        { wch: 18 },
-        { wch: 18 }
+      const overview: any[][] = [
+        ['TABLEAU DE BORD PHARMACIE'],
+        [`Généré le : ${new Date().toLocaleString('fr-FR')}`],
+        [`Pharmacie : ${name}`],
+        [],
+        ['--- STATISTIQUES ---'],
+        ['Statut', 'Nombre', '%'],
+        ['En attente',    d?.pending       ?? 0, d?.pendingPercentage       ?? 0],
+        ['En préparation',d?.inPreparation ?? 0, d?.inPreparationPercentage ?? 0],
+        ['Prêtes',        d?.ready         ?? 0, d?.readyPercentage         ?? 0],
+        ['Livrées',       d?.delivered     ?? 0, d?.deliveredPercentage     ?? 0],
+        ['Auj. total',    d?.todayOrders   ?? 0, ''],
       ];
+      const ws1 = XLSX.utils.aoa_to_sheet(overview);
+      ws1['!cols'] = [{ wch: 30 }, { wch: 12 }, { wch: 10 }];
       XLSX.utils.book_append_sheet(wb, ws1, 'Vue d\'ensemble');
 
-      // ── Feuille 2 : Évolution des livraisons ─────────────────────────────
-      const evolutionData: any[][] = [];
-      evolutionData.push(['ÉVOLUTION DES LIVRAISONS']);
-      evolutionData.push([`Période : ${this.selectedPeriod === 'DAILY' ? 'Quotidienne' : this.selectedPeriod === 'WEEKLY' ? 'Hebdomadaire' : 'Mensuelle'}`]);
-      evolutionData.push([]);
-      evolutionData.push(['Période', 'Nombre de livraisons']);
-
-      if (this.deliveryEvolution.length > 0) {
-        this.deliveryEvolution.forEach(item => {
-          evolutionData.push([item.label, item.count]);
-        });
-        // Ligne totale
-        const totalDeliveries = this.deliveryEvolution.reduce((sum, item) => sum + item.count, 0);
-        evolutionData.push([]);
-        evolutionData.push(['TOTAL', totalDeliveries]);
-      } else {
-        evolutionData.push(['Aucune donnée disponible', '']);
-      }
-
-      const ws2 = XLSX.utils.aoa_to_sheet(evolutionData);
-      ws2['!cols'] = [
-        { wch: 25 },
-        { wch: 25 }
+      const evo: any[][] = [
+        ['ÉVOLUTION DES COMMANDES'],
+        [`Période : ${this.selectedPeriod}`],
+        [],
+        ['Tranche', 'Commandes'],
+        ...this.evolution.map(e => [e.label, e.count]),
       ];
-      XLSX.utils.book_append_sheet(wb, ws2, 'Évolution des livraisons');
+      const ws2 = XLSX.utils.aoa_to_sheet(evo);
+      ws2['!cols'] = [{ wch: 20 }, { wch: 15 }];
+      XLSX.utils.book_append_sheet(wb, ws2, 'Évolution');
 
-      // ── Génération et téléchargement ────────────────────────────────────
-      const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-      const blob = new Blob([wbout], { type: 'application/octet-stream' });
-      saveAs(blob, `dashboard-medecin-${timestamp}.xlsx`);
-
-    } catch (err) {
-      console.error('❌ Erreur lors de l\'export Excel :', err);
+      const blob = new Blob([XLSX.write(wb, { bookType: 'xlsx', type: 'array' })], { type: 'application/octet-stream' });
+      saveAs(blob, `dashboard-pharmacie-${ts}.xlsx`);
     } finally {
       this.isExporting = false;
     }
   }
 
-  createCharts(): void {
-    if (!this.isBrowser) return;
-
-    this.createPieChart();
-    this.createLineChart();
-  }
-
-  createPieChart(): void {
-    const ctx = this.pieChart?.nativeElement?.getContext('2d');
-    if (!ctx) {
-      console.warn('⚠️ Contexte du graphique camembert non disponible');
-      return;
-    }
-
-    this.pieChartInstance = new Chart(ctx, {
-      type: 'pie',
-      data: {
-        labels: ['En attente', 'Préparation', 'Prêtes', 'Livrées'],
-        datasets: [{
-          data: this.getPieChartData(),
-          backgroundColor: [
-            '#FDE047', // Jaune - En attente
-            '#60A5FA', // Bleu clair - Préparation  
-            '#2563EB', // Bleu - Prêtes
-            '#14B8A6', // Teal - Livrées
-          ],
-          borderWidth: 0
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: false
-          }
-        }
-      }
-    });
-  }
-
-  createLineChart(): void {
-    const ctx = this.lineChart?.nativeElement?.getContext('2d');
-    if (!ctx) {
-      console.warn('⚠️ Contexte du graphique linéaire non disponible');
-      return;
-    }
-
-    this.lineChartInstance = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: this.getLineChartLabels(),
-        datasets: [{
-          label: 'Commandes livrées',
-          data: this.getLineChartData(),
-          borderColor: '#104382',
-          backgroundColor: 'transparent',
-          borderWidth: 2,
-          pointBackgroundColor: '#FFFFFF',
-          pointBorderColor: '#104382',
-          pointRadius: 4,
-          tension: 0.4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: {
-            grid: { display: false },
-            border: { display: false }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: '#F3F4F6' },
-            border: { display: false },
-            ticks: { stepSize: 2 }
-          }
-        },
-        plugins: {
-          legend: { display: false }
-        },
-        elements: {
-          point: { hoverRadius: 6 }
-        }
-      }
-    });
-  }
-
-  updatePieChart(): void {
-    if (this.pieChartInstance && this.pharmacyCounter) {
-      this.pieChartInstance.data.datasets[0].data = this.getPieChartData();
-      this.pieChartInstance.update();
-    }
-  }
-
-  updateLineChart(): void {
-    if (this.lineChartInstance) {
-      this.lineChartInstance.data.labels = this.getLineChartLabels();
-      this.lineChartInstance.data.datasets[0].data = this.getLineChartData();
-      this.lineChartInstance.update();
-    }
-  }
-
-  getPieChartData(): number[] {
-    if (!this.pharmacyCounter) {
-      return [0, 0, 0, 0];
-    }
-    return [
-      this.pharmacyCounter.pendingPercentage,
-      this.pharmacyCounter.inPreparationPercentage,
-      this.pharmacyCounter.readyPercentage,
-      this.pharmacyCounter.deliveredPercentage
-    ];
-  }
-
-  getLineChartLabels(): string[] {
-    return this.deliveryEvolution.map(item => item.label);
-  }
-
-  getLineChartData(): number[] {
-    return this.deliveryEvolution.map(item => item.count);
-  }
-
-  formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('fr-FR').format(amount) + ' Fcfa';
-  }
-
-  /**
-   * Gère les erreurs de manière centralisée
-   */
-  private handleError(context: string, error: any): void {
-    console.error(`❌ ${context}:`, error);
-    this.error = true;
-    this.errorMessage = `${context}. Veuillez réessayer.`;
-  }
-
-  /**
-   * Réessaye de charger toutes les données
-   */
-  retry(): void {
-    this.error = false;
-    this.errorMessage = '';
-
-    // Recharger les données utilisateur si nécessaire
-    if (!this.pharmacyId && this.currentUser?.id) {
-      this.loadCompleteUserData(this.currentUser.id);
-    } else if (this.pharmacyId) {
-      this.loadDashboardData();
-    }
-  }
-
-  /**
-   * Rafraîchit le dashboard
-   */
-  refreshDashboard(): void {
-    this.loadDashboardData();
+  formatCurrency(n: number): string {
+    return new Intl.NumberFormat('fr-FR').format(n) + ' Fcfa';
   }
 }

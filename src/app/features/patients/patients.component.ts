@@ -3,14 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { NgOtpInputModule } from 'ng-otp-input';
+import { HttpClient } from '@angular/common/http';
 import { ExamensComponent } from '../examens/examens.component';
 import { ImagerieListComponent } from '../imagerie-list/imagerie-list.component';
 import { FileToDataUrlPipe } from '../../pipes/file-to-data-url.pipe';
 import { environment } from '../../../environments/environment';
 import { buildImageUrl } from '../../core/utils/image.helper';
-import { of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { forkJoin, of } from 'rxjs';
+import { catchError, delay } from 'rxjs/operators';
 import Swal from 'sweetalert2';
 // Local types replacing removed service types
 interface VitalSign {
@@ -119,7 +119,7 @@ interface Pharmacy {
 }
 
 interface OrdonnanceData {
-  id: number;
+  id: string;
   reference: string;
   doctor: Person;
   patient: Person;
@@ -543,7 +543,7 @@ interface Tab {
 @Component({
   selector: 'app-patients',
   standalone: true,
-  imports: [CommonModule, FormsModule, ExamensComponent, ImagerieListComponent, FileToDataUrlPipe, NgOtpInputModule],
+  imports: [CommonModule, FormsModule,   FileToDataUrlPipe],
   templateUrl: './patients.component.html',
   styleUrls: ['./patients.component.css']
 })
@@ -555,14 +555,26 @@ export class PatientsComponent implements OnInit {
   actionsJournalData: JournalAction[] = [];
   typesActionData: ActionType[] = [];
   ordreSortieData: DischargeOrder | null = null;
-  dischargeOrderMap: Map<number, boolean> = new Map(); // Map hospitalisation ID -> a un ordre de sortie
+  dischargeOrderMap: Map<string, boolean> = new Map(); // Map hospitalisation ID -> a un ordre de sortie
 
   // Données ordonnances depuis l'API
   ordonnancesData: OrdonnanceData[] = [];
   totalOrdonnances = 0;
   totalPagesOrdonnances = 0;
   currentPageOrdonnances = 0;
-  pageSizeOrdonnances = 10;
+  pageSizeOrdonnances = 6;
+
+  // Pagination examens (analyses médicales)
+  currentPageExamens = 0;
+  pageSizeExamens = 10;
+
+  // Pagination imagerie
+  currentPageImagerie = 0;
+  pageSizeImagerie = 6;
+
+  // Pagination hospitalisation
+  currentPageHospitalisation = 0;
+  pageSizeHospitalisation = 4;
 
   // Données mock pour les sections non encore connectées à l'API
   hospitalisations: Hospitalisation[] = [
@@ -739,7 +751,7 @@ export class PatientsComponent implements OnInit {
   // --- Mocks et helpers locaux pour Ordonnances ---
   private mockOrdonnances: OrdonnanceData[] = [
     {
-      id: 1,
+      id: '1',
       reference: 'ORD-0001',
       doctor: { id: 10, nom: 'Dupont', prenom: 'Jean' },
       patient: { id: 100, nom: 'Martin', prenom: 'Alice' },
@@ -797,7 +809,13 @@ export class PatientsComponent implements OnInit {
       'REJECTED': 'Rejetée',
       'IN_PREPARATION': 'En préparation',
       'READY': 'Prête',
-      'DELIVERED': 'Livrée'
+      'DELIVERED': 'Livrée',
+      'DRAFT': 'Brouillon',
+      'SENT_TO_PATIENT': 'Envoyée',
+      'SUBMITTED_FOR_DONATION': 'Demande de don',
+      'FULLY_FUNDED': 'Financée',
+      'QR_GENERATED': 'QR généré',
+      'IN_PROGRESS': 'En cours',
     };
     return mapping[status] || status;
   }
@@ -1241,6 +1259,14 @@ export class PatientsComponent implements OnInit {
   loadingConsultations = false;
   consultationsError = '';
 
+  // === Examens & Analyses (résultats biologiques) ===
+  labResults: Array<{ date: string; examen: string; valeur: string; reference: string; etat: 'Normal' | 'Anormal' | 'Critique' }> = [];
+  loadingLabResults = false;
+
+  // === Imagerie médicale ===
+  imagingOrders: any[] = [];
+  loadingImaging = false;
+
   certificats: MedicalCertificate[] = [];
 
   // États de chargement pour certificats
@@ -1292,6 +1318,60 @@ export class PatientsComponent implements OnInit {
 
   // Utilisateur courant (médecin)
   currentUser: any = null;
+
+  // ── Modal : ajouter un nouveau patient ────────────────────────────────────────
+  showAddPatientModal  = false;
+  addPatientLoading    = false;
+  addPatientError      = '';
+  addPatientSuccess    = false;
+  addPatientConflict: { name: string } | null = null;
+  addPatientForm = {
+    firstName: '', lastName: '', email: '', phone: '', dateOfBirth: '',
+  };
+
+  get addPatientAge(): number | null {
+    if (!this.addPatientForm.dateOfBirth) return null;
+    const diff = Date.now() - new Date(this.addPatientForm.dateOfBirth).getTime();
+    return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
+  }
+
+  openAddPatientModal(): void {
+    this.addPatientForm    = { firstName: '', lastName: '', email: '', phone: '', dateOfBirth: '' };
+    this.addPatientError   = '';
+    this.addPatientConflict = null;
+    this.addPatientSuccess = false;
+    this.showAddPatientModal = true;
+  }
+
+  closeAddPatientModal(): void { this.showAddPatientModal = false; }
+
+  submitAddPatient(): void {
+    const { firstName, lastName, email, phone } = this.addPatientForm;
+    if (!firstName || !lastName || !email || !phone) {
+      this.addPatientError = 'Veuillez remplir tous les champs obligatoires.';
+      return;
+    }
+    this.addPatientLoading  = true;
+    this.addPatientError    = '';
+    this.addPatientConflict = null;
+
+    this.http.post(`${environment.baseUrl}/auth/register/patient-by-doctor`, this.addPatientForm)
+      .subscribe({
+        next: () => {
+          this.addPatientLoading = false;
+          this.addPatientSuccess = true;
+          setTimeout(() => { this.showAddPatientModal = false; this.addPatientSuccess = false; }, 2500);
+        },
+        error: (err) => {
+          this.addPatientLoading = false;
+          if (err.status === 409) {
+            this.addPatientConflict = { name: err.error?.name ?? 'Ce patient' };
+          } else {
+            this.addPatientError = err.error?.message ?? 'Erreur lors de la création du patient.';
+          }
+        },
+      });
+  }
 
   // États des modals d'ajout
   showAllergieModal = false;
@@ -1433,20 +1513,27 @@ export class PatientsComponent implements OnInit {
   };
 
   // === Tabs principaux ===
-  activeTab = 'vue-ensemble';
+  activeTab = 'ordonnances';
   tabs: Tab[] = [
-    { id: 'vue-ensemble', label: "Vue d'ensemble" },
-    { id: 'signes-vitaux', label: 'Signes vitaux' },
-    { id: 'mode-de-vie', label: 'Mode de vie' },
-    { id: 'vaccinations', label: 'Vaccinations' },
-    { id: 'medicaments', label: 'Médicaments' },
-    { id: 'hospitalisation', label: 'Hospitalisation' },
-    { id: 'examens', label: 'Analyses' },
-    { id: 'imagerie', label: 'Imagerie' },
-    { id: 'consultations', label: 'Consultations' },
     { id: 'ordonnances', label: 'Ordonnances' },
-    { id: 'certificats', label: 'Certificats' }
+    { id: 'examens', label: 'Analyses médicales' },
+    { id: 'imagerie', label: 'Imagerie médicale' },
+    { id: 'hospitalisation', label: 'Hospitalisation' },
   ];
+
+  // === Patients récents (chargés depuis l'API) ===
+  patientsRecents: Array<{
+    id: string; nom: string; initiales: string; telephone: string; dateVisite: Date;
+    age: number; dateNaissance: string; sexe: string; groupe: string; poids: number; taille: number; imc: string;
+    keycloakId: string;
+  }> = [];
+  loadingRecents = false;
+
+  // === Autocomplete recherche ===
+  autocompleteResults: Array<{ id: string; nom: string; initiales: string; telephone: string; keycloakId: string; dateOfBirth?: string }> = [];
+  showAutocomplete = false;
+  searchLoading = false;
+  private searchTimer: any = null;
 
   detailTabs = [
     { id: 'resume', label: 'Résumé' },
@@ -1471,18 +1558,12 @@ export class PatientsComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private sanitizer: DomSanitizer,
-    // vaccinationService replaced by local mocks
-    // hospitalisationService replaced by local mocks
-    // ordonnanceService replaced by local mocks
-    // consultationService replaced by local mocks
-    // certificateService replaced by local mocks
+    private http: HttpClient,
   ) { }
 
   ngOnInit(): void {
-    // Local current user mock (sandbox)
     this.currentUser = this.localGetCurrentUser();
 
-    // Restaurer l'onglet actif depuis les query params (pour persister après refresh)
     this.route.queryParams.subscribe(params => {
       const tabParam = params['tab'];
       if (tabParam && this.tabs.find(t => t.id === tabParam)) {
@@ -1495,7 +1576,121 @@ export class PatientsComponent implements OnInit {
       this.selectedPatient = JSON.parse(storedPatient);
       this.showPatientDetail = true;
       this.loadPatientData();
+      const snapTab = this.route.snapshot.queryParams['tab'];
+      if (snapTab && this.tabs.find(t => t.id === snapTab)) {
+        this.activeTab = snapTab;
+      }
     }
+
+    this.loadRecentPatients();
+  }
+
+  private loadRecentPatients(): void {
+    this.loadingRecents = true;
+    this.http.get<any[]>(`${environment.baseUrl}/users/patients/recent?limit=3`).subscribe({
+      next: (patients) => {
+        this.loadingRecents = false;
+        this.patientsRecents = patients.map(p => {
+          const firstName  = p.firstName || '';
+          const lastName   = p.lastName  || '';
+          const dob        = p.dateOfBirth ? String(p.dateOfBirth) : '';
+          return {
+            id:           p.patientRef || p.keycloakId || '',
+            nom:          `${firstName} ${lastName}`.trim() || 'Nom non disponible',
+            initiales:    this.getInitials(firstName, lastName),
+            telephone:    p.phone || '',
+            dateVisite:   p.createdAt ? new Date(p.createdAt) : new Date(),
+            age:          this.computeAge(dob),
+            dateNaissance: dob,
+            sexe:         '',
+            groupe:       p.bloodType || '',
+            poids:        0,
+            taille:       0,
+            imc:          '0',
+            keycloakId:   p.keycloakId || '',
+          };
+        });
+      },
+      error: () => {
+        this.loadingRecents = false;
+      }
+    });
+  }
+
+  onSearchInput(): void {
+    const q = this.rechercheTexte.trim();
+    if (this.searchTimer) clearTimeout(this.searchTimer);
+
+    if (q.length < 2) {
+      this.autocompleteResults = [];
+      this.showAutocomplete = false;
+      this.searchLoading = false;
+      return;
+    }
+
+    this.searchLoading = true;
+    this.searchTimer = setTimeout(() => {
+      this.http.get<any[]>(`${environment.baseUrl}/users/patients/search`, { params: { q } }).subscribe({
+        next: (users) => {
+          this.searchLoading = false;
+          this.autocompleteResults = (users || []).map(u => {
+            const firstName = u.user?.firstName || u.firstName || u.prenom || '';
+            const lastName = u.user?.lastName || u.lastName || u.nom || '';
+            const phone = u.phone || u.patientProfile?.phone || u.telephone || '';
+            const ref = u.patientRef || u.patientProfile?.patientRef || '';
+            const keycloakId = u.keycloakId || u.patientProfile?.keycloakId || '';
+            const dateOfBirth = u.dateOfBirth || u.patientProfile?.dateOfBirth || '';
+            return {
+              id: ref,
+              nom: `${firstName} ${lastName}`.trim() || 'Nom non disponible',
+              initiales: this.getInitials(firstName, lastName),
+              telephone: phone,
+              keycloakId,
+              dateOfBirth,
+            };
+          });
+          this.showAutocomplete = this.autocompleteResults.length > 0;
+        },
+        error: () => {
+          this.searchLoading = false;
+          this.autocompleteResults = [];
+          this.showAutocomplete = false;
+        }
+      });
+    }, 300);
+  }
+
+  selectFromAutocomplete(s: { id: string; nom: string; initiales: string; telephone: string; keycloakId: string; dateOfBirth?: string }): void {
+    this.rechercheTexte = s.telephone || s.id;
+    this.showAutocomplete = false;
+    this.autocompleteResults = [];
+    const keycloakId = s.keycloakId || s.id || '';
+    if (keycloakId) localStorage.setItem('selectedPatientId', keycloakId);
+    this.selectedPatient = {
+      id: s.id,
+      nom: s.nom,
+      initiales: s.initiales,
+      telephone: s.telephone,
+      lastVisit: '',
+      age: this.computeAge(s.dateOfBirth || ''),
+      dateNaissance: s.dateOfBirth || '',
+      sexe: '',
+      groupe: '',
+      poids: 0,
+      taille: 0,
+      imc: '0',
+    };
+    localStorage.setItem('selectedPatient', JSON.stringify(this.selectedPatient));
+    this.showPatientDetail = true;
+    const snapTab = this.route.snapshot.queryParams['tab'];
+    this.activeTab = (snapTab && this.tabs.find(t => t.id === snapTab)) ? snapTab : 'hospitalisation';
+    this.loadPatientData();
+  }
+
+  hideAutocompleteDelayed(): void {
+    setTimeout(() => {
+      this.showAutocomplete = false;
+    }, 150);
   }
 
   // ========== TRAITEMENT (MÉDICAMENTS) ==========
@@ -1848,8 +2043,13 @@ export class PatientsComponent implements OnInit {
 
     const telephone = this.selectedPatient.telephone.replace(/\s/g, '');
 
+    // Réinitialiser les pages à 0 pour le nouveau patient
+    this.currentPageExamens = 0;
+    this.currentPageImagerie = 0;
+    this.currentPageHospitalisation = 0;
+
     // Charger toutes les données en parallèle
-    this.loadCliniqueData(telephone);
+    this.loadMedicalRecord();
     this.loadAllergies(telephone);
     this.loadAntecedentsFamiliaux(telephone);
     this.loadMaladiesChroniques(telephone);
@@ -1863,23 +2063,125 @@ export class PatientsComponent implements OnInit {
     this.loadOrdonnances(telephone);
     this.loadConsultations(telephone);
     this.loadCertificates();
+    this.loadLabResults();
+    this.loadImagingOrdersForPatient();
   }
 
-  // Données cliniques
+  loadLabResults(): void {
+    const patientId = localStorage.getItem('selectedPatientId');
+    if (!patientId) return;
+    this.loadingLabResults = true;
+    this.http.get<any[]>(`${environment.baseUrl}/lab-orders`, { params: { patientId } }).subscribe({
+      next: (orders) => {
+        this.loadingLabResults = false;
+        this.labResults = [];
+        for (const order of (orders || [])) {
+          const dateStr = order.createdAt
+            ? new Date(order.createdAt).toLocaleDateString('fr-FR')
+            : '';
+          if (order.structuredResults && order.structuredResults.length > 0) {
+            for (const r of order.structuredResults) {
+              this.labResults.push({
+                date: dateStr,
+                examen: r.parametre || r.testName || '',
+                valeur: `${r.valeur ?? ''} ${r.unite ?? ''}`.trim(),
+                reference: r.reference || '',
+                etat: r.etat || 'Normal',
+              });
+            }
+          }
+        }
+      },
+      error: () => { this.loadingLabResults = false; }
+    });
+  }
+
+  loadImagingOrdersForPatient(): void {
+    const patientId = localStorage.getItem('selectedPatientId');
+    if (!patientId) return;
+    this.loadingImaging = true;
+    this.http.get<any[]>(`${environment.baseUrl}/imaging-orders`, { params: { patientId } }).subscribe({
+      next: (orders) => {
+        this.loadingImaging = false;
+        this.imagingOrders = (orders || []).filter(o => o.observations || o.reportTitle || o.imageUrls?.length);
+      },
+      error: () => { this.loadingImaging = false; }
+    });
+  }
+
+  private computeAge(dateOfBirth: string | Date | null | undefined): number {
+    if (!dateOfBirth) return 0;
+    const dob = new Date(dateOfBirth);
+    if (isNaN(dob.getTime())) return 0;
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+    return Math.max(0, age);
+  }
+
+  // Charge le dossier médical réel (poids, taille, IMC) ET le profil patient (dateOfBirth, groupe sanguin)
+  private loadMedicalRecord(): void {
+    const keycloakId = localStorage.getItem('selectedPatientId');
+    if (!keycloakId || !this.selectedPatient) return;
+
+    // Appel 1 : dossier médical pour les données cliniques (poids, taille, IMC)
+    this.http.get<any>(`${environment.baseUrl}/medical/medical-records/${keycloakId}`).subscribe({
+      next: (record) => {
+        if (!record) return;
+        const w   = record.weight ? Number(record.weight) : 0;
+        const h   = record.height ? Number(record.height) : 0;
+        const bmi = w > 0 && h > 0 ? parseFloat((w / Math.pow(h / 100, 2)).toFixed(1)) : 0;
+
+        this.cliniqueData = {
+          id: 1,
+          sex:        record.gender    || '',
+          bloodGroup: record.bloodType || '',
+          weight: w,
+          height: h,
+          bmi,
+        };
+
+        if (this.selectedPatient) {
+          this.selectedPatient.sexe   = record.gender    || this.selectedPatient.sexe;
+          this.selectedPatient.groupe = record.bloodType || this.selectedPatient.groupe;
+          this.selectedPatient.poids  = w;
+          this.selectedPatient.taille = h;
+          if (bmi > 0) this.selectedPatient.imc = bmi.toString();
+          if (record.dateOfBirth) {
+            this.selectedPatient.dateNaissance = record.dateOfBirth;
+            this.selectedPatient.age = this.computeAge(record.dateOfBirth);
+          }
+        }
+      },
+      error: () => {}
+    });
+
+    // Appel 2 : profil patient pour la date de naissance (source fiable — patientProfile en base)
+    this.http.get<any>(`${environment.baseUrl}/users/patients/${keycloakId}`).subscribe({
+      next: (p) => {
+        if (!p || !this.selectedPatient) return;
+        if (p.dateOfBirth) {
+          this.selectedPatient.dateNaissance = String(p.dateOfBirth);
+          this.selectedPatient.age = this.computeAge(p.dateOfBirth);
+        }
+        if (p.bloodType && !this.selectedPatient.groupe) {
+          this.selectedPatient.groupe = p.bloodType;
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  // Alias conservé pour le modal de saisie clinique (utilise le mock local)
   loadCliniqueData(telephone: string): void {
     this.localGetCliniqueData(telephone).subscribe({
       next: (data) => {
-        this.cliniqueData = data;
-        // Mettre à jour les données du patient sélectionné
-        if (this.selectedPatient) {
-          this.selectedPatient.sexe = data.sex;
-          this.selectedPatient.groupe = data.bloodGroup;
-          this.selectedPatient.poids = data.weight;
-          this.selectedPatient.taille = data.height;
-          this.selectedPatient.imc = data.bmi.toString();
+        if (!this.cliniqueData) {
+          this.cliniqueData = data;
         }
       },
-      error: (error) => console.error('Erreur lors du chargement des données cliniques:', error)
+      error: () => {}
     });
   }
   loadAllergies(telephone: string): void {
@@ -2052,7 +2354,7 @@ export class PatientsComponent implements OnInit {
   }
 
   /**
-   * Recherche par téléphone
+   * Recherche par téléphone via l'API réelle
    */
   private searchByPhone(phone: string): void {
     const cleanPhone = phone.replace(/[\s\-\(\)]/g, '');
@@ -2068,23 +2370,27 @@ export class PatientsComponent implements OnInit {
       return;
     }
 
-    this.localGetUserByPhone(cleanPhone).subscribe({
-      next: (user) => {
-        console.log('✅ Patient trouvé par téléphone (mock):', user);
-        this.mapUserToPatient(user);
-
-        if ((user as any).id) {
-          localStorage.setItem('selectedPatientId', (user as any).id.toString());
+    this.http.get<any[]>(`${environment.baseUrl}/users/patients/search`, { params: { q: cleanPhone } }).subscribe({
+      next: (users) => {
+        if (users && users.length > 0) {
+          this.mapApiUserToPatient(users[0]);
+          this.showPatientDetail = true;
+          this.activeTab = 'ordonnances';
+          this.loadPatientData();
+        } else {
+          Swal.fire({
+            title: 'Patient non trouvé',
+            text: 'Aucun patient avec ce numéro de téléphone',
+            icon: 'warning',
+            confirmButtonColor: '#104382',
+            width: '400px'
+          });
         }
-
-        this.showAccessModal = true;
-        this.accessType = null;
       },
-      error: (error) => {
-        console.error('❌ Erreur recherche par téléphone (mock):', error);
+      error: () => {
         Swal.fire({
           title: 'Erreur',
-          text: 'Une erreur est survenue lors de la recherche (mock)',
+          text: 'Une erreur est survenue lors de la recherche',
           icon: 'error',
           confirmButtonColor: '#104382',
           width: '400px'
@@ -2094,27 +2400,121 @@ export class PatientsComponent implements OnInit {
   }
 
   /**
-   * Recherche par référence
+   * Recherche par référence patient (ex: NDIAYE-G000025) via l'API réelle
    */
   private searchByReference(reference: string): void {
-    this.localGetUserByReference(reference).subscribe({
+    this.http.get<any>(`${environment.baseUrl}/users/patients/by-ref/${encodeURIComponent(reference)}`).subscribe({
       next: (patient) => {
-        console.log('✅ Patient trouvé par référence (mock):', patient);
-        this.mapPatientByReferenceToPatient(patient);
-        this.showAccessModal = true;
-        this.accessType = null;
+        if (patient) {
+          this.mapRefPatientToPatient(patient);
+          this.showPatientDetail = true;
+          this.activeTab = 'ordonnances';
+          this.loadPatientData();
+        } else {
+          Swal.fire({
+            title: 'Patient non trouvé',
+            text: 'Aucun patient avec cette référence',
+            icon: 'warning',
+            confirmButtonColor: '#104382',
+            width: '400px'
+          });
+        }
       },
-      error: (error) => {
-        console.error('❌ Erreur recherche par référence (mock):', error);
+      error: () => {
         Swal.fire({
-          title: 'Erreur',
-          text: 'Une erreur est survenue lors de la recherche (mock)',
-          icon: 'error',
+          title: 'Patient non trouvé',
+          text: 'Aucun patient avec cette référence',
+          icon: 'warning',
           confirmButtonColor: '#104382',
           width: '400px'
         });
       }
     });
+  }
+
+  /**
+   * Mappe la réponse de GET /users/patients/search vers le patient local
+   */
+  private mapApiUserToPatient(u: any): void {
+    let firstName = '';
+    let lastName = '';
+    let phone = '';
+    let keycloakId = '';
+    let patientRef = '';
+    let bloodType = '';
+    let dateOfBirth = '';
+
+    if (u.user) {
+      // Trouvé par téléphone : { keycloakId, phone, patientRef, bloodType, dateOfBirth, user: { firstName, lastName } }
+      firstName  = u.user.firstName || '';
+      lastName   = u.user.lastName  || '';
+      phone      = u.phone      || '';
+      keycloakId = u.keycloakId || '';
+      patientRef = u.patientRef || '';
+      bloodType  = u.bloodType  || '';
+      dateOfBirth = u.dateOfBirth ? String(u.dateOfBirth) : '';
+    } else if (u.patientProfile) {
+      // Trouvé par nom : { firstName, lastName, patientProfile: { keycloakId, phone, patientRef, bloodType } }
+      firstName  = u.firstName || '';
+      lastName   = u.lastName  || '';
+      phone      = u.patientProfile.phone      || '';
+      keycloakId = u.patientProfile.keycloakId || '';
+      patientRef = u.patientProfile.patientRef || '';
+      bloodType  = u.patientProfile.bloodType  || '';
+      dateOfBirth = u.patientProfile.dateOfBirth ? String(u.patientProfile.dateOfBirth) : '';
+    } else {
+      firstName  = u.firstName || u.prenom || '';
+      lastName   = u.lastName  || u.nom    || '';
+      phone      = u.phone     || u.telephone || '';
+      keycloakId = u.keycloakId || '';
+      patientRef = u.patientRef || u.reference || '';
+      bloodType  = u.bloodType  || '';
+      dateOfBirth = u.dateOfBirth ? String(u.dateOfBirth) : '';
+    }
+
+    const fullName = `${firstName} ${lastName}`.trim() || 'Nom non disponible';
+    this.selectedPatient = {
+      id: patientRef || keycloakId,
+      nom: fullName,
+      initiales: this.getInitials(firstName, lastName),
+      telephone: phone,
+      lastVisit: '',
+      age: this.computeAge(dateOfBirth),
+      dateNaissance: dateOfBirth,
+      sexe: '',
+      groupe: bloodType,
+      poids: 0,
+      taille: 0,
+      imc: '0'
+    };
+    localStorage.setItem('selectedPatient', JSON.stringify(this.selectedPatient));
+    if (keycloakId) localStorage.setItem('selectedPatientId', keycloakId);
+  }
+
+  /**
+   * Mappe la réponse de GET /users/patients/by-ref/:ref vers le patient local
+   */
+  private mapRefPatientToPatient(patient: any): void {
+    const firstName = patient.firstName || '';
+    const lastName = patient.lastName || '';
+    const fullName = `${firstName} ${lastName}`.trim() || 'Nom non disponible';
+    const dob = patient.dateOfBirth ? String(patient.dateOfBirth) : '';
+    this.selectedPatient = {
+      id: patient.patientRef || patient.keycloakId || '',
+      nom: fullName,
+      initiales: this.getInitials(firstName, lastName),
+      telephone: patient.phone || '',
+      lastVisit: '',
+      age: this.computeAge(dob),
+      dateNaissance: dob,
+      sexe: '',
+      groupe: patient.bloodType || '',
+      poids: 0,
+      taille: 0,
+      imc: '0'
+    };
+    localStorage.setItem('selectedPatient', JSON.stringify(this.selectedPatient));
+    if (patient.keycloakId) localStorage.setItem('selectedPatientId', patient.keycloakId);
   }
 
   /**
@@ -2203,7 +2603,7 @@ export class PatientsComponent implements OnInit {
     if (this.otpCode === '1234') {
       this.closeModal();
       this.showPatientDetail = true;
-      this.activeTab = 'vue-ensemble';
+      this.activeTab = 'ordonnances';
     } else {
       this.otpError = 'Code OTP incorrect. Veuillez réessayer.';
     }
@@ -2224,7 +2624,7 @@ export class PatientsComponent implements OnInit {
         if (isValid) {
           this.showOtpPopup = false;
           this.showPatientDetail = true;
-          this.activeTab = 'vue-ensemble';
+          this.activeTab = 'ordonnances';
           this.loadPatientData();
         } else {
           this.otpError = 'Code OTP incorrect';
@@ -2348,7 +2748,7 @@ export class PatientsComponent implements OnInit {
           this.otpDigits = ['', '', '', ''];
           this.otpValue = '';
           this.showPatientDetail = true;
-          this.activeTab = 'vue-ensemble';
+          this.activeTab = 'ordonnances';
           this.loadPatientData();
         } else {
           this.otpError = 'Code incorrect. Veuillez réessayer.';
@@ -2372,20 +2772,20 @@ export class PatientsComponent implements OnInit {
     console.log('Accès partiel accordé');
     this.closeModal();
     this.showPatientDetail = true;
-    this.activeTab = 'vue-ensemble';
+    this.activeTab = 'ordonnances';
     this.loadPatientData();
   }
   private proceedWithFullAccess(): void {
     console.log('Accès complet accordé avec OTP valide');
     this.closeModal();
     this.showPatientDetail = true;
-    this.activeTab = 'vue-ensemble';
+    this.activeTab = 'ordonnances';
     // Accès total → aucune restriction
   }
   handleCloseDetail(): void {
     this.showPatientDetail = false;
     this.selectedPatient = null;
-    this.activeTab = 'vue-ensemble';
+    this.activeTab = 'ordonnances';
     this.rechercheTexte = '';
     localStorage.removeItem('selectedPatient');
   }
@@ -2753,6 +3153,30 @@ export class PatientsComponent implements OnInit {
     return this.tabs.find(t => t.id === this.activeTab)?.label || '';
   }
 
+  getRelativeDate(date: Date): string {
+    const today = new Date();
+    const diff = today.setHours(0,0,0,0) - new Date(date).setHours(0,0,0,0);
+    if (diff === 0) return "Aujourd'hui";
+    if (diff === 86400000) return 'Hier';
+    return new Date(date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+
+  openPatientDossierFromRecent(p: typeof this.patientsRecents[0]): void {
+    this.selectedPatient = {
+      id: p.id, nom: p.nom, initiales: p.initiales, telephone: p.telephone,
+      lastVisit: this.getRelativeDate(p.dateVisite), age: p.age,
+      dateNaissance: p.dateNaissance, sexe: p.sexe, groupe: p.groupe,
+      poids: p.poids, taille: p.taille, imc: p.imc
+    };
+    localStorage.setItem('selectedPatient', JSON.stringify(this.selectedPatient));
+    const keycloakId = p.keycloakId || p.id || '';
+    if (keycloakId) localStorage.setItem('selectedPatientId', keycloakId);
+    this.showPatientDetail = true;
+    const snapTab = this.route.snapshot.queryParams['tab'];
+    this.activeTab = (snapTab && this.tabs.find(t => t.id === snapTab)) ? snapTab : 'ordonnances';
+    this.loadPatientData();
+  }
+
   /**
    * Sélectionne un onglet et met à jour l'URL avec le query param
    */
@@ -2862,7 +3286,8 @@ export class PatientsComponent implements OnInit {
 
   // Navigation externe (si tu as une page dédiée)
   openHospitalisationPage() {
-    this.router.navigate(['/hospitalisations']);
+    localStorage.setItem('selectedPatient', JSON.stringify(this.selectedPatient));
+    this.router.navigate(['/nouvelle-hospitalisation']);
   }
   openConsultationsPage() {
     this.router.navigate(['/consultations']);
@@ -2874,8 +3299,9 @@ export class PatientsComponent implements OnInit {
   }
   goTohospitalisations() {
     localStorage.setItem('selectedPatient', JSON.stringify(this.selectedPatient));
+    localStorage.setItem('openCreateMode', '1');
     this.closeNouvelleDemandeModal();
-    this.router.navigate(['/hospitalisations']);
+    this.router.navigate(['/doctor/hospitalisation']);
   }
   goTocertificatmedical() {
     localStorage.setItem('selectedPatient', JSON.stringify(this.selectedPatient));
@@ -2884,11 +3310,13 @@ export class PatientsComponent implements OnInit {
   }
   goToanalysesmedical() {
     localStorage.setItem('selectedPatient', JSON.stringify(this.selectedPatient));
+    localStorage.setItem('openCreateMode', '1');
     this.closeNouvelleDemandeModal();
     this.router.navigate(['/analyses-medical']);
   }
   goToimageriemedical() {
     localStorage.setItem('selectedPatient', JSON.stringify(this.selectedPatient));
+    localStorage.setItem('openCreateMode', '1');
     this.closeNouvelleDemandeModal();
     this.router.navigate(['/imagerie-medical']);
   }
@@ -2907,56 +3335,107 @@ export class PatientsComponent implements OnInit {
   loadHospitalisations(telephone: string): void {
     this.loadingHospitalisations = true;
 
-    // Récupérer l'ID du médecin connecté si disponible
-    const responsibleMedicalId = this.currentUser?.id;
+    const patientId = localStorage.getItem('selectedPatientId')
+      || (this.selectedPatient as any)?.keycloakId
+      || '';
 
-    this.localGetHospitalisationsByPatient(telephone).subscribe({
-      next: (response) => {
-        this.hospitalisationsData = response;
-        this.loadingHospitalisations = false;
+    if (!patientId) {
+      this.loadingHospitalisations = false;
+      this.hospitalisationsData = [];
+      return;
+    }
 
-        if (response.length > 0 && (response[0] as any).patient) {
-          const patientData = (response[0] as any).patient;
-          if (this.selectedPatient) {
-            this.selectedPatient.age = patientData.age || 0;
-            this.selectedPatient.dateNaissance = patientData.birthDate || '';
-            localStorage.setItem('selectedPatient', JSON.stringify(this.selectedPatient));
-          }
-        }
+    // Charger medical-service immédiatement (non-bloquant sur hospital-service)
+    this.http.get<any[]>(`${environment.baseUrl}/medical/hospitalizations/patient/${patientId}`)
+      .pipe(catchError(() => of([])))
+      .subscribe({
+        next: (response) => {
+          this.hospitalisationsData = (response || []).map((h: any) => this.mapApiHospitalization(h));
+          this.loadingHospitalisations = false;
+          this.loadDischargeStatusForAll();
+        },
+        error: () => {
+          this.loadingHospitalisations = false;
+          this.hospitalisationsData = [];
+        },
+      });
 
-        this.loadDischargeStatusForAll();
+    // Enrichir avec hospital-service en parallèle (ne bloque pas l'affichage)
+    this.http.get<any[]>(`${environment.baseUrl}/hospital/hospitalizations/by-patient/${patientId}`)
+      .pipe(catchError(() => of([])))
+      .subscribe({
+        next: (hospitalList) => {
+          if (!hospitalList || hospitalList.length === 0) return;
+          const fromHospital = hospitalList.map((h: any) => this.mapHospitalAdmission(h));
+          this.hospitalisationsData = [...this.hospitalisationsData, ...fromHospital];
+          this.loadDischargeStatusForAll();
+        },
+      });
+  }
+
+  private mapApiHospitalization(h: any): any {
+    const referentParts = (h.referentDoctorName || '').trim().split(/\s+/);
+    return {
+      ...h,
+      _source: 'medical',
+      facility: { name: h.establishmentName || h.hospitalName || 'Établissement' },
+      department: { name: h.department || 'Service' },
+      hospitalizationReason: h.motif,
+      entryDateTime: h.admissionDate,
+      exitDateTime: h.dischargeInfo?.dischargeDate || null,
+      bedNumber: h.bed,
+      observation: h.medicalObservations,
+      responsibleMedical: {
+        id: h.doctorId,
+        prenom: referentParts[0] || 'Dr',
+        nom: referentParts.slice(1).join(' ') || '',
       },
-      error: (err) => {
-        console.error('Erreur lors du chargement des hospitalisations (mock):', err);
-        this.loadingHospitalisations = false;
-        this.hospitalisationsData = [];
-      }
-    });
+      priority: h.priority === 'Urgent' ? 'URGENCE' : 'NORMAL',
+    };
+  }
+
+  private mapHospitalAdmission(h: any): any {
+    const statusMap: Record<string, string> = {
+      ADMITTED:    'ADMITTED',
+      IN_PROGRESS: 'ADMITTED',
+      URGENT:      'ADMITTED',
+      DISCHARGED:  'DISCHARGED',
+    };
+    return {
+      ...h,
+      _source: 'hospital',
+      facility:   { name: h.service || 'Hôpital' },
+      department: { name: h.service || '—' },
+      hospitalizationReason: h.lastObservation || h.service || '—',
+      entryDateTime:  h.admissionDate,
+      exitDateTime:   h.actualDischargeDate || null,
+      bedNumber:      h.bed,
+      observation:    h.lastObservation,
+      responsibleMedical: {
+        id:     '',
+        prenom: h.treatingDoctorName || 'Dr',
+        nom:    '',
+      },
+      priority: 'NORMAL',
+      status:   statusMap[h.status] ?? h.status,
+      dischargeInfo: h.actualDischargeDate ? { dischargeDate: h.actualDischargeDate } : null,
+      admissionRef: h.admissionRef,
+    };
   }
 
   /**
    * Ouvre le détail d'une hospitalisation
    */
-  openHospitalisationDetailData(hospitalisationId: number): void {
-    this.localGetHospitalisationById(hospitalisationId).subscribe({
-      next: (data) => {
-        this.selectedHospitalisationData = data;
-        this.showHospitalisationDetail = true;
-        this.activeDetailTab = 'resume';
-        document.body.style.overflow = 'hidden';
-
-        if (this.typesActionData.length === 0) {
-          this.loadTypesAction();
-        }
-
-        this.loadActionsJournal(hospitalisationId);
-        this.loadOrdreSortie(hospitalisationId);
-      },
-      error: (err) => {
-        console.error('Erreur lors du chargement du détail (mock):', err);
-        alert('Erreur lors du chargement des détails de l\'hospitalisation');
-      }
-    });
+  openHospitalisationDetailData(hospitalisationId: any): void {
+    const id = String(hospitalisationId);
+    const found = this.hospitalisationsData.find(h => String((h as any).id) === id) as any;
+    if (!found) return;
+    this.selectedHospitalisationData = found;
+    this.showHospitalisationDetail = true;
+    this.activeDetailTab = 'resume';
+    document.body.style.overflow = 'hidden';
+    this.loadActionsJournal(hospitalisationId);
+    this.loadOrdreSortie(hospitalisationId);
   }
 
   /**
@@ -2979,20 +3458,12 @@ export class PatientsComponent implements OnInit {
   /**
    * Charge le journal infirmier d'une hospitalisation
    */
-  loadActionsJournal(hospitalisationId: number): void {
+  loadActionsJournal(hospitalisationId: any): void {
     this.loadingActions = true;
-
-    this.localGetActions(hospitalisationId, 0, 50).subscribe({
-      next: (response) => {
-        this.actionsJournalData = response.content;
-        this.loadingActions = false;
-      },
-      error: (err) => {
-        console.error('Erreur lors du chargement du journal (mock):', err);
-        this.loadingActions = false;
-        this.actionsJournalData = [];
-      }
-    });
+    const id = String(hospitalisationId);
+    const hosp = this.hospitalisationsData.find(h => String((h as any).id) === id) as any;
+    this.actionsJournalData = hosp?.nursingJournal || [];
+    this.loadingActions = false;
   }
 
   /**
@@ -3000,27 +3471,25 @@ export class PatientsComponent implements OnInit {
    */
   loadDischargeStatusForAll(): void {
     this.hospitalisationsData.forEach(hosp => {
-      this.localRecupereOrdreSortie(hosp.id).subscribe({
-        next: () => this.dischargeOrderMap.set(hosp.id, true),
-        error: () => this.dischargeOrderMap.set(hosp.id, false)
-      });
+      const h = hosp as any;
+      const id = String(h.id);
+      this.dischargeOrderMap.set(id, !!(h.dischargeInfo || h.exitDateTime));
     });
   }
 
   /**
    * Charge l'ordre de sortie d'une hospitalisation
    */
-  loadOrdreSortie(hospitalisationId: number): void {
-    this.localRecupereOrdreSortie(hospitalisationId).subscribe({
-      next: (data) => {
-        this.ordreSortieData = data as any;
-        this.dischargeOrderMap.set(hospitalisationId, true);
-      },
-      error: () => {
-        this.ordreSortieData = null;
-        this.dischargeOrderMap.set(hospitalisationId, false);
-      }
-    });
+  loadOrdreSortie(hospitalisationId: any): void {
+    const id = String(hospitalisationId);
+    const hosp = this.hospitalisationsData.find(h => String((h as any).id) === id) as any;
+    if (hosp?.dischargeInfo) {
+      this.ordreSortieData = hosp.dischargeInfo;
+      this.dischargeOrderMap.set(id, true);
+    } else {
+      this.ordreSortieData = null;
+      this.dischargeOrderMap.set(id, false);
+    }
   }
 
   /**
@@ -3163,7 +3632,7 @@ export class PatientsComponent implements OnInit {
     this.localCreateSortie(sortieRequest).subscribe({
       next: (data) => {
         this.ordreSortieData = data as any;
-        this.dischargeOrderMap.set(this.selectedHospitalisationData!.id, true);
+        this.dischargeOrderMap.set(String((this.selectedHospitalisationData as any)!.id), true);
 
         if (this.selectedHospitalisationData) {
           this.loadHospitalisations(this.selectedPatient!.telephone.replace(/\s/g, ''));
@@ -3254,7 +3723,7 @@ export class PatientsComponent implements OnInit {
    * Détermine le statut réel d'une hospitalisation
    * Le statut dépend UNIQUEMENT de l'existence d'un ordre de sortie (autorisation de sortie)
    * et NON de exitDateTime qui est juste la date de sortie prévue
-   * 
+   *
    * - "en-cours" : Hospitalisation créée, pas encore d'autorisation de sortie
    * - "sortie-autorisee" : Une autorisation de sortie a été créée (hasDischargeOrder() === true)
    */
@@ -3264,7 +3733,7 @@ export class PatientsComponent implements OnInit {
       return 'sortie-autorisee';
     }
     // Pour la liste, vérifier via le Map des ordres de sortie
-    if (this.dischargeOrderMap.get(hosp.id) === true) {
+    if (this.dischargeOrderMap.get(String((hosp as any).id)) === true) {
       return 'sortie-autorisee';
     }
     // Par défaut, l'hospitalisation est "en cours"
@@ -3273,11 +3742,11 @@ export class PatientsComponent implements OnInit {
 
   /**
    * Obtient le libellé court du statut pour les cards de la liste d'hospitalisations
-   * 
+   *
    * Règles d'affichage :
    * - "En cours" : hospitalisation active, pas d'autorisation de sortie
    * - "Sortie" : version courte pour les cards, quand sortie autorisée
-   * 
+   *
    * @param hosp - L'hospitalisation dont on veut le statut
    * @returns "Sortie" | "En cours"
    */
@@ -3287,16 +3756,48 @@ export class PatientsComponent implements OnInit {
 
   /**
    * Obtient le libellé complet du statut pour le modal de détail d'hospitalisation
-   * 
+   *
    * Règles d'affichage :
    * - "En cours" : hospitalisation active, pas d'autorisation de sortie
    * - "Sortie autorisée" : version longue pour le modal, quand sortie autorisée
-   * 
+   *
    * @param hosp - L'hospitalisation dont on veut le statut
    * @returns "Sortie autorisée" | "En cours"
    */
   getHospitalizationStatusLabel(hosp: Hospitalization): string {
     return this.getHospitalizationStatus(hosp) === 'sortie-autorisee' ? 'Sortie autorisée' : 'En cours';
+  }
+
+  private readonly _hospStatusLabels: Record<string, string> = {
+    PENDING:    'En attente',
+    ACCEPTED:   'Acceptée',
+    FUNDED:     'Financée',
+    ADMITTED:   'Admis',
+    DISCHARGED: 'Sorti',
+    REJECTED:   'Refusée',
+  };
+
+  private readonly _hospStatusClasses: Record<string, string> = {
+    PENDING:    'bg-yellow-100 text-yellow-700',
+    ACCEPTED:   'bg-blue-100 text-blue-700',
+    FUNDED:     'bg-purple-100 text-purple-700',
+    ADMITTED:   'bg-orange-100 text-orange-700',
+    DISCHARGED: 'bg-green-100 text-green-700',
+    REJECTED:   'bg-red-100 text-red-700',
+  };
+
+  getApiStatusLabel(hosp: any): string {
+    const status = (hosp as any)?.status;
+    if (status && this._hospStatusLabels[status]) return this._hospStatusLabels[status];
+    return this.getHospitalizationStatusLabelShort(hosp);
+  }
+
+  getApiStatusClass(hosp: any): string {
+    const status = (hosp as any)?.status;
+    if (status && this._hospStatusClasses[status]) return this._hospStatusClasses[status];
+    return this.getHospitalizationStatus(hosp) === 'sortie-autorisee'
+      ? 'bg-green-100 text-green-700'
+      : 'bg-blue-100 text-blue-700';
   }
 
   /**
@@ -3318,23 +3819,54 @@ export class PatientsComponent implements OnInit {
   // ========== ORDONNANCES ==========
 
   /**
-   * Charge les ordonnances d'un patient par téléphone
+   * Charge les ordonnances d'un patient
    */
   loadOrdonnances(telephone: string, page: number = 0): void {
     this.loadingOrdonnances = true;
     this.ordonnancesError = '';
-
-    this.localGetOrdonnancesByPhone(telephone, page, this.pageSizeOrdonnances).subscribe({
-      next: (response: OrdonnanceResponse) => {
-        this.ordonnancesData = response.content;
-        this.totalOrdonnances = response.totalElements;
-        this.totalPagesOrdonnances = response.totalPages;
+    const patientId = localStorage.getItem('selectedPatientId');
+    if (!patientId) {
+      this.loadingOrdonnances = false;
+      this.ordonnancesData = [];
+      return;
+    }
+    this.http.get<any[]>(`${environment.baseUrl}/medical/prescriptions/patient/${patientId}`).subscribe({
+      next: (prescriptions) => {
+        const all: OrdonnanceData[] = (prescriptions || []).map(p => ({
+          id: p.id ?? '',
+          reference: p.reference || '',
+          doctor: { id: p.doctorId, nom: '', prenom: 'Dr' } as any,
+          patient: { id: 0, nom: '', prenom: '' } as any,
+          createdAt: p.createdAt,
+          status: p.status,
+          qrCodeUrl: '',
+          fullyPaidByDonor: false,
+          partiallyPaidByDonor: false,
+          pharmacy: null as any,
+          amount: Number(p.totalEstimatedCost) || 0,
+          needsHelp: false,
+          address: '',
+          latitude: 0,
+          longitude: 0,
+          prescriptionFile: null,
+          medications: (p.items || []).map((item: any) => ({
+            id: 0,
+            name: item.medicationName || '',
+            dosage: item.dosage || '',
+            quantity: item.quantity || 0,
+            price: Number(item.unitPrice) || 0,
+          })),
+        }));
+        const size = this.pageSizeOrdonnances;
+        const start = page * size;
+        this.ordonnancesData = all.slice(start, start + size);
+        this.totalOrdonnances = all.length;
+        this.totalPagesOrdonnances = Math.ceil(all.length / size) || 1;
         this.currentPageOrdonnances = page;
-        this.loadDoctorSpecialties(response.content);
         this.loadingOrdonnances = false;
       },
       error: (error) => {
-        console.error('Erreur lors du chargement des ordonnances (mock):', error);
+        console.error('Erreur lors du chargement des ordonnances:', error);
         this.ordonnancesError = 'Impossible de charger les ordonnances';
         this.loadingOrdonnances = false;
         this.ordonnancesData = [];
@@ -3362,6 +3894,22 @@ export class PatientsComponent implements OnInit {
     this.loadOrdonnances(telephone, 0);
   }
 
+  downloadOrdonnancePdf(ordonnance: OrdonnanceData): void {
+    const token = localStorage.getItem('access_token');
+    const url = `${environment.baseUrl}/medical/prescriptions/${ordonnance.id}/pdf`;
+    this.http.get(url, {
+      responseType: 'blob',
+      headers: { Authorization: `Bearer ${token}` },
+    }).subscribe({
+      next: (blob) => {
+        const objectUrl = URL.createObjectURL(blob);
+        const win = window.open(objectUrl, '_blank');
+        if (win) win.focus();
+      },
+      error: () => alert('Impossible de charger le PDF de cette ordonnance.'),
+    });
+  }
+
   /**
    * Obtient le libellé du statut d'une ordonnance
    */
@@ -3379,7 +3927,13 @@ export class PatientsComponent implements OnInit {
       'REJECTED': 'bg-rose-100 text-rose-700',
       'IN_PREPARATION': 'bg-blue-100 text-blue-700',
       'READY': 'bg-indigo-100 text-indigo-700',
-      'DELIVERED': 'bg-teal-100 text-teal-700'
+      'DELIVERED': 'bg-teal-100 text-teal-700',
+      'DRAFT': 'bg-gray-100 text-gray-600',
+      'SENT_TO_PATIENT': 'bg-blue-100 text-blue-700',
+      'SUBMITTED_FOR_DONATION': 'bg-amber-100 text-amber-700',
+      'FULLY_FUNDED': 'bg-emerald-100 text-emerald-700',
+      'QR_GENERATED': 'bg-indigo-100 text-indigo-700',
+      'IN_PROGRESS': 'bg-blue-100 text-blue-700',
     };
     return classMap[status] || 'bg-gray-100 text-gray-700';
   }
@@ -3562,5 +4116,50 @@ export class PatientsComponent implements OnInit {
         alert('Impossible de télécharger le certificat');
       }
     });
+  }
+
+  // ========== PAGINATION EXAMENS ==========
+  get labResultsPage(): typeof this.labResults {
+    const start = this.currentPageExamens * this.pageSizeExamens;
+    return this.labResults.slice(start, start + this.pageSizeExamens);
+  }
+
+  get totalPagesExamens(): number {
+    return Math.max(1, Math.ceil(this.labResults.length / this.pageSizeExamens));
+  }
+
+  changePageExamens(page: number): void {
+    if (page < 0 || page >= this.totalPagesExamens) return;
+    this.currentPageExamens = page;
+  }
+
+  // ========== PAGINATION IMAGERIE ==========
+  get imagingOrdersPage(): any[] {
+    const start = this.currentPageImagerie * this.pageSizeImagerie;
+    return this.imagingOrders.slice(start, start + this.pageSizeImagerie);
+  }
+
+  get totalPagesImagerie(): number {
+    return Math.max(1, Math.ceil(this.imagingOrders.length / this.pageSizeImagerie));
+  }
+
+  changePageImagerie(page: number): void {
+    if (page < 0 || page >= this.totalPagesImagerie) return;
+    this.currentPageImagerie = page;
+  }
+
+  // ========== PAGINATION HOSPITALISATION ==========
+  get hospitalisationsPage(): Hospitalization[] {
+    const start = this.currentPageHospitalisation * this.pageSizeHospitalisation;
+    return this.hospitalisationsData.slice(start, start + this.pageSizeHospitalisation);
+  }
+
+  get totalPagesHospitalisation(): number {
+    return Math.max(1, Math.ceil(this.hospitalisationsData.length / this.pageSizeHospitalisation));
+  }
+
+  changePageHospitalisation(page: number): void {
+    if (page < 0 || page >= this.totalPagesHospitalisation) return;
+    this.currentPageHospitalisation = page;
   }
 }
