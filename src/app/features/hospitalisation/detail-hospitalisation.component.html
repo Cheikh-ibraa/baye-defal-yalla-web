@@ -32,15 +32,27 @@
         </p>
       </div>
 
-      <div class="flex items-center gap-2 shrink-0" *ngIf="d.status === 'PENDING'">
-        <button (click)="rejectRequest()"
-          class="px-4 py-2 text-sm font-semibold text-[#DC2626] border border-[#DC2626]/30 rounded-xl hover:bg-[#FEE2E2] transition-colors">
-          Refuser
+      <div class="flex items-center gap-2 shrink-0">
+        <!-- Bouton de rafraîchissement -->
+        <button (click)="load()"
+          class="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors" 
+          title="Rafraîchir">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
         </button>
-        <button (click)="openAccept()"
-          class="px-5 py-2 text-sm font-semibold bg-[#104382] text-white rounded-xl hover:bg-[#0D3468] transition-colors">
-          Accepter la demande
-        </button>
+        
+        <div *ngIf="d.status === 'PENDING'" class="flex items-center gap-2">
+          <button (click)="rejectRequest()"
+            class="px-4 py-2 text-sm font-semibold text-[#DC2626] border border-[#DC2626]/30 rounded-xl hover:bg-[#FEE2E2] transition-colors">
+            Refuser
+          </button>
+          <button (click)="openAccept()"
+            class="px-5 py-2 text-sm font-semibold bg-[#104382] text-white rounded-xl hover:bg-[#0D3468] transition-colors">
+            Accepter la demande
+          </button>
+        </div>
       </div>
       <span *ngIf="d.status !== 'PENDING'"
         class="text-xs font-semibold px-3 py-1.5 rounded-full shrink-0"

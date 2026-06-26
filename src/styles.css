@@ -66,3 +66,85 @@ html {
   font-weight: 600 !important;
   cursor: pointer;
 }
+
+/* ===== Leaflet Map Customization ===== */
+.leaflet-container {
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+.leaflet-popup-tip {
+  border-top-color: #ffffff !important;
+}
+
+.custom-popup .leaflet-popup-content {
+  margin: 12px 16px !important;
+  line-height: 1.4;
+}
+
+.custom-marker,
+.delivery-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Contrôles de zoom personnalisés */
+.leaflet-control-zoom a {
+  background-color: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  color: #374151 !important;
+  border-radius: 6px !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background-color: #f9fafb !important;
+  color: #104382 !important;
+}
+
+/* Fix pour carte blanche */
+.leaflet-container {
+  height: 192px !important;
+  width: 100% !important;
+  background-color: #e5e7eb !important;
+}
+
+.leaflet-tile {
+  opacity: 1 !important;
+}
+
+.leaflet-layer {
+  opacity: 1 !important;
+}
+
+.leaflet-fade-anim .leaflet-tile {
+  opacity: 1 !important;
+}
+/* Animations pour la carte personnalisée */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+.animate-ping {
+  animation: pulse 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Hover effects pour la carte */
+.map-container:hover .marker-pin {
+  transform: translateY(-2px);
+  transition: transform 0.2s ease;
+}

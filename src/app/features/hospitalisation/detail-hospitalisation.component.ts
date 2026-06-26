@@ -1,11 +1,11 @@
 import {
-  ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject,
+  ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, OnDestroy, inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { catchError, of } from 'rxjs';
+import { catchError, of, interval, Subscription } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 interface ReqDetail {
@@ -50,12 +50,13 @@ const PRIORITY_LABELS: Record<string, string> = {
   templateUrl: './detail-hospitalisation.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DetailHospitalisationComponent implements OnInit {
+export class DetailHospitalisationComponent implements OnInit, OnDestroy {
   private readonly route  = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly http   = inject(HttpClient);
   private readonly cdr    = inject(ChangeDetectorRef);
   private readonly api    = environment.baseUrl;
+  private pollSubscription?: Subscription;
 
   id      = '';
   loading = true;
@@ -71,12 +72,38 @@ export class DetailHospitalisationComponent implements OnInit {
   ngOnInit(): void {
     this.id = this.route.snapshot.paramMap.get('id') ?? '';
     this.load();
+    
+    // Polling automatique toutes les 30 secondes pour les demandes non terminées
+    this.pollSubscription = interval(30000).subscribe(() => {
+      if (this.detail && ['PENDING', 'VALIDATED'].includes(this.detail.status)) {
+        this.load();
+      }
+    });
   }
 
-  private load(): void {
-    this.http.get<any>(`${this.api}/hospital/requests/${this.id}`)
-      .pipe(catchError(() => of(null)))
+  ngOnDestroy(): void {
+    this.pollSubscription?.unsubscribe();
+  }
+
+  load(): void {
+    this.loading = true;
+    // Ajouter timestamp pour éviter le cache
+    const url = `${this.api}/hospital/requests/${this.id}?t=${Date.now()}`;
+    this.http.get<any>(url)
+      .pipe(
+        catchError((error) => {
+          console.error('Erreur lors du chargement de la demande:', error);
+          if (error.status === 401) {
+            console.warn('Non authentifié - redirection vers login');
+            // Optionnel: rediriger vers login
+          } else if (error.status === 404) {
+            console.warn('Demande introuvable');
+          }
+          return of(null);
+        })
+      )
       .subscribe(r => {
+        console.log('Réponse API:', r);
         this.detail  = r ? this.map(r) : null;
         this.loading = false;
         this.cdr.markForCheck();

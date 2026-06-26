@@ -1,13 +1,13 @@
 {
   "/pharma-delivery/api": {
-    "target": "https://wakana.online",
-    "secure": true,
+    "target": "http://api-gateway:3080",
+    "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"
   },
   "/api": {
     "target": "https://api.bdy.innovimpactdev.cloud",
-    "secure": true,
+    "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"
   }

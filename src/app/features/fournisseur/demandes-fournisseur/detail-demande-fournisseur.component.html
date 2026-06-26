@@ -119,9 +119,12 @@
               </span>
             </div>
             <div>
-              <p class="text-xs font-semibold uppercase tracking-wider text-[#94A3B8]">Budget estimé</p>
+              <p class="text-xs font-semibold uppercase tracking-wider text-[#94A3B8]">Budget réel</p>
               <p class="mt-1 text-xl font-bold text-[#00339E]">
-                {{ formatAmount(request.estimatedBudget) }} FCFA
+                {{ formatAmount(actualBudget) }} FCFA
+              </p>
+              <p *ngIf="actualBudget !== request.estimatedBudget" class="text-xs text-[#747686] mt-0.5">
+                Estimé: {{ formatAmount(request.estimatedBudget) }} FCFA
               </p>
             </div>
           </div>
@@ -189,14 +192,19 @@
           </div>
         </section>
 
-        <!-- Budget estimé -->
+        <!-- Budget réel -->
         <section class="rounded-2xl bg-white p-6">
-          <h2 class="text-lg font-semibold text-[#191B23] mb-3">Budget estimé</h2>
+          <h2 class="text-lg font-semibold text-[#191B23] mb-3">Budget réel</h2>
           <p class="text-3xl font-bold text-[#00339E] leading-none">
-            {{ formatAmount(request.estimatedBudget) }}
+            {{ formatAmount(actualBudget) }}
           </p>
           <p class="text-sm text-[#747686] mt-1">FCFA</p>
-          <p class="mt-4 text-xs text-[#94A3B8]">Basé sur les tarifs moyens du marché</p>
+          <p *ngIf="actualBudget !== request.estimatedBudget" class="mt-2 text-xs text-[#94A3B8]">
+            Estimé: {{ formatAmount(request.estimatedBudget) }} FCFA
+          </p>
+          <p *ngIf="actualBudget === request.estimatedBudget" class="mt-2 text-xs text-[#94A3B8]">
+            Basé sur l'estimation initiale
+          </p>
         </section>
 
         <!-- Devis reçus -->
@@ -206,7 +214,7 @@
           <p class="text-xs text-[#94A3B8] mt-1">soumissions pour cette demande</p>
         </section>
 
-        <!-- Lieu de livraison -->
+        <!-- Lieu de livraison avec carte -->
         <section *ngIf="request.deliveryAddress" class="rounded-2xl bg-white p-6">
           <div class="flex items-center gap-2 mb-4">
             <svg width="14" height="18" viewBox="0 0 14 18" fill="none">
@@ -214,6 +222,67 @@
             </svg>
             <h2 class="text-base font-semibold text-[#191B23]">Lieu de livraison</h2>
           </div>
+          
+          <!-- Carte Google Maps embed -->
+          <div class="mb-4 rounded-xl overflow-hidden border border-slate-200">
+            <div class="w-full h-48 bg-gradient-to-br from-blue-100 to-blue-200 relative overflow-hidden">
+              <!-- Carte de fond avec SVG -->
+              <svg class="absolute inset-0 w-full h-full opacity-20" viewBox="0 0 400 200" fill="none">
+                <!-- Routes principales -->
+                <path d="M0 100 Q100 80 200 100 T400 100" stroke="#94a3b8" stroke-width="2" fill="none"/>
+                <path d="M0 120 Q150 110 300 120 T400 120" stroke="#94a3b8" stroke-width="1.5" fill="none"/>
+                <path d="M100 0 Q120 100 140 200" stroke="#94a3b8" stroke-width="1.5" fill="none"/>
+                <path d="M200 0 Q220 100 240 200" stroke="#94a3b8" stroke-width="2" fill="none"/>
+                <!-- Blocs urbains -->
+                <rect x="50" y="60" width="30" height="20" fill="#e2e8f0" rx="2"/>
+                <rect x="90" y="40" width="25" height="35" fill="#e2e8f0" rx="2"/>
+                <rect x="250" y="70" width="40" height="25" fill="#e2e8f0" rx="2"/>
+                <rect x="300" y="50" width="35" height="30" fill="#e2e8f0" rx="2"/>
+                <!-- Espaces verts -->
+                <circle cx="150" cy="60" r="15" fill="#bbf7d0"/>
+                <circle cx="320" cy="140" r="20" fill="#bbf7d0"/>
+              </svg>
+              
+              <!-- Marqueur de position -->
+              <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                <div class="relative">
+                  <!-- Pin principal -->
+                  <div class="w-8 h-8 bg-red-500 rounded-full border-4 border-white shadow-lg relative z-10">
+                    <div class="w-3 h-3 bg-white rounded-full absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
+                  </div>
+                  <!-- Ombre du pin -->
+                  <div class="w-6 h-2 bg-black opacity-20 rounded-full absolute -bottom-1 left-1/2 transform -translate-x-1/2 blur-sm"></div>
+                  <!-- Animation de pulsation -->
+                  <div class="absolute -top-2 -left-2 w-12 h-12 border-2 border-red-400 rounded-full animate-ping"></div>
+                </div>
+              </div>
+              
+              <!-- Informations de localisation -->
+              <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
+                <div class="text-white">
+                  <div class="font-semibold text-sm">
+                    {{ getLocationDisplayName(request.deliveryAddress) }}
+                  </div>
+                  <div class="text-xs opacity-90">
+                    {{ request.deliveryAddress.region }}, Sénégal
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Lien vers Google Maps -->
+              <a 
+                [href]="getGoogleMapsUrl(request.deliveryAddress)" 
+                target="_blank"
+                class="absolute top-3 right-3 bg-white/90 hover:bg-white p-2 rounded-lg shadow-md transition-all duration-200 group"
+                title="Voir sur Google Maps">
+                <svg class="w-4 h-4 text-[#104382] group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+          
+          <!-- Détails de l'adresse -->
           <div class="space-y-1.5 text-sm">
             <div class="flex items-center gap-2 text-[#191B23]">
               <span class="text-xs font-semibold uppercase tracking-wide text-[#94A3B8] w-24 shrink-0">Région</span>

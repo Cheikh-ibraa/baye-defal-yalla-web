@@ -25,6 +25,7 @@ export class DetailDemandeFournisseurComponent implements OnInit {
   error = '';
   request: any = null;
   myQuote: any = null;
+  actualBudget: number = 0;
 
   // Formulaire devis
   isEmettreDevisMode = false;
@@ -78,6 +79,15 @@ export class DetailDemandeFournisseurComponent implements OnInit {
       next: (res) => {
         this.request = res;
         this.myQuote = res.myQuote ?? null;
+        
+        // Calculer le budget réel basé sur les devis reçus
+        if (res.quotes && res.quotes.length > 0) {
+          const prices = res.quotes.map((q: any) => q.totalPrice).filter((p: number) => p > 0);
+          this.actualBudget = prices.length > 0 ? Math.min(...prices) : res.estimatedBudget;
+        } else {
+          this.actualBudget = res.estimatedBudget;
+        }
+        
         this.isLoading = false;
         this.cdr.markForCheck();
       },
@@ -224,5 +234,18 @@ export class DetailDemandeFournisseurComponent implements OnInit {
     } else {
       this.router.navigate(['/fournisseur/demandes']);
     }
+  }
+
+  getLocationDisplayName(address: any): string {
+    return address?.commune || address?.region || 'Lieu de livraison';
+  }
+
+  getGoogleMapsUrl(address: any): string {
+    const commune = address?.commune || '';
+    const departement = address?.departement || '';
+    const region = address?.region || 'Dakar';
+    
+    const query = `${commune} ${departement} ${region} Sénégal`.trim();
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
   }
 }

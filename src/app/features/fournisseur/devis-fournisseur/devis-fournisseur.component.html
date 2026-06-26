@@ -11,115 +11,159 @@
       </p>
     </div>
 
-    <!-- Barre de recherche et filtres -->
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mb-6">
-      <!-- Recherche -->
-      <div class="relative w-full lg:max-w-[480px]">
-        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8]">
-          <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-        </span>
-        <input type="text" [(ngModel)]="searchQuery" placeholder="Rechercher un hôpital ou un numéro de devis..."
-          class="w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm text-[#191B23] placeholder:text-[#94A3B8] focus:border-[#0F4C81] focus:outline-none focus:ring-1 focus:ring-[#0F4C81]" />
-      </div>
-
-      <!-- Filtres -->
-      <div class="flex flex-wrap items-center gap-2">
-        <!-- Tous -->
-        <button type="button" (click)="setFilter('Tous')"
-          class="px-5 py-2.5 text-xs font-bold rounded-xl transition duration-200"
-          [ngClass]="activeFilter === 'Tous' ? 'bg-[#0F4C81] text-white shadow-sm' : 'bg-white text-[#4E5166] border border-slate-200 hover:bg-slate-50'">
-          Tous
-        </button>
-
-        <!-- En attente -->
-        <button type="button" (click)="setFilter('En attente')"
-          class="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-xl transition duration-200"
-          [ngClass]="activeFilter === 'En attente' ? 'bg-[#0F4C81] text-white shadow-sm' : 'bg-white text-[#4E5166] border border-slate-200 hover:bg-slate-50'">
-          <span>En attente</span>
-          <span class="rounded bg-[#E2E8F0] px-1.5 py-0.5 text-[10px] font-bold text-[#4E5166]">{{ countEnAttente }}</span>
-        </button>
-
-        <!-- Retenu -->
-        <button type="button" (click)="setFilter('Retenu')"
-          class="px-5 py-2.5 text-xs font-bold rounded-xl transition duration-200"
-          [ngClass]="activeFilter === 'Retenu' ? 'bg-[#0F4C81] text-white shadow-sm' : 'bg-white text-[#4E5166] border border-slate-200 hover:bg-slate-50'">
-          Retenu
-        </button>
-
-        <!-- Non retenu -->
-        <button type="button" (click)="setFilter('Non retenu')"
-          class="px-5 py-2.5 text-xs font-bold rounded-xl transition duration-200"
-          [ngClass]="activeFilter === 'Non retenu' ? 'bg-[#0F4C81] text-white shadow-sm' : 'bg-white text-[#4E5166] border border-slate-200 hover:bg-slate-50'">
-          Non retenu
-        </button>
-      </div>
+    <!-- Chargement -->
+    <div *ngIf="isLoading" class="flex justify-center py-24">
+      <div class="h-10 w-10 animate-spin rounded-full border-4 border-[#104382] border-t-transparent"></div>
     </div>
 
-    <!-- Grille des cartes de devis -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div *ngFor="let devis of filteredDevis"
-        class="flex flex-col bg-white rounded-2xl p-6 border border-slate-100 shadow-sm transition hover:shadow-md">
-        
-        <!-- En-tête de la carte -->
-        <div class="flex items-start justify-between gap-3">
-          <div>
-            <h3 class="text-[17px] font-bold text-[#191B23] leading-snug">{{ devis.hopital }}</h3>
-            <p class="text-xs text-[#94A3B8] mt-1">Réf: {{ devis.ref }}</p>
-          </div>
-          <span class="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide shrink-0"
-            [ngClass]="statusBadgeClass(devis.status)">
-            {{ devis.status }}
+    <!-- Erreur -->
+    <div *ngIf="!isLoading && error" class="rounded-xl bg-red-50 border border-red-200 p-8 text-center">
+      <p class="font-medium text-red-700">{{ error }}</p>
+      <button type="button" (click)="loadDevis()" 
+        class="mt-4 rounded-lg bg-[#104382] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#0c3469]">
+        Réessayer
+      </button>
+    </div>
+
+    <!-- Contenu -->
+    <ng-container *ngIf="!isLoading && !error">
+      <!-- Barre de recherche et filtres -->
+      <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mb-6">
+        <!-- Recherche -->
+        <div class="relative w-full lg:max-w-[480px]">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8]">
+            <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
           </span>
+          <input type="text" [(ngModel)]="searchQuery" placeholder="Rechercher un hôpital ou un numéro de devis..."
+            class="w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm text-[#191B23] placeholder:text-[#94A3B8] focus:border-[#0F4C81] focus:outline-none focus:ring-1 focus:ring-[#0F4C81]" />
         </div>
 
-        <!-- Détails intermédiaires -->
-        <div class="mt-5 space-y-3.5 flex-1">
-          <!-- Montant -->
-          <div class="flex items-center gap-2.5">
-            <span class="text-[#0F4C81]">
-              <!-- Money Bag Icon Placeholder -->
-              <svg width="15" height="16" viewBox="0 0 15 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Filtres -->
+        <div class="flex flex-wrap items-center gap-2">
+          <!-- Tous -->
+          <button type="button" (click)="setFilter('Tous')"
+            class="px-5 py-2.5 text-xs font-bold rounded-xl transition duration-200"
+            [ngClass]="activeFilter === 'Tous' ? 'bg-[#0F4C81] text-white shadow-sm' : 'bg-white text-[#4E5166] border border-slate-200 hover:bg-slate-50'">
+            Tous
+          </button>
+
+          <!-- En attente -->
+          <button type="button" (click)="setFilter('PENDING')"
+            class="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-xl transition duration-200"
+            [ngClass]="activeFilter === 'PENDING' ? 'bg-[#0F4C81] text-white shadow-sm' : 'bg-white text-[#4E5166] border border-slate-200 hover:bg-slate-50'">
+            <span>En attente</span>
+            <span class="rounded bg-[#E2E8F0] px-1.5 py-0.5 text-[10px] font-bold text-[#4E5166]">{{ countPending }}</span>
+          </button>
+
+          <!-- Retenu -->
+          <button type="button" (click)="setFilter('ACCEPTED')"
+            class="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-xl transition duration-200"
+            [ngClass]="activeFilter === 'ACCEPTED' ? 'bg-[#0F4C81] text-white shadow-sm' : 'bg-white text-[#4E5166] border border-slate-200 hover:bg-slate-50'">
+            <span>Retenu</span>
+            <span class="rounded bg-[#E2E8F0] px-1.5 py-0.5 text-[10px] font-bold text-[#4E5166]">{{ countAccepted }}</span>
+          </button>
+
+          <!-- Brouillon -->
+          <button type="button" (click)="setFilter('DRAFT')"
+            class="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-xl transition duration-200"
+            [ngClass]="activeFilter === 'DRAFT' ? 'bg-[#0F4C81] text-white shadow-sm' : 'bg-white text-[#4E5166] border border-slate-200 hover:bg-slate-50'">
+            <span>Brouillon</span>
+            <span class="rounded bg-[#E2E8F0] px-1.5 py-0.5 text-[10px] font-bold text-[#4E5166]">{{ countDraft }}</span>
+          </button>
+
+          <!-- Non retenu -->
+          <button type="button" (click)="setFilter('REJECTED')"
+            class="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-xl transition duration-200"
+            [ngClass]="activeFilter === 'REJECTED' ? 'bg-[#0F4C81] text-white shadow-sm' : 'bg-white text-[#4E5166] border border-slate-200 hover:bg-slate-50'">
+            <span>Non retenu</span>
+            <span class="rounded bg-[#E2E8F0] px-1.5 py-0.5 text-[10px] font-bold text-[#4E5166]">{{ countRejected }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Grille des cartes de devis -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div *ngFor="let devis of filteredDevis"
+          class="flex flex-col bg-white rounded-2xl p-6 border border-slate-100 shadow-sm transition hover:shadow-md">
+          
+          <!-- En-tête de la carte -->
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h3 class="text-[17px] font-bold text-[#191B23] leading-snug">{{ devis.institutionName }}</h3>
+              <p class="text-xs text-[#94A3B8] mt-1">Réf: {{ devis.reference }}</p>
+            </div>
+            <span class="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide shrink-0"
+              [ngClass]="statusBadgeClass(devis.status)">
+              {{ getStatusLabel(devis.status) }}
+            </span>
+          </div>
+
+          <!-- Détails intermédiaires -->
+          <div class="mt-5 space-y-3.5 flex-1">
+            <!-- Montant -->
+            <div class="flex items-center gap-2.5">
+              <span class="text-[#0F4C81]">
+                <!-- Money Bag Icon Placeholder -->
+                <svg width="15" height="16" viewBox="0 0 15 16" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M13.3333 7.37674H13.216L12.0007 3.82141L1.56933 7.37674L1.33333 7.37474M1 7.37741H1.33333L8.764 1.44141L10.642 4.07474" stroke="#104382" stroke-width="2" stroke-linecap="square"/>
 <path d="M8.9974 10.7077C8.9974 11.1497 8.8218 11.5736 8.50924 11.8862C8.19668 12.1988 7.77276 12.3743 7.33073 12.3743C6.8887 12.3743 6.46478 12.1988 6.15222 11.8862C5.83966 11.5736 5.66406 11.1497 5.66406 10.7077C5.66406 10.2657 5.83966 9.84173 6.15222 9.52917C6.46478 9.21661 6.8887 9.04102 7.33073 9.04102C7.77276 9.04102 8.19668 9.21661 8.50924 9.52917C8.8218 9.84173 8.9974 10.2657 8.9974 10.7077Z" stroke="#104382" stroke-width="2" stroke-linecap="square"/>
 <path d="M13.6667 7.375V14.0417H1V7.375H13.6667Z" stroke="#104382" stroke-width="2" stroke-linecap="square"/>
 <path d="M1 7.375H2.33333C2.33333 7.72862 2.19286 8.06776 1.94281 8.31781C1.69276 8.56786 1.35362 8.70833 1 8.70833V7.375ZM13.6667 7.375H12.3333C12.3333 7.72862 12.4738 8.06776 12.7239 8.31781C12.9739 8.56786 13.313 8.70833 13.6667 8.70833V7.375ZM1 14.0417H2.33467C2.33484 13.8663 2.30044 13.6927 2.23343 13.5307C2.16642 13.3687 2.06811 13.2215 1.94414 13.0975C1.82017 12.9736 1.67297 12.8752 1.51096 12.8082C1.34895 12.7412 1.17532 12.7068 1 12.707V14.0417ZM13.6667 14.0417H12.3333C12.3333 13.688 12.4738 13.3489 12.7239 13.0989C12.9739 12.8488 13.313 12.7083 13.6667 12.7083V14.0417Z" stroke="#104382" stroke-width="2" stroke-linecap="square"/>
 </svg>
-            </span>
-            <span class="text-sm sm:text-base font-semibold text-[#434655]">{{ devis.montant }} FCFA</span>
-          </div>
+              </span>
+              <span class="text-sm sm:text-base font-semibold text-[#434655]">{{ formatAmount(devis.totalPrice) }} FCFA</span>
+            </div>
 
-          <!-- Date -->
-          <div class="flex items-center gap-2.5">
-            <span class="text-[#94A3B8]">
-              <!-- Calendar Icon Placeholder -->
-             <svg width="17" height="18" viewBox="0 0 17 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Date -->
+            <div class="flex items-center gap-2.5">
+              <span class="text-[#94A3B8]">
+                <!-- Calendar Icon Placeholder -->
+               <svg width="17" height="18" viewBox="0 0 17 18" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M1.8 18C1.305 18 0.88125 17.8237 0.52875 17.4712C0.17625 17.1188 0 16.695 0 16.2V3.6C0 3.105 0.17625 2.68125 0.52875 2.32875C0.88125 1.97625 1.305 1.8 1.8 1.8H2.7V0H4.5V1.8H11.7V0H13.5V1.8H14.4C14.895 1.8 15.3188 1.97625 15.6712 2.32875C16.0237 2.68125 16.2 3.105 16.2 3.6V16.2C16.2 16.695 16.0237 17.1188 15.6712 17.4712C15.3188 17.8237 14.895 18 14.4 18H1.8ZM1.8 16.2H14.4V7.2H1.8V16.2ZM1.8 5.4H14.4V3.6H1.8V5.4ZM1.8 5.4V3.6V5.4Z" fill="#104382"/>
 </svg>
-            </span>
-            <span class="text-xs sm:text-sm text-[#434655]">Envoyé le {{ devis.dateEnvoi }}</span>
+              </span>
+              <span class="text-xs sm:text-sm text-[#434655]">
+                {{ devis.isDraft ? 'Créé le' : 'Envoyé le' }} {{ formatDate(devis.createdAt) }}
+              </span>
+            </div>
+
+            <!-- Informations supplémentaires -->
+            <div *ngIf="devis.deliveryDays || devis.guarantee" class="flex items-center gap-2.5">
+              <span class="text-[#94A3B8]">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2v20m0-20l8 4-8 4-8-4 8-4z"/>
+                </svg>
+              </span>
+              <span class="text-xs text-[#434655]">
+                <span *ngIf="devis.deliveryDays">{{ devis.deliveryDays }}j délai</span>
+                <span *ngIf="devis.deliveryDays && devis.guarantee"> • </span>
+                <span *ngIf="devis.guarantee">{{ devis.guarantee }} garantie</span>
+              </span>
+            </div>
           </div>
+
+          <!-- Bouton Détails -->
+          <button type="button" (click)="openDetail(devis.id)"
+            class="mt-6 w-full rounded-lg bg-[#0F4C81] py-3 text-sm text-white transition hover:bg-[#0c3e6a] shadow-sm">
+            Détails
+          </button>
+
         </div>
-
-        <!-- Bouton Détails -->
-        <button type="button" (click)="openDetail(devis.id)"
-          class="mt-6 w-full rounded-lg bg-[#0F4C81] py-3 text-sm text-white transition hover:bg-[#0c3e6a] shadow-sm">
-          Détails
-        </button>
-
       </div>
-    </div>
 
-    <!-- Si aucun résultat -->
-    <div *ngIf="filteredDevis.length === 0" class="mt-16 flex flex-col items-center gap-3 text-center text-[#94A3B8]">
-      <svg class="h-12 w-12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-        <circle cx="11" cy="11" r="7" stroke-width="1.5"></circle>
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m21 21-4.35-4.35"></path>
-      </svg>
-      <p class="text-sm font-medium">Aucun devis trouvé</p>
-    </div>
+      <!-- Si aucun résultat -->
+      <div *ngIf="filteredDevis.length === 0" class="mt-16 flex flex-col items-center gap-3 text-center text-[#94A3B8]">
+        <svg class="h-12 w-12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <circle cx="11" cy="11" r="7" stroke-width="1.5"></circle>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m21 21-4.35-4.35"></path>
+        </svg>
+        <p class="text-sm font-medium">Aucun devis trouvé</p>
+        <p class="text-xs">Essayez de modifier vos critères de recherche</p>
+      </div>
+    </ng-container>
 
   </div>
 </div>
