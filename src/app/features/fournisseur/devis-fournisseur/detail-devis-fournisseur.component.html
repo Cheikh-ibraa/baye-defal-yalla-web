@@ -1,5 +1,20 @@
 <div class="min-h-[calc(100vh-4rem)] bg-[#F4F6F9]">
-  <div class="mx-auto max-w-[1280px]" *ngIf="devisDetail">
+
+  <!-- Chargement -->
+  <div *ngIf="isLoading" class="flex justify-center py-24">
+    <div class="h-10 w-10 animate-spin rounded-full border-4 border-[#104382] border-t-transparent"></div>
+  </div>
+
+  <!-- Erreur -->
+  <div *ngIf="!isLoading && error" class="rounded-xl bg-red-50 border border-red-200 p-8 text-center">
+    <p class="font-medium text-red-700">{{ error }}</p>
+    <button type="button" (click)="back()"
+      class="mt-4 rounded-lg bg-[#104382] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#0c3469]">
+      Retour à la liste
+    </button>
+  </div>
+
+  <div class="mx-auto max-w-[1280px]" *ngIf="!isLoading && !error && devisDetail">
 
     <!-- En-tête -->
     <div class="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">

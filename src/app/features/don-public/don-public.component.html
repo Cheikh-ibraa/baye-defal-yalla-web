@@ -1,0 +1,116 @@
+<div class="min-h-screen bg-gradient-to-br from-[#F0F4FF] to-[#FFF7ED] flex items-center justify-center p-5">
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex flex-col items-center gap-3">
+    <svg class="animate-spin w-10 h-10 text-[#104382]" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+    </svg>
+    <p class="text-sm text-gray-400">Chargement de la campagne…</p>
+  </div>
+
+  <!-- Not found -->
+  <div *ngIf="!loading && notFound" class="text-center">
+    <p class="text-2xl font-bold text-[#0A2240] mb-2">Campagne introuvable</p>
+    <p class="text-gray-500 text-sm">Ce lien est invalide ou la campagne a été archivée.</p>
+  </div>
+
+  <!-- Carte campagne -->
+  <div *ngIf="!loading && progression" class="w-full max-w-lg">
+
+    <!-- Logo / Entête -->
+    <div class="text-center mb-6">
+      <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#104382] shadow-lg mb-3">
+        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+        </svg>
+      </div>
+      <h1 class="text-2xl font-bold text-[#0A2240]">Campagne de financement</h1>
+      <p class="text-sm text-gray-500 mt-1">Réf. {{ progression.reference }}</p>
+    </div>
+
+    <div class="bg-white rounded-3xl shadow-xl overflow-hidden">
+
+      <!-- Statut -->
+      <div class="px-6 pt-5 pb-4 border-b border-gray-50 flex items-center justify-between">
+        <p class="text-sm font-semibold text-gray-500">Statut de la collecte</p>
+        <span *ngIf="progression.cautionAtteinte"
+          class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFF3E8] text-[#F97316] text-xs font-bold">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+          </svg>
+          Admission possible
+        </span>
+        <span *ngIf="!progression.cautionAtteinte && progression.statut === 'OUVERTE'"
+          class="px-3 py-1 rounded-full bg-[#EEF4FF] text-[#104382] text-xs font-bold">
+          Collecte en cours
+        </span>
+        <span *ngIf="progression.statut === 'SOLDEE'"
+          class="px-3 py-1 rounded-full bg-[#E8F5E9] text-[#2E7D32] text-xs font-bold">
+          ✓ Entièrement financée
+        </span>
+      </div>
+
+      <div class="px-6 py-5 space-y-6">
+
+        <!-- Montant collecté -->
+        <div class="text-center">
+          <p class="text-4xl font-bold text-[#104382]">{{ fmt(progression.montantCollecte) }}</p>
+          <p class="text-sm text-gray-400 mt-1">FCFA collectés sur {{ fmt(progression.montantTotal) }} FCFA</p>
+        </div>
+
+        <!-- Barre 1 : Seuil d'admission -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <p class="text-xs font-bold text-[#F97316] uppercase tracking-wide">Seuil d'admission</p>
+              <p class="text-[10px] text-gray-400">{{ fmt(progression.montantCaution) }} FCFA nécessaires</p>
+            </div>
+            <span class="text-sm font-bold text-[#F97316]">{{ progression.pctCaution }}%</span>
+          </div>
+          <div class="h-4 w-full rounded-full bg-orange-50 overflow-hidden border border-orange-100">
+            <div class="h-full rounded-full bg-gradient-to-r from-[#FB923C] to-[#F97316] transition-all duration-700 relative"
+              [style.width.%]="progression.pctCaution">
+              <div *ngIf="progression.pctCaution > 5"
+                class="absolute right-0 top-1/2 -translate-y-1/2 -translate-x-1 w-3 h-3 rounded-full bg-white shadow border-2 border-[#F97316]"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Barre 2 : Total -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <p class="text-xs font-bold text-[#104382] uppercase tracking-wide">Total facture</p>
+              <p class="text-[10px] text-gray-400">Reliquat : {{ fmt(progression.reliquat) }} FCFA</p>
+            </div>
+            <span class="text-sm font-bold text-[#104382]">{{ progression.pctTotal }}%</span>
+          </div>
+          <div class="h-4 w-full rounded-full bg-blue-50 overflow-hidden border border-blue-100">
+            <div class="h-full rounded-full bg-gradient-to-r from-[#3B82F6] to-[#104382] transition-all duration-700 relative"
+              [style.width.%]="progression.pctTotal">
+              <div *ngIf="progression.pctTotal > 5"
+                class="absolute right-0 top-1/2 -translate-y-1/2 -translate-x-1 w-3 h-3 rounded-full bg-white shadow border-2 border-[#104382]"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Légende -->
+        <div class="rounded-xl bg-[#F8FAFC] p-4 text-xs text-gray-500 leading-relaxed">
+          <p class="font-semibold text-[#0A2240] mb-1">Comment ça fonctionne ?</p>
+          <p>🟠 La barre orange représente la <strong>caution d'admission</strong> — dès qu'elle est atteinte, le patient peut être admis à l'hôpital.</p>
+          <p class="mt-1">🔵 La barre bleue représente le <strong>total de la facture</strong> — la collecte continue jusqu'au financement complet.</p>
+        </div>
+
+      </div>
+
+    </div>
+
+    <p class="text-center text-xs text-gray-400 mt-4">
+      Plateforme de dons hospitaliers — Sénégal
+    </p>
+
+  </div>
+
+</div>

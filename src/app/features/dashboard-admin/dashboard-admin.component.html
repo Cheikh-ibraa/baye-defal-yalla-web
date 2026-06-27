@@ -145,6 +145,8 @@
         </div>
     </div>
 
+   
+
     <!-- Section avec deux colonnes -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <!-- Activité en temps réel -->
@@ -215,5 +217,55 @@
                 <canvas #statisticsChart></canvas>
             </div>
         </div>
+    </div> 
+    <!-- Cards Hôpital & Pharmacies par région -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+
+      <!-- Hôpital par région -->
+      <div class="bg-white rounded-xl shadow-sm p-6">
+        <div class="flex items-start justify-between mb-6">
+          <div>
+            <h2 class="text-base sm:text-lg font-bold text-[#11458B]">Hôpital par région</h2>
+            <p class="text-xs text-gray-500 mt-0.5">Répartition des hôpitaux partenaires par région.</p>
+          </div>
+          <button class="flex items-center gap-2 px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+            par région
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        </div>
+        <div class="h-48">
+          <canvas baseChart
+            [data]="hopitalChartData"
+            [options]="regionChartOptions"
+            type="bar">
+          </canvas>
+        </div>
+      </div>
+
+      <!-- Pharmacies par région -->
+      <div class="bg-white rounded-xl shadow-sm p-6">
+        <div class="flex items-start justify-between mb-6">
+          <div>
+            <h2 class="text-base sm:text-lg font-bold text-[#11458B]">Pharmacies par région</h2>
+            <p class="text-xs text-gray-500 mt-0.5">Répartition des pharmacies partenaires par région.</p>
+          </div>
+          <button class="flex items-center gap-2 px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+            par région
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        </div>
+        <div class="h-48">
+          <canvas baseChart
+            [data]="pharmacieChartData"
+            [options]="regionChartOptions"
+            type="bar">
+          </canvas>
+        </div>
+      </div>
+
     </div>
 </div>

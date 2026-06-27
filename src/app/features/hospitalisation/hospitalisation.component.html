@@ -1,14 +1,13 @@
 <div class="min-h-screen bg-[#F4F6F9] p-5">
 
-  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <!-- Header -->
   <div class="mb-5">
     <h1 class="text-xl font-bold text-[#0A2240]">Demande d'Hospitalisation</h1>
     <p class="text-sm text-gray-500 mt-0.5">Gérez et suivez les demandes d'hospitalisations des patients</p>
   </div>
 
-  <!-- ── Stats ──────────────────────────────────────────────────────────── -->
+  <!-- Stats -->
   <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
-
     <div class="bg-white rounded-xl p-4 shadow-sm flex items-start gap-3">
       <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#EEF4FF]">
         <svg class="w-5 h-5 text-[#104382]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -20,7 +19,6 @@
         <p class="text-2xl font-bold text-[#0A2240] leading-tight">{{ totalReqs }}</p>
       </div>
     </div>
-
     <div class="bg-white rounded-xl p-4 shadow-sm flex items-start gap-3">
       <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#FFF3E8]">
         <svg class="w-5 h-5 text-[#F97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -32,7 +30,6 @@
         <p class="text-2xl font-bold text-[#F97316] leading-tight">{{ pendingReqs }}</p>
       </div>
     </div>
-
     <div class="bg-white rounded-xl p-4 shadow-sm flex items-start gap-3">
       <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#E8F5E9]">
         <svg class="w-5 h-5 text-[#2E7D32]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -44,7 +41,6 @@
         <p class="text-2xl font-bold text-[#2E7D32] leading-tight">{{ validatedReqs }}</p>
       </div>
     </div>
-
     <div class="bg-white rounded-xl p-4 shadow-sm flex items-start gap-3">
       <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#FDF4FF]">
         <svg class="w-5 h-5 text-[#9333EA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -58,37 +54,29 @@
         </p>
       </div>
     </div>
-
   </div>
 
-  <!-- ── Search + Filters ───────────────────────────────────────────────── -->
+  <!-- Search + Filters -->
   <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-5">
     <div class="relative flex-1">
       <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
       </svg>
-      <input
-        type="text"
-        [(ngModel)]="searchQuery"
-        (ngModelChange)="onSearch()"
+      <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearch()"
         placeholder="Rechercher une demande…"
-        class="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:border-[#104382] placeholder:text-gray-400"
-      />
+        class="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:border-[#104382] placeholder:text-gray-400"/>
     </div>
     <div class="flex gap-1.5">
-      <button
-        *ngFor="let f of filters"
-        (click)="setFilter(f.id)"
+      <button *ngFor="let f of filters" (click)="setFilter(f.id)"
         [class]="activeFilter === f.id
           ? 'px-4 py-2 text-sm font-semibold rounded-xl bg-[#104382] text-white shadow-sm transition-colors'
-          : 'px-4 py-2 text-sm font-semibold rounded-xl bg-white text-gray-600 border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors'"
-      >
+          : 'px-4 py-2 text-sm font-semibold rounded-xl bg-white text-gray-600 border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors'">
         {{ f.label }}
       </button>
     </div>
   </div>
 
-  <!-- ── Loading ────────────────────────────────────────────────────────── -->
+  <!-- Loading -->
   <div *ngIf="loading" class="flex justify-center py-16">
     <svg class="animate-spin w-8 h-8 text-[#104382]" fill="none" viewBox="0 0 24 24">
       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
@@ -96,7 +84,7 @@
     </svg>
   </div>
 
-  <!-- ── Empty ──────────────────────────────────────────────────────────── -->
+  <!-- Empty -->
   <div *ngIf="!loading && rows.length === 0" class="flex flex-col items-center py-20 text-gray-400">
     <svg class="w-14 h-14 mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -105,15 +93,11 @@
     <p class="text-sm font-medium">Aucune demande d'hospitalisation</p>
   </div>
 
-  <!-- ── Cards grid ─────────────────────────────────────────────────────── -->
+  <!-- Cards -->
   <div *ngIf="!loading && rows.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-    <div
-      *ngFor="let r of rows"
-      (click)="viewDetail(r)"
-      class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-[#104382]/20 transition-all cursor-pointer flex flex-col"
-    >
+    <div *ngFor="let r of rows" (click)="viewDetail(r)"
+      class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-[#104382]/20 transition-all cursor-pointer flex flex-col">
 
-      <!-- Status row -->
       <div class="px-4 pt-4 pb-2 flex items-center justify-between">
         <span class="text-xs font-bold px-2.5 py-1 rounded-full" [ngClass]="statusBadgeClass(r.status)">
           {{ statusLabel(r.status) | uppercase }}
@@ -121,7 +105,6 @@
         <span class="text-xs text-gray-400 font-medium">Réf. {{ r.reference }}</span>
       </div>
 
-      <!-- Patient name + doctor -->
       <div class="px-4 pb-2">
         <p class="text-base font-bold text-[#0A2240]">{{ r.patientName || '—' }}</p>
         <p class="text-sm text-gray-500 mt-0.5">Demandé par : {{ r.referentDoctorName || '—' }}</p>
@@ -132,7 +115,6 @@
         </div>
       </div>
 
-      <!-- Motive + Service -->
       <div class="px-4 pb-3 mt-1 grid grid-cols-2 gap-3 flex-1">
         <div>
           <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Motif</p>
@@ -144,27 +126,20 @@
         </div>
       </div>
 
-      <!-- Actions -->
       <div class="px-3 pb-3 pt-2 border-t border-gray-100 flex gap-2" (click)="$event.stopPropagation()">
         <ng-container *ngIf="isPending(r); else nonPendingActions">
-          <button
-            (click)="openAccept(r, $event)"
-            class="flex-1 py-2 text-sm font-semibold bg-[#104382] text-white rounded-xl hover:bg-[#0D3468] transition-colors"
-          >
-            Accepter et proposer un prix
+          <button (click)="openAccept(r, $event)"
+            class="flex-1 py-2 text-sm font-semibold bg-[#104382] text-white rounded-xl hover:bg-[#0D3468] transition-colors">
+            Accepter &amp; Générer facture
           </button>
-          <button
-            (click)="viewDetail(r)"
-            class="px-4 py-2 text-sm font-semibold text-[#104382] border border-[#104382]/30 rounded-xl hover:bg-[#EEF4FF] transition-colors"
-          >
+          <button (click)="viewDetail(r)"
+            class="px-4 py-2 text-sm font-semibold text-[#104382] border border-[#104382]/30 rounded-xl hover:bg-[#EEF4FF] transition-colors">
             Détails
           </button>
         </ng-container>
         <ng-template #nonPendingActions>
-          <button
-            (click)="viewDetail(r)"
-            class="flex-1 py-2 text-sm font-semibold text-[#104382] border border-[#104382]/30 rounded-xl hover:bg-[#EEF4FF] transition-colors"
-          >
+          <button (click)="viewDetail(r)"
+            class="flex-1 py-2 text-sm font-semibold text-[#104382] border border-[#104382]/30 rounded-xl hover:bg-[#EEF4FF] transition-colors">
             Détails
           </button>
         </ng-template>
@@ -173,40 +148,29 @@
     </div>
   </div>
 
-  <!-- ── Pagination ──────────────────────────────────────────────────────── -->
+  <!-- Pagination -->
   <div *ngIf="!loading && totalPages > 1" class="flex items-center justify-center gap-1 mt-8">
-    <button
-      (click)="goToPage(page - 1)"
-      [disabled]="page === 1"
-      class="px-3 py-1.5 text-sm rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50 transition-colors"
-    >&#8249;</button>
-    <button
-      *ngFor="let p of pageNumbers"
-      (click)="goToPage(p)"
+    <button (click)="goToPage(page - 1)" [disabled]="page === 1"
+      class="px-3 py-1.5 text-sm rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50 transition-colors">&#8249;</button>
+    <button *ngFor="let p of pageNumbers" (click)="goToPage(p)"
       [class]="p === page
         ? 'px-3 py-1.5 text-sm rounded-lg bg-[#104382] text-white font-semibold'
-        : 'px-3 py-1.5 text-sm rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors'"
-    >{{ p }}</button>
-    <button
-      (click)="goToPage(page + 1)"
-      [disabled]="page === totalPages"
-      class="px-3 py-1.5 text-sm rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50 transition-colors"
-    >&#8250;</button>
+        : 'px-3 py-1.5 text-sm rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors'">{{ p }}</button>
+    <button (click)="goToPage(page + 1)" [disabled]="page === totalPages"
+      class="px-3 py-1.5 text-sm rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50 transition-colors">&#8250;</button>
   </div>
 
 </div>
 
-<!-- ══════════════════════════════════════════
-     MODAL : Accepter la demande
-     ══════════════════════════════════════════ -->
-<div *ngIf="showAcceptModal"
+<!-- MODAL : Accepter + Générer la facture -->
+<div *ngIf="showModal"
   class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
-  (click)="closeAcceptModal()">
+  (click)="closeModal()">
 
   <div class="relative w-full max-w-lg rounded-2xl bg-white shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
     (click)="$event.stopPropagation()">
 
-    <!-- Header modal -->
+    <!-- Header -->
     <div class="flex items-center gap-3 px-6 pt-5 pb-4 border-b border-gray-100">
       <div class="flex h-9 w-9 items-center justify-center rounded-full bg-[#E8F5E9] shrink-0">
         <svg class="h-5 w-5 text-[#2E7D32]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -214,153 +178,102 @@
         </svg>
       </div>
       <div class="flex-1 min-w-0">
-        <h2 class="text-base font-semibold text-[#1F2937]">Accepter la demande</h2>
-        <p class="text-xs text-[#6B7280] truncate">Établir l'offre d'admission pour <strong>{{ acceptingRow?.patientName }}</strong></p>
+        <h2 class="text-base font-semibold text-[#1F2937]">Accepter &amp; Générer la facture</h2>
+        <p class="text-xs text-gray-500 truncate">Patient : <strong>{{ acceptingRow?.patientName }}</strong></p>
       </div>
-      <button (click)="closeAcceptModal()" class="p-1 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors">
+      <button (click)="closeModal()" class="p-1 rounded-lg hover:bg-gray-100 text-gray-400">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
         </svg>
       </button>
     </div>
 
-    <!-- Body scrollable -->
-    <div class="overflow-y-auto px-6 py-4 space-y-5">
+    <!-- Body -->
+    <div class="overflow-y-auto px-6 py-5 space-y-4">
 
-      <!-- Section Détails Financiers -->
+      <!-- Niveau hôtellerie -->
       <div>
-        <h3 class="text-xs font-bold text-[#104382] uppercase tracking-widest mb-3">Détails Financiers</h3>
-        <div class="grid grid-cols-2 gap-3">
-
-          <div>
-            <label class="mb-1 block text-xs font-medium text-[#374151]">
-              Frais d'admission (FCFA) <span class="text-red-500">*</span>
-            </label>
-            <input
-              type="number"
-              [(ngModel)]="fraisAdmission"
-              placeholder="5 000"
-              min="0"
-              class="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm text-[#334155] outline-none transition focus:border-[#124A92] placeholder:text-[#9CA3AF]"
-            />
+        <label class="mb-1 block text-xs font-medium text-[#374151]">
+          Niveau d'hôtellerie <span class="text-red-500">*</span>
+        </label>
+        <select [(ngModel)]="form.niveauHotellerieId"
+          class="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm text-[#334155] outline-none focus:border-[#124A92] bg-white">
+          <option [value]="0">Sélectionner un niveau</option>
+          <option *ngFor="let n of niveaux" [value]="n.id">{{ n.libelle }} — {{ n.typeChambre }}</option>
+        </select>
+        <div *ngIf="selectedNiveau" class="mt-2 grid grid-cols-2 gap-2">
+          <div class="rounded-lg bg-[#F8FAFC] border border-gray-100 px-3 py-2">
+            <p class="text-[10px] text-gray-400 font-bold uppercase">Hôtellerie/j</p>
+            <p class="text-sm font-semibold text-[#0A2240]">{{ formatAmount(selectedNiveau.prixHotellerieJ) }} FCFA</p>
           </div>
-
-          <div>
-            <label class="mb-1 block text-xs font-medium text-[#374151]">
-              Tarif journalier (FCFA) <span class="text-red-500">*</span>
-            </label>
-            <input
-              type="number"
-              [(ngModel)]="tarifJournalier"
-              placeholder="10 000"
-              min="0"
-              class="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm text-[#334155] outline-none transition focus:border-[#124A92] placeholder:text-[#9CA3AF]"
-            />
+          <div class="rounded-lg bg-[#F8FAFC] border border-gray-100 px-3 py-2">
+            <p class="text-[10px] text-gray-400 font-bold uppercase">Soins/j</p>
+            <p class="text-sm font-semibold text-[#0A2240]">{{ formatAmount(selectedNiveau.prixSoinsJ) }} FCFA</p>
           </div>
-
-          <div>
-            <label class="mb-1 block text-xs font-medium text-[#374151]">
-              Nombre de jours prévus <span class="text-red-500">*</span>
-            </label>
-            <input
-              type="number"
-              [(ngModel)]="nbJours"
-              placeholder="5"
-              min="1"
-              class="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm text-[#334155] outline-none transition focus:border-[#124A92] placeholder:text-[#9CA3AF]"
-            />
-          </div>
-
-          <!-- Estimation totale -->
-          <div class="flex items-end">
-            <div class="w-full rounded-xl bg-[#EEF4FF] border border-[#104382]/20 px-4 py-2.5">
-              <p class="text-[10px] font-bold text-[#104382] uppercase tracking-wide">Estimation totale</p>
-              <p class="text-base font-bold text-[#104382] mt-0.5">
-                {{ formatAmount(estimationTotale) }} FCFA
-              </p>
-            </div>
-          </div>
-
         </div>
       </div>
 
-      <!-- Section Logistique & Planning -->
+      <!-- Nb jours -->
       <div>
-        <h3 class="text-xs font-bold text-[#104382] uppercase tracking-widest mb-3">Logistique & Planning</h3>
-        <div class="grid grid-cols-2 gap-3">
+        <label class="mb-1 block text-xs font-medium text-[#374151]">
+          Nombre de jours estimés <span class="text-red-500">*</span>
+        </label>
+        <input type="number" [(ngModel)]="form.nbJoursEstimes" min="1"
+          class="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#124A92]"/>
+      </div>
 
-          <div>
-            <label class="mb-1 block text-xs font-medium text-[#374151]">Date d'entrée disponible</label>
-            <input
-              type="date"
-              [(ngModel)]="dateEntree"
-              class="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm text-[#334155] outline-none transition focus:border-[#124A92]"
-            />
-          </div>
-
-          <div>
-            <label class="mb-1 block text-xs font-medium text-[#374151]">Heure d'admission</label>
-            <input
-              type="time"
-              [(ngModel)]="heureAdmission"
-              class="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm text-[#334155] outline-none transition focus:border-[#124A92]"
-            />
-          </div>
-
-          <div class="col-span-2">
-            <label class="mb-1 block text-xs font-medium text-[#374151]">Chambre proposée</label>
-            <input
-              type="text"
-              [(ngModel)]="chambreProposee"
-              placeholder="ex: Chambre 302 (Standard - Nord)"
-              class="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm text-[#334155] outline-none transition focus:border-[#124A92] placeholder:text-[#9CA3AF]"
-            />
-          </div>
-
+      <!-- Récap total -->
+      <div *ngIf="montantTotal > 0" class="rounded-xl bg-[#EEF4FF] border border-[#104382]/20 px-4 py-3 grid grid-cols-3 gap-3">
+        <div>
+          <p class="text-[10px] text-[#104382] font-bold uppercase">Hôtellerie</p>
+          <p class="text-sm font-semibold text-[#0A2240]">{{ formatAmount(totalHotellerie) }} FCFA</p>
+        </div>
+        <div>
+          <p class="text-[10px] text-[#104382] font-bold uppercase">Soins</p>
+          <p class="text-sm font-semibold text-[#0A2240]">{{ formatAmount(totalSoins) }} FCFA</p>
+        </div>
+        <div>
+          <p class="text-[10px] text-[#104382] font-bold uppercase">Total</p>
+          <p class="text-base font-bold text-[#104382]">{{ formatAmount(montantTotal) }} FCFA</p>
         </div>
       </div>
 
-      <!-- Commentaires -->
+      <!-- Caution -->
       <div>
-        <label class="mb-1 block text-xs font-medium text-[#374151]">Commentaires additionnels</label>
-        <textarea
-          [(ngModel)]="acceptNote"
-          rows="3"
-          placeholder="Précisions sur le matériel nécessaire ou restrictions alimentaires…"
-          class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-[#334155] outline-none transition resize-none focus:border-[#124A92] placeholder:text-[#9CA3AF]"
-        ></textarea>
+        <label class="mb-1 block text-xs font-medium text-[#374151]">
+          Montant caution (FCFA) <span class="text-red-500">*</span>
+          <span class="ml-1 text-gray-400 font-normal">— seuil de déblocage pour l'admission</span>
+        </label>
+        <input type="number" [(ngModel)]="form.montantCaution" min="1" [max]="montantTotal"
+          class="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#124A92]"/>
+        <p *ngIf="cautionPct > 0" class="mt-1 text-xs text-gray-500">
+          = <strong class="text-[#104382]">{{ cautionPct }}%</strong> du total facture
+        </p>
       </div>
 
-      <!-- Erreur -->
-      <div *ngIf="acceptError" class="rounded-lg bg-[#FEE2E2] px-3 py-2 text-sm text-[#DC2626]">
-        {{ acceptError }}
+      <!-- Pharmacie V2 -->
+      <div class="rounded-xl bg-gray-50 border border-dashed border-gray-200 px-4 py-2 flex items-center gap-2">
+        <span class="text-xs text-gray-400">Pharmacie — 0 FCFA</span>
+        <span class="text-[10px] text-gray-300">· Disponible en V2</span>
       </div>
 
+      <div *ngIf="acceptError" class="rounded-lg bg-[#FEE2E2] px-3 py-2 text-sm text-[#DC2626]">{{ acceptError }}</div>
     </div>
 
     <!-- Footer -->
     <div class="flex gap-3 px-6 py-4 border-t border-gray-100">
-      <button
-        type="button"
-        (click)="closeAcceptModal()"
-        [disabled]="isAccepting"
-        class="flex-1 rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-[#374151] transition hover:bg-slate-50 disabled:opacity-60"
-      >
+      <button (click)="closeModal()" [disabled]="isAccepting"
+        class="flex-1 rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-[#374151] hover:bg-slate-50 transition-colors disabled:opacity-60">
         Annuler
       </button>
-      <button
-        type="button"
-        (click)="confirmerAcceptation()"
-        [disabled]="isAccepting || estimationTotale <= 0"
-        class="flex-1 rounded-xl bg-[#124A92] py-2.5 text-sm font-semibold text-white transition hover:bg-[#0F3E79] disabled:opacity-60 flex items-center justify-center gap-2"
-      >
+      <button (click)="confirmerAcceptation()" [disabled]="isAccepting || montantTotal === 0"
+        class="flex-1 rounded-xl bg-[#124A92] py-2.5 text-sm font-semibold text-white hover:bg-[#0F3E79] transition-colors disabled:opacity-60 flex items-center justify-center gap-2">
         <svg *ngIf="isAccepting" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
         </svg>
-        {{ isAccepting ? 'En cours…' : 'Confirmer la demande' }}
+        {{ isAccepting ? 'Traitement…' : 'Accepter & Générer la facture' }}
       </button>
     </div>
-
   </div>
 </div>

@@ -1,112 +1,88 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-
-interface KpiCard {
-  title: string;
-  value: number;
-  percentage: string;
-  trendClass: string;
-  iconBg: string;
-  iconColor: string;
-  iconType: 'box' | 'plane' | 'check' | 'cross';
-  badgeText?: string;
-  badgeBg?: string;
-}
-
-interface ActivityItem {
-  type: 'retenu' | 'demande' | 'envoye';
-  title: string;
-  subtitle: string;
-  isUrgent?: boolean;
-}
-
-interface ClientItem {
-  name: string;
-  orders: number;
-}
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard-fournisseur',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './dashboard-fournisseur.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DashboardFournisseurComponent {
-  selectedPeriod = 'Ce-mois';
+export class DashboardFournisseurComponent implements OnInit {
+  isLoading = true;
 
-  readonly kpis: KpiCard[] = [
-    {
-      title: 'Demandes reçues',
-      value: 12,
-      percentage: '+15%',
-      trendClass: 'bg-[#2FA373] text-white',
-      iconBg: 'bg-[#EEF2F6]',
-      iconColor: 'text-[#1E40AF]',
-      iconType: 'box'
-    },
-    {
-      title: 'Devis envoyés',
-      value: 45,
-      percentage: '+5%',
-      trendClass: 'bg-[#0F4C81] text-white',
-      iconBg: 'bg-[#00B8941A]',
-      iconColor: 'text-[#0C66E4]',
-      iconType: 'plane'
-    },
-    {
-      title: 'Devis retenus',
-      value: 8,
-      percentage: 'Record',
-      trendClass: 'bg-[#EA580C] text-white',
-      iconBg: 'bg-[#00B894]',
-      iconColor: 'text-[#137333]',
-      iconType: 'check'
-    },
-    {
-      title: 'Devis non retenus',
-      value: 5,
-      percentage: '-2%',
-      trendClass: 'bg-[#FFDAD6] text-[#BA1A1A]',
-      iconBg: 'bg-[#FFDAD6]',
-      iconColor: 'text-[#C5221F]',
-      iconType: 'cross'
+  totalDemandes  = 0;
+  totalDevis     = 0;
+  devisAccepted  = 0;
+  devisRejected  = 0;
+  devisPending   = 0;
+  devisDraft     = 0;
+
+  recentRequests: any[] = [];
+  recentQuotes:   any[] = [];
+
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+  ) {}
+
+  ngOnInit(): void {
+    const h = { Authorization: `Bearer ${localStorage.getItem('access_token')}` };
+    forkJoin({
+      requests: this.http.get<any>(`${environment.baseUrl}/supplier/requests`, { headers: h, params: { limit: 5 } }),
+      quotes:   this.http.get<any[]>(`${environment.baseUrl}/supplier/quotes`,  { headers: h }),
+    }).subscribe({
+      next: ({ requests, quotes }) => {
+        const reqs = requests.data ?? requests ?? [];
+        this.totalDemandes  = requests.total ?? reqs.length;
+        this.totalDevis     = quotes.length;
+        this.devisAccepted  = quotes.filter((q: any) => q.status === 'ACCEPTED').length;
+        this.devisRejected  = quotes.filter((q: any) => q.status === 'REJECTED').length;
+        this.devisPending   = quotes.filter((q: any) => q.status === 'PENDING').length;
+        this.devisDraft     = quotes.filter((q: any) => q.isDraft || q.status === 'DRAFT').length;
+        this.recentRequests = reqs.slice(0, 3);
+        this.recentQuotes   = quotes.slice(0, 3);
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  formatDate(d: string): string {
+    if (!d) return '–';
+    return new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  formatAmount(n: number): string {
+    return (n ?? 0).toLocaleString('fr-FR');
+  }
+
+  statusBadgeClass(status: string): string {
+    switch (status) {
+      case 'ACCEPTED': return 'bg-[#E6F4EA] text-[#137333]';
+      case 'PENDING':  return 'bg-[#DBEAFE] text-[#104382]';
+      case 'REJECTED': return 'bg-[#FCE8E6] text-[#C5221F]';
+      case 'DRAFT':    return 'bg-[#F1F3F5] text-[#4E5166]';
+      default:         return 'bg-slate-100 text-slate-600';
     }
-  ];
+  }
 
-  readonly activities: ActivityItem[] = [
-    {
-      type: 'retenu',
-      title: 'Devis retenu - Clinique du Parc',
-      subtitle: 'Prothèses hanche (Lot 45) - Il y a 4 heures'
-    },
-    {
-      type: 'demande',
-      title: 'Nouvelle demande - CHU Lyon',
-      subtitle: 'Fournitures chirurgicales - Il y a 10 minutes',
-      isUrgent: true
-    },
-    {
-      type: 'envoye',
-      title: 'Devis envoyé - Hôpital Nord',
-      subtitle: 'Consommables IRM - Il y a 2 heures'
-    },
-    {
-      type: 'retenu',
-      title: 'Devis retenu - Clinique du Parc',
-      subtitle: 'Prothèses hanche (Lot 45) - Il y a 4 heures'
-    },
-    {
-      type: 'demande',
-      title: 'Nouvelle demande - CHU Lyon',
-      subtitle: 'Fournitures chirurgicales - Il y a 10 minutes',
-      isUrgent: true
-    }
-  ];
+  statusLabel(status: string): string {
+    const map: Record<string, string> = { ACCEPTED: 'Retenu', PENDING: 'En attente', REJECTED: 'Non retenu', DRAFT: 'Brouillon' };
+    return map[status] ?? status;
+  }
 
-  readonly topClients: ClientItem[] = [
-    { name: 'AP-HM Marseille', orders: 15 },
-    { name: 'Hospices Civils de Lyon', orders: 12 },
-    { name: 'Institut Curie', orders: 8 }
-  ];
+  goToDemandes(): void { this.router.navigate(['/fournisseur/demandes']); }
+  goToDevis():    void { this.router.navigate(['/fournisseur/devis']); }
+  goToDevisDetail(id: string): void { this.router.navigate(['/fournisseur/devis', id]); }
+  goToDemandeDetail(id: string): void { this.router.navigate(['/fournisseur/demandes', id]); }
 }

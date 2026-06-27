@@ -1,147 +1,116 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-
-interface DevisProduct {
-  name: string;
-  unit: string;
-  qty: number;
-  unitPrice: string;
-  total: string;
-}
-
-interface TimelineEvent {
-  title: string;
-  time: string;
-  description: string;
-  iconType: 'check' | 'plane' | 'eye' | 'success';
-}
-
-interface DevisDetail {
-  id: string;
-  hopitalName: string;
-  departement: string;
-  location: string;
-  categorie: string;
-  status: string;
-  valableJusquAu: string;
-  conditionsPaiement: string;
-  gestionnaire: string;
-  devise: string;
-  products: DevisProduct[];
-  sousTotal: string;
-  remise: {
-    label: string;
-    amount: string;
-  };
-  tva: string;
-  montantTotal: string;
-  timeline: TimelineEvent[];
-  notesInternes: string;
-}
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-detail-devis-fournisseur',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './detail-devis-fournisseur.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DetailDevisFournisseurComponent implements OnInit {
-  devisDetail: DevisDetail | null = null;
+  isLoading = true;
+  error = '';
+  devisDetail: any = null;
 
-  constructor(private route: ActivatedRoute, private router: Router) {}
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
-    const devisId = this.route.snapshot.paramMap.get('id');
-    this.devisDetail = this.fetchDevisDetail(devisId);
+    const id = this.route.snapshot.paramMap.get('id') ?? '';
+    this.load(id);
   }
 
-  fetchDevisDetail(id: string | null): DevisDetail {
-    // Mock data that could be replaced by an API call later
-    const hopitalName = id === '2' || id === '6' ? 'Clinique du Parc' : 
-                        id === '3' || id === '4' ? 'CHRU Lille' : 'Hôpital Saint-Louis';
-    
-    let status = 'Retenu';
-    if (id === '2' || id === '6') status = 'En attente';
-    if (id === '3' || id === '4') status = 'Non retenu';
+  private get headers() {
+    const token = localStorage.getItem('access_token');
+    return { Authorization: `Bearer ${token}` };
+  }
+
+  load(id: string): void {
+    this.http.get<any>(`${environment.baseUrl}/supplier/quotes/${id}`, {
+      headers: this.headers,
+    }).subscribe({
+      next: (quote) => {
+        this.devisDetail = this.mapQuote(quote);
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.error = 'Impossible de charger ce devis.';
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  private mapQuote(q: any): any {
+    const subtotal = (q.items ?? []).reduce(
+      (s: number, i: any) => s + (i.quantity || 0) * (i.unitPrice || 0), 0
+    );
+    const discount = Math.round(subtotal * 0.05);
+    const tva      = Math.round(subtotal * 0.18);
+    const total    = subtotal - discount + tva + (q.shippingCost || 0);
 
     return {
-      id: id || '1',
-      hopitalName: hopitalName,
-      departement: 'Division Centrale des Achats',
-      location: hopitalName.includes('Lille') ? 'Lille' : hopitalName.includes('Parc') ? 'Lyon' : 'Saint-Louis',
-      categorie: 'Équipement de bureau',
-      status: status,
-      valableJusquAu: '30 sept. 2023',
+      id:               q.id,
+      reference:        q.reference,
+      hopitalName:      q.institutionName ?? q.request?.institutionName ?? '–',
+      departement:      q.request?.departmentName ?? '–',
+      categorie:        q.request?.title ?? q.request?.needType ?? 'Équipement médical',
+      status:           this.getStatusLabel(q.status ?? (q.isDraft ? 'DRAFT' : 'PENDING')),
+      statusRaw:        q.status ?? (q.isDraft ? 'DRAFT' : 'PENDING'),
+      valableJusquAu:   this.addDays(q.createdAt, q.deliveryDays ?? 30),
       conditionsPaiement: 'Net 30 Jours',
-      gestionnaire: 'Mouhamed Diop',
-      devise: 'FCFA',
-      products: [
-        {
-          name: 'Scalpels chirurgicaux de précision (Pack 50)',
-          unit: 'Boites',
-          qty: 12,
-          unitPrice: '100 000',
-          total: '1 200 000'
-        },
-        {
-          name: 'Rouleaux de gaze stérile',
-          unit: 'Boites',
-          qty: 40,
-          unitPrice: '70 000',
-          total: '2 800 000'
-        },
-        {
-          name: 'Moniteur cardiaque numérique V4',
-          unit: 'Unité',
-          qty: 2,
-          unitPrice: '50 000',
-          total: '100 000'
-        },
-        {
-          name: 'Gants de protection en nitrile',
-          unit: 'Boites',
-          qty: 15,
-          unitPrice: '20 000',
-          total: '300 000'
-        }
-      ],
-      sousTotal: '4 400 000',
-      remise: {
-        label: 'Remise Médicale (5%)',
-        amount: '-220 000'
-      },
-      tva: '100 000',
-      montantTotal: '4 280 000',
-      timeline: [
-        {
-          title: 'Devis créé',
-          time: '12 août 2023 • 09:15',
-          description: 'Rédigé par Sarah Jenkins',
-          iconType: 'check'
-        },
-        {
-          title: "Envoyé à l'hôpital",
-          time: '13 août 2023 • 11:40',
-          description: 'Envoyé à procurement@stmarys.org',
-          iconType: 'plane'
-        },
-        {
-          title: 'Consulté par le client',
-          time: '14 août 2023 • 10:22',
-          description: 'Ouvert depuis Chicago, IL [IP: 192.168.1.45]',
-          iconType: 'eye'
-        },
-        {
-          title: 'Retenu',
-          time: 'Livraison en cours',
-          description: '',
-          iconType: 'success'
-        }
-      ],
-      notesInternes: '"Le client est intéressé par une extension de cette commande si les moniteurs cardiaques sont performants lors du déploiement initial. À suivre après la première livraison. Application de la remise standard Hôpital Tier 2."'
+      gestionnaire:     q.supplierName ?? '–',
+      devise:           'FCFA',
+      products:         (q.items ?? []).map((i: any) => ({
+        name:      i.designation ?? i.articleName ?? '–',
+        unit:      i.model ?? '–',
+        qty:       i.quantity,
+        unitPrice: (i.unitPrice ?? 0).toLocaleString('fr-FR'),
+        total:     ((i.quantity || 0) * (i.unitPrice || 0)).toLocaleString('fr-FR'),
+      })),
+      sousTotal:    subtotal.toLocaleString('fr-FR'),
+      remise:       { label: 'Remise Médicale (5%)', amount: '- ' + discount.toLocaleString('fr-FR') },
+      tva:          tva.toLocaleString('fr-FR'),
+      montantTotal: total.toLocaleString('fr-FR'),
+      notesInternes: q.additionalNotes ?? '',
+      timeline: this.buildTimeline(q),
     };
+  }
+
+  private buildTimeline(q: any): any[] {
+    const tl: any[] = [
+      { title: 'Devis créé', time: this.formatDate(q.createdAt), description: `Par ${q.supplierName ?? '–'}`, iconType: 'check' },
+    ];
+    if (!q.isDraft) {
+      tl.push({ title: "Envoyé à l'hôpital", time: this.formatDate(q.updatedAt ?? q.createdAt), description: '', iconType: 'plane' });
+    }
+    if (q.status === 'ACCEPTED') {
+      tl.push({ title: 'Retenu', time: 'Commande en cours', description: '', iconType: 'success' });
+    } else if (q.status === 'REJECTED') {
+      tl.push({ title: 'Non retenu', time: this.formatDate(q.updatedAt), description: '', iconType: 'check' });
+    }
+    return tl;
+  }
+
+  private addDays(dateStr: string, days: number): string {
+    if (!dateStr) return '–';
+    const d = new Date(dateStr);
+    d.setDate(d.getDate() + days);
+    return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  private formatDate(d: string): string {
+    if (!d) return '–';
+    return new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
   }
 
   statusBadgeClass(status: string): string {
@@ -149,11 +118,22 @@ export class DetailDevisFournisseurComponent implements OnInit {
       case 'Retenu':     return 'bg-[#E6F4EA] text-[#137333]';
       case 'En attente': return 'bg-[#DBEAFE] text-[#104382]';
       case 'Non retenu': return 'bg-[#FCE8E6] text-[#C5221F]';
+      case 'Brouillon':  return 'bg-[#F1F3F5] text-[#4E5166]';
       default:           return 'bg-slate-100 text-slate-600';
     }
   }
 
+  private getStatusLabel(status: string): string {
+    switch (status) {
+      case 'ACCEPTED': return 'Retenu';
+      case 'PENDING':  return 'En attente';
+      case 'REJECTED': return 'Non retenu';
+      case 'DRAFT':    return 'Brouillon';
+      default:         return status;
+    }
+  }
+
   back(): void {
-    this.router.navigate(['/devis-fournisseur']);
+    this.router.navigate(['/fournisseur/devis']);
   }
 }

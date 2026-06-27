@@ -258,4 +258,8 @@ export class BudgetComponent implements OnInit {
     this.paymentStatus = null;
     this.paymentMessage = '';
   }
+
+  protected confirmBudget() {
+
+  }
 }

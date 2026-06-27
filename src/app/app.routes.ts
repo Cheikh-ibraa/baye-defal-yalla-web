@@ -5,6 +5,7 @@ import { roleGuard } from './core/guards/role.guard';
 export const routes: Routes = [
   { path: '', redirectTo: 'portail', pathMatch: 'full' },
   { path: 'portail', loadComponent: () => import('./features/portail/portail.component').then(m => m.PortailComponent) },
+  { path: 'don/:id', loadComponent: () => import('./features/don-public/don-public.component').then(m => m.DonPublicComponent) },
   { path: 'register', loadComponent: () => import('./features/auth/register/register.component').then(m => m.RegisterComponent) },
   {
     path: '',
@@ -102,6 +103,7 @@ export const routes: Routes = [
       { path: 'admin/patients',          canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/patientmanage/patientmanage.component').then(m => m.PatientsComponent) },
       { path: 'admin/paiements-help', canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/paiements-help/paiements-help.component').then(m => m.PaiementsHelpComponent) },
       { path: 'admin/administration', canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/administration/administration.component').then(m => m.AdministrationComponent) },
+      { path: 'admin/hotellerie',     canActivate: [roleGuard(['admin'])], loadComponent: () => import('./features/hotellerie-admin/hotellerie-admin.component').then(m => m.HotellerieAdminComponent) },
       {
         path: 'admin/finance-dashboard',
         loadChildren: () => import('./features/finance-dashboard/finance-dashboard.routes').then(m => m.FINANCE_dashboard_ROUTES)
@@ -147,6 +149,8 @@ export const routes: Routes = [
       { path: 'hospital/demande-materiels/:ref/devis/:fournisseur', canActivate: [roleGuard(['hospital', 'admin'])], loadComponent: () => import('./features/demande-materiels/detail-devis.component').then(m => m.DetailDevisComponent) },
       { path: 'hospital/paiements',                       canActivate: [roleGuard(['hospital', 'admin'])], loadComponent: () => import('./features/paiements-hospital/paiements-hospital.component').then(m => m.PaiementsHospitalComponent) },
       { path: 'hospital/paiements/:id',                   canActivate: [roleGuard(['hospital', 'admin'])], loadComponent: () => import('./features/paiements-hospital/detail-paiement.component').then(m => m.DetailPaiementComponent) },
+      { path: 'hospital/factures',                         canActivate: [roleGuard(['hospital', 'admin'])], loadComponent: () => import('./features/facturation/facturation.component').then(m => m.FacturationComponent) },
+      { path: 'hospital/factures/:id',                     canActivate: [roleGuard(['hospital', 'admin'])], loadComponent: () => import('./features/facturation/detail-facture/detail-facture.component').then(m => m.DetailFactureComponent) },
       { path: 'hospital/account',                         canActivate: [roleGuard(['hospital'])],          loadComponent: () => import('./features/comptes/medical-account.component').then(m => m.MedicalAccountComponent) },
 
       // ================= FOURNISSEUR ROUTES =================

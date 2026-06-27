@@ -147,6 +147,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     { id: 'hospitalisations',   label: 'Hospitalisations',    route: '/hospital/hospitalisations'},
     { id: 'patients-hospital',  label: 'Patients',            route: '/hospital/patients'       },
     { id: 'chirurgie',          label: 'Chirurgie',           route: '/hospital/chirurgie'      },
+    { id: 'facturation',        label: 'Facturation & Dons',  route: '/hospital/factures'       },
     { id: 'demande-materiels',  label: 'Demande de matériels',route: '/hospital/demande-materiels'},
     { id: 'paiements-hospital', label: 'Paiements',           route: '/hospital/paiements'      },
     { id: 'comptes',            label: 'Mon compte',          route: '/hospital/account'        },

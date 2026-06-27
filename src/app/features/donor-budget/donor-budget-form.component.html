@@ -1,12 +1,15 @@
-<div class="min-h-screen bg-[#F8FAFC] p-6 max-w-2xl mx-auto">
+<div class="min-h-screen mx-auto">
 
   <!-- Back -->
-  <button (click)="goBack()" class="flex items-center gap-2 text-[#11458B] text-sm font-medium mb-6 hover:underline">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M19 12H5M12 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    {{ isEdit ? 'Modifier mon budget' : 'Ajouter un nouveau budget' }}
-  </button>
+  <div class="flex items-center gap-4 mb-4">
+      <button type="button" (click)="goBack()"
+        class="w-12 h-12 rounded-lg bg-white flex items-center justify-center hover:bg-gray-50 transition duration-150 cursor-pointer">
+        <svg class="w-5 h-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+      </button>
+      <h1 class="text-xl sm:text-2xl font-bold text-[#0F172A]">{{ isEdit ? 'Modifier mon budget' : 'Ajouter un nouveau budget' }}</h1>
+    </div>
 
   <!-- Loading -->
   <div *ngIf="isLoading" class="flex justify-center py-20">
@@ -29,7 +32,7 @@
     <!-- Edit mode: current budget summary -->
     <div *ngIf="isEdit" class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-5">
       <div class="flex justify-between items-center mb-3">
-        <span class="text-sm text-gray-500">Budget Initial</span>
+        <span class="text-sm font-bold uppercase tracking-widest text-[#1E293B]">Budget Initial</span>
         <span class="text-sm font-bold text-[#11458B]">{{ existingAmount | number:'1.0-0' }} FCFA</span>
         <span class="text-xs font-semibold text-[#F59E0B]">{{ usagePercent }}% Utilisé</span>
       </div>
@@ -57,14 +60,14 @@
 
     <!-- Nom du budget -->
     <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-4">
-      <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">🏷️ Nom du budget</p>
+      <p class="text-sm font-bold uppercase tracking-widest text-[#1E293B] mb-3">🏷️ Nom du budget</p>
       <input [(ngModel)]="name" type="text" placeholder="Ex: Budget Solidarité Cancer – Dakar"
         class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#11458B] transition"/>
     </div>
 
     <!-- Montant -->
     <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-4">
-      <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">💰 Définir le budget</p>
+      <p class="text-sm font-bold uppercase tracking-widest text-[#1E293B] mb-3">💰 Définir le budget</p>
       <div class="relative">
         <input [(ngModel)]="amount" type="number" min="0" placeholder="Ex: 500 000"
           class="w-full border border-gray-200 rounded-xl px-4 py-3 pr-20 text-lg font-bold focus:outline-none focus:border-[#11458B] transition"/>
@@ -80,7 +83,7 @@
 
     <!-- Zone géographique -->
     <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-4">
-      <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">📍 Zone géographique ciblée</p>
+      <p class="text-sm font-bold uppercase tracking-widest text-[#1E293B] mb-4">📍 Zone géographique ciblée</p>
       <div class="space-y-3">
         <div>
           <label class="text-xs text-gray-500 font-medium mb-1 block">Région</label>
@@ -107,7 +110,7 @@
 
     <!-- Pathologies -->
     <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-4">
-      <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">🧬 Pathologies concernées</p>
+      <p class="text-sm font-bold uppercase tracking-widest text-[#1E293B] mb-4">🧬 Pathologies concernées</p>
       <div class="flex flex-wrap gap-2">
         <button *ngFor="let p of pathologiesOptions" (click)="togglePathologie(p)"
           class="px-4 py-2 rounded-full text-sm font-semibold border transition"
@@ -121,7 +124,7 @@
 
     <!-- Profil bénéficiaires -->
     <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-4">
-      <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">👥 Profil des bénéficiaires</p>
+      <p class="text-sm font-bold uppercase tracking-widest text-[#1E293B] mb-4">👥 Profil des bénéficiaires</p>
       <div class="flex gap-3">
         <button *ngFor="let b of beneficiariesOptions" (click)="toggleBeneficiary(b.key)"
           class="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl border-2 transition"
@@ -137,7 +140,7 @@
 
     <!-- Niveau d'urgence -->
     <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-4">
-      <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">🚨 Niveau d'urgence</p>
+      <p class="text-sm font-bold uppercase tracking-widest text-[#1E293B] mb-4">🚨 Niveau d'urgence</p>
       <div class="flex gap-2">
         <button *ngFor="let u of urgencyLevels" (click)="urgencyLevel = u"
           class="flex-1 py-2.5 rounded-xl text-sm font-semibold border-2 transition"
@@ -154,7 +157,7 @@
 
     <!-- Durée (only for create) -->
     <div *ngIf="!isEdit" class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-4">
-      <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">⏳ Durée du budget</p>
+      <p class="text-sm font-bold uppercase tracking-widest text-[#1E293B] mb-4">⏳ Durée du budget</p>
       <div class="flex gap-2">
         <button *ngFor="let d of durations" (click)="duration = d"
           class="flex-1 py-2.5 rounded-xl text-sm font-semibold border-2 transition"
